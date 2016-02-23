@@ -19,11 +19,6 @@ var structCmd = &cobra.Command{
 	Short: "Generate structs from table definitions",
 }
 
-type tplData struct {
-	TableName string
-	TableData interface{}
-}
-
 func structRun(cmd *cobra.Command, args []string) {
 	out := generateStructs()
 
@@ -42,7 +37,7 @@ func generateStructs() [][]byte {
 		errorQuit(err)
 	}
 
-	var structOutputs [][]byte
+	var outputs [][]byte
 
 	for i := 0; i < len(cmdData.TablesInfo); i++ {
 		data := tplData{
@@ -60,8 +55,8 @@ func generateStructs() [][]byte {
 			errorQuit(err)
 		}
 
-		structOutputs = append(structOutputs, out)
+		outputs = append(outputs, out)
 	}
 
-	return structOutputs
+	return outputs
 }

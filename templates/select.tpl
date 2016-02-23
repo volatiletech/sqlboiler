@@ -1,19 +1,18 @@
-func Insert{{makeGoColName $tableName}}(o *{{makeGoColName $tableName}}, db *sqlx.DB) (int, error) {
-  if o == nil {
-    return 0, errors.New("No {{objName}} provided for insertion")
+{{- $tableName := .TableName -}}
+func Select{{makeGoColName $tableName}}(id int, db *sqlx.DB) ({{makeGoColName $tableName}}, error) {
+  if id == 0 {
+    return nil, errors.New("No ID provided for {{makeGoColName $tableName}} select")
   }
-
-  var rowID int
-  err := db.QueryRow(
-    `INSERT INTO {{tableName}}
-    ({{makeGoInsertParamNames tableData}})
-    VALUES({{makeGoInsertParamFlags tableData}})
-    RETURNING id`
-  )
+  {{$varName := makeGoVarName $tableName}}
+  var {{$varName}} {{makeGoColName $tableName}}
+  err := db.Select(&{{$varName}}, `
+          SELECT {{makeSelectParamNames $tableName .TableData}}
+          WHERE id=$1
+        `, id)
 
   if err != nil {
-    return 0, fmt.Errorf("Unable to insert {{objName}}: %s", err)
+    return nil, fmt.Errorf("Unable to select from {{$tableName}}: %s", err)
   }
 
-  return rowID, nil
+  return {{$varName}}, nil
 }

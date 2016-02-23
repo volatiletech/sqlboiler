@@ -1,7 +1,10 @@
 package cmds
 
 import (
+	"bytes"
+	"go/format"
 	"os"
+	"text/template"
 
 	"github.com/spf13/cobra"
 )
@@ -25,5 +28,34 @@ func deleteRun(cmd *cobra.Command, args []string) {
 }
 
 func generateDeletes() [][]byte {
-	return [][]byte{}
+	t, err := template.New("delete.tpl").Funcs(template.FuncMap{
+		"makeGoColName": makeGoColName,
+	}).ParseFiles("templates/delete.tpl")
+
+	if err != nil {
+		errorQuit(err)
+	}
+
+	var outputs [][]byte
+
+	for i := 0; i < len(cmdData.TablesInfo); i++ {
+		data := tplData{
+			TableName: cmdData.TableNames[i],
+			TableData: cmdData.TablesInfo[i],
+		}
+
+		var buf bytes.Buffer
+		if err = t.Execute(&buf, data); err != nil {
+			errorQuit(err)
+		}
+
+		out, err := format.Source(buf.Bytes())
+		if err != nil {
+			errorQuit(err)
+		}
+
+		outputs = append(outputs, out)
+	}
+
+	return outputs
 }

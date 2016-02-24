@@ -4,14 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 
+	// Import the postgres driver
 	_ "github.com/lib/pq"
 )
 
+// PostgresDriver holds the database connection string and a handle
+// to the database connection.
 type PostgresDriver struct {
 	connStr string
 	dbConn  *sql.DB
 }
 
+// NewPostgresDriver takes the database connection details as parameters and
+// returns a pointer to a PostgresDriver object. Note that it is required to
+// call PostgresDriver.Open() and PostgresDriver.Close() to open and close
+// the database connection once an object has been obtained.
 func NewPostgresDriver(user, pass, dbname, host string, port int) *PostgresDriver {
 	driver := PostgresDriver{
 		connStr: fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d",
@@ -21,6 +28,7 @@ func NewPostgresDriver(user, pass, dbname, host string, port int) *PostgresDrive
 	return &driver
 }
 
+// Open opens the database connection using the connection string
 func (d *PostgresDriver) Open() error {
 	var err error
 	d.dbConn, err = sql.Open("postgres", d.connStr)
@@ -31,10 +39,15 @@ func (d *PostgresDriver) Open() error {
 	return nil
 }
 
+// Close closes the database connection
 func (d *PostgresDriver) Close() {
 	d.dbConn.Close()
 }
 
+// GetAllTableNames connects to the postgres database and
+// retrieves all table names from the information_schema where the
+// table schema is public. It excludes common migration tool tables
+// such as gorp_migrations
 func (d *PostgresDriver) GetAllTableNames() ([]string, error) {
 	var tableNames []string
 
@@ -58,6 +71,10 @@ func (d *PostgresDriver) GetAllTableNames() ([]string, error) {
 	return tableNames, nil
 }
 
+// GetTableInfo takes a table name and attempts to retrieve the table information
+// from the database information_schema.columns. It retrieves the column names
+// and column types and returns those as a []DBTable after ParseTableInfo()
+// converts the SQL types to Go types, for example: "varchar" to "string"
 func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBTable, error) {
 	var tableInfo []DBTable
 
@@ -80,6 +97,9 @@ func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBTable, error) {
 	return tableInfo, nil
 }
 
+// ParseTableInfo converts postgres database types to Go types, for example
+// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
+// as a DBTable object.
 func (d *PostgresDriver) ParseTableInfo(colName, colType string) DBTable {
 	t := DBTable{}
 

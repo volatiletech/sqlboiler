@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	// Execute SQLBoiler
 	if err := cmds.SQLBoiler.Execute(); err != nil {
 		os.Exit(-1)
 	}

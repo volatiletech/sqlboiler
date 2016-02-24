@@ -17,8 +17,7 @@ type tplData struct {
 }
 
 func errorQuit(err error) {
-	fmt.Println(fmt.Sprintf("Error: %s\n---\n", err))
-	structCmd.Help()
+	fmt.Println(fmt.Sprintf("Error: %s\n---\n\nRun 'sqlboiler --help' for usage.", err))
 	os.Exit(-1)
 }
 

@@ -1,9 +1,8 @@
 <img src="http://i.imgur.com/R5g99sO.png"/>
 
 # SQLBoiler
-========
 
-SQLBoiler is a tool to generate Go boilerplate code for database interactions. So far this includes struct definitions and select, delete and insert statement helper functions.
+SQLBoiler is a tool to generate Go boilerplate code for database interactions. So far this includes struct definitions and database statement helper functions.
 
 ### Supports
 * Postgres

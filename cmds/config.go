@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+// cfg holds the configuration file data from config.toml
 var cfg = struct {
 	Postgres struct {
 		User   string `toml:"user"`
@@ -17,6 +18,7 @@ var cfg = struct {
 	} `toml:"postgres"`
 }{}
 
+// init reads the config.toml configuration file into the cfg variable
 func init() {
 	_, err := toml.DecodeFile("config.toml", &cfg)
 	if err == nil {

@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// CmdData holds the table schema a slice of (column name, column type) slices.
+// It also holds a slice of all of the table names sqlboiler is generating against,
+// the database driver chosen by the driver flag at runtime, and a pointer to the
+// output file, if one is specified with a flag.
 type CmdData struct {
 	TablesInfo [][]dbdrivers.DBTable
 	TableNames []string
@@ -16,8 +20,14 @@ type CmdData struct {
 	OutFile    *os.File
 }
 
+// cmdData is used globally by all commands to access the table schema data,
+// the database driver and the output file. cmdData is initialized by
+// the root SQLBoiler cobra command at run time, before other commands execute.
 var cmdData *CmdData
 
+// init initializes the sqlboiler flags, such as driver, table, and output file.
+// It also sets the global preRun hook and postRun hook. Every command will execute
+// these hooks before and after running to initialize the shared state.
 func init() {
 	SQLBoiler.PersistentFlags().StringP("driver", "d", "", "The name of the driver in your config.toml")
 	SQLBoiler.PersistentFlags().StringP("table", "t", "", "A comma seperated list of table names")
@@ -26,6 +36,7 @@ func init() {
 	SQLBoiler.PersistentPostRun = sqlBoilerPostRun
 }
 
+// SQLBoiler is the root app command
 var SQLBoiler = &cobra.Command{
 	Use:   "sqlboiler",
 	Short: "SQL Boiler generates boilerplate structs and statements",
@@ -33,15 +44,44 @@ var SQLBoiler = &cobra.Command{
 		`Complete documentation is available at http://github.com/pobri19/sqlboiler`,
 }
 
+// sqlBoilerPostRun cleans up the output file and database connection once
+// all commands are finished running.
 func sqlBoilerPostRun(cmd *cobra.Command, args []string) {
 	cmdData.OutFile.Close()
 	cmdData.DBDriver.Close()
 }
 
+// sqlBoilerPreRun executes before all commands start running. Its job is to
+// initialize the shared state object (cmdData). Initialization tasks include
+// assigning the database driver based off the driver flag and opening the database connection,
+// retrieving a list of all the tables in the database (if specific tables are not provided
+// via a flag), building the table schema for use in the templates, and opening the output file
+// handle if one is specified with a flag.
 func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	var err error
 	cmdData = &CmdData{}
 
+	// Initialize the cmdData.DBDriver
+	initDBDriver()
+
+	// Connect to the driver database
+	if err = cmdData.DBDriver.Open(); err != nil {
+		errorQuit(err)
+	}
+
+	// Initialize the cmdData.TableNames
+	initTableNames()
+
+	// Initialize the cmdData.TablesInfo
+	initTablesInfo()
+
+	// Initialize the cmdData.OutFile
+	initOutFile()
+}
+
+// initDBDriver attempts to set the cmdData DBDriver based off the passed in
+// driver flag value. If an invalid flag string is provided the program will exit.
+func initDBDriver() {
 	// Retrieve driver flag
 	driverName := SQLBoiler.PersistentFlags().Lookup("driver").Value.String()
 	if driverName == "" {
@@ -60,11 +100,15 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 		)
 	}
 
-	// Connect to the driver database
-	if err = cmdData.DBDriver.Open(); err != nil {
-		errorQuit(err)
+	if cmdData.DBDriver == nil {
+		errorQuit(errors.New("An invalid driver name was provided"))
 	}
+}
 
+// initTableNames will create a string slice out of the passed in table flag value
+// if one is provided. If no flag is provided, it will attempt to connect to the
+// database to retrieve all "public" table names, and build a slice out of that result.
+func initTableNames() {
 	// Retrieve the list of tables
 	tn := SQLBoiler.PersistentFlags().Lookup("table").Value.String()
 
@@ -78,6 +122,7 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	// If no table names are provided attempt to process all tables in database
 	if len(cmdData.TableNames) == 0 {
 		// get all table names
+		var err error
 		cmdData.TableNames, err = cmdData.DBDriver.GetAllTableNames()
 		if err != nil {
 			errorQuit(err)
@@ -87,7 +132,11 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 			errorQuit(errors.New("No tables found in database, migrate some tables first"))
 		}
 	}
+}
 
+// initTablesInfo builds a description of each table (column name, column type)
+// and assigns it to cmdData.TablesInfo, the slice of dbdrivers.DBTable slices.
+func initTablesInfo() {
 	// loop over table Names and build TablesInfo
 	for i := 0; i < len(cmdData.TableNames); i++ {
 		tInfo, err := cmdData.DBDriver.GetTableInfo(cmdData.TableNames[i])
@@ -97,7 +146,12 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 
 		cmdData.TablesInfo = append(cmdData.TablesInfo, tInfo)
 	}
+}
 
+// initOutFile opens a file handle to the file name specified by the out flag.
+// If no file name is provided, out will remain nil and future output will be
+// piped to Stdout instead of to a file.
+func initOutFile() {
 	// open the out file filehandle
 	outf := SQLBoiler.PersistentFlags().Lookup("out").Value.String()
 	if outf != "" {

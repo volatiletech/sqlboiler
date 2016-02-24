@@ -1,9 +1,6 @@
 package cmds
 
 import (
-	"bytes"
-	"go/format"
-	"os"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -20,10 +17,9 @@ var structCmd = &cobra.Command{
 }
 
 func structRun(cmd *cobra.Command, args []string) {
-	out := generateStructs()
-
-	for _, v := range out {
-		os.Stdout.Write(v)
+	err := outHandler(generateStructs())
+	if err != nil {
+		errorQuit(err)
 	}
 }
 
@@ -37,25 +33,9 @@ func generateStructs() [][]byte {
 		errorQuit(err)
 	}
 
-	var outputs [][]byte
-
-	for i := 0; i < len(cmdData.TablesInfo); i++ {
-		data := tplData{
-			TableName: cmdData.TableNames[i],
-			TableData: cmdData.TablesInfo[i],
-		}
-
-		var buf bytes.Buffer
-		if err = t.Execute(&buf, data); err != nil {
-			errorQuit(err)
-		}
-
-		out, err := format.Source(buf.Bytes())
-		if err != nil {
-			errorQuit(err)
-		}
-
-		outputs = append(outputs, out)
+	outputs, err := processTemplate(t)
+	if err != nil {
+		errorQuit(err)
 	}
 
 	return outputs

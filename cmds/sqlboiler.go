@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
@@ -12,6 +13,7 @@ type CmdData struct {
 	TablesInfo [][]dbdrivers.DBTable
 	TableNames []string
 	DBDriver   dbdrivers.DBDriver
+	OutFile    *os.File
 }
 
 var cmdData *CmdData
@@ -19,7 +21,9 @@ var cmdData *CmdData
 func init() {
 	SQLBoiler.PersistentFlags().StringP("driver", "d", "", "The name of the driver in your config.toml")
 	SQLBoiler.PersistentFlags().StringP("table", "t", "", "A comma seperated list of table names")
+	SQLBoiler.PersistentFlags().StringP("out", "o", "", "The name of the output file")
 	SQLBoiler.PersistentPreRun = sqlBoilerPreRun
+	SQLBoiler.PersistentPostRun = sqlBoilerPostRun
 }
 
 var SQLBoiler = &cobra.Command{
@@ -27,6 +31,11 @@ var SQLBoiler = &cobra.Command{
 	Short: "SQL Boiler generates boilerplate structs and statements",
 	Long: "SQL Boiler generates boilerplate structs and statements.\n" +
 		`Complete documentation is available at http://github.com/pobri19/sqlboiler`,
+}
+
+func sqlBoilerPostRun(cmd *cobra.Command, args []string) {
+	cmdData.OutFile.Close()
+	cmdData.DBDriver.Close()
 }
 
 func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
@@ -87,5 +96,15 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 		}
 
 		cmdData.TablesInfo = append(cmdData.TablesInfo, tInfo)
+	}
+
+	// open the out file filehandle
+	outf := SQLBoiler.PersistentFlags().Lookup("out").Value.String()
+	if outf != "" {
+		var err error
+		cmdData.OutFile, err = os.Create(outf)
+		if err != nil {
+			errorQuit(err)
+		}
 	}
 }

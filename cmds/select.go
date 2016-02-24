@@ -1,10 +1,7 @@
 package cmds
 
 import (
-	"bytes"
 	"fmt"
-	"go/format"
-	"os"
 	"text/template"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
@@ -22,10 +19,9 @@ var selectCmd = &cobra.Command{
 }
 
 func selectRun(cmd *cobra.Command, args []string) {
-	out := generateSelects()
-
-	for _, v := range out {
-		os.Stdout.Write(v)
+	err := outHandler(generateSelects())
+	if err != nil {
+		errorQuit(err)
 	}
 }
 
@@ -40,25 +36,9 @@ func generateSelects() [][]byte {
 		errorQuit(err)
 	}
 
-	var outputs [][]byte
-
-	for i := 0; i < len(cmdData.TablesInfo); i++ {
-		data := tplData{
-			TableName: cmdData.TableNames[i],
-			TableData: cmdData.TablesInfo[i],
-		}
-
-		var buf bytes.Buffer
-		if err = t.Execute(&buf, data); err != nil {
-			errorQuit(err)
-		}
-
-		out, err := format.Source(buf.Bytes())
-		if err != nil {
-			errorQuit(err)
-		}
-
-		outputs = append(outputs, out)
+	outputs, err := processTemplate(t)
+	if err != nil {
+		errorQuit(err)
 	}
 
 	return outputs

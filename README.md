@@ -132,6 +132,7 @@ Available Commands:
 
 Flags:
   -d, --driver string   The name of the driver in your config.toml (mandatory)
+  -h, --help            help for sqlboiler
   -o, --out string      The name of the output file
   -t, --table string    A comma seperated list of table names
 

@@ -29,7 +29,7 @@ var cmdData *CmdData
 // It also sets the global preRun hook and postRun hook. Every command will execute
 // these hooks before and after running to initialize the shared state.
 func init() {
-	SQLBoiler.PersistentFlags().StringP("driver", "d", "", "The name of the driver in your config.toml")
+	SQLBoiler.PersistentFlags().StringP("driver", "d", "", "The name of the driver in your config.toml (mandatory)")
 	SQLBoiler.PersistentFlags().StringP("table", "t", "", "A comma seperated list of table names")
 	SQLBoiler.PersistentFlags().StringP("out", "o", "", "The name of the output file")
 	SQLBoiler.PersistentPreRun = sqlBoilerPreRun

@@ -17,6 +17,19 @@ I've included templates for struct definitions and select, delete and insert sta
 
 Because writing boilerplate is annoying, that's why!
 
+# Config?
+
+To use SQLBoiler you need to create a ````config.toml```` in SQLBoiler's root directory. The file format looks like the following:
+
+````
+[postgres]
+  host="localhost"
+  port=5432
+  user="dbusername"
+  pass="dbpassword"
+  dbname="dbname"
+````
+
 # How?
 
 SQLBoiler connects to your database (defined in your config.toml file) to ascertain the structure of your tables, and builds your Go boilerplate code using the templates defined in the ````/templates```` folder.
@@ -100,7 +113,9 @@ func SelectExampleFriend(id int, db *sqlx.DB) (ExampleFriend, error) {
 
 # Commands?
 
-You have the ability to generate specific objects, or all objects by using the appropriate command. You can also choose to generate for all tables, a single table, or a group of tables using the ````--table```` flag. By default SQLBoiler outputs to Stdout, unless a file is specified with the ````--out```` flag. Before you use SQLBoiler make sure you create a ````config.toml```` configuration file with your database details, and specify your database by using the ````--driver```` flag.
+You have the ability to generate specific objects, or all objects by using the appropriate command. You can also choose to generate for all tables, a single table, or a group of tables using the ````--table```` flag. By default SQLBoiler outputs to Stdout, unless a file is specified with the ````--out```` flag.
+
+Before you use SQLBoiler make sure you create a ````config.toml```` configuration file with your database details, and specify your database by using the ````--driver```` flag.
 
 For example: ````./sqlboiler all --driver="postgres" --out="filename.go" --table="my_table1, my_table2"````
 
@@ -116,24 +131,11 @@ Available Commands:
   struct      Generate structs from table definitions
 
 Flags:
-  -d, --driver string   The name of the driver in your config.toml
+  -d, --driver string   The name of the driver in your config.toml (mandatory)
   -o, --out string      The name of the output file
   -t, --table string    A comma seperated list of table names
 
 Use "sqlboiler [command] --help" for more information about a command.
-````
-
-# Config?
-
-To use SQLBoiler you need to create a ````config.toml```` in SQLBoiler's root directory. The file format looks like the following:
-
-````
-[postgres]
-  host="localhost"
-  port=5432
-  user="dbusername"
-  pass="dbpassword"
-  dbname="dbname"
 ````
 
 # Templates?

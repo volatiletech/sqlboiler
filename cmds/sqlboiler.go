@@ -167,6 +167,8 @@ func initOutFile() {
 	}
 }
 
+// initTemplates loads all of the template files in the /cmds/templates directory
+// and returns a slice of pointers to these templates.
 func initTemplates() ([]*template.Template, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -183,6 +185,7 @@ func initTemplates() ([]*template.Template, error) {
 	return tpl.Templates(), err
 }
 
+// initCommands loads all of the commands in the sqlBoilerCommands and hooks their run functions.
 func initCommands(rootCmd *cobra.Command, commands map[string]*cobra.Command, commandRuns map[string]CobraRunFunc) {
 	for _, c := range commands {
 		// If there is a commandRun for the command (matched by name)

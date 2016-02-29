@@ -124,3 +124,46 @@ func makeGoVarName(name string) string {
 func makeDBColName(tableName, colName string) string {
 	return tableName + "_" + colName
 }
+
+// makeGoInsertParamNames takes a []DBTable and returns a comma seperated
+// list of parameter names for the insert statement template.
+func makeGoInsertParamNames(data []dbdrivers.DBTable) string {
+	var paramNames string
+	for i := 0; i < len(data); i++ {
+		paramNames = paramNames + data[i].ColName
+		if len(data) != i+1 {
+			paramNames = paramNames + ", "
+		}
+	}
+	return paramNames
+}
+
+// makeGoInsertParamFlags takes a []DBTable and returns a comma seperated
+// list of parameter flags for the insert statement template.
+func makeGoInsertParamFlags(data []dbdrivers.DBTable) string {
+	var paramFlags string
+	for i := 0; i < len(data); i++ {
+		paramFlags = fmt.Sprintf("%s$%d", paramFlags, i+1)
+		if len(data) != i+1 {
+			paramFlags = paramFlags + ", "
+		}
+	}
+	return paramFlags
+}
+
+// makeSelectParamNames takes a []DBTable and returns a comma seperated
+// list of parameter names with for the select statement template.
+// It also uses the table name to generate the "AS" part of the statement, for
+// example: var_name AS table_name_var_name, ...
+func makeSelectParamNames(tableName string, data []dbdrivers.DBTable) string {
+	var paramNames string
+	for i := 0; i < len(data); i++ {
+		paramNames = fmt.Sprintf("%s%s AS %s", paramNames, data[i].ColName,
+			makeDBColName(tableName, data[i].ColName),
+		)
+		if len(data) != i+1 {
+			paramNames = paramNames + ", "
+		}
+	}
+	return paramNames
+}

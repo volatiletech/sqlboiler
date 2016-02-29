@@ -1,10 +1,8 @@
 package cmds
 
 import (
-	"fmt"
 	"text/template"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
 )
 
@@ -47,21 +45,4 @@ func generateSelects() [][]byte {
 	}
 
 	return outputs
-}
-
-// makeSelectParamNames takes a []DBTable and returns a comma seperated
-// list of parameter names with for the select statement template.
-// It also uses the table name to generate the "AS" part of the statement, for
-// example: var_name AS table_name_var_name, ...
-func makeSelectParamNames(tableName string, data []dbdrivers.DBTable) string {
-	var paramNames string
-	for i := 0; i < len(data); i++ {
-		paramNames = fmt.Sprintf("%s%s AS %s", paramNames, data[i].ColName,
-			makeDBColName(tableName, data[i].ColName),
-		)
-		if len(data) != i+1 {
-			paramNames = paramNames + ", "
-		}
-	}
-	return paramNames
 }

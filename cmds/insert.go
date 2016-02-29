@@ -1,10 +1,8 @@
 package cmds
 
 import (
-	"fmt"
 	"text/template"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
 )
 
@@ -48,30 +46,4 @@ func generateInserts() [][]byte {
 	}
 
 	return outputs
-}
-
-// makeGoInsertParamNames takes a []DBTable and returns a comma seperated
-// list of parameter names for the insert statement template.
-func makeGoInsertParamNames(data []dbdrivers.DBTable) string {
-	var paramNames string
-	for i := 0; i < len(data); i++ {
-		paramNames = paramNames + data[i].ColName
-		if len(data) != i+1 {
-			paramNames = paramNames + ", "
-		}
-	}
-	return paramNames
-}
-
-// makeGoInsertParamFlags takes a []DBTable and returns a comma seperated
-// list of parameter flags for the insert statement template.
-func makeGoInsertParamFlags(data []dbdrivers.DBTable) string {
-	var paramFlags string
-	for i := 0; i < len(data); i++ {
-		paramFlags = fmt.Sprintf("%s$%d", paramFlags, i+1)
-		if len(data) != i+1 {
-			paramFlags = paramFlags + ", "
-		}
-	}
-	return paramFlags
 }

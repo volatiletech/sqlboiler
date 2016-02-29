@@ -2,8 +2,11 @@ package cmds
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
@@ -24,6 +27,9 @@ type CmdData struct {
 // the database driver and the output file. cmdData is initialized by
 // the root SQLBoiler cobra command at run time, before other commands execute.
 var cmdData *CmdData
+
+// templates holds a slice of pointers to all templates in the templates directory.
+var templates []*template.Template
 
 // init initializes the sqlboiler flags, such as driver, table, and output file.
 // It also sets the global preRun hook and postRun hook. Every command will execute
@@ -77,6 +83,12 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 
 	// Initialize the cmdData.OutFile
 	initOutFile()
+
+	// Initialize the templates
+	templates, err = initTemplates()
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
+	}
 }
 
 // initDBDriver attempts to set the cmdData DBDriver based off the passed in
@@ -161,4 +173,28 @@ func initOutFile() {
 			errorQuit(err)
 		}
 	}
+}
+
+func initTemplates() ([]*template.Template, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	pattern := filepath.Join(wd, "templates", "*.tpl")
+
+	tpl, err := template.New("").Funcs(template.FuncMap{
+		"makeGoColName":          makeGoColName,
+		"makeGoVarName":          makeGoVarName,
+		"makeDBColName":          makeDBColName,
+		"makeSelectParamNames":   makeSelectParamNames,
+		"makeGoInsertParamNames": makeGoInsertParamNames,
+		"makeGoInsertParamFlags": makeGoInsertParamFlags,
+	}).ParseGlob(pattern)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tpl.Templates(), err
 }

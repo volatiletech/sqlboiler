@@ -1,12 +1,13 @@
 {{- $tableName := .TableName -}}
-func Delete{{makeGoColName $tableName}}(id int, db *sqlx.DB) error {
+// {{makeGoColName $tableName}}Delete deletes a single record.
+func {{makeGoColName $tableName}}Delete(db *sqlx.DB, id int) error {
   if id == nil {
-    return nil, errors.New("No ID provided for {{makeGoColName $tableName}} delete")
+    return nil, errors.New("model: no id provided for {{$tableName}} delete")
   }
 
   err := db.Exec("DELETE FROM {{$tableName}} WHERE id=$1", id)
   if err != nil {
-    return errors.New("Unable to delete from {{$tableName}}: %s", err)
+    return errors.New("model: unable to delete from {{$tableName}}: %s", err)
   }
 
   return nil

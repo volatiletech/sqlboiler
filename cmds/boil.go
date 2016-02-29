@@ -1,17 +1,21 @@
 package cmds
 
-import "github.com/spf13/cobra"
+import (
+	"sort"
 
-var allCmd = &cobra.Command{
-	Use:   "all",
-	Short: "Generate all templates from table definitions",
+	"github.com/spf13/cobra"
+)
+
+var boilCmd = &cobra.Command{
+	Use:   "boil",
+	Short: "Generates ALL templates by running every command alphabetically",
 }
 
-// allRun executes every sqlboiler command, starting with structs.
-func allRun(cmd *cobra.Command, args []string) {
+// boilRun executes every sqlboiler command, starting with structs.
+func boilRun(cmd *cobra.Command, args []string) {
 	// Exclude these commands from the output
 	skipTemplates := []string{
-		"all",
+		"boil",
 	}
 
 	var templateNames []string
@@ -34,7 +38,10 @@ func allRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Prepend "struct" command to templateNames slice
+	// Sort all names alphabetically
+	sort.Strings(templateNames)
+
+	// Prepend "struct" command to templateNames slice so it sits at top of sort
 	templateNames = append([]string{"struct"}, templateNames...)
 
 	// Loop through and generate every command template (excluding skipTemplates)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -187,17 +188,37 @@ func initTemplates() ([]*template.Template, error) {
 
 // initCommands loads all of the commands in the sqlBoilerCommands and hooks their run functions.
 func initCommands(rootCmd *cobra.Command, commands map[string]*cobra.Command, commandRuns map[string]CobraRunFunc) {
+	var commandNames []string
+
+	// Build a list of command names to alphabetically sort them for ordered loading.
 	for _, c := range commands {
+		// Skip the boil command load, we do it manually below.
+		if c.Name() == "boil" {
+			continue
+		}
+
+		commandNames = append(commandNames, c.Name())
+	}
+
+	// Initialize the "boil" command first, and manually. It should be at the top of the help file.
+	commands["boil"].Run = commandRuns["boil"]
+	rootCmd.AddCommand(commands["boil"])
+
+	// Load commands alphabetically. This ensures proper order of help file.
+	sort.Strings(commandNames)
+
+	// Loop every command name, load it and hook it to its Run handler
+	for _, c := range commandNames {
 		// If there is a commandRun for the command (matched by name)
 		// then set the Run hook
-		r, ok := commandRuns[c.Name()]
+		r, ok := commandRuns[c]
 		if ok {
-			c.Run = r
+			commands[c].Run = r
 		} else {
-			c.Run = defaultRun // Load default run if no custom run is found
+			commands[c].Run = defaultRun // Load default run if no custom run is found
 		}
 
 		// Add the command
-		rootCmd.AddCommand(c)
+		rootCmd.AddCommand(commands[c])
 	}
 }

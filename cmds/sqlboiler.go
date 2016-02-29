@@ -72,7 +72,7 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 
 	// Connect to the driver database
 	if err = cmdData.DBDriver.Open(); err != nil {
-		errorQuit(err)
+		errorQuit(fmt.Errorf("Unable to connect to the database: %s", err))
 	}
 
 	// Initialize the cmdData.TableNames
@@ -89,6 +89,8 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
 	}
+
+	initCommands(sqlBoilerCommands, sqlBoilerCommandRuns)
 }
 
 // initDBDriver attempts to set the cmdData DBDriver based off the passed in
@@ -137,7 +139,7 @@ func initTableNames() {
 		var err error
 		cmdData.TableNames, err = cmdData.DBDriver.GetAllTableNames()
 		if err != nil {
-			errorQuit(err)
+			errorQuit(fmt.Errorf("Unable to get all table names: %s", err))
 		}
 
 		if len(cmdData.TableNames) == 0 {
@@ -153,7 +155,7 @@ func initTablesInfo() {
 	for i := 0; i < len(cmdData.TableNames); i++ {
 		tInfo, err := cmdData.DBDriver.GetTableInfo(cmdData.TableNames[i])
 		if err != nil {
-			errorQuit(err)
+			errorQuit(fmt.Errorf("Unable to get the table info: %s", err))
 		}
 
 		cmdData.TablesInfo = append(cmdData.TablesInfo, tInfo)
@@ -170,7 +172,7 @@ func initOutFile() {
 		var err error
 		cmdData.OutFile, err = os.Create(outf)
 		if err != nil {
-			errorQuit(err)
+			errorQuit(fmt.Errorf("Unable to obtain output file handle: %s", err))
 		}
 	}
 }
@@ -181,20 +183,26 @@ func initTemplates() ([]*template.Template, error) {
 		return nil, err
 	}
 
-	pattern := filepath.Join(wd, "templates", "*.tpl")
-
-	tpl, err := template.New("").Funcs(template.FuncMap{
-		"makeGoColName":          makeGoColName,
-		"makeGoVarName":          makeGoVarName,
-		"makeDBColName":          makeDBColName,
-		"makeSelectParamNames":   makeSelectParamNames,
-		"makeGoInsertParamNames": makeGoInsertParamNames,
-		"makeGoInsertParamFlags": makeGoInsertParamFlags,
-	}).ParseGlob(pattern)
+	pattern := filepath.Join(wd, "../templates", "*.tpl")
+	tpl, err := template.New("").Funcs(sqlBoilerTemplateFuncs).ParseGlob(pattern)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return tpl.Templates(), err
+}
+
+func initCommands(commands map[string]*cobra.Command, commandRuns map[string]CobraRunFunc) {
+	for _, c := range commands {
+		// If there is a commandRun for the command (matched by name)
+		// then set the Run hook
+		r, ok := commandRuns[c.Name()]
+		if ok {
+			c.Run = r
+		}
+
+		// Add the command
+		SQLBoiler.AddCommand(c)
+	}
 }

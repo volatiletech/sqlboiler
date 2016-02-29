@@ -1,15 +1,26 @@
 package cmds
 
 import (
-	"bytes"
 	"fmt"
-	"go/format"
 	"os"
-	"strings"
-	"text/template"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/spf13/cobra"
 )
+
+// CobraRunFunc declares the cobra.Command.Run function definition
+type CobraRunFunc func(cmd *cobra.Command, args []string)
+
+// CmdData holds the table schema a slice of (column name, column type) slices.
+// It also holds a slice of all of the table names sqlboiler is generating against,
+// the database driver chosen by the driver flag at runtime, and a pointer to the
+// output file, if one is specified with a flag.
+type CmdData struct {
+	TablesInfo [][]dbdrivers.DBTable
+	TableNames []string
+	DBDriver   dbdrivers.DBDriver
+	OutFile    *os.File
+}
 
 // tplData is used to pass data to the template
 type tplData struct {
@@ -23,31 +34,13 @@ func errorQuit(err error) {
 	os.Exit(-1)
 }
 
-// processTemplate takes a template and returns a slice of byte slices.
-// Each byte slice in the slice of bytes is the output of the template execution.
-func processTemplate(t *template.Template) ([][]byte, error) {
-	var outputs [][]byte
-	for i := 0; i < len(cmdData.TablesInfo); i++ {
-		data := tplData{
-			TableName: cmdData.TableNames[i],
-			TableData: cmdData.TablesInfo[i],
-		}
-
-		var buf bytes.Buffer
-		if err := t.Execute(&buf, data); err != nil {
-			return nil, err
-		}
-
-		out, err := format.Source(buf.Bytes())
-		if err != nil {
-			return nil, err
-		}
-
-		outputs = append(outputs, out)
+// defaultRun is the default function passed to the commands cobra.Command.Run.
+// It will generate the specific commands template and send it to outHandler for output.
+func defaultRun(cmd *cobra.Command, args []string) {
+	err := outHandler(generateTemplate(cmd.Name()))
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
 	}
-
-	return outputs, nil
-
 }
 
 // outHandler loops over the slice of byte slices, outputting them to either
@@ -73,97 +66,4 @@ func outHandler(data [][]byte) error {
 	}
 
 	return nil
-}
-
-// makeGoColName takes a column name in the format of "column_name" and converts
-// it into a go styled object variable name of "ColumnName".
-// makeGoColName also fully uppercases "ID" components of names, for example
-// "column_name_id" to "ColumnNameID".
-func makeGoColName(name string) string {
-	s := strings.Split(name, "_")
-
-	for i := 0; i < len(s); i++ {
-		if s[i] == "id" {
-			s[i] = "ID"
-			continue
-		}
-		s[i] = strings.Title(s[i])
-	}
-
-	return strings.Join(s, "")
-}
-
-// makeGoVarName takes a variable name in the format of "var_name" and converts
-// it into a go styled variable name of "varName".
-// makeGoVarName also fully uppercases "ID" components of names, for example
-// "var_name_id" to "varNameID".
-func makeGoVarName(name string) string {
-	s := strings.Split(name, "_")
-
-	for i := 0; i < len(s); i++ {
-		// Only uppercase if not a single word variable
-		if s[i] == "id" && i > 0 {
-			s[i] = "ID"
-			continue
-		}
-
-		// Skip first word Title for variable names
-		if i == 0 {
-			continue
-		}
-
-		s[i] = strings.Title(s[i])
-	}
-
-	return strings.Join(s, "")
-}
-
-// makeDBColName takes a table name in the format of "table_name" and a
-// column name in the format of "column_name" and returns a name used in the
-// `db:""` component of an object in the format of "table_name_column_name"
-func makeDBColName(tableName, colName string) string {
-	return tableName + "_" + colName
-}
-
-// makeGoInsertParamNames takes a []DBTable and returns a comma seperated
-// list of parameter names for the insert statement template.
-func makeGoInsertParamNames(data []dbdrivers.DBTable) string {
-	var paramNames string
-	for i := 0; i < len(data); i++ {
-		paramNames = paramNames + data[i].ColName
-		if len(data) != i+1 {
-			paramNames = paramNames + ", "
-		}
-	}
-	return paramNames
-}
-
-// makeGoInsertParamFlags takes a []DBTable and returns a comma seperated
-// list of parameter flags for the insert statement template.
-func makeGoInsertParamFlags(data []dbdrivers.DBTable) string {
-	var paramFlags string
-	for i := 0; i < len(data); i++ {
-		paramFlags = fmt.Sprintf("%s$%d", paramFlags, i+1)
-		if len(data) != i+1 {
-			paramFlags = paramFlags + ", "
-		}
-	}
-	return paramFlags
-}
-
-// makeSelectParamNames takes a []DBTable and returns a comma seperated
-// list of parameter names with for the select statement template.
-// It also uses the table name to generate the "AS" part of the statement, for
-// example: var_name AS table_name_var_name, ...
-func makeSelectParamNames(tableName string, data []dbdrivers.DBTable) string {
-	var paramNames string
-	for i := 0; i < len(data); i++ {
-		paramNames = fmt.Sprintf("%s%s AS %s", paramNames, data[i].ColName,
-			makeDBColName(tableName, data[i].ColName),
-		)
-		if len(data) != i+1 {
-			paramNames = paramNames + ", "
-		}
-	}
-	return paramNames
 }

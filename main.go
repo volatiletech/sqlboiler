@@ -6,6 +6,7 @@ So far this includes struct definitions and database statement helper functions.
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/pobri19/sqlboiler/cmds"
@@ -14,6 +15,7 @@ import (
 func main() {
 	// Execute SQLBoiler
 	if err := cmds.SQLBoiler.Execute(); err != nil {
+		fmt.Printf("Failed to execute SQLBoiler: %s", err)
 		os.Exit(-1)
 	}
 }

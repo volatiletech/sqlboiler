@@ -12,17 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CmdData holds the table schema a slice of (column name, column type) slices.
-// It also holds a slice of all of the table names sqlboiler is generating against,
-// the database driver chosen by the driver flag at runtime, and a pointer to the
-// output file, if one is specified with a flag.
-type CmdData struct {
-	TablesInfo [][]dbdrivers.DBTable
-	TableNames []string
-	DBDriver   dbdrivers.DBDriver
-	OutFile    *os.File
-}
-
 // cmdData is used globally by all commands to access the table schema data,
 // the database driver and the output file. cmdData is initialized by
 // the root SQLBoiler cobra command at run time, before other commands execute.
@@ -30,6 +19,14 @@ var cmdData *CmdData
 
 // templates holds a slice of pointers to all templates in the templates directory.
 var templates []*template.Template
+
+// SQLBoiler is the root app command
+var SQLBoiler = &cobra.Command{
+	Use:   "sqlboiler",
+	Short: "SQL Boiler generates boilerplate structs and statements",
+	Long: "SQL Boiler generates boilerplate structs and statements.\n" +
+		`Complete documentation is available at http://github.com/pobri19/sqlboiler`,
+}
 
 // init initializes the sqlboiler flags, such as driver, table, and output file.
 // It also sets the global preRun hook and postRun hook. Every command will execute
@@ -40,14 +37,9 @@ func init() {
 	SQLBoiler.PersistentFlags().StringP("out", "o", "", "The name of the output file")
 	SQLBoiler.PersistentPreRun = sqlBoilerPreRun
 	SQLBoiler.PersistentPostRun = sqlBoilerPostRun
-}
 
-// SQLBoiler is the root app command
-var SQLBoiler = &cobra.Command{
-	Use:   "sqlboiler",
-	Short: "SQL Boiler generates boilerplate structs and statements",
-	Long: "SQL Boiler generates boilerplate structs and statements.\n" +
-		`Complete documentation is available at http://github.com/pobri19/sqlboiler`,
+	// Initialize the SQLBoiler commands and hook the custom Run functions
+	initCommands(SQLBoiler, sqlBoilerCommands, sqlBoilerCommandRuns)
 }
 
 // sqlBoilerPostRun cleans up the output file and database connection once
@@ -89,8 +81,6 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
 	}
-
-	initCommands(sqlBoilerCommands, sqlBoilerCommandRuns)
 }
 
 // initDBDriver attempts to set the cmdData DBDriver based off the passed in
@@ -183,7 +173,7 @@ func initTemplates() ([]*template.Template, error) {
 		return nil, err
 	}
 
-	pattern := filepath.Join(wd, "../templates", "*.tpl")
+	pattern := filepath.Join(wd, "/cmds/templates", "*.tpl")
 	tpl, err := template.New("").Funcs(sqlBoilerTemplateFuncs).ParseGlob(pattern)
 
 	if err != nil {
@@ -193,16 +183,18 @@ func initTemplates() ([]*template.Template, error) {
 	return tpl.Templates(), err
 }
 
-func initCommands(commands map[string]*cobra.Command, commandRuns map[string]CobraRunFunc) {
+func initCommands(rootCmd *cobra.Command, commands map[string]*cobra.Command, commandRuns map[string]CobraRunFunc) {
 	for _, c := range commands {
 		// If there is a commandRun for the command (matched by name)
 		// then set the Run hook
 		r, ok := commandRuns[c.Name()]
 		if ok {
 			c.Run = r
+		} else {
+			c.Run = defaultRun // Load default run if no custom run is found
 		}
 
 		// Add the command
-		SQLBoiler.AddCommand(c)
+		rootCmd.AddCommand(c)
 	}
 }

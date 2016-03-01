@@ -47,9 +47,7 @@ func defaultRun(cmd *cobra.Command, args []string) {
 
 		// outHandler takes a slice of byte slices, so append the Template
 		// execution output to a [][]byte before sending it to outHandler.
-		out := [][]byte{
-			0: generateTemplate(cmd.Name(), &data),
-		}
+		out := [][]byte{generateTemplate(cmd.Name(), &data)}
 
 		err := outHandler(out, &data)
 		if err != nil {

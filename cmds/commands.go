@@ -21,6 +21,7 @@ var sqlBoilerDefaultImports = imports{
 		"fmt",
 	},
 	thirdparty: []string{
+		"gopkg.in/guregu/null.v3",
 		"github.com/jmoiron/sqlx",
 	},
 }

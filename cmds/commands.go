@@ -6,6 +6,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// imports defines the optional standard imports and
+// thirdparty imports (from github for example)
+type imports struct {
+	standard   []string
+	thirdparty []string
+}
+
+// sqlBoilerDefaultImports defines the list of default template imports.
+// Imports that are defined
+var sqlBoilerDefaultImports = imports{
+	standard: []string{
+		"errors",
+		"fmt",
+	},
+	thirdparty: []string{
+		"github.com/jmoiron/sqlx",
+	},
+}
+
+var sqlBoilerCustomImports map[string]imports
+
 // sqlBoilerCommands points each command to its cobra.Command variable.
 //
 // If you would like to add your own custom command, add it to this

@@ -1,11 +1,11 @@
 {{- $tableName := .TableName -}}
-// {{makeGoColName $tableName}}Find retrieves a single record by ID.
-func {{makeGoColName $tableName}}Find(db *sqlx.DB, id int) (*{{makeGoColName $tableName}}, error) {
+// {{makeGoName $tableName}}Find retrieves a single record by ID.
+func {{makeGoName $tableName}}Find(db boil.DB, id int) (*{{makeGoName $tableName}}, error) {
   if id == 0 {
     return nil, errors.New("model: no id provided for {{$tableName}} select")
   }
   {{$varName := makeGoVarName $tableName}}
-  var {{$varName}} *{{makeGoColName $tableName}}
+  var {{$varName}} *{{makeGoName $tableName}}
   err := db.Select(&{{$varName}}, `SELECT {{makeSelectParamNames $tableName .TableData}} WHERE id=$1`, id)
 
   if err != nil {

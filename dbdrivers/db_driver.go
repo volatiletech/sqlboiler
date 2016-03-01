@@ -11,13 +11,13 @@ type DBDriver interface {
 	// GetAllTableNames connects to the database and retrieves all "public" table names
 	GetAllTableNames() ([]string, error)
 
-	// GetTableInfo builds an object of []DBTable containing the table information
-	GetTableInfo(tableName string) ([]DBTable, error)
+	// GetTableInfo retrieves column information about the table.
+	GetTableInfo(tableName string) ([]DBColumn, error)
 
-	// ParseTableInfo builds a DBTable out of a column name and column type.
+	// ParseTableInfo builds a DBColumn out of a column name and column type.
 	// Its main responsibility is to convert database types to Go types, for example
 	// "varchar" to "string".
-	ParseTableInfo(colName, colType, isNullable string) DBTable
+	ParseTableInfo(name, colType string, isNullable bool) DBColumn
 
 	// Open the database connection
 	Open() error
@@ -26,10 +26,10 @@ type DBDriver interface {
 	Close()
 }
 
-// DBTable holds a column name, for example "column_name", and a column type,
-// for example "int64". Column types are Go types, converted by ParseTableInfo.
-type DBTable struct {
-	ColName    string
-	ColType    string
-	IsNullable string
+// DBColumn holds information about a database column name.
+// Column types are Go types, converted by ParseTableInfo.
+type DBColumn struct {
+	Name       string
+	Type       string
+	IsNullable bool
 }

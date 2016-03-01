@@ -1,11 +1,11 @@
 {{- $tableName := .TableName -}}
-// {{makeGoColName $tableName}}FindBy retrieves a single record with the specified column values.
-func {{makeGoColName $tableName}}FindBy(db *sqlx.DB, columns map[string]interface{}) (*{{makeGoColName $tableName}}, error) {
+// {{makeGoName $tableName}}FindBy retrieves a single record with the specified column values.
+func {{makeGoName $tableName}}FindBy(db boil.DB, columns map[string]interface{}) (*{{makeGoName $tableName}}, error) {
   if id == 0 {
     return nil, errors.New("model: no id provided for {{$tableName}} select")
   }
   {{$varName := makeGoVarName $tableName}}
-  var {{$varName}} *{{makeGoColName $tableName}}
+  var {{$varName}} *{{makeGoName $tableName}}
   err := db.Select(&{{$varName}}, fmt.Sprintf(`SELECT {{makeSelectParamNames $tableName .TableData}} WHERE %s=$1`, column), value)
 
   if err != nil {

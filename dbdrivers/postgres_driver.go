@@ -73,10 +73,10 @@ func (d *PostgresDriver) GetAllTableNames() ([]string, error) {
 
 // GetTableInfo takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
-// and column types and returns those as a []DBTable after ParseTableInfo()
+// and column types and returns those as a []DBColumn after ParseTableInfo()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBTable, error) {
-	var tableInfo []DBTable
+func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBColumn, error) {
+	var tableInfo []DBColumn
 
 	rows, err := d.dbConn.Query(`select column_name, data_type, is_nullable from
     information_schema.columns where table_name=$1`, tableName)
@@ -91,7 +91,7 @@ func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBTable, error) {
 		if err := rows.Scan(&colName, &colType, &isNullable); err != nil {
 			return nil, err
 		}
-		tableInfo = append(tableInfo, d.ParseTableInfo(colName, colType, isNullable))
+		tableInfo = append(tableInfo, d.ParseTableInfo(colName, colType, "YES" == isNullable))
 	}
 
 	return tableInfo, nil
@@ -99,42 +99,42 @@ func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBTable, error) {
 
 // ParseTableInfo converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
-// as a DBTable object.
-func (d *PostgresDriver) ParseTableInfo(colName, colType, isNullable string) DBTable {
-	t := DBTable{}
+// as a DBColumn object.
+func (d *PostgresDriver) ParseTableInfo(colName, colType string, isNullable bool) DBColumn {
+	var t DBColumn
 
-	t.ColName = colName
-	if isNullable == "YES" {
+	t.Name = colName
+	if isNullable {
 		switch colType {
 		case "bigint", "bigserial", "integer", "smallint", "smallserial", "serial":
-			t.ColType = "null.Int"
+			t.Type = "null.Int"
 		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
-			t.ColType = "null.String"
+			t.Type = "null.String"
 		case "boolean":
-			t.ColType = "null.Bool"
+			t.Type = "null.Bool"
 		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":
-			t.ColType = "null.Time"
+			t.Type = "null.Time"
 		case "double precision", "money", "numeric", "real":
-			t.ColType = "null.Float"
+			t.Type = "null.Float"
 		default:
-			t.ColType = "null.String"
+			t.Type = "null.String"
 		}
 	} else {
 		switch colType {
 		case "bigint", "bigserial", "integer", "smallint", "smallserial", "serial":
-			t.ColType = "int64"
+			t.Type = "int64"
 		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
-			t.ColType = "string"
+			t.Type = "string"
 		case "bytea":
-			t.ColType = "[]byte"
+			t.Type = "[]byte"
 		case "boolean":
-			t.ColType = "bool"
+			t.Type = "bool"
 		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":
-			t.ColType = "time.Time"
+			t.Type = "time.Time"
 		case "double precision", "money", "numeric", "real":
-			t.ColType = "float64"
+			t.Type = "float64"
 		default:
-			t.ColType = "string"
+			t.Type = "string"
 		}
 	}
 

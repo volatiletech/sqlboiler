@@ -1,8 +1,8 @@
 {{- $tableName := .TableName -}}
-// {{makeGoColName $tableName}}All retrieves all records.
-func {{makeGoColName $tableName}}All(db *sqlx.DB) ([]*{{makeGoColName $tableName}}, error) {
+// {{makeGoName $tableName}}All retrieves all records.
+func {{makeGoName $tableName}}All(db boil.DB) ([]*{{makeGoName $tableName}}, error) {
   {{$varName := makeGoVarName $tableName -}}
-  var {{$varName}} []*{{makeGoColName $tableName}}
+  var {{$varName}} []*{{makeGoName $tableName}}
   err := db.Select(&{{$varName}}, `SELECT {{makeSelectParamNames $tableName .TableData}}`)
 
   if err != nil {

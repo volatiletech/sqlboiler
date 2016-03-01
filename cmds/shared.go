@@ -16,7 +16,7 @@ type CobraRunFunc func(cmd *cobra.Command, args []string)
 // the database driver chosen by the driver flag at runtime, and a pointer to the
 // output file, if one is specified with a flag.
 type CmdData struct {
-	TablesInfo [][]dbdrivers.DBTable
+	TablesInfo [][]dbdrivers.DBColumn
 	TableNames []string
 	PkgName    string
 	OutFolder  string
@@ -26,7 +26,7 @@ type CmdData struct {
 // tplData is used to pass data to the template
 type tplData struct {
 	TableName string
-	TableData []dbdrivers.DBTable
+	TableData []dbdrivers.DBColumn
 }
 
 // errorQuit displays an error message and then exits the application.

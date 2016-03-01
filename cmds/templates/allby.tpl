@@ -1,8 +1,8 @@
 {{- $tableName := .TableName -}}
-// {{makeGoColName $tableName}}AllBy retrieves all records with the specified column values.
-func {{makeGoColName $tableName}}AllBy(db *sqlx.DB, columns map[string]interface{}) ([]*{{makeGoColName $tableName}}, error) {
+// {{makeGoName $tableName}}AllBy retrieves all records with the specified column values.
+func {{makeGoName $tableName}}AllBy(db boil.DB, columns map[string]interface{}) ([]*{{makeGoName $tableName}}, error) {
   {{$varName := makeGoVarName $tableName -}}
-  var {{$varName}} []*{{makeGoColName $tableName}}
+  var {{$varName}} []*{{makeGoName $tableName}}
   err := db.Select(&{{$varName}}, `SELECT {{makeSelectParamNames $tableName .TableData}}`)
 
   if err != nil {

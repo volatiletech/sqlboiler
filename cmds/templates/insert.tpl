@@ -1,6 +1,6 @@
 {{- $tableName := .TableName -}}
-// {{makeGoColName $tableName}}Insert inserts a single record.
-func {{makeGoColName $tableName}}Insert(db *sqlx.DB, o *{{makeGoColName $tableName}}) (int, error) {
+// {{makeGoName $tableName}}Insert inserts a single record.
+func {{makeGoName $tableName}}Insert(db boil.DB, o *{{makeGoName $tableName}}) (int, error) {
   if o == nil {
     return 0, errors.New("model: no {{$tableName}} provided for insertion")
   }

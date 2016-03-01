@@ -143,7 +143,7 @@ func initTableNames() {
 }
 
 // initTablesInfo builds a description of each table (column name, column type)
-// and assigns it to cmdData.TablesInfo, the slice of dbdrivers.DBTable slices.
+// and assigns it to cmdData.TablesInfo, the slice of dbdrivers.DBColumn slices.
 func initTablesInfo() {
 	// loop over table Names and build TablesInfo
 	for i := 0; i < len(cmdData.TableNames); i++ {

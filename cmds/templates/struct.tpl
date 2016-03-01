@@ -1,7 +1,7 @@
 {{- $tableName := .TableName -}}
-// {{makeGoColName $tableName}} is an object representing the database table.
-type {{makeGoColName $tableName}} struct {
+// {{makeGoName $tableName}} is an object representing the database table.
+type {{makeGoName $tableName}} struct {
   {{range $key, $value := .TableData -}}
-  {{makeGoColName $value.ColName}} {{$value.ColType}} `db:"{{makeDBColName $tableName $value.ColName}}" json:"{{$value.ColName}}"`
+  {{makeGoName $value.Name}} {{$value.Type}} `db:"{{makeDBName $tableName $value.Name}}" json:"{{$value.Name}}"`
   {{end -}}
 }

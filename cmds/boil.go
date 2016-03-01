@@ -44,9 +44,19 @@ func boilRun(cmd *cobra.Command, args []string) {
 	// Prepend "struct" command to templateNames slice so it sits at top of sort
 	templateNames = append([]string{"struct"}, templateNames...)
 
-	// Loop through and generate every command template (excluding skipTemplates)
-	for _, n := range templateNames {
-		err := outHandler(generateTemplate(n))
+	for i := 0; i < len(cmdData.TablesInfo); i++ {
+		data := tplData{
+			TableName: cmdData.TableNames[i],
+			TableData: cmdData.TablesInfo[i],
+		}
+
+		var out [][]byte
+		// Loop through and generate every command template (excluding skipTemplates)
+		for _, n := range templateNames {
+			out = append(out, generateTemplate(n, &data))
+		}
+
+		err := outHandler(out, &data)
 		if err != nil {
 			errorQuit(err)
 		}

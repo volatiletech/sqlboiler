@@ -11,53 +11,49 @@ import (
 )
 
 // generateTemplate generates the template associated to the passed in command name.
-func generateTemplate(commandName string) [][]byte {
-	var template *template.Template
-
-	// Find the template that matches the passed in command name
-	for _, t := range templates {
-		if t.Name() == commandName+".tpl" {
-			template = t
-			break
-		}
-	}
+func generateTemplate(commandName string, data *tplData) []byte {
+	template := getTemplate(commandName)
 
 	if template == nil {
 		errorQuit(fmt.Errorf("Unable to find the template: %s", commandName+".tpl"))
 	}
 
-	outputs, err := processTemplate(template)
+	output, err := processTemplate(template, data)
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to process the template: %s", err))
 	}
 
-	return outputs
+	return output
 }
 
-// processTemplate takes a template and returns a slice of byte slices.
-// Each byte slice in the slice of bytes is the output of the template execution.
-func processTemplate(t *template.Template) ([][]byte, error) {
-	var outputs [][]byte
-	for i := 0; i < len(cmdData.TablesInfo); i++ {
-		data := tplData{
-			TableName: cmdData.TableNames[i],
-			TableData: cmdData.TablesInfo[i],
-		}
+// getTemplate returns a pointer to the template matching the passed in name
+func getTemplate(name string) *template.Template {
+	var tpl *template.Template
 
-		var buf bytes.Buffer
-		if err := t.Execute(&buf, data); err != nil {
-			return nil, err
+	// Find the template that matches the passed in template name
+	for _, t := range templates {
+		if t.Name() == name+".tpl" {
+			tpl = t
+			break
 		}
-
-		out, err := format.Source(buf.Bytes())
-		if err != nil {
-			return nil, err
-		}
-
-		outputs = append(outputs, out)
 	}
 
-	return outputs, nil
+	return tpl
+}
+
+// processTemplate takes a template and returns the output of the template execution.
+func processTemplate(t *template.Template, data *tplData) ([]byte, error) {
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		return nil, err
+	}
+
+	output, err := format.Source(buf.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
 
 // it into a go styled object variable name of "ColumnName".

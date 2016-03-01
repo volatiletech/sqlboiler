@@ -35,7 +35,8 @@ var SQLBoiler = &cobra.Command{
 func init() {
 	SQLBoiler.PersistentFlags().StringP("driver", "d", "", "The name of the driver in your config.toml (mandatory)")
 	SQLBoiler.PersistentFlags().StringP("table", "t", "", "A comma seperated list of table names")
-	SQLBoiler.PersistentFlags().StringP("out", "o", "", "The name of the output file")
+	SQLBoiler.PersistentFlags().StringP("folder", "f", "", "The name of the output folder. If not specified will output to stdout")
+	SQLBoiler.PersistentFlags().StringP("pkgname", "p", "model", "The name you wish to assign to your generated package")
 	SQLBoiler.PersistentPreRun = sqlBoilerPreRun
 	SQLBoiler.PersistentPostRun = sqlBoilerPostRun
 
@@ -46,7 +47,6 @@ func init() {
 // sqlBoilerPostRun cleans up the output file and database connection once
 // all commands are finished running.
 func sqlBoilerPostRun(cmd *cobra.Command, args []string) {
-	cmdData.OutFile.Close()
 	cmdData.DBDriver.Close()
 }
 
@@ -74,8 +74,11 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	// Initialize the cmdData.TablesInfo
 	initTablesInfo()
 
+	// Initialize the package name
+	initPkgName()
+
 	// Initialize the cmdData.OutFile
-	initOutFile()
+	initOutFolder()
 
 	// Initialize the templates
 	templates, err = initTemplates()
@@ -153,18 +156,23 @@ func initTablesInfo() {
 	}
 }
 
+// Initialize the package name provided by the flag
+func initPkgName() {
+	cmdData.PkgName = SQLBoiler.PersistentFlags().Lookup("pkgname").Value.String()
+}
+
 // initOutFile opens a file handle to the file name specified by the out flag.
 // If no file name is provided, out will remain nil and future output will be
 // piped to Stdout instead of to a file.
-func initOutFile() {
+func initOutFolder() {
 	// open the out file filehandle
-	outf := SQLBoiler.PersistentFlags().Lookup("out").Value.String()
-	if outf != "" {
-		var err error
-		cmdData.OutFile, err = os.Create(outf)
-		if err != nil {
-			errorQuit(fmt.Errorf("Unable to obtain output file handle: %s", err))
-		}
+	cmdData.OutFolder = SQLBoiler.PersistentFlags().Lookup("folder").Value.String()
+	if cmdData.OutFolder == "" {
+		return
+	}
+
+	if err := os.MkdirAll(cmdData.OutFolder, os.ModePerm); err != nil {
+		errorQuit(fmt.Errorf("Unable to make output folder: %s", err))
 	}
 }
 

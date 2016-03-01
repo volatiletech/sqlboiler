@@ -57,33 +57,33 @@ func processTemplate(t *template.Template, data *tplData) ([]byte, error) {
 }
 
 // it into a go styled object variable name of "ColumnName".
-// makeGoName also fully uppercases "ID" components of names, for example
+// titleCase also fully uppercases "ID" components of names, for example
 // "column_name_id" to "ColumnNameID".
-func makeGoName(name string) string {
-	s := strings.Split(name, "_")
+func titleCase(name string) string {
+	splits := strings.Split(name, "_")
 
-	for i := 0; i < len(s); i++ {
-		if s[i] == "id" {
-			s[i] = "ID"
+	for i, split := range splits {
+		if split == "id" {
+			splits[i] = "ID"
 			continue
 		}
-		s[i] = strings.Title(s[i])
+
+		splits[i] = strings.Title(split)
 	}
 
-	return strings.Join(s, "")
+	return strings.Join(splits, "")
 }
 
-// makeGoVarName takes a variable name in the format of "var_name" and converts
+// camelCase takes a variable name in the format of "var_name" and converts
 // it into a go styled variable name of "varName".
-// makeGoVarName also fully uppercases "ID" components of names, for example
+// camelCase also fully uppercases "ID" components of names, for example
 // "var_name_id" to "varNameID".
-func makeGoVarName(name string) string {
-	s := strings.Split(name, "_")
+func camelCase(name string) string {
+	splits := strings.Split(name, "_")
 
-	for i := 0; i < len(s); i++ {
-
-		if s[i] == "id" && i > 0 {
-			s[i] = "ID"
+	for i, split := range splits {
+		if split == "id" && i > 0 {
+			split = "ID"
 			continue
 		}
 
@@ -91,10 +91,10 @@ func makeGoVarName(name string) string {
 			continue
 		}
 
-		s[i] = strings.Title(s[i])
+		splits[i] = strings.Title(split)
 	}
 
-	return strings.Join(s, "")
+	return strings.Join(splits, "")
 }
 
 // makeDBName takes a table name in the format of "table_name" and a
@@ -104,45 +104,36 @@ func makeDBName(tableName, colName string) string {
 	return tableName + "_" + colName
 }
 
-// makeGoInsertParamNames takes a []DBColumn and returns a comma seperated
+// insertParamNames takes a []DBColumn and returns a comma seperated
 // list of parameter names for the insert statement template.
-func makeGoInsertParamNames(data []dbdrivers.DBColumn) string {
-	var paramNames string
-	for i := 0; i < len(data); i++ {
-		paramNames = paramNames + data[i].Name
-		if len(data) != i+1 {
-			paramNames = paramNames + ", "
-		}
+func insertParamNames(columns []dbdrivers.DBColumn) string {
+	names := make([]string, 0, len(columns))
+	for _, c := range columns {
+		names = append(names, c.Name)
 	}
-	return paramNames
+	return strings.Join(names, ", ")
 }
 
-// makeGoInsertParamFlags takes a []DBColumn and returns a comma seperated
+// insertParamFlags takes a []DBColumn and returns a comma seperated
 // list of parameter flags for the insert statement template.
-func makeGoInsertParamFlags(data []dbdrivers.DBColumn) string {
-	var paramFlags string
-	for i := 0; i < len(data); i++ {
-		paramFlags = fmt.Sprintf("%s$%d", paramFlags, i+1)
-		if len(data) != i+1 {
-			paramFlags = paramFlags + ", "
-		}
+func insertParamFlags(columns []dbdrivers.DBColumn) string {
+	params := make([]string, 0, len(columns))
+	for i := range columns {
+		params = append(params, fmt.Sprintf("$%d", i+1))
 	}
-	return paramFlags
+	return strings.Join(params, ", ")
 }
 
-// makeSelectParamNames takes a []DBColumn and returns a comma seperated
+// selectParamNames takes a []DBColumn and returns a comma seperated
 // list of parameter names with for the select statement template.
 // It also uses the table name to generate the "AS" part of the statement, for
 // example: var_name AS table_name_var_name, ...
-func makeSelectParamNames(tableName string, data []dbdrivers.DBColumn) string {
-	var paramNames string
-	for i := 0; i < len(data); i++ {
-		paramNames = fmt.Sprintf("%s%s AS %s", paramNames, data[i].Name,
-			makeDBName(tableName, data[i].Name),
-		)
-		if len(data) != i+1 {
-			paramNames = paramNames + ", "
-		}
+func selectParamNames(tableName string, columns []string) string {
+	selects := make([]string, 0, len(columns))
+	for _, c := range columns {
+		statement := fmt.Sprintf("%s AS %s", c, makeDBName(tableName, c))
+		selects = append(selects, statement)
 	}
-	return paramNames
+
+	return strings.Join(selects, ", ")
 }

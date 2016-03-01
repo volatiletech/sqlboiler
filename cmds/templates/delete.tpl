@@ -1,6 +1,6 @@
 {{- $tableName := .TableName -}}
-// {{makeGoName $tableName}}Delete deletes a single record.
-func {{makeGoName $tableName}}Delete(db boil.DB, id int) error {
+// {{titleCase $tableName}}Delete deletes a single record.
+func {{titleCase $tableName}}Delete(db boil.DB, id int) error {
   if id == nil {
     return nil, errors.New("model: no id provided for {{$tableName}} delete")
   }

@@ -1,9 +1,9 @@
 {{- $tableName := .TableName -}}
-// {{makeGoName $tableName}}All retrieves all records.
-func {{makeGoName $tableName}}All(db boil.DB) ([]*{{makeGoName $tableName}}, error) {
-  {{$varName := makeGoVarName $tableName -}}
-  var {{$varName}} []*{{makeGoName $tableName}}
-  err := db.Select(&{{$varName}}, `SELECT {{makeSelectParamNames $tableName .TableData}}`)
+// {{titleCase $tableName}}All retrieves all records.
+func {{titleCase $tableName}}All(db boil.DB) ([]*{{titleCase $tableName}}, error) {
+  {{$varName := camelCase $tableName -}}
+  var {{$varName}} []*{{titleCase $tableName}}
+  err := db.Select(&{{$varName}}, `SELECT {{selectParamNames $tableName .TableData}}`)
 
   if err != nil {
     return nil, fmt.Errorf("models: unable to select from {{$tableName}}: %s", err)

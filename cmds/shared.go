@@ -1,9 +1,11 @@
 package cmds
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"sort"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
@@ -85,4 +87,77 @@ func outHandler(outFolder string, output [][]byte, data *tplData) error {
 	}
 
 	return nil
+}
+
+func combineImports(a, b imports) imports {
+	var c imports
+
+	c.standard = removeDuplicates(combineStringSlices(a.standard, b.standard))
+	c.thirdparty = removeDuplicates(combineStringSlices(a.thirdparty, b.thirdparty))
+	sort.Strings(c.standard)
+	sort.Strings(c.thirdparty)
+
+	return c
+}
+
+func combineStringSlices(a, b []string) []string {
+	c := make([]string, len(a)+len(b))
+	if len(a) > 0 {
+		copy(c, a)
+	}
+	if len(b) > 0 {
+		copy(c[len(a):], b)
+	}
+
+	return c
+}
+
+func removeDuplicates(dedup []string) []string {
+	if len(dedup) <= 1 {
+		return dedup
+	}
+
+	for i := 0; i < len(dedup)-1; i++ {
+		for j := i + 1; j < len(dedup); j++ {
+			if dedup[i] != dedup[j] {
+				continue
+			}
+
+			if j != len(dedup)-1 {
+				dedup[j] = dedup[len(dedup)-1]
+				j--
+			}
+			dedup = dedup[:len(dedup)-1]
+		}
+	}
+
+	return dedup
+}
+
+func buildImportString(imps imports) []byte {
+	stdlen, thirdlen := len(imps.standard), len(imps.thirdparty)
+	if stdlen+thirdlen == 1 {
+		var imp string
+		if stdlen == 1 {
+			imp = imps.standard[0]
+		} else {
+			imp = imps.thirdparty[0]
+		}
+		return []byte(fmt.Sprintf(`import "%s"`, imp))
+	}
+
+	buf := &bytes.Buffer{}
+	buf.WriteString("import (")
+	for _, std := range imps.standard {
+		fmt.Fprintf(buf, "\t%s", std)
+	}
+	if stdlen != 0 && thirdlen != 0 {
+
+	}
+	for _, third := range imps.thirdparty {
+		fmt.Fprintf(buf, "\t%s", third)
+	}
+	buf.WriteString(")")
+
+	return buf.Bytes()
 }

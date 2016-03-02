@@ -13,12 +13,37 @@ var boilCmd = &cobra.Command{
 
 // boilRun executes every sqlboiler command, starting with structs.
 func boilRun(cmd *cobra.Command, args []string) {
+	commandNames := buildCommandList()
+
+	// Prepend "struct" command to templateNames slice so it sits at top of sort
+	commandNames = append([]string{"struct"}, commandNames...)
+
+	for i := 0; i < len(cmdData.Columns); i++ {
+		data := tplData{
+			Table:   cmdData.Tables[i],
+			Columns: cmdData.Columns[i],
+		}
+
+		var out [][]byte
+		// Loop through and generate every command template (excluding skipTemplates)
+		for _, command := range commandNames {
+			out = append(out, generateTemplate(command, &data))
+		}
+
+		err := outHandler(cmdData.OutFolder, out, &data)
+		if err != nil {
+			errorQuit(err)
+		}
+	}
+}
+
+func buildCommandList() []string {
 	// Exclude these commands from the output
 	skipTemplates := []string{
 		"boil",
 	}
 
-	var templateNames []string
+	var commandNames []string
 
 	// Build a list of template names
 	for _, c := range sqlBoilerCommands {
@@ -34,31 +59,11 @@ func boilRun(cmd *cobra.Command, args []string) {
 		}
 
 		if !skip {
-			templateNames = append(templateNames, c.Name())
+			commandNames = append(commandNames, c.Name())
 		}
 	}
 
 	// Sort all names alphabetically
-	sort.Strings(templateNames)
-
-	// Prepend "struct" command to templateNames slice so it sits at top of sort
-	templateNames = append([]string{"struct"}, templateNames...)
-
-	for i := 0; i < len(cmdData.Columns); i++ {
-		data := tplData{
-			Table:   cmdData.Tables[i],
-			Columns: cmdData.Columns[i],
-		}
-
-		var out [][]byte
-		// Loop through and generate every command template (excluding skipTemplates)
-		for _, n := range templateNames {
-			out = append(out, generateTemplate(n, &data))
-		}
-
-		err := outHandler(out, &data)
-		if err != nil {
-			errorQuit(err)
-		}
-	}
+	sort.Strings(commandNames)
+	return commandNames
 }

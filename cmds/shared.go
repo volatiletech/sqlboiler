@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
@@ -49,44 +50,37 @@ func defaultRun(cmd *cobra.Command, args []string) {
 		// execution output to a [][]byte before sending it to outHandler.
 		out := [][]byte{generateTemplate(cmd.Name(), &data)}
 
-		err := outHandler(out, &data)
+		err := outHandler(cmdData.OutFolder, out, &data)
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
 		}
 	}
 }
 
+var testHarnessStdout io.Writer = os.Stdout
+var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
+	file, err := os.Create(filename)
+	return file, err
+}
+
 // outHandler loops over the slice of byte slices, outputting them to either
 // the OutFile if it is specified with a flag, or to Stdout if no flag is specified.
-func outHandler(output [][]byte, data *tplData) error {
-	nl := []byte{'\n'}
+func outHandler(outFolder string, output [][]byte, data *tplData) error {
+	out := testHarnessStdout
 
-	if cmdData.OutFolder == "" {
-		for _, v := range output {
-			if _, err := os.Stdout.Write(v); err != nil {
-				return err
-			}
-
-			if _, err := os.Stdout.Write(nl); err != nil {
-				return err
-			}
-		}
-	} else { // If not using stdout, attempt to create the model file.
-		path := cmdData.OutFolder + "/" + data.Table + ".go"
-		out, err := os.Create(path)
+	if len(outFolder) != 0 {
+		path := outFolder + "/" + data.Table + ".go"
+		outFile, err := testHarnessFileOpen(path)
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to create output file %s: %s", path, err))
 		}
+		defer outFile.Close()
+		out = outFile
+	}
 
-		// Combine the slice of slice into a single byte slice.
-		var newOutput []byte
-		for _, v := range output {
-			newOutput = append(newOutput, v...)
-			newOutput = append(newOutput, nl...)
-		}
-
-		if _, err := out.Write(newOutput); err != nil {
-			return err
+	for _, templateOutput := range output {
+		if _, err := fmt.Fprintf(out, "%s\n", templateOutput); err != nil {
+			errorQuit(fmt.Errorf("Unable to write template output to file handle: %v", err))
 		}
 	}
 

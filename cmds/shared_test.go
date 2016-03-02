@@ -71,7 +71,7 @@ func TestOutHandlerFiles(t *testing.T) {
 
 	a1 := imports{
 		standard: []string{
-			"fmt",
+			`"fmt"`,
 		},
 	}
 	file = &bytes.Buffer{}
@@ -85,7 +85,7 @@ func TestOutHandlerFiles(t *testing.T) {
 
 	a2 := imports{
 		thirdparty: []string{
-			"github.com/spf13/cobra",
+			`"github.com/spf13/cobra"`,
 		},
 	}
 	file = &bytes.Buffer{}
@@ -98,44 +98,68 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 
 	a3 := imports{
-		standard: []string{"fmt", "errors"},
+		standard: []string{
+			`"fmt"`,
+			`"errors"`,
+		},
 		thirdparty: []string{
-			"_github.com/lib/pq",
-			"_github.com/gorilla/n",
-			"github.com/gorilla/mux",
-			"github.com/gorilla/websocket",
+			`_ "github.com/lib/pq"`,
+			`_ "github.com/gorilla/n"`,
+			`"github.com/gorilla/mux"`,
+			`"github.com/gorilla/websocket"`,
 		},
 	}
 	file = &bytes.Buffer{}
 
+	sort.Sort(ImportSorter(a3.standard))
+	sort.Sort(ImportSorter(a3.thirdparty))
+
 	if err := outHandler("folder", templateOutputs, &data, &a3); err != nil {
 		t.Error(err)
 	}
-	if out := file.String(); out != "import \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
-		t.Errorf("Wrong output: %s", out)
+
+	expectedOut := `import (
+	"errors"
+	"fmt"
+
+	"github.com/gorilla/mux"
+	_ "github.com/gorilla/n"
+	"github.com/gorilla/websocket"
+	_ "github.com/lib/pq"
+)
+
+hello world
+patrick's dreams
+`
+
+	if out := file.String(); out != expectedOut {
+		t.Errorf("Wrong output (len %d, len %d): \n\n%q\n\n%q", len(out), len(expectedOut), out, expectedOut)
 	}
 }
 
 func TestSortImports(t *testing.T) {
-	a1 := []string{"fmt", "errors"}
+	a1 := []string{
+		`"fmt"`,
+		`"errors"`,
+	}
 	a2 := []string{
-		"_github.com/lib/pq",
-		"_github.com/gorilla/n",
-		"github.com/gorilla/mux",
-		"github.com/gorilla/websocket",
+		`_ "github.com/lib/pq"`,
+		`_ "github.com/gorilla/n"`,
+		`"github.com/gorilla/mux"`,
+		`"github.com/gorilla/websocket"`,
 	}
 
 	a1Expected := []string{"errors", "fmt"}
 	a2Expected := []string{
-		"github.com/gorilla/mux",
-		"_github.com/gorilla/n",
-		"github.com/gorilla/websocket",
-		"_github.com/lib/pq",
+		`"github.com/gorilla/mux"`,
+		`_ "github.com/gorilla/n"`,
+		`"github.com/gorilla/websocket"`,
+		`_ "github.com/lib/pq"`,
 	}
 
-	result := sortImports(a1)
-	if !reflect.DeepEqual(result, a1Expected) {
-		fmt.Errorf("Expected res to match a1expected, got: %v", result)
+	sort.Sort(ImportSorter(a1))
+	if !reflect.DeepEqual(a1, a1Expected) {
+		fmt.Errorf("Expected a1 to match a1Expected, got: %v", a1)
 	}
 
 	for i, v := range a1 {
@@ -144,20 +168,15 @@ func TestSortImports(t *testing.T) {
 		}
 	}
 
-	result = sortImports(a2)
-	if !reflect.DeepEqual(result, a2Expected) {
-		fmt.Errorf("Expected res to match a2expected, got: %v", result)
+	sort.Sort(ImportSorter(a2))
+	if !reflect.DeepEqual(a2, a2Expected) {
+		fmt.Errorf("Expected a2 to match a2expected, got: %v", a2)
 	}
 
 	for i, v := range a2 {
 		if v != a2Expected[i] {
 			fmt.Errorf("Expected a2[%d] to match a2Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
 		}
-	}
-
-	sort.Strings(result)
-	if reflect.DeepEqual(result, a2Expected) {
-		fmt.Errorf("Expected res not to match a2expected when using sort.Strings.")
 	}
 }
 

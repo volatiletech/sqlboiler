@@ -17,12 +17,12 @@ type imports struct {
 // Imports that are defined
 var sqlBoilerDefaultImports = imports{
 	standard: []string{
-		"errors",
-		"fmt",
+		`"errors"`,
+		`"fmt"`,
 	},
 	thirdparty: []string{
-		"github.com/pobri19/sqlboiler/boil",
-		"gopkg.in/guregu/null.v3",
+		`"github.com/pobri19/sqlboiler/boil"`,
+		`"gopkg.in/guregu/null.v3"`,
 	},
 }
 

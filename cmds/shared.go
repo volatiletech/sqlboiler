@@ -1,12 +1,9 @@
 package cmds
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
-	"sort"
-	"strings"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
@@ -98,49 +95,6 @@ func outHandler(outFolder string, output [][]byte, data *tplData, imps *imports)
 	return nil
 }
 
-func combineImports(a, b imports) imports {
-	var c imports
-
-	c.standard = removeDuplicates(combineStringSlices(a.standard, b.standard))
-	c.thirdparty = removeDuplicates(combineStringSlices(a.thirdparty, b.thirdparty))
-
-	c.standard = sortImports(c.standard)
-	c.thirdparty = sortImports(c.thirdparty)
-
-	return c
-}
-
-// sortImports sorts the import strings alphabetically.
-// If the import begins with an underscore, it temporarily
-// strips it so that it does not impact the sort.
-func sortImports(data []string) []string {
-	sorted := make([]string, len(data))
-	copy(sorted, data)
-
-	var underscoreImports []string
-	for i, v := range sorted {
-		if string(v[0]) == "_" && len(v) > 1 {
-			s := strings.Split(v, "_")
-			underscoreImports = append(underscoreImports, s[1])
-			sorted[i] = s[1]
-		}
-	}
-
-	sort.Strings(sorted)
-
-AddUnderscores:
-	for i, v := range sorted {
-		for _, underImp := range underscoreImports {
-			if v == underImp {
-				sorted[i] = "_" + sorted[i]
-				continue AddUnderscores
-			}
-		}
-	}
-
-	return sorted
-}
-
 func combineStringSlices(a, b []string) []string {
 	c := make([]string, len(a)+len(b))
 	if len(a) > 0 {
@@ -173,36 +127,4 @@ func removeDuplicates(dedup []string) []string {
 	}
 
 	return dedup
-}
-
-func buildImportString(imps *imports) []byte {
-	stdlen, thirdlen := len(imps.standard), len(imps.thirdparty)
-	if stdlen+thirdlen < 1 {
-		return []byte{}
-	}
-
-	if stdlen+thirdlen == 1 {
-		var imp string
-		if stdlen == 1 {
-			imp = imps.standard[0]
-		} else {
-			imp = imps.thirdparty[0]
-		}
-		return []byte(fmt.Sprintf(`import "%s"`, imp))
-	}
-
-	buf := &bytes.Buffer{}
-	buf.WriteString("import (")
-	for _, std := range imps.standard {
-		fmt.Fprintf(buf, "\n\t\"%s\"", std)
-	}
-	if stdlen != 0 && thirdlen != 0 {
-		buf.WriteString("\n")
-	}
-	for _, third := range imps.thirdparty {
-		fmt.Fprintf(buf, "\n\t\"%s\"", third)
-	}
-	buf.WriteString("\n)\n")
-
-	return buf.Bytes()
 }

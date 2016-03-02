@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
@@ -52,7 +53,8 @@ func defaultRun(cmd *cobra.Command, args []string) {
 		// execution output to a [][]byte before sending it to outHandler.
 		out := [][]byte{generateTemplate(cmd.Name(), &data)}
 
-		err := outHandler(cmdData.OutFolder, out, &data)
+		imps := combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[cmd.Name()])
+		err := outHandler(cmdData.OutFolder, out, &data, &imps)
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
 		}
@@ -67,7 +69,7 @@ var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
 
 // outHandler loops over the slice of byte slices, outputting them to either
 // the OutFile if it is specified with a flag, or to Stdout if no flag is specified.
-func outHandler(outFolder string, output [][]byte, data *tplData) error {
+func outHandler(outFolder string, output [][]byte, data *tplData, imps *imports) error {
 	out := testHarnessStdout
 
 	if len(outFolder) != 0 {
@@ -78,6 +80,13 @@ func outHandler(outFolder string, output [][]byte, data *tplData) error {
 		}
 		defer outFile.Close()
 		out = outFile
+	}
+
+	impStr := buildImportString(imps)
+	if len(impStr) > 0 {
+		if _, err := fmt.Fprintf(out, "%s\n", impStr); err != nil {
+			errorQuit(fmt.Errorf("Unable to write imports to file handle: %v", err))
+		}
 	}
 
 	for _, templateOutput := range output {
@@ -94,10 +103,42 @@ func combineImports(a, b imports) imports {
 
 	c.standard = removeDuplicates(combineStringSlices(a.standard, b.standard))
 	c.thirdparty = removeDuplicates(combineStringSlices(a.thirdparty, b.thirdparty))
-	sort.Strings(c.standard)
-	sort.Strings(c.thirdparty)
+
+	c.standard = sortImports(c.standard)
+	c.thirdparty = sortImports(c.thirdparty)
 
 	return c
+}
+
+// sortImports sorts the import strings alphabetically.
+// If the import begins with an underscore, it temporarily
+// strips it so that it does not impact the sort.
+func sortImports(data []string) []string {
+	sorted := make([]string, len(data))
+	copy(sorted, data)
+
+	var underscoreImports []string
+	for i, v := range sorted {
+		if string(v[0]) == "_" && len(v) > 1 {
+			s := strings.Split(v, "_")
+			underscoreImports = append(underscoreImports, s[1])
+			sorted[i] = s[1]
+		}
+	}
+
+	sort.Strings(sorted)
+
+AddUnderscores:
+	for i, v := range sorted {
+		for _, underImp := range underscoreImports {
+			if v == underImp {
+				sorted[i] = "_" + sorted[i]
+				continue AddUnderscores
+			}
+		}
+	}
+
+	return sorted
 }
 
 func combineStringSlices(a, b []string) []string {
@@ -134,8 +175,12 @@ func removeDuplicates(dedup []string) []string {
 	return dedup
 }
 
-func buildImportString(imps imports) []byte {
+func buildImportString(imps *imports) []byte {
 	stdlen, thirdlen := len(imps.standard), len(imps.thirdparty)
+	if stdlen+thirdlen < 1 {
+		return []byte{}
+	}
+
 	if stdlen+thirdlen == 1 {
 		var imp string
 		if stdlen == 1 {
@@ -149,15 +194,15 @@ func buildImportString(imps imports) []byte {
 	buf := &bytes.Buffer{}
 	buf.WriteString("import (")
 	for _, std := range imps.standard {
-		fmt.Fprintf(buf, "\t%s", std)
+		fmt.Fprintf(buf, "\n\t\"%s\"", std)
 	}
 	if stdlen != 0 && thirdlen != 0 {
-
+		buf.WriteString("\n")
 	}
 	for _, third := range imps.thirdparty {
-		fmt.Fprintf(buf, "\t%s", third)
+		fmt.Fprintf(buf, "\n\t\"%s\"", third)
 	}
-	buf.WriteString(")")
+	buf.WriteString("\n)\n")
 
 	return buf.Bytes()
 }

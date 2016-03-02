@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -22,7 +24,7 @@ func TestOutHandler(t *testing.T) {
 
 	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
 
-	if err := outHandler("", templateOutputs, &data); err != nil {
+	if err := outHandler("", templateOutputs, &data, &imports{}); err != nil {
 		t.Error(err)
 	}
 
@@ -60,12 +62,102 @@ func TestOutHandlerFiles(t *testing.T) {
 
 	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
 
-	if err := outHandler("folder", templateOutputs, &data); err != nil {
+	if err := outHandler("folder", templateOutputs, &data, &imports{}); err != nil {
 		t.Error(err)
 	}
-
 	if out := file.String(); out != "hello world\npatrick's dreams\n" {
 		t.Errorf("Wrong output: %q", out)
+	}
+
+	a1 := imports{
+		standard: []string{
+			"fmt",
+		},
+	}
+	file = &bytes.Buffer{}
+
+	if err := outHandler("folder", templateOutputs, &data, &a1); err != nil {
+		t.Error(err)
+	}
+	if out := file.String(); out != "import \"fmt\"\nhello world\npatrick's dreams\n" {
+		t.Errorf("Wrong output: %q", out)
+	}
+
+	a2 := imports{
+		thirdparty: []string{
+			"github.com/spf13/cobra",
+		},
+	}
+	file = &bytes.Buffer{}
+
+	if err := outHandler("folder", templateOutputs, &data, &a2); err != nil {
+		t.Error(err)
+	}
+	if out := file.String(); out != "import \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
+		t.Errorf("Wrong output: %q", out)
+	}
+
+	a3 := imports{
+		standard: []string{"fmt", "errors"},
+		thirdparty: []string{
+			"_github.com/lib/pq",
+			"_github.com/gorilla/n",
+			"github.com/gorilla/mux",
+			"github.com/gorilla/websocket",
+		},
+	}
+	file = &bytes.Buffer{}
+
+	if err := outHandler("folder", templateOutputs, &data, &a3); err != nil {
+		t.Error(err)
+	}
+	if out := file.String(); out != "import \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
+		t.Errorf("Wrong output: %s", out)
+	}
+}
+
+func TestSortImports(t *testing.T) {
+	a1 := []string{"fmt", "errors"}
+	a2 := []string{
+		"_github.com/lib/pq",
+		"_github.com/gorilla/n",
+		"github.com/gorilla/mux",
+		"github.com/gorilla/websocket",
+	}
+
+	a1Expected := []string{"errors", "fmt"}
+	a2Expected := []string{
+		"github.com/gorilla/mux",
+		"_github.com/gorilla/n",
+		"github.com/gorilla/websocket",
+		"_github.com/lib/pq",
+	}
+
+	result := sortImports(a1)
+	if !reflect.DeepEqual(result, a1Expected) {
+		fmt.Errorf("Expected res to match a1expected, got: %v", result)
+	}
+
+	for i, v := range a1 {
+		if v != a1Expected[i] {
+			fmt.Errorf("Expected a1[%d] to match a1Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
+		}
+	}
+
+	result = sortImports(a2)
+	if !reflect.DeepEqual(result, a2Expected) {
+		fmt.Errorf("Expected res to match a2expected, got: %v", result)
+	}
+
+	for i, v := range a2 {
+		if v != a2Expected[i] {
+			fmt.Errorf("Expected a2[%d] to match a2Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
+		}
+	}
+
+	sort.Strings(result)
+	if reflect.DeepEqual(result, a2Expected) {
+		fmt.Errorf("Expected res not to match a2expected when using sort.Strings.")
 	}
 }
 

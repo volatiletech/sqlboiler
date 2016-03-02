@@ -16,17 +16,17 @@ type CobraRunFunc func(cmd *cobra.Command, args []string)
 // the database driver chosen by the driver flag at runtime, and a pointer to the
 // output file, if one is specified with a flag.
 type CmdData struct {
-	TablesInfo [][]dbdrivers.DBColumn
-	TableNames []string
-	PkgName    string
-	OutFolder  string
-	DBDriver   dbdrivers.DBDriver
+	Tables    []string
+	Columns   [][]dbdrivers.DBColumn
+	PkgName   string
+	OutFolder string
+	DBDriver  dbdrivers.DBDriver
 }
 
 // tplData is used to pass data to the template
 type tplData struct {
-	TableName string
-	TableData []dbdrivers.DBColumn
+	Table   string
+	Columns []dbdrivers.DBColumn
 }
 
 // errorQuit displays an error message and then exits the application.
@@ -39,10 +39,10 @@ func errorQuit(err error) {
 // It will generate the specific commands template and send it to outHandler for output.
 func defaultRun(cmd *cobra.Command, args []string) {
 	// Generate the template for every table
-	for i := 0; i < len(cmdData.TablesInfo); i++ {
+	for i := 0; i < len(cmdData.Columns); i++ {
 		data := tplData{
-			TableName: cmdData.TableNames[i],
-			TableData: cmdData.TablesInfo[i],
+			Table:   cmdData.Tables[i],
+			Columns: cmdData.Columns[i],
 		}
 
 		// outHandler takes a slice of byte slices, so append the Template
@@ -72,7 +72,7 @@ func outHandler(output [][]byte, data *tplData) error {
 			}
 		}
 	} else { // If not using stdout, attempt to create the model file.
-		path := cmdData.OutFolder + "/" + data.TableName + ".go"
+		path := cmdData.OutFolder + "/" + data.Table + ".go"
 		out, err := os.Create(path)
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to create output file %s: %s", path, err))

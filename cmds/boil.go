@@ -44,10 +44,10 @@ func boilRun(cmd *cobra.Command, args []string) {
 	// Prepend "struct" command to templateNames slice so it sits at top of sort
 	templateNames = append([]string{"struct"}, templateNames...)
 
-	for i := 0; i < len(cmdData.TablesInfo); i++ {
+	for i := 0; i < len(cmdData.Columns); i++ {
 		data := tplData{
-			TableName: cmdData.TableNames[i],
-			TableData: cmdData.TablesInfo[i],
+			Table:   cmdData.Tables[i],
+			Columns: cmdData.Columns[i],
 		}
 
 		var out [][]byte

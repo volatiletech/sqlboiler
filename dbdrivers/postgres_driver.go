@@ -44,11 +44,11 @@ func (d *PostgresDriver) Close() {
 	d.dbConn.Close()
 }
 
-// GetAllTableNames connects to the postgres database and
+// GetAllTables connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is public. It excludes common migration tool tables
 // such as gorp_migrations
-func (d *PostgresDriver) GetAllTableNames() ([]string, error) {
+func (d *PostgresDriver) GetAllTables() ([]string, error) {
 	var tableNames []string
 
 	rows, err := d.dbConn.Query(`select table_name from

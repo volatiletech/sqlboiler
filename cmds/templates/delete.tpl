@@ -1,4 +1,4 @@
-{{- $tableName := .TableName -}}
+{{- $tableName := .Table -}}
 // {{titleCase $tableName}}Delete deletes a single record.
 func {{titleCase $tableName}}Delete(db boil.DB, id int) error {
   if id == nil {

@@ -1,4 +1,4 @@
-{{- $tableName := .TableName -}}
+{{- $tableName := .Table -}}
 // {{titleCase $tableName}}Insert inserts a single record.
 func {{titleCase $tableName}}Insert(db boil.DB, o *{{titleCase $tableName}}) (int, error) {
   if o == nil {
@@ -6,7 +6,7 @@ func {{titleCase $tableName}}Insert(db boil.DB, o *{{titleCase $tableName}}) (in
   }
 
   var rowID int
-  err := db.QueryRow(`INSERT INTO {{$tableName}} ({{insertParamNames .TableData}}) VALUES({{insertParamFlags .TableData}}) RETURNING id`)
+  err := db.QueryRow(`INSERT INTO {{$tableName}} ({{insertParamNames .Columns}}) VALUES({{insertParamFlags .Columns}}) RETURNING id`)
 
   if err != nil {
     return 0, fmt.Errorf("model: unable to insert {{$tableName}}: %s", err)

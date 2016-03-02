@@ -13,6 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	templatesDirectory = "/cmds/templates"
+)
+
 // cmdData is used globally by all commands to access the table schema data,
 // the database driver and the output file. cmdData is initialized by
 // the root SQLBoiler cobra command at run time, before other commands execute.
@@ -68,11 +72,11 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 		errorQuit(fmt.Errorf("Unable to connect to the database: %s", err))
 	}
 
-	// Initialize the cmdData.TableNames
-	initTableNames()
+	// Initialize the cmdData.Tables
+	initTables()
 
-	// Initialize the cmdData.TablesInfo
-	initTablesInfo()
+	// Initialize the cmdData.Columns
+	initColumns()
 
 	// Initialize the package name
 	initPkgName()
@@ -81,7 +85,7 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	initOutFolder()
 
 	// Initialize the templates
-	templates, err = initTemplates()
+	templates, err = initTemplates(templatesDirectory)
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
 	}
@@ -113,46 +117,46 @@ func initDBDriver() {
 	}
 }
 
-// initTableNames will create a string slice out of the passed in table flag value
+// initTables will create a string slice out of the passed in table flag value
 // if one is provided. If no flag is provided, it will attempt to connect to the
 // database to retrieve all "public" table names, and build a slice out of that result.
-func initTableNames() {
+func initTables() {
 	// Retrieve the list of tables
 	tn := SQLBoiler.PersistentFlags().Lookup("table").Value.String()
 
 	if len(tn) != 0 {
-		cmdData.TableNames = strings.Split(tn, ",")
-		for i, name := range cmdData.TableNames {
-			cmdData.TableNames[i] = strings.TrimSpace(name)
+		cmdData.Tables = strings.Split(tn, ",")
+		for i, name := range cmdData.Tables {
+			cmdData.Tables[i] = strings.TrimSpace(name)
 		}
 	}
 
 	// If no table names are provided attempt to process all tables in database
-	if len(cmdData.TableNames) == 0 {
+	if len(cmdData.Tables) == 0 {
 		// get all table names
 		var err error
-		cmdData.TableNames, err = cmdData.DBDriver.GetAllTableNames()
+		cmdData.Tables, err = cmdData.DBDriver.GetAllTables()
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to get all table names: %s", err))
 		}
 
-		if len(cmdData.TableNames) == 0 {
+		if len(cmdData.Tables) == 0 {
 			errorQuit(errors.New("No tables found in database, migrate some tables first"))
 		}
 	}
 }
 
-// initTablesInfo builds a description of each table (column name, column type)
-// and assigns it to cmdData.TablesInfo, the slice of dbdrivers.DBColumn slices.
-func initTablesInfo() {
-	// loop over table Names and build TablesInfo
-	for i := 0; i < len(cmdData.TableNames); i++ {
-		tInfo, err := cmdData.DBDriver.GetTableInfo(cmdData.TableNames[i])
+// initColumns builds a description of each table (column name, column type)
+// and assigns it to cmdData.Columns, the slice of dbdrivers.DBColumn slices.
+func initColumns() {
+	// loop over table Names and build Columns
+	for i := 0; i < len(cmdData.Tables); i++ {
+		tInfo, err := cmdData.DBDriver.GetTableInfo(cmdData.Tables[i])
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to get the table info: %s", err))
 		}
 
-		cmdData.TablesInfo = append(cmdData.TablesInfo, tInfo)
+		cmdData.Columns = append(cmdData.Columns, tInfo)
 	}
 }
 
@@ -178,13 +182,13 @@ func initOutFolder() {
 
 // initTemplates loads all of the template files in the /cmds/templates directory
 // and returns a slice of pointers to these templates.
-func initTemplates() ([]*template.Template, error) {
+func initTemplates(dir string) ([]*template.Template, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
 
-	pattern := filepath.Join(wd, "/cmds/templates", "*.tpl")
+	pattern := filepath.Join(wd, dir, "*.tpl")
 	tpl, err := template.New("").Funcs(sqlBoilerTemplateFuncs).ParseGlob(pattern)
 
 	if err != nil {

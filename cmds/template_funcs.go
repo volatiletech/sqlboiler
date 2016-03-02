@@ -138,3 +138,15 @@ func selectParamNames(tableName string, columns []dbdrivers.DBColumn) string {
 
 	return strings.Join(selects, ", ")
 }
+
+// scanParamNames takes a []DBColumn and returns a comma seperated
+// list of parameter names for use in a db.Scan() call.
+func scanParamNames(object string, columns []dbdrivers.DBColumn) string {
+	scans := make([]string, 0, len(columns))
+	for _, c := range columns {
+		statement := fmt.Sprintf("&%s.%s", object, titleCase(c.Name))
+		scans = append(scans, statement)
+	}
+
+	return strings.Join(scans, ", ")
+}

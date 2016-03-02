@@ -69,6 +69,7 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"selectParamNames": selectParamNames,
 	"insertParamNames": insertParamNames,
 	"insertParamFlags": insertParamFlags,
+	"scanParamNames":   scanParamNames,
 }
 
 var allCmd = &cobra.Command{

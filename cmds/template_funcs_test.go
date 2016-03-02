@@ -71,3 +71,10 @@ func TestSelectParamFlags(t *testing.T) {
 		t.Error("Wrong output:", out)
 	}
 }
+
+func TestScanParams(t *testing.T) {
+	out := scanParamNames("object", testColumns)
+	if out != "&object.FriendColumn, &object.EnemyColumnThing" {
+		t.Error("Wrong output:", out)
+	}
+}

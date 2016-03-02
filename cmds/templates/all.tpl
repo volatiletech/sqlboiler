@@ -1,13 +1,27 @@
-{{- $tableName := .TableName -}}
-// {{titleCase $tableName}}All retrieves all records.
-func {{titleCase $tableName}}All(db boil.DB) ([]*{{titleCase $tableName}}, error) {
-  {{$varName := camelCase $tableName -}}
-  var {{$varName}} []*{{titleCase $tableName}}
-  err := db.Select(&{{$varName}}, `SELECT {{selectParamNames $tableName .TableData}}`)
+{{- $tableName := titleCase .Table -}}
+{{- $varName := camelCase $tableName -}}
+// {{$tableName}}All retrieves all records.
+func {{$tableName}}All(db boil.DB) ([]*{{$tableName}}, error) {
+  var {{$varName}} []*{{$tableName}}
 
+	rows, err := db.Query(`SELECT {{selectParamNames .Table .Columns}}`)
   if err != nil {
-    return nil, fmt.Errorf("models: unable to select from {{$tableName}}: %s", err)
+    return nil, fmt.Errorf("models: failed to query: %v", err)
   }
 
-  return {{$varName}}, nil
+	for rows.Next() {
+		{{$varName}}Tmp := {{$tableName}}{}
+
+		if err := rows.Scan({{scanParamNames $varName .Columns}}); err != nil {
+			return nil, fmt.Errorf("models: failed to scan row: %v", err)
+		}
+
+		{{$varName}} = append({{$varName}}, {{$varName}}Tmp)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("models: failed to read rows: %v", err)
+	}
+
+	return {{$varName}}, nil
 }

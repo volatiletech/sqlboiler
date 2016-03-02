@@ -56,7 +56,8 @@ func processTemplate(t *template.Template, data *tplData) ([]byte, error) {
 	return output, nil
 }
 
-// it into a go styled object variable name of "ColumnName".
+// titleCase changes a snake-case variable name
+// into a go styled object variable name of "ColumnName".
 // titleCase also fully uppercases "ID" components of names, for example
 // "column_name_id" to "ColumnNameID".
 func titleCase(name string) string {
@@ -83,7 +84,7 @@ func camelCase(name string) string {
 
 	for i, split := range splits {
 		if split == "id" && i > 0 {
-			split = "ID"
+			splits[i] = "ID"
 			continue
 		}
 
@@ -128,10 +129,10 @@ func insertParamFlags(columns []dbdrivers.DBColumn) string {
 // list of parameter names with for the select statement template.
 // It also uses the table name to generate the "AS" part of the statement, for
 // example: var_name AS table_name_var_name, ...
-func selectParamNames(tableName string, columns []string) string {
+func selectParamNames(tableName string, columns []dbdrivers.DBColumn) string {
 	selects := make([]string, 0, len(columns))
 	for _, c := range columns {
-		statement := fmt.Sprintf("%s AS %s", c, makeDBName(tableName, c))
+		statement := fmt.Sprintf("%s AS %s", c.Name, makeDBName(tableName, c.Name))
 		selects = append(selects, statement)
 	}
 

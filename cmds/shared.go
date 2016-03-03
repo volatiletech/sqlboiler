@@ -69,14 +69,19 @@ var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
 func outHandler(outFolder string, output [][]byte, data *tplData, imps *imports) error {
 	out := testHarnessStdout
 
+	var path string
 	if len(outFolder) != 0 {
-		path := outFolder + "/" + data.Table + ".go"
+		path = outFolder + "/" + data.Table + ".go"
 		outFile, err := testHarnessFileOpen(path)
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to create output file %s: %s", path, err))
 		}
 		defer outFile.Close()
 		out = outFile
+	}
+
+	if _, err := fmt.Fprintf(out, "package %s\n\n", cmdData.PkgName); err != nil {
+		errorQuit(fmt.Errorf("Unable to write package name %s to file: %s", cmdData.PkgName, path))
 	}
 
 	impStr := buildImportString(imps)

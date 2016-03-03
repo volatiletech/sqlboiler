@@ -26,13 +26,12 @@ func boilRun(cmd *cobra.Command, args []string) {
 
 		var out [][]byte
 		var imps imports
+
+		imps.standard = sqlBoilerDefaultImports.standard
+		imps.thirdparty = sqlBoilerDefaultImports.thirdparty
 		// Loop through and generate every command template (excluding skipTemplates)
-		for i, command := range commandNames {
-			if i == 0 {
-				imps = combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[command])
-			} else {
-				imps = combineImports(imps, sqlBoilerCustomImports[command])
-			}
+		for _, command := range commandNames {
+			imps = combineImports(imps, sqlBoilerCustomImports[command])
 			out = append(out, generateTemplate(command, &data))
 		}
 

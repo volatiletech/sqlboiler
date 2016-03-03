@@ -20,7 +20,7 @@ func generateTemplate(commandName string, data *tplData) []byte {
 
 	output, err := processTemplate(template, data)
 	if err != nil {
-		errorQuit(fmt.Errorf("Unable to process the template: %s", err))
+		errorQuit(fmt.Errorf("Unable to process the template %s for table %s: %s", template.Name(), data.Table, err))
 	}
 
 	return output

@@ -1,6 +1,11 @@
 package cmds
 
 import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/pobri19/sqlboiler/dbdrivers"
@@ -8,10 +13,19 @@ import (
 
 func init() {
 	cmdData = &CmdData{
-		Tables: []string{"patrick_table"},
+		Tables: []string{"patrick_table", "spiderman"},
 		Columns: [][]dbdrivers.DBColumn{
 			[]dbdrivers.DBColumn{
-				{Name: "patrick_column", IsNullable: false},
+				{Name: "patrick_column", Type: "string", IsNullable: false},
+				{Name: "aaron_column", Type: "null.String", IsNullable: true},
+				{Name: "id", Type: "null.Int", IsNullable: true},
+				{Name: "fun_id", Type: "int64", IsNullable: false},
+				{Name: "time", Type: "null.Time", IsNullable: true},
+				{Name: "fun_time", Type: "time.Time", IsNullable: false},
+				{Name: "cool_stuff_forever", Type: "[]byte", IsNullable: false},
+			},
+			[]dbdrivers.DBColumn{
+				{Name: "patrick", Type: "string", IsNullable: false},
 			},
 		},
 		PkgName:   "patrick",
@@ -20,27 +34,42 @@ func init() {
 	}
 }
 
-// ioutil.TempDir
-// os.TempDir
-// set the temp dir to outfolder
-// generate all the stuffs
-
-// create a file in the tempdir folder named templates_test.go
-// use exec package to run go test in that folder (exec go test in that temp folder)
-
-// when i use the exec theres a special thing. if i look here https://golang.org/pkg/os/exec/#Cmd
-// stderr (create bytes.buf, shove it into that) (use Command for initialization of obj)
-// use Run (not start) on the command. run the thing which will give an error
-// check that error, if its nil it completed successfully and test should pass
-// if not nil, compile failed. check stderr and pump it out and fail test.
-//
-// use Dir to set working dir of test.
-// ALWAYs REMBerR To DEFerR DleELtEE The FOoFldER
-// miGtihtr WaNnaAu leAVae around  iwhen testing
-
 func TestTemplates(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
+	}
+
+	// Initialize the templates
+	var err error
+	templates, err = initTemplates("templates")
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
+	}
+
+	cmdData.OutFolder, err = ioutil.TempDir("", "templates")
+	if err != nil {
+		t.Fatalf("Unable to create tempdir: %s", err)
+	}
+	defer os.RemoveAll(cmdData.OutFolder)
+
+	boilRun(sqlBoilerCommands["boil"], []string{})
+
+	tplFile := cmdData.OutFolder + "/templates_test.go"
+	tplTestHandle, err := os.Create(tplFile)
+	if err != nil {
+		t.Errorf("Unable to create %s: %s", tplFile, err)
+	}
+	defer tplTestHandle.Close()
+
+	tplTestHandle.WriteString(fmt.Sprintf("package %s", cmdData.PkgName))
+
+	buf := bytes.Buffer{}
+	cmd := exec.Command("go", "test", tplFile)
+	cmd.Dir = cmdData.OutFolder
+	cmd.Stderr = &buf
+
+	if err = cmd.Run(); err != nil {
+		t.Errorf("Unable to execute command 'go test', compile failed?: %s\n\n%s", err, buf.String())
 	}
 }
 

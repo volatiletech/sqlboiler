@@ -138,6 +138,8 @@ patrick's dreams
 }
 
 func TestSortImports(t *testing.T) {
+	t.Parallel()
+
 	a1 := []string{
 		`"fmt"`,
 		`"errors"`,
@@ -180,10 +182,9 @@ func TestSortImports(t *testing.T) {
 	}
 }
 
-func TestBuildImportString(t *testing.T) {
-}
-
 func TestCombineImports(t *testing.T) {
+	t.Parallel()
+
 	a := imports{
 		standard:   []string{"fmt"},
 		thirdparty: []string{"github.com/pobri19/sqlboiler", "gopkg.in/guregu/null.v3"},
@@ -204,6 +205,8 @@ func TestCombineImports(t *testing.T) {
 }
 
 func TestRemoveDuplicates(t *testing.T) {
+	t.Parallel()
+
 	hasDups := func(possible []string) error {
 		for i := 0; i < len(possible)-1; i++ {
 			for j := i + 1; j < len(possible); j++ {
@@ -246,6 +249,8 @@ func TestRemoveDuplicates(t *testing.T) {
 }
 
 func TestCombineStringSlices(t *testing.T) {
+	t.Parallel()
+
 	var a, b []string
 	slice := combineStringSlices(a, b)
 	if ln := len(slice); ln != 0 {

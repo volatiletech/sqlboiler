@@ -12,6 +12,8 @@ var testColumns = []dbdrivers.DBColumn{
 }
 
 func TestTitleCase(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		In  string
 		Out string
@@ -29,6 +31,8 @@ func TestTitleCase(t *testing.T) {
 }
 
 func TestCamelCase(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		In  string
 		Out string
@@ -46,12 +50,16 @@ func TestCamelCase(t *testing.T) {
 }
 
 func TestMakeDBName(t *testing.T) {
+	t.Parallel()
+
 	if out := makeDBName("a", "b"); out != "a_b" {
 		t.Error("Out was wrong:", out)
 	}
 }
 
 func TestInsertParamNames(t *testing.T) {
+	t.Parallel()
+
 	out := insertParamNames(testColumns)
 	if out != "friend_column, enemy_column_thing" {
 		t.Error("Wrong output:", out)
@@ -59,6 +67,8 @@ func TestInsertParamNames(t *testing.T) {
 }
 
 func TestInsertParamFlags(t *testing.T) {
+	t.Parallel()
+
 	out := insertParamFlags(testColumns)
 	if out != "$1, $2" {
 		t.Error("Wrong output:", out)
@@ -66,6 +76,8 @@ func TestInsertParamFlags(t *testing.T) {
 }
 
 func TestSelectParamFlags(t *testing.T) {
+	t.Parallel()
+
 	out := selectParamNames("table", testColumns)
 	if out != "friend_column AS table_friend_column, enemy_column_thing AS table_enemy_column_thing" {
 		t.Error("Wrong output:", out)
@@ -73,6 +85,8 @@ func TestSelectParamFlags(t *testing.T) {
 }
 
 func TestScanParams(t *testing.T) {
+	t.Parallel()
+
 	out := scanParamNames("object", testColumns)
 	if out != "&object.FriendColumn, &object.EnemyColumnThing" {
 		t.Error("Wrong output:", out)

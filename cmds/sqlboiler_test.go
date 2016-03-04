@@ -43,7 +43,7 @@ func TestTemplates(t *testing.T) {
 	var err error
 	templates, err = initTemplates("templates")
 	if err != nil {
-		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
+		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
 	cmdData.OutFolder, err = ioutil.TempDir("", "templates")
@@ -61,7 +61,7 @@ func TestTemplates(t *testing.T) {
 	}
 	defer tplTestHandle.Close()
 
-	tplTestHandle.WriteString(fmt.Sprintf("package %s", cmdData.PkgName))
+	fmt.Fprintf(tplTestHandle, "package %s", cmdData.PkgName)
 
 	buf := bytes.Buffer{}
 	cmd := exec.Command("go", "test", tplFile)
@@ -69,7 +69,7 @@ func TestTemplates(t *testing.T) {
 	cmd.Stderr = &buf
 
 	if err = cmd.Run(); err != nil {
-		t.Errorf("Unable to execute command 'go test', compile failed?: %s\n\n%s", err, buf.String())
+		t.Errorf("go test cmd execution failed: %s\n\n%s", err, buf.String())
 	}
 }
 

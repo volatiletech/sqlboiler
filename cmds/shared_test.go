@@ -28,7 +28,7 @@ func TestOutHandler(t *testing.T) {
 		t.Error(err)
 	}
 
-	if out := buf.String(); out != "hello world\npatrick's dreams\n" {
+	if out := buf.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
 		t.Errorf("Wrong output: %q", out)
 	}
 }
@@ -65,7 +65,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	if err := outHandler("folder", templateOutputs, &data, &imports{}); err != nil {
 		t.Error(err)
 	}
-	if out := file.String(); out != "hello world\npatrick's dreams\n" {
+	if out := file.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
 		t.Errorf("Wrong output: %q", out)
 	}
 
@@ -79,7 +79,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	if err := outHandler("folder", templateOutputs, &data, &a1); err != nil {
 		t.Error(err)
 	}
-	if out := file.String(); out != "import \"fmt\"\nhello world\npatrick's dreams\n" {
+	if out := file.String(); out != "package patrick\n\nimport \"fmt\"\nhello world\npatrick's dreams\n" {
 		t.Errorf("Wrong output: %q", out)
 	}
 
@@ -93,7 +93,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	if err := outHandler("folder", templateOutputs, &data, &a2); err != nil {
 		t.Error(err)
 	}
-	if out := file.String(); out != "import \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
+	if out := file.String(); out != "package patrick\n\nimport \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
 		t.Errorf("Wrong output: %q", out)
 	}
 
@@ -118,7 +118,9 @@ func TestOutHandlerFiles(t *testing.T) {
 		t.Error(err)
 	}
 
-	expectedOut := `import (
+	expectedOut := `package patrick
+
+import (
 	"errors"
 	"fmt"
 

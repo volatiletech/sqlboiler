@@ -4,7 +4,7 @@
 func {{$tableName}}All(db boil.DB) ([]*{{$tableName}}, error) {
   var {{$varName}} []*{{$tableName}}
 
-	rows, err := db.Query(`SELECT {{selectParamNames .Table .Columns}}`)
+	rows, err := db.Query(`SELECT {{selectParamNames .Table .Columns}} FROM {{.Table}}`)
   if err != nil {
     return nil, fmt.Errorf("models: failed to query: %v", err)
   }

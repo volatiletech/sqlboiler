@@ -7,6 +7,7 @@ type DB interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	QueryRow(query string, args ...interface{}) *sql.Row
+	Select(dest interface{}, query string, args ...interface{}) error
 }
 
 // M type is for providing where filters to Where helpers.

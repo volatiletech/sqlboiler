@@ -22,6 +22,7 @@ func boilRun(cmd *cobra.Command, args []string) {
 		data := tplData{
 			Table:   cmdData.Tables[i],
 			Columns: cmdData.Columns[i],
+			PkgName: cmdData.PkgName,
 		}
 
 		var out [][]byte

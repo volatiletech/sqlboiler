@@ -42,14 +42,12 @@ var sqlBoilerCommands = map[string]*cobra.Command{
 	// Insert commands
 	"insert": insertCmd,
 	// Select commands
-	"all":          allCmd,
-	"allby":        allByCmd,
-	"fieldsall":    fieldsAllCmd,
-	"fieldsallby":  fieldsAllByCmd,
-	"find":         findCmd,
-	"findby":       findByCmd,
-	"fieldsfind":   fieldsFindCmd,
-	"fieldsfindby": fieldsFindByCmd,
+	"all":         allCmd,
+	"where":       whereCmd,
+	"select":      selectCmd,
+	"selectwhere": selectWhereCmd,
+	"find":        findCmd,
+	"findselect":  findSelectCmd,
 	// Delete commands
 	"delete": deleteCmd,
 }
@@ -72,23 +70,39 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"scanParamNames":   scanParamNames,
 }
 
+/* Struct commands */
+
+var structCmd = &cobra.Command{
+	Use:   "struct",
+	Short: "Generate structs from table definitions",
+}
+
+/* Insert commands */
+
+var insertCmd = &cobra.Command{
+	Use:   "insert",
+	Short: "Generate insert statement helpers from table definitions",
+}
+
+/* Select commands */
+
 var allCmd = &cobra.Command{
 	Use:   "all",
 	Short: "Generate a helper to select all records",
 }
 
-var allByCmd = &cobra.Command{
-	Use:   "allby",
+var whereCmd = &cobra.Command{
+	Use:   "where",
 	Short: "Generate a helper to select all records with specific column values",
 }
 
-var fieldsAllCmd = &cobra.Command{
-	Use:   "fieldsall",
+var selectCmd = &cobra.Command{
+	Use:   "select",
 	Short: "Generate a helper to select specific fields of all records",
 }
 
-var fieldsAllByCmd = &cobra.Command{
-	Use:   "fieldsallby",
+var selectWhereCmd = &cobra.Command{
+	Use:   "selectwhere",
 	Short: "Generate a helper to select specific fields of records with specific column values",
 }
 
@@ -97,32 +111,14 @@ var findCmd = &cobra.Command{
 	Short: "Generate a helper to select a single record by ID",
 }
 
-var findByCmd = &cobra.Command{
-	Use:   "findby",
-	Short: "Generate a helper to select a single record that has specific column values",
+var findSelectCmd = &cobra.Command{
+	Use:   "findselect",
+	Short: "Generate a helper to select specific fields of a record by ID",
 }
 
-var fieldsFindCmd = &cobra.Command{
-	Use:   "fieldsfind",
-	Short: "Generate a helper to select specific fields of records by ID",
-}
-
-var fieldsFindByCmd = &cobra.Command{
-	Use:   "fieldsfindby",
-	Short: "Generate a helper to select specific fields of a single record that has specific column values",
-}
-
-var insertCmd = &cobra.Command{
-	Use:   "insert",
-	Short: "Generate insert statement helpers from table definitions",
-}
+/* Delete commands */
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Generate delete statement helpers from table definitions",
-}
-
-var structCmd = &cobra.Command{
-	Use:   "struct",
-	Short: "Generate structs from table definitions",
 }

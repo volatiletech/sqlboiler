@@ -28,6 +28,7 @@ type CmdData struct {
 type tplData struct {
 	Table   string
 	Columns []dbdrivers.DBColumn
+	PkgName string
 }
 
 // errorQuit displays an error message and then exits the application.
@@ -44,6 +45,7 @@ func defaultRun(cmd *cobra.Command, args []string) {
 		data := tplData{
 			Table:   cmdData.Tables[i],
 			Columns: cmdData.Columns[i],
+			PkgName: cmdData.PkgName,
 		}
 
 		// outHandler takes a slice of byte slices, so append the Template

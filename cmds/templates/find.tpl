@@ -1,16 +1,17 @@
-{{- $tableName := .Table -}}
-// {{titleCase $tableName}}Find retrieves a single record by ID.
-func {{titleCase $tableName}}Find(db boil.DB, id int) (*{{titleCase $tableName}}, error) {
+{{- $tableNameSingular := titleCaseSingular .Table -}}
+{{- $dbName := singular .Table -}}
+{{- $varNameSingular := camelCaseSingular .Table -}}
+// {{$tableNameSingular}}Find retrieves a single record by ID.
+func {{$tableNameSingular}}Find(db boil.DB, id int) (*{{$tableNameSingular}}, error) {
   if id == 0 {
-    return nil, errors.New("{{.PkgName}}: no id provided for {{$tableName}} select")
+    return nil, errors.New("{{.PkgName}}: no id provided for {{.Table}} select")
   }
-  {{$varName := camelCase $tableName}}
-  var {{$varName}} *{{titleCase $tableName}}
-  err := db.Select(&{{$varName}}, `SELECT {{selectParamNames $tableName .Columns}} WHERE id=$1`, id)
+  var {{$varNameSingular}} *{{$tableNameSingular}}
+  err := db.Select(&{{$varNameSingular}}, `SELECT {{selectParamNames $dbName .Columns}} WHERE id=$1`, id)
 
   if err != nil {
-    return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{$tableName}}: %s", err)
+    return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table}}: %s", err)
   }
 
-  return {{$varName}}, nil
+  return {{$varNameSingular}}, nil
 }

@@ -1,7 +1,8 @@
-{{- $tableName := .Table -}}
-// {{titleCase $tableName}} is an object representing the database table.
-type {{titleCase $tableName}} struct {
+{{- $tableNameSingular := titleCaseSingular .Table -}}
+{{- $dbName := singular .Table -}}
+// {{$tableNameSingular}} is an object representing the database table.
+type {{$tableNameSingular}} struct {
   {{range $key, $value := .Columns -}}
-  {{titleCase $value.Name}} {{$value.Type}} `db:"{{makeDBName $tableName $value.Name}}" json:"{{$value.Name}}"`
+  {{titleCase $value.Name}} {{$value.Type}} `db:"{{makeDBName $dbName $value.Name}}" json:"{{$value.Name}}"`
   {{end -}}
 }

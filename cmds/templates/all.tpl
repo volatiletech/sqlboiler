@@ -1,28 +1,30 @@
-{{- $tableName := titleCase .Table -}}
-{{- $varName := camelCase .Table -}}
-// {{$tableName}}All retrieves all records.
-func {{$tableName}}All(db boil.DB) ([]*{{$tableName}}, error) {
-  var {{$varName}} []*{{$tableName}}
+{{- $tableNameSingular := titleCaseSingular .Table -}}
+{{- $dbName := singular .Table -}}
+{{- $tableNamePlural := titleCasePlural .Table -}}
+{{- $varNamePlural := camelCasePlural .Table -}}
+// {{$tableNamePlural}}All retrieves all records.
+func {{$tableNamePlural}}All(db boil.DB) ([]*{{$tableNameSingular}}, error) {
+  var {{$varNamePlural}} []*{{$tableNameSingular}}
 
-  rows, err := db.Query(`SELECT {{selectParamNames .Table .Columns}} FROM {{.Table}}`)
+  rows, err := db.Query(`SELECT {{selectParamNames $dbName .Columns}} FROM {{.Table}}`)
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to query: %v", err)
   }
 
   for rows.Next() {
-    {{- $tmpVarName := (print $varName "Tmp") -}}
-    {{$varName}}Tmp := {{$tableName}}{}
+    {{- $tmpVarName := (print $varNamePlural "Tmp") -}}
+    {{$varNamePlural}}Tmp := {{$tableNameSingular}}{}
 
     if err := rows.Scan({{scanParamNames $tmpVarName .Columns}}); err != nil {
       return nil, fmt.Errorf("{{.PkgName}}: failed to scan row: %v", err)
     }
 
-    {{$varName}} = append({{$varName}}, {{$varName}}Tmp)
+    {{$varNamePlural}} = append({{$varNamePlural}}, {{$varNamePlural}}Tmp)
   }
 
   if err := rows.Err(); err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to read rows: %v", err)
   }
 
-  return {{$varName}}, nil
+  return {{$varNamePlural}}, nil
 }

@@ -11,6 +11,44 @@ var testColumns = []dbdrivers.DBColumn{
 	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 }
 
+func TestSingular(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		In  string
+		Out string
+	}{
+		{"hello_people", "hello_person"},
+		{"hello_person", "hello_person"},
+		{"friends", "friend"},
+	}
+
+	for i, test := range tests {
+		if out := singular(test.In); out != test.Out {
+			t.Errorf("[%d] (%s) Out was wrong: %q, want: %q", i, test.In, out, test.Out)
+		}
+	}
+}
+
+func TestPlural(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		In  string
+		Out string
+	}{
+		{"hello_person", "hello_people"},
+		{"friend", "friends"},
+		{"friends", "friends"},
+	}
+
+	for i, test := range tests {
+		if out := plural(test.In); out != test.Out {
+			t.Errorf("[%d] (%s) Out was wrong: %q, want: %q", i, test.In, out, test.Out)
+		}
+	}
+}
+
 func TestTitleCase(t *testing.T) {
 	t.Parallel()
 
@@ -71,6 +109,13 @@ func TestInsertParamFlags(t *testing.T) {
 
 	out := insertParamFlags(testColumns)
 	if out != "$1, $2" {
+		t.Error("Wrong output:", out)
+	}
+}
+
+func TestInsertParamVariables(t *testing.T) {
+	out := insertParamVariables("o.", testColumns)
+	if out != "o.FriendColumn, o.EnemyColumnThing" {
 		t.Error("Wrong output:", out)
 	}
 }

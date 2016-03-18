@@ -61,13 +61,20 @@ var sqlBoilerCommandRuns = map[string]CobraRunFunc{
 // sqlBoilerTemplateFuncs is a map of all the functions that get passed into the templates.
 // If you wish to pass a new function into your own template, add a pointer to it here.
 var sqlBoilerTemplateFuncs = template.FuncMap{
-	"titleCase":        titleCase,
-	"camelCase":        camelCase,
-	"makeDBName":       makeDBName,
-	"selectParamNames": selectParamNames,
-	"insertParamNames": insertParamNames,
-	"insertParamFlags": insertParamFlags,
-	"scanParamNames":   scanParamNames,
+	"singular":             singular,
+	"plural":               plural,
+	"titleCase":            titleCase,
+	"titleCaseSingular":    titleCaseSingular,
+	"titleCasePlural":      titleCasePlural,
+	"camelCase":            camelCase,
+	"camelCaseSingular":    camelCaseSingular,
+	"camelCasePlural":      camelCasePlural,
+	"makeDBName":           makeDBName,
+	"selectParamNames":     selectParamNames,
+	"insertParamNames":     insertParamNames,
+	"insertParamFlags":     insertParamFlags,
+	"insertParamVariables": insertParamVariables,
+	"scanParamNames":       scanParamNames,
 }
 
 /* Struct commands */

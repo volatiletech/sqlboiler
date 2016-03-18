@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/jinzhu/inflection"
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
@@ -56,6 +57,20 @@ func processTemplate(t *template.Template, data *tplData) ([]byte, error) {
 	return output, nil
 }
 
+// plural converts singular words to plural words (eg: person to people)
+func plural(name string) string {
+	splits := strings.Split(name, "_")
+	splits[len(splits)-1] = inflection.Plural(splits[len(splits)-1])
+	return strings.Join(splits, "_")
+}
+
+// singular converts plural words to singular words (eg: people to person)
+func singular(name string) string {
+	splits := strings.Split(name, "_")
+	splits[len(splits)-1] = inflection.Singular(splits[len(splits)-1])
+	return strings.Join(splits, "_")
+}
+
 // titleCase changes a snake-case variable name
 // into a go styled object variable name of "ColumnName".
 // titleCase also fully uppercases "ID" components of names, for example
@@ -73,6 +88,22 @@ func titleCase(name string) string {
 	}
 
 	return strings.Join(splits, "")
+}
+
+// titleCaseSingular changes a snake-case variable name
+// to a go styled object variable name of "ColumnName".
+// titleCaseSingular also converts the last word in the
+// variable name to a singularized version of itself.
+func titleCaseSingular(name string) string {
+	return titleCase(singular(name))
+}
+
+// titleCasePlural changes a snake-case variable name
+// to a go styled object variable name of "ColumnName".
+// titleCasePlural also converts the last word in the
+// variable name to a pluralized version of itself.
+func titleCasePlural(name string) string {
+	return titleCase(plural(name))
 }
 
 // camelCase takes a variable name in the format of "var_name" and converts
@@ -96,6 +127,22 @@ func camelCase(name string) string {
 	}
 
 	return strings.Join(splits, "")
+}
+
+// camelCaseSingular takes a variable name in the format of "var_name" and converts
+// it into a go styled variable name of "varName".
+// camelCaseSingular also converts the last word in the
+// variable name to a singularized version of itself.
+func camelCaseSingular(name string) string {
+	return camelCase(singular(name))
+}
+
+// camelCasePlural takes a variable name in the format of "var_name" and converts
+// it into a go styled variable name of "varName".
+// camelCasePlural also converts the last word in the
+// variable name to a pluralized version of itself.
+func camelCasePlural(name string) string {
+	return camelCase(plural(name))
 }
 
 // makeDBName takes a table name in the format of "table_name" and a
@@ -123,6 +170,20 @@ func insertParamFlags(columns []dbdrivers.DBColumn) string {
 		params = append(params, fmt.Sprintf("$%d", i+1))
 	}
 	return strings.Join(params, ", ")
+}
+
+// insertParamVariables takes a prefix and a []DBColumns and returns a
+// comma seperated list of parameter variable names for the insert statement.
+// For example: prefix("o."), column("name_id") -> "o.NameID, ..."
+func insertParamVariables(prefix string, columns []dbdrivers.DBColumn) string {
+	names := make([]string, 0, len(columns))
+
+	for _, c := range columns {
+		n := prefix + titleCase(c.Name)
+		names = append(names, n)
+	}
+
+	return strings.Join(names, ", ")
 }
 
 // selectParamNames takes a []DBColumn and returns a comma seperated

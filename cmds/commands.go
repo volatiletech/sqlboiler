@@ -75,6 +75,8 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"insertParamFlags":     insertParamFlags,
 	"insertParamVariables": insertParamVariables,
 	"scanParamNames":       scanParamNames,
+	"hasPrimaryKey":        hasPrimaryKey,
+	"getPrimaryKey":        getPrimaryKey,
 }
 
 /* Struct commands */

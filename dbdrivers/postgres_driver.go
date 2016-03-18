@@ -76,10 +76,23 @@ func (d *PostgresDriver) GetAllTables() ([]string, error) {
 // and column types and returns those as a []DBColumn after ParseTableInfo()
 // converts the SQL types to Go types, for example: "varchar" to "string"
 func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBColumn, error) {
-	var tableInfo []DBColumn
+	var table []DBColumn
 
-	rows, err := d.dbConn.Query(`select column_name, data_type, is_nullable from
-    information_schema.columns where table_name=$1`, tableName)
+	rows, err := d.dbConn.Query(`
+		SELECT c.column_name, c.data_type, c.is_nullable,
+		CASE WHEN pk.column_name IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
+		FROM information_schema.columns c
+		LEFT JOIN (
+		  SELECT ku.table_name, ku.column_name
+		  FROM information_schema.table_constraints AS tc
+		  INNER JOIN information_schema.key_column_usage AS ku
+		    ON tc.constraint_type = 'PRIMARY KEY'
+		    AND tc.constraint_name = ku.constraint_name
+		) pk
+		ON c.table_name = pk.table_name
+		AND c.column_name = pk.column_name
+		WHERE c.table_name=$1
+	`, tableName)
 
 	if err != nil {
 		return nil, err
@@ -87,23 +100,27 @@ func (d *PostgresDriver) GetTableInfo(tableName string) ([]DBColumn, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		var colName, colType, isNullable string
-		if err := rows.Scan(&colName, &colType, &isNullable); err != nil {
+		var colName, colType, isNullable, isPrimary string
+		if err := rows.Scan(&colName, &colType, &isNullable, &isPrimary); err != nil {
 			return nil, err
 		}
-		tableInfo = append(tableInfo, d.ParseTableInfo(colName, colType, "YES" == isNullable))
+		t := d.ParseTableInfo(colName, colType, isNullable == "YES", isPrimary == "PRIMARY KEY")
+		table = append(table, t)
 	}
 
-	return tableInfo, nil
+	return table, nil
 }
 
 // ParseTableInfo converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a DBColumn object.
-func (d *PostgresDriver) ParseTableInfo(colName, colType string, isNullable bool) DBColumn {
+func (d *PostgresDriver) ParseTableInfo(colName, colType string, isNullable bool, isPrimary bool) DBColumn {
 	var t DBColumn
 
 	t.Name = colName
+	t.IsPrimaryKey = isPrimary
+	t.IsNullable = isNullable
+
 	if isNullable {
 		switch colType {
 		case "bigint", "bigserial", "integer", "smallint", "smallserial", "serial":

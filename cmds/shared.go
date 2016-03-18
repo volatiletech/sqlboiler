@@ -48,15 +48,22 @@ func defaultRun(cmd *cobra.Command, args []string) {
 			PkgName: cmdData.PkgName,
 		}
 
-		// outHandler takes a slice of byte slices, so append the Template
-		// execution output to a [][]byte before sending it to outHandler.
-		out := [][]byte{generateTemplate(cmd.Name(), &data)}
+		templater(cmd, &data)
+	}
+}
 
-		imps := combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[cmd.Name()])
-		err := outHandler(cmdData.OutFolder, out, &data, &imps)
-		if err != nil {
-			errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
-		}
+// templater generates the template by passing it the tplData object.
+// Once the template is generated, it will add the imports to the output stream
+// and output the contents of the template with the added bits (imports and package declaration).
+func templater(cmd *cobra.Command, data *tplData) {
+	// outHandler takes a slice of byte slices, so append the Template
+	// execution output to a [][]byte before sending it to outHandler.
+	out := [][]byte{generateTemplate(cmd.Name(), data)}
+
+	imps := combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[cmd.Name()])
+	err := outHandler(cmdData.OutFolder, out, data, &imps)
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
 	}
 }
 

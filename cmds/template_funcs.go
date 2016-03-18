@@ -211,3 +211,25 @@ func scanParamNames(object string, columns []dbdrivers.DBColumn) string {
 
 	return strings.Join(scans, ", ")
 }
+
+// hasPrimaryKey returns true if one of the columns passed in is a primary key
+func hasPrimaryKey(columns []dbdrivers.DBColumn) bool {
+	for _, c := range columns {
+		if c.IsPrimaryKey {
+			return true
+		}
+	}
+
+	return false
+}
+
+// getPrimaryKey returns the primary key column name if one is present
+func getPrimaryKey(columns []dbdrivers.DBColumn) string {
+	for _, c := range columns {
+		if c.IsPrimaryKey {
+			return c.Name
+		}
+	}
+
+	return ""
+}

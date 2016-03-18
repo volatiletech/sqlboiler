@@ -17,7 +17,7 @@ type DBDriver interface {
 	// ParseTableInfo builds a DBColumn out of a column name and column type.
 	// Its main responsibility is to convert database types to Go types, for example
 	// "varchar" to "string".
-	ParseTableInfo(name, colType string, isNullable bool) DBColumn
+	ParseTableInfo(name, colType string, isNullable bool, isPrimary bool) DBColumn
 
 	// Open the database connection
 	Open() error
@@ -29,7 +29,8 @@ type DBDriver interface {
 // DBColumn holds information about a database column name.
 // Column types are Go types, converted by ParseTableInfo.
 type DBColumn struct {
-	Name       string
-	Type       string
-	IsNullable bool
+	Name         string
+	Type         string
+	IsPrimaryKey bool
+	IsNullable   bool
 }

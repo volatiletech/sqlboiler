@@ -152,6 +152,41 @@ func makeDBName(tableName, colName string) string {
 	return tableName + "_" + colName
 }
 
+// updateParamNames takes a []DBColumn and returns a comma seperated
+// list of parameter names for the update statement template SET clause.
+// eg: col1=$1,col2=$2,col3=$3
+// Note: updateParamNames will exclude the PRIMARY KEY column.
+func updateParamNames(columns []dbdrivers.DBColumn) string {
+	names := make([]string, 0, len(columns))
+	counter := 0
+	for _, c := range columns {
+		if c.IsPrimaryKey {
+			continue
+		}
+		counter++
+		names = append(names, fmt.Sprintf("%s=$%d", c.Name, counter))
+	}
+	return strings.Join(names, ",")
+}
+
+// updateParamVariables takes a prefix and a []DBColumns and returns a
+// comma seperated list of parameter variable names for the update statement.
+// eg: prefix("o."), column("name_id") -> "o.NameID, ..."
+// Note: updateParamVariables will exclude the PRIMARY KEY column.
+func updateParamVariables(prefix string, columns []dbdrivers.DBColumn) string {
+	names := make([]string, 0, len(columns))
+
+	for _, c := range columns {
+		if c.IsPrimaryKey {
+			continue
+		}
+		n := prefix + titleCase(c.Name)
+		names = append(names, n)
+	}
+
+	return strings.Join(names, ", ")
+}
+
 // insertParamNames takes a []DBColumn and returns a comma seperated
 // list of parameter names for the insert statement template.
 func insertParamNames(columns []dbdrivers.DBColumn) string {

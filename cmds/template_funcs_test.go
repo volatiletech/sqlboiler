@@ -7,8 +7,8 @@ import (
 )
 
 var testColumns = []dbdrivers.DBColumn{
-	{Name: "friend_column", Type: "int", IsNullable: false},
-	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
+	{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
+	{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
 }
 
 func TestSingular(t *testing.T) {
@@ -92,6 +92,36 @@ func TestMakeDBName(t *testing.T) {
 
 	if out := makeDBName("a", "b"); out != "a_b" {
 		t.Error("Out was wrong:", out)
+	}
+}
+
+func TestUpdateParamNames(t *testing.T) {
+	t.Parallel()
+
+	var testCols = []dbdrivers.DBColumn{
+		{Name: "id", Type: "int", IsNullable: false, IsPrimaryKey: true},
+		{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
+		{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
+	}
+
+	out := updateParamNames(testCols)
+	if out != "friend_column=$1,enemy_column_thing=$2" {
+		t.Error("Wrong output:", out)
+	}
+}
+
+func TestUpdateParamVariables(t *testing.T) {
+	t.Parallel()
+
+	var testCols = []dbdrivers.DBColumn{
+		{Name: "id", Type: "int", IsNullable: false, IsPrimaryKey: true},
+		{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
+		{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
+	}
+
+	out := updateParamVariables("o.", testCols)
+	if out != "o.FriendColumn, o.EnemyColumnThing" {
+		t.Error("Wrong output:", out)
 	}
 }
 

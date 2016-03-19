@@ -10,6 +10,7 @@ import (
 )
 
 // SelectNames returns the column names for a select statement
+// Eg: col1, col2, col3
 func SelectNames(results interface{}) string {
 	var names []string
 
@@ -36,6 +37,7 @@ func SelectNames(results interface{}) string {
 }
 
 // Where returns the where clause for an sql statement
+// eg: col1=$1 AND col2=$2 AND col3=$3
 func Where(columns map[string]interface{}) string {
 	names := make([]string, 0, len(columns))
 
@@ -50,6 +52,24 @@ func Where(columns map[string]interface{}) string {
 	}
 
 	return strings.Join(names, " AND ")
+}
+
+// Update returns the column list for an update statement SET clause
+// eg: col1=$1,col2=$2,col3=$3
+func Update(columns map[string]interface{}) string {
+	names := make([]string, 0, len(columns))
+
+	for c := range columns {
+		names = append(names, c)
+	}
+
+	sort.Strings(names)
+
+	for i, c := range names {
+		names[i] = fmt.Sprintf("%s=$%d", c, i+1)
+	}
+
+	return strings.Join(names, ",")
 }
 
 // WhereParams returns a list of sql parameter values for the query

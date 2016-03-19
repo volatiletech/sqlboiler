@@ -50,6 +50,8 @@ var sqlBoilerCommands = map[string]*cobra.Command{
 	"findselect":  findSelectCmd,
 	// Delete commands
 	"delete": deleteCmd,
+	// Update commands
+	"update": updateCmd,
 }
 
 // sqlBoilerCommandRuns points each command to its custom run function.
@@ -77,6 +79,8 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"scanParamNames":       scanParamNames,
 	"hasPrimaryKey":        hasPrimaryKey,
 	"getPrimaryKey":        getPrimaryKey,
+	"updateParamNames":     updateParamNames,
+	"updateParamVariables": updateParamVariables,
 }
 
 /* Struct commands */
@@ -130,4 +134,11 @@ var findSelectCmd = &cobra.Command{
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Generate delete statement helpers from table definitions",
+}
+
+/* Update commands */
+
+var updateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "Generate update statement helpers from table definitions",
 }

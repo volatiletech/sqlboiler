@@ -15,6 +15,12 @@ var cfg = struct {
 		Host   string `toml:"host"`
 		Port   int    `toml:"port"`
 		DBName string `toml:"dbname"`
+		// Test details for template test file generation
+		TestUser   string `toml:"test_user"`
+		TestPass   string `toml:"test_pass"`
+		TestHost   string `toml:"test_host"`
+		TestPort   string `toml:"test_port"`
+		TestDBName string `toml:"test_dbname"`
 	} `toml:"postgres"`
 }{}
 

@@ -13,6 +13,9 @@ import (
 )
 
 func main() {
+	// Load the config.toml file
+	cmds.LoadConfigFile("config.toml")
+
 	// Execute SQLBoiler
 	if err := cmds.SQLBoiler.Execute(); err != nil {
 		fmt.Printf("Failed to execute SQLBoiler: %s", err)

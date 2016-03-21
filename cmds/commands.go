@@ -14,7 +14,6 @@ type imports struct {
 }
 
 // sqlBoilerDefaultImports defines the list of default template imports.
-// Imports that are defined
 var sqlBoilerDefaultImports = imports{
 	standard: []string{
 		`"errors"`,
@@ -26,7 +25,15 @@ var sqlBoilerDefaultImports = imports{
 	},
 }
 
+// sqlBoilerDefaultTestImports defines the list of default test template imports.
+var sqlBoilerDefaultTestImports = imports{
+	standard: []string{
+		`"testing"`,
+	},
+}
+
 var sqlBoilerCustomImports map[string]imports
+var sqlBoilerCustomTestImports map[string]imports
 
 // sqlBoilerCommands points each command to its cobra.Command variable.
 //

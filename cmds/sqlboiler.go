@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	templatesDirectory = "/cmds/templates"
+	templatesDirectory     = "/cmds/templates"
+	templatesTestDirectory = "/cmds/templates_test"
 )
 
 // cmdData is used globally by all commands to access the table schema data,
@@ -24,6 +25,9 @@ var cmdData *CmdData
 
 // templates holds a slice of pointers to all templates in the templates directory.
 var templates []*template.Template
+
+// testTemplates holds a slice of pointers to all test templates in the templates directory.
+var testTemplates []*template.Template
 
 // SQLBoiler is the root app command
 var SQLBoiler = &cobra.Command{
@@ -88,6 +92,12 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	templates, err = initTemplates(templatesDirectory)
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
+	}
+
+	// Initialize the test templates
+	testTemplates, err = initTemplates(templatesTestDirectory)
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to initialize test templates: %s", err))
 	}
 }
 

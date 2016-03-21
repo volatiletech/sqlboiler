@@ -27,12 +27,43 @@ func generateTemplate(commandName string, data *tplData) []byte {
 	return output
 }
 
+// generateTestTemplate generates the test template associated to the passed in command name.
+func generateTestTemplate(commandName string, data *tplData) []byte {
+	template := getTestTemplate(commandName)
+
+	if template == nil {
+		return []byte{}
+	}
+
+	output, err := processTemplate(template, data)
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to process the test template %s for table %s: %s", template.Name(), data.Table, err))
+	}
+
+	return output
+}
+
 // getTemplate returns a pointer to the template matching the passed in name
 func getTemplate(name string) *template.Template {
 	var tpl *template.Template
 
 	// Find the template that matches the passed in template name
 	for _, t := range templates {
+		if t.Name() == name+".tpl" {
+			tpl = t
+			break
+		}
+	}
+
+	return tpl
+}
+
+// getTemplate returns a pointer to the template matching the passed in name
+func getTestTemplate(name string) *template.Template {
+	var tpl *template.Template
+
+	// Find the template that matches the passed in template name
+	for _, t := range testTemplates {
 		if t.Name() == name+".tpl" {
 			tpl = t
 			break

@@ -61,7 +61,7 @@ func templater(cmd *cobra.Command, data *tplData) {
 	out := [][]byte{generateTemplate(cmd.Name(), data)}
 
 	imps := combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[cmd.Name()])
-	err := outHandler(cmdData.OutFolder, out, data, &imps)
+	err := outHandler(cmdData.OutFolder, out, data, &imps, false)
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
 	}
@@ -75,12 +75,17 @@ var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
 
 // outHandler loops over the slice of byte slices, outputting them to either
 // the OutFile if it is specified with a flag, or to Stdout if no flag is specified.
-func outHandler(outFolder string, output [][]byte, data *tplData, imps *imports) error {
+func outHandler(outFolder string, output [][]byte, data *tplData, imps *imports, testTemplate bool) error {
 	out := testHarnessStdout
 
 	var path string
 	if len(outFolder) != 0 {
-		path = outFolder + "/" + data.Table + ".go"
+		if testTemplate {
+			path = outFolder + "/" + data.Table + "_test.go"
+		} else {
+			path = outFolder + "/" + data.Table + ".go"
+		}
+
 		outFile, err := testHarnessFileOpen(path)
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to create output file %s: %s", path, err))

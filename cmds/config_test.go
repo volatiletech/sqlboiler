@@ -12,7 +12,7 @@ func TestLoadConfig(t *testing.T) {
 	file, _ := ioutil.TempFile(os.TempDir(), "sqlboilercfgtest")
 	defer os.Remove(file.Name())
 
-	if cfg.Postgres.DBName != "" || testCfg.Postgres.TestDBName != "" {
+	if cfg != nil {
 		t.Errorf("Expected cfgs to be empty for the time being.")
 	}
 
@@ -26,34 +26,35 @@ func TestLoadConfig(t *testing.T) {
 	file.WriteString(fContents)
 	LoadConfigFile(file.Name())
 
-	if cfg.Postgres.Host != "localhost" || cfg.Postgres.Port != 5432 ||
+	if cfg.TestPostgres != nil || cfg.Postgres.Host != "localhost" ||
 		cfg.Postgres.User != "user" || cfg.Postgres.Pass != "pass" ||
-		cfg.Postgres.DBName != "mydb" || testCfg.Found == true {
+		cfg.Postgres.DBName != "mydb" || cfg.Postgres.Port != 5432 {
 		t.Errorf("Config failed to load properly, got: %#v", cfg.Postgres)
 	}
 
 	fContents = `
-	test_host="localhost"
-	test_port=5432
-	test_user="testuser"
-	test_pass="testpass"`
+	[postgres_test]
+	host="localhost"
+	port=5432
+	user="testuser"
+	pass="testpass"`
 
 	file.WriteString(fContents)
 	LoadConfigFile(file.Name())
 
-	if testCfg.Postgres.TestHost != "localhost" || testCfg.Postgres.TestPort != 5432 ||
-		testCfg.Postgres.TestUser != "testuser" || testCfg.Postgres.TestPass != "testpass" ||
-		testCfg.Postgres.TestDBName != "" || testCfg.Found == true {
-		t.Errorf("Test config failed to load properly, got: %#v", testCfg.Postgres)
+	if cfg.TestPostgres != nil {
+		t.Errorf("Test config failed to load properly, got: %#v", cfg.Postgres)
 	}
 
 	fContents = `
-	test_dbname="testmydb"`
+	dbname="testmydb"`
 
 	file.WriteString(fContents)
 	LoadConfigFile(file.Name())
 
-	if testCfg.Postgres.TestDBName != "testmydb" || testCfg.Found != true {
-		t.Errorf("Test config failed to load properly, got: %#v", testCfg.Postgres)
+	if cfg.TestPostgres.DBName != "testmydb" || cfg.TestPostgres.Host != "localhost" ||
+		cfg.TestPostgres.User != "testuser" || cfg.TestPostgres.Pass != "testpass" ||
+		cfg.TestPostgres.Port != 5432 {
+		t.Errorf("Test config failed to load properly, got: %#v", cfg.Postgres)
 	}
 }

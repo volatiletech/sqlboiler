@@ -18,6 +18,10 @@ func boilRun(cmd *cobra.Command, args []string) {
 	// Prepend "struct" command to templateNames slice so it sits at top of sort
 	commandNames = append([]string{"struct"}, commandNames...)
 
+	// Create a testCommandNames with "main" prepended to the front for the test templates
+	// the main template initializes all of the testing assets
+	testCommandNames := append([]string{"main"}, commandNames...)
+
 	for i := 0; i < len(cmdData.Columns); i++ {
 		data := tplData{
 			Table:   cmdData.Tables[i],
@@ -34,6 +38,7 @@ func boilRun(cmd *cobra.Command, args []string) {
 		// Loop through and generate every command template (excluding skipTemplates)
 		for _, command := range commandNames {
 			imps = combineImports(imps, sqlBoilerCustomImports[command])
+			imps = combineConditionalTypeImports(imps, sqlBoilerConditionalTypeImports, data.Columns)
 			out = append(out, generateTemplate(command, &data))
 		}
 
@@ -51,7 +56,7 @@ func boilRun(cmd *cobra.Command, args []string) {
 			testImps.thirdparty = sqlBoilerDefaultTestImports.thirdparty
 
 			// Loop through and generate every command test template (excluding skipTemplates)
-			for _, command := range commandNames {
+			for _, command := range testCommandNames {
 				testImps = combineImports(testImps, sqlBoilerCustomTestImports[command])
 				testOut = append(testOut, generateTestTemplate(command, &data))
 			}
@@ -66,8 +71,9 @@ func boilRun(cmd *cobra.Command, args []string) {
 
 func buildCommandList() []string {
 	// Exclude these commands from the output
-	skipTemplates := []string{
+	skipCommands := []string{
 		"boil",
+		"struct",
 	}
 
 	var commandNames []string
@@ -75,11 +81,9 @@ func buildCommandList() []string {
 	// Build a list of template names
 	for _, c := range sqlBoilerCommands {
 		skip := false
-		for _, s := range skipTemplates {
+		for _, s := range skipCommands {
 			// Skip name if it's in the exclude list.
-			// Also skip "struct" so that it can be added manually at the beginning
-			// of the slice. Structs should always go to the top of the file.
-			if s == c.Name() || c.Name() == "struct" {
+			if s == c.Name() {
 				skip = true
 				break
 			}

@@ -19,7 +19,7 @@ func {{$tableNamePlural}}All(db boil.DB) ([]*{{$tableNameSingular}}, error) {
       return nil, fmt.Errorf("{{.PkgName}}: failed to scan row: %v", err)
     }
 
-    {{$varNamePlural}} = append({{$varNamePlural}}, {{$varNamePlural}}Tmp)
+    {{$varNamePlural}} = append({{$varNamePlural}}, &{{$varNamePlural}}Tmp)
   }
 
   if err := rows.Err(); err != nil {

@@ -4,7 +4,7 @@
 // For example: friendName string `db:"friend_name"`
 func {{$tableNameSingular}}FindSelect(db boil.DB, id int, results interface{}) error {
   if id == 0 {
-    return nil, errors.New("{{.PkgName}}: no id provided for {{.Table}} select")
+    return errors.New("{{.PkgName}}: no id provided for {{.Table}} select")
   }
 
   query := fmt.Sprintf(`SELECT %s FROM {{.Table}} WHERE id=$1`, boil.SelectNames(results))

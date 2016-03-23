@@ -5,19 +5,21 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
 type ImportSorter []string
 
-func (i ImportSorter) Len() int {
+func (i importList) Len() int {
 	return len(i)
 }
 
-func (i ImportSorter) Swap(k, j int) {
+func (i importList) Swap(k, j int) {
 	i[k], i[j] = i[j], i[k]
 }
 
-func (i ImportSorter) Less(k, j int) bool {
+func (i importList) Less(k, j int) bool {
 	res := strings.Compare(strings.TrimLeft(i[k], "_ "), strings.TrimLeft(i[j], "_ "))
 	if res <= 0 {
 		return true
@@ -32,10 +34,37 @@ func combineImports(a, b imports) imports {
 	c.standard = removeDuplicates(combineStringSlices(a.standard, b.standard))
 	c.thirdparty = removeDuplicates(combineStringSlices(a.thirdparty, b.thirdparty))
 
-	sort.Sort(ImportSorter(c.standard))
-	sort.Sort(ImportSorter(c.thirdparty))
+	sort.Sort(c.standard)
+	sort.Sort(c.thirdparty)
 
 	return c
+}
+
+func combineConditionalTypeImports(a imports, b map[string]imports, columns []dbdrivers.DBColumn) imports {
+	tmpImp := imports{
+		standard:   make(importList, len(a.standard)),
+		thirdparty: make(importList, len(a.thirdparty)),
+	}
+
+	copy(tmpImp.standard, a.standard)
+	copy(tmpImp.thirdparty, a.thirdparty)
+
+	for _, col := range columns {
+		for key, imp := range b {
+			if col.Type == key {
+				tmpImp.standard = append(tmpImp.standard, imp.standard...)
+				tmpImp.thirdparty = append(tmpImp.thirdparty, imp.thirdparty...)
+			}
+		}
+	}
+
+	tmpImp.standard = removeDuplicates(tmpImp.standard)
+	tmpImp.thirdparty = removeDuplicates(tmpImp.thirdparty)
+
+	sort.Sort(tmpImp.standard)
+	sort.Sort(tmpImp.thirdparty)
+
+	return tmpImp
 }
 
 func buildImportString(imps *imports) []byte {

@@ -94,10 +94,12 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 		errorQuit(fmt.Errorf("Unable to initialize templates: %s", err))
 	}
 
-	// Initialize the test templates
-	testTemplates, err = initTemplates(templatesTestDirectory)
-	if err != nil {
-		errorQuit(fmt.Errorf("Unable to initialize test templates: %s", err))
+	// Initialize the test templates if the OutFolder
+	if cmdData.OutFolder != "" && cfg.TestPostgres != nil {
+		testTemplates, err = initTemplates(templatesTestDirectory)
+		if err != nil {
+			errorQuit(fmt.Errorf("Unable to initialize test templates: %s", err))
+		}
 	}
 }
 

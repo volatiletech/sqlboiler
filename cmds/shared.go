@@ -61,6 +61,8 @@ func templater(cmd *cobra.Command, data *tplData) {
 	out := [][]byte{generateTemplate(cmd.Name(), data)}
 
 	imps := combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[cmd.Name()])
+	imps = combineConditionalTypeImports(imps, sqlBoilerConditionalTypeImports, data.Columns)
+
 	err := outHandler(cmdData.OutFolder, out, data, &imps, false)
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))

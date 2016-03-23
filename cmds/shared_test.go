@@ -70,7 +70,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 
 	a1 := imports{
-		standard: []string{
+		standard: importList{
 			`"fmt"`,
 		},
 	}
@@ -98,11 +98,11 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 
 	a3 := imports{
-		standard: []string{
+		standard: importList{
 			`"fmt"`,
 			`"errors"`,
 		},
-		thirdparty: []string{
+		thirdparty: importList{
 			`_ "github.com/lib/pq"`,
 			`_ "github.com/gorilla/n"`,
 			`"github.com/gorilla/mux"`,
@@ -111,8 +111,8 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 	file = &bytes.Buffer{}
 
-	sort.Sort(ImportSorter(a3.standard))
-	sort.Sort(ImportSorter(a3.thirdparty))
+	sort.Sort(a3.standard)
+	sort.Sort(a3.thirdparty)
 
 	if err := outHandler("folder", templateOutputs, &data, &a3, false); err != nil {
 		t.Error(err)
@@ -142,44 +142,44 @@ patrick's dreams
 func TestSortImports(t *testing.T) {
 	t.Parallel()
 
-	a1 := []string{
+	a1 := importList{
 		`"fmt"`,
 		`"errors"`,
 	}
-	a2 := []string{
+	a2 := importList{
 		`_ "github.com/lib/pq"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/mux"`,
 		`"github.com/gorilla/websocket"`,
 	}
 
-	a1Expected := []string{"errors", "fmt"}
-	a2Expected := []string{
+	a1Expected := importList{`"errors"`, `"fmt"`}
+	a2Expected := importList{
 		`"github.com/gorilla/mux"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/websocket"`,
 		`_ "github.com/lib/pq"`,
 	}
 
-	sort.Sort(ImportSorter(a1))
+	sort.Sort(a1)
 	if !reflect.DeepEqual(a1, a1Expected) {
-		fmt.Errorf("Expected a1 to match a1Expected, got: %v", a1)
+		t.Errorf("Expected a1 to match a1Expected, got: %v", a1)
 	}
 
 	for i, v := range a1 {
 		if v != a1Expected[i] {
-			fmt.Errorf("Expected a1[%d] to match a1Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
+			t.Errorf("Expected a1[%d] to match a1Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
 		}
 	}
 
-	sort.Sort(ImportSorter(a2))
+	sort.Sort(a2)
 	if !reflect.DeepEqual(a2, a2Expected) {
-		fmt.Errorf("Expected a2 to match a2expected, got: %v", a2)
+		t.Errorf("Expected a2 to match a2expected, got: %v", a2)
 	}
 
 	for i, v := range a2 {
 		if v != a2Expected[i] {
-			fmt.Errorf("Expected a2[%d] to match a2Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
+			t.Errorf("Expected a2[%d] to match a2Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
 		}
 	}
 }
@@ -188,12 +188,12 @@ func TestCombineImports(t *testing.T) {
 	t.Parallel()
 
 	a := imports{
-		standard:   []string{"fmt"},
-		thirdparty: []string{"github.com/pobri19/sqlboiler", "gopkg.in/guregu/null.v3"},
+		standard:   importList{"fmt"},
+		thirdparty: importList{"github.com/pobri19/sqlboiler", "gopkg.in/guregu/null.v3"},
 	}
 	b := imports{
-		standard:   []string{"os"},
-		thirdparty: []string{"github.com/pobri19/sqlboiler"},
+		standard:   importList{"os"},
+		thirdparty: importList{"github.com/pobri19/sqlboiler"},
 	}
 
 	c := combineImports(a, b)

@@ -61,12 +61,15 @@ func TestTemplates(t *testing.T) {
 	}
 	defer tplTestHandle.Close()
 
-	fmt.Fprintf(tplTestHandle, "package %s", cmdData.PkgName)
+	fmt.Fprintf(tplTestHandle, "package %s\n", cmdData.PkgName)
 
 	buf := bytes.Buffer{}
-	cmd := exec.Command("go", "test", tplFile)
+	buf2 := bytes.Buffer{}
+
+	cmd := exec.Command("go", "test")
 	cmd.Dir = cmdData.OutFolder
 	cmd.Stderr = &buf
+	cmd.Stdout = &buf2
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go test cmd execution failed: %s\n\n%s", err, buf.String())

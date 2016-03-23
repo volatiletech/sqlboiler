@@ -6,29 +6,54 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type importList []string
+
 // imports defines the optional standard imports and
 // thirdparty imports (from github for example)
 type imports struct {
-	standard   []string
-	thirdparty []string
+	standard   importList
+	thirdparty importList
 }
 
 // sqlBoilerDefaultImports defines the list of default template imports.
 var sqlBoilerDefaultImports = imports{
-	standard: []string{
+	standard: importList{
 		`"errors"`,
 		`"fmt"`,
 	},
-	thirdparty: []string{
+	thirdparty: importList{
 		`"github.com/pobri19/sqlboiler/boil"`,
-		`"gopkg.in/guregu/null.v3"`,
 	},
 }
 
 // sqlBoilerDefaultTestImports defines the list of default test template imports.
 var sqlBoilerDefaultTestImports = imports{
-	standard: []string{
+	standard: importList{
 		`"testing"`,
+	},
+}
+
+// sqlBoilerConditionalTypeImports imports are only included in the template output
+// if the database requires one of the following special types. Check ParseTableInfo
+// to see the type assignments.
+var sqlBoilerConditionalTypeImports = map[string]imports{
+	"null.Int": imports{
+		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+	},
+	"null.String": imports{
+		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+	},
+	"null.Bool": imports{
+		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+	},
+	"null.Float": imports{
+		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+	},
+	"null.Time": imports{
+		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+	},
+	"time.Time": imports{
+		standard: importList{`"time"`},
 	},
 }
 

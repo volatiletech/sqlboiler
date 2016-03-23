@@ -79,9 +79,6 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	// Initialize the cmdData.Tables
 	initTables()
 
-	// Initialize the cmdData.Columns
-	initColumns()
-
 	// Initialize the package name
 	initPkgName()
 
@@ -136,39 +133,23 @@ func initTables() {
 	// Retrieve the list of tables
 	tn := SQLBoiler.PersistentFlags().Lookup("table").Value.String()
 
+	var tableNames []string
+
 	if len(tn) != 0 {
-		cmdData.Tables = strings.Split(tn, ",")
-		for i, name := range cmdData.Tables {
-			cmdData.Tables[i] = strings.TrimSpace(name)
+		tableNames = strings.Split(tn, ",")
+		for i, name := range tableNames {
+			tableNames[i] = strings.TrimSpace(name)
 		}
 	}
 
-	// If no table names are provided attempt to process all tables in database
+	var err error
+	cmdData.Tables, err = cmdData.Interface.Tables(tableNames...)
+	if err != nil {
+		errorQuit(fmt.Errorf("Unable to get all table names: %s", err))
+	}
+
 	if len(cmdData.Tables) == 0 {
-		// get all table names
-		var err error
-		cmdData.Tables, err = cmdData.Interface.AllTables()
-		if err != nil {
-			errorQuit(fmt.Errorf("Unable to get all table names: %s", err))
-		}
-
-		if len(cmdData.Tables) == 0 {
-			errorQuit(errors.New("No tables found in database, migrate some tables first"))
-		}
-	}
-}
-
-// initColumns builds a description of each table (column name, column type)
-// and assigns it to cmdData.Columns, the slice of dbdrivers.Column slices.
-func initColumns() {
-	// loop over table Names and build Columns
-	for i := 0; i < len(cmdData.Tables); i++ {
-		tInfo, err := cmdData.Interface.Columns(cmdData.Tables[i])
-		if err != nil {
-			errorQuit(fmt.Errorf("Unable to get the table info: %s", err))
-		}
-
-		cmdData.Columns = append(cmdData.Columns, tInfo)
+		errorQuit(errors.New("No tables found in database, migrate some tables first"))
 	}
 }
 

@@ -9,8 +9,6 @@ import (
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
-type ImportSorter []string
-
 func (i importList) Len() int {
 	return len(i)
 }
@@ -67,7 +65,7 @@ func combineConditionalTypeImports(a imports, b map[string]imports, columns []db
 	return tmpImp
 }
 
-func buildImportString(imps *imports) []byte {
+func buildImportString(imps imports) []byte {
 	stdlen, thirdlen := len(imps.standard), len(imps.thirdparty)
 	if stdlen+thirdlen < 1 {
 		return []byte{}

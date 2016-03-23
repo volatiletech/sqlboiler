@@ -3,16 +3,13 @@ package dbdrivers
 // Interface for a database driver. Functionality required to support a specific
 // database type (eg, MySQL, Postgres etc.)
 type Interface interface {
-	// AllTables connects to the database and retrieves all "public" table names
-	AllTables() ([]string, error)
+	// Tables connects to the database and retrieves the table metadata for
+	// the given tables, or all tables if none are provided.
+	Tables(names ...string) ([]Table, error)
 
-	// Columns retrieves column information about the table.
-	Columns(tableName string) ([]Column, error)
-
-	// TranslateColumn builds a Column out of a column metadata.
-	// Its main responsibility is to convert database types to Go types, for
-	// example "varchar" to "string".
-	TranslateColumn(Column) Column
+	// TranslateColumnType takes a Database column type and returns a go column
+	// type.
+	TranslateColumnType(Column) Column
 
 	// Open the database connection
 	Open() error
@@ -30,7 +27,7 @@ type Table struct {
 }
 
 // Column holds information about a database column.
-// Types are Go types, converted by TranslateColumn.
+// Types are Go types, converted by TranslateColumnType.
 type Column struct {
 	Name         string
 	Type         string

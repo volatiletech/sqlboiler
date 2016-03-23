@@ -29,9 +29,9 @@ func NewPostgresDriver(user, pass, dbname, host string, port int) *PostgresDrive
 }
 
 // Open opens the database connection using the connection string
-func (d *PostgresDriver) Open() error {
+func (p *PostgresDriver) Open() error {
 	var err error
-	d.dbConn, err = sql.Open("postgres", d.connStr)
+	p.dbConn, err = sql.Open("postgres", p.connStr)
 	if err != nil {
 		return err
 	}
@@ -40,18 +40,44 @@ func (d *PostgresDriver) Open() error {
 }
 
 // Close closes the database connection
-func (d *PostgresDriver) Close() {
-	d.dbConn.Close()
+func (p *PostgresDriver) Close() {
+	p.dbConn.Close()
 }
 
-// AllTables connects to the postgres database and
+// Tables returns the table metadata for the given tables, or all tables if
+// no tables are provided.
+func (p *PostgresDriver) Tables(names ...string) ([]Table, error) {
+	var err error
+	if len(names) == 0 {
+		if names, err = p.tableNames(); err != nil {
+			return nil, err
+		}
+	}
+
+	var tables []Table
+	for _, name := range names {
+		columns, err := p.columns(name)
+		if err != nil {
+			return nil, err
+		}
+
+		tables = append(tables, Table{
+			Name:    name,
+			Columns: columns,
+		})
+	}
+
+	return tables, nil
+}
+
+// tableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is public. It excludes common migration tool tables
 // such as gorp_migrations
-func (d *PostgresDriver) AllTables() ([]string, error) {
-	var tableNames []string
+func (p *PostgresDriver) tableNames() ([]string, error) {
+	var names []string
 
-	rows, err := d.dbConn.Query(`select table_name from
+	rows, err := p.dbConn.Query(`select table_name from
     information_schema.tables where table_schema='public'
     and table_name <> 'gorp_migrations'`)
 
@@ -61,24 +87,24 @@ func (d *PostgresDriver) AllTables() ([]string, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		var tableName string
-		if err := rows.Scan(&tableName); err != nil {
+		var name string
+		if err := rows.Scan(&name); err != nil {
 			return nil, err
 		}
-		tableNames = append(tableNames, tableName)
+		names = append(names, name)
 	}
 
-	return tableNames, nil
+	return names, nil
 }
 
-// Columns takes a table name and attempts to retrieve the table information
+// columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
-// and column types and returns those as a []Column after TranslateColumn()
+// and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (d *PostgresDriver) Columns(tableName string) ([]Column, error) {
-	var table []Column
+func (p *PostgresDriver) columns(tableName string) ([]Column, error) {
+	var columns []Column
 
-	rows, err := d.dbConn.Query(`
+	rows, err := p.dbConn.Query(`
 		SELECT c.column_name, c.data_type, c.is_nullable,
 		CASE WHEN pk.column_name IS NOT NULL THEN 'PRIMARY KEY' ELSE '' END AS KeyType
 		FROM information_schema.columns c
@@ -104,22 +130,22 @@ func (d *PostgresDriver) Columns(tableName string) ([]Column, error) {
 		if err := rows.Scan(&colName, &colType, &isNullable, &isPrimary); err != nil {
 			return nil, err
 		}
-		t := d.TranslateColumn(Column{
+		column := p.TranslateColumnType(Column{
 			Name:         colName,
 			Type:         colType,
 			IsNullable:   isNullable == "YES",
 			IsPrimaryKey: isPrimary == "PRIMARY KEY",
 		})
-		table = append(table, t)
+		columns = append(columns, column)
 	}
 
-	return table, nil
+	return columns, nil
 }
 
-// TranslateColumn converts postgres database types to Go types, for example
+// TranslateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (d *PostgresDriver) TranslateColumn(c Column) Column {
+func (p *PostgresDriver) TranslateColumnType(c Column) Column {
 	if c.IsNullable {
 		switch c.Type {
 		case "bigint", "bigserial", "integer", "smallint", "smallserial", "serial":

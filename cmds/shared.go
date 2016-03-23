@@ -17,17 +17,15 @@ type CobraRunFunc func(cmd *cobra.Command, args []string)
 // the database driver chosen by the driver flag at runtime, and a pointer to the
 // output file, if one is specified with a flag.
 type CmdData struct {
-	Tables    []string
-	Columns   [][]dbdrivers.Column
+	Tables    []dbdrivers.Table
 	PkgName   string
 	OutFolder string
-	Interface  dbdrivers.Interface
+	Interface dbdrivers.Interface
 }
 
 // tplData is used to pass data to the template
 type tplData struct {
-	Table   string
-	Columns []dbdrivers.Column
+	Table   dbdrivers.Table
 	PkgName string
 }
 
@@ -41,14 +39,13 @@ func errorQuit(err error) {
 // It will generate the specific commands template and send it to outHandler for output.
 func defaultRun(cmd *cobra.Command, args []string) {
 	// Generate the template for every table
-	for i := 0; i < len(cmdData.Columns); i++ {
-		data := tplData{
-			Table:   cmdData.Tables[i],
-			Columns: cmdData.Columns[i],
+	for _, t := range cmdData.Tables {
+		data := &tplData{
+			Table:   t,
 			PkgName: cmdData.PkgName,
 		}
 
-		templater(cmd, &data)
+		templater(cmd, data)
 	}
 }
 
@@ -61,9 +58,9 @@ func templater(cmd *cobra.Command, data *tplData) {
 	out := [][]byte{generateTemplate(cmd.Name(), data)}
 
 	imps := combineImports(sqlBoilerDefaultImports, sqlBoilerCustomImports[cmd.Name()])
-	imps = combineConditionalTypeImports(imps, sqlBoilerConditionalTypeImports, data.Columns)
+	imps = combineConditionalTypeImports(imps, sqlBoilerConditionalTypeImports, data.Table.Columns)
 
-	err := outHandler(cmdData.OutFolder, out, data, &imps, false)
+	err := outHandler(cmdData.OutFolder, out, data, imps, false)
 	if err != nil {
 		errorQuit(fmt.Errorf("Unable to generate the template for command %s: %s", cmd.Name(), err))
 	}
@@ -77,15 +74,15 @@ var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
 
 // outHandler loops over the slice of byte slices, outputting them to either
 // the OutFile if it is specified with a flag, or to Stdout if no flag is specified.
-func outHandler(outFolder string, output [][]byte, data *tplData, imps *imports, testTemplate bool) error {
+func outHandler(outFolder string, output [][]byte, data *tplData, imps imports, testTemplate bool) error {
 	out := testHarnessStdout
 
 	var path string
 	if len(outFolder) != 0 {
 		if testTemplate {
-			path = outFolder + "/" + data.Table + "_test.go"
+			path = outFolder + "/" + data.Table.Name + "_test.go"
 		} else {
-			path = outFolder + "/" + data.Table + ".go"
+			path = outFolder + "/" + data.Table.Name + ".go"
 		}
 
 		outFile, err := testHarnessFileOpen(path)

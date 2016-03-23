@@ -22,10 +22,9 @@ func boilRun(cmd *cobra.Command, args []string) {
 	// the main template initializes all of the testing assets
 	testCommandNames := append([]string{"main"}, commandNames...)
 
-	for i := 0; i < len(cmdData.Columns); i++ {
-		data := tplData{
-			Table:   cmdData.Tables[i],
-			Columns: cmdData.Columns[i],
+	for _, table := range cmdData.Tables {
+		data := &tplData{
+			Table:   table,
 			PkgName: cmdData.PkgName,
 		}
 
@@ -38,11 +37,11 @@ func boilRun(cmd *cobra.Command, args []string) {
 		// Loop through and generate every command template (excluding skipTemplates)
 		for _, command := range commandNames {
 			imps = combineImports(imps, sqlBoilerCustomImports[command])
-			imps = combineConditionalTypeImports(imps, sqlBoilerConditionalTypeImports, data.Columns)
-			out = append(out, generateTemplate(command, &data))
+			imps = combineConditionalTypeImports(imps, sqlBoilerConditionalTypeImports, data.Table.Columns)
+			out = append(out, generateTemplate(command, data))
 		}
 
-		err := outHandler(cmdData.OutFolder, out, &data, &imps, false)
+		err := outHandler(cmdData.OutFolder, out, data, imps, false)
 		if err != nil {
 			errorQuit(err)
 		}
@@ -58,10 +57,10 @@ func boilRun(cmd *cobra.Command, args []string) {
 			// Loop through and generate every command test template (excluding skipTemplates)
 			for _, command := range testCommandNames {
 				testImps = combineImports(testImps, sqlBoilerCustomTestImports[command])
-				testOut = append(testOut, generateTestTemplate(command, &data))
+				testOut = append(testOut, generateTestTemplate(command, data))
 			}
 
-			err = outHandler(cmdData.OutFolder, testOut, &data, &testImps, true)
+			err = outHandler(cmdData.OutFolder, testOut, data, testImps, true)
 			if err != nil {
 				errorQuit(err)
 			}

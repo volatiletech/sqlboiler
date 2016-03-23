@@ -56,15 +56,21 @@ func (p *PostgresDriver) Tables(names ...string) ([]Table, error) {
 
 	var tables []Table
 	for _, name := range names {
-		columns, err := p.columns(name)
-		if err != nil {
+		t := Table{Name: name}
+
+		if t.Columns, err = p.columns(name); err != nil {
 			return nil, err
 		}
 
-		tables = append(tables, Table{
-			Name:    name,
-			Columns: columns,
-		})
+		if t.PKey, err = p.primaryKeyInfo(name); err != nil {
+			return nil, err
+		}
+
+		if t.FKeys, err = p.foreignKeyInfo(name); err != nil {
+			return nil, err
+		}
+
+		tables = append(tables, t)
 	}
 
 	return tables, nil
@@ -140,6 +146,80 @@ func (p *PostgresDriver) columns(tableName string) ([]Column, error) {
 	}
 
 	return columns, nil
+}
+
+// primaryKeyInfo looks up the primary key for a table.
+func (p *PostgresDriver) primaryKeyInfo(tableName string) (*PrimaryKey, error) {
+	pkey := &PrimaryKey{}
+	var err error
+
+	query := ``
+
+	row := p.dbConn.QueryRow(query, tableName)
+	if err = row.Scan(&pkey.Name); err != nil {
+		return nil, err
+	}
+
+	queryColumns := ``
+
+	var rows *sql.Rows
+	if rows, err = p.dbConn.Query(queryColumns, tableName); err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var column string
+
+		err = rows.Scan(&column)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return pkey, nil
+}
+
+// foreignKeyInfo retrieves the foreign keys for a given table name.
+func (p *PostgresDriver) foreignKeyInfo(tableName string) ([]ForeignKey, error) {
+	var fkeys []ForeignKey
+
+	query := `
+	SELECT
+    tc.constraint_name,
+    kcu.table_name as source_table,
+    kcu.column_name as source_column,
+    ccu.table_name as dest_table,
+    ccu.column_name as dest_column
+	FROM information_schema.table_constraints as tc
+	JOIN information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
+	JOIN information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
+	WHERE source_table = $1, tc.constraint_type = 'FOREIGN KEY';`
+
+	var rows *sql.Rows
+	var err error
+	if rows, err = p.dbConn.Query(query, tableName); err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var fkey ForeignKey
+		var sourceTable string
+
+		err = rows.Scan(&fkey.Name, &sourceTable, &fkey.Column, &fkey.ForeignTable, &fkey.ForeignColumn)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return fkeys, nil
 }
 
 // TranslateColumnType converts postgres database types to Go types, for example

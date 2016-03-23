@@ -23,6 +23,9 @@ type Table struct {
 	Name    string
 	Columns []Column
 
+	PKey  *PrimaryKey
+	FKeys []ForeignKey
+
 	IsJoinTable bool
 }
 
@@ -33,4 +36,19 @@ type Column struct {
 	Type         string
 	IsPrimaryKey bool
 	IsNullable   bool
+}
+
+// PrimaryKey represents a primary key constraint in a database
+type PrimaryKey struct {
+	Name    string
+	Columns []string
+}
+
+// ForeignKey represents a foreign key constraint in a database
+type ForeignKey struct {
+	Name   string
+	Column string
+
+	ForeignTable  string
+	ForeignColumn string
 }

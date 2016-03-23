@@ -1,12 +1,12 @@
-{{- $tableNameSingular := titleCaseSingular .Table -}}
-{{- $dbName := singular .Table -}}
-{{- $tableNamePlural := titleCasePlural .Table -}}
-{{- $varNamePlural := camelCasePlural .Table -}}
+{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $dbName := singular .Table.Name -}}
+{{- $tableNamePlural := titleCasePlural .Table.Name -}}
+{{- $varNamePlural := camelCasePlural .Table.Name -}}
 // {{$tableNamePlural}}All retrieves all records.
 func {{$tableNamePlural}}All(db boil.DB) ([]*{{$tableNameSingular}}, error) {
   var {{$varNamePlural}} []*{{$tableNameSingular}}
 
-  rows, err := db.Query(`SELECT {{selectParamNames $dbName .Columns}} FROM {{.Table}}`)
+  rows, err := db.Query(`SELECT {{selectParamNames $dbName .Table.Columns}} FROM {{.Table.Name}}`)
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to query: %v", err)
   }
@@ -15,7 +15,7 @@ func {{$tableNamePlural}}All(db boil.DB) ([]*{{$tableNameSingular}}, error) {
     {{- $tmpVarName := (print $varNamePlural "Tmp") -}}
     {{$varNamePlural}}Tmp := {{$tableNameSingular}}{}
 
-    if err := rows.Scan({{scanParamNames $tmpVarName .Columns}}); err != nil {
+    if err := rows.Scan({{scanParamNames $tmpVarName .Table.Columns}}); err != nil {
       return nil, fmt.Errorf("{{.PkgName}}: failed to scan row: %v", err)
     }
 

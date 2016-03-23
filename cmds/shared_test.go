@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
 func TestOutHandler(t *testing.T) {
@@ -19,12 +21,14 @@ func TestOutHandler(t *testing.T) {
 	}()
 
 	data := tplData{
-		Table: "patrick",
+		Table: dbdrivers.Table{
+			Name: "patrick",
+		},
 	}
 
 	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
 
-	if err := outHandler("", templateOutputs, &data, &imports{}, false); err != nil {
+	if err := outHandler("", templateOutputs, &data, imports{}, false); err != nil {
 		t.Error(err)
 	}
 
@@ -57,12 +61,12 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 
 	data := tplData{
-		Table: "patrick",
+		Table: dbdrivers.Table{Name: "patrick"},
 	}
 
 	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
 
-	if err := outHandler("folder", templateOutputs, &data, &imports{}, false); err != nil {
+	if err := outHandler("folder", templateOutputs, &data, imports{}, false); err != nil {
 		t.Error(err)
 	}
 	if out := file.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
@@ -76,7 +80,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 	file = &bytes.Buffer{}
 
-	if err := outHandler("folder", templateOutputs, &data, &a1, false); err != nil {
+	if err := outHandler("folder", templateOutputs, &data, a1, false); err != nil {
 		t.Error(err)
 	}
 	if out := file.String(); out != "package patrick\n\nimport \"fmt\"\nhello world\npatrick's dreams\n" {
@@ -90,7 +94,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 	file = &bytes.Buffer{}
 
-	if err := outHandler("folder", templateOutputs, &data, &a2, false); err != nil {
+	if err := outHandler("folder", templateOutputs, &data, a2, false); err != nil {
 		t.Error(err)
 	}
 	if out := file.String(); out != "package patrick\n\nimport \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
@@ -114,7 +118,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	sort.Sort(a3.standard)
 	sort.Sort(a3.thirdparty)
 
-	if err := outHandler("folder", templateOutputs, &data, &a3, false); err != nil {
+	if err := outHandler("folder", templateOutputs, &data, a3, false); err != nil {
 		t.Error(err)
 	}
 

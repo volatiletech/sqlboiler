@@ -13,24 +13,29 @@ import (
 
 func init() {
 	cmdData = &CmdData{
-		Tables: []string{"patrick_table", "spiderman"},
-		Columns: [][]dbdrivers.Column{
-			[]dbdrivers.Column{
-				{Name: "patrick_column", Type: "string", IsNullable: false},
-				{Name: "aaron_column", Type: "null.String", IsNullable: true},
-				{Name: "id", Type: "null.Int", IsNullable: true},
-				{Name: "fun_id", Type: "int64", IsNullable: false},
-				{Name: "time", Type: "null.Time", IsNullable: true},
-				{Name: "fun_time", Type: "time.Time", IsNullable: false},
-				{Name: "cool_stuff_forever", Type: "[]byte", IsNullable: false},
+		Tables: []dbdrivers.Table{
+			{
+				Name: "patrick_table",
+				Columns: []dbdrivers.Column{
+					{Name: "patrick_column", Type: "string", IsNullable: false},
+					{Name: "aaron_column", Type: "null.String", IsNullable: true},
+					{Name: "id", Type: "null.Int", IsNullable: true},
+					{Name: "fun_id", Type: "int64", IsNullable: false},
+					{Name: "time", Type: "null.Time", IsNullable: true},
+					{Name: "fun_time", Type: "time.Time", IsNullable: false},
+					{Name: "cool_stuff_forever", Type: "[]byte", IsNullable: false},
+				},
 			},
-			[]dbdrivers.Column{
-				{Name: "patrick", Type: "string", IsNullable: false},
+			{
+				Name: "spiderman",
+				Columns: []dbdrivers.Column{
+					{Name: "patrick", Type: "string", IsNullable: false},
+				},
 			},
 		},
 		PkgName:   "patrick",
 		OutFolder: "",
-		Interface:  nil,
+		Interface: nil,
 	}
 }
 

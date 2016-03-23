@@ -183,11 +183,11 @@ func makeDBName(tableName, colName string) string {
 	return tableName + "_" + colName
 }
 
-// updateParamNames takes a []DBColumn and returns a comma seperated
+// updateParamNames takes a []Column and returns a comma seperated
 // list of parameter names for the update statement template SET clause.
 // eg: col1=$1,col2=$2,col3=$3
 // Note: updateParamNames will exclude the PRIMARY KEY column.
-func updateParamNames(columns []dbdrivers.DBColumn) string {
+func updateParamNames(columns []dbdrivers.Column) string {
 	names := make([]string, 0, len(columns))
 	counter := 0
 	for _, c := range columns {
@@ -200,11 +200,11 @@ func updateParamNames(columns []dbdrivers.DBColumn) string {
 	return strings.Join(names, ",")
 }
 
-// updateParamVariables takes a prefix and a []DBColumns and returns a
+// updateParamVariables takes a prefix and a []Columns and returns a
 // comma seperated list of parameter variable names for the update statement.
 // eg: prefix("o."), column("name_id") -> "o.NameID, ..."
 // Note: updateParamVariables will exclude the PRIMARY KEY column.
-func updateParamVariables(prefix string, columns []dbdrivers.DBColumn) string {
+func updateParamVariables(prefix string, columns []dbdrivers.Column) string {
 	names := make([]string, 0, len(columns))
 
 	for _, c := range columns {
@@ -218,9 +218,9 @@ func updateParamVariables(prefix string, columns []dbdrivers.DBColumn) string {
 	return strings.Join(names, ", ")
 }
 
-// insertParamNames takes a []DBColumn and returns a comma seperated
+// insertParamNames takes a []Column and returns a comma seperated
 // list of parameter names for the insert statement template.
-func insertParamNames(columns []dbdrivers.DBColumn) string {
+func insertParamNames(columns []dbdrivers.Column) string {
 	names := make([]string, 0, len(columns))
 	for _, c := range columns {
 		names = append(names, c.Name)
@@ -228,9 +228,9 @@ func insertParamNames(columns []dbdrivers.DBColumn) string {
 	return strings.Join(names, ", ")
 }
 
-// insertParamFlags takes a []DBColumn and returns a comma seperated
+// insertParamFlags takes a []Column and returns a comma seperated
 // list of parameter flags for the insert statement template.
-func insertParamFlags(columns []dbdrivers.DBColumn) string {
+func insertParamFlags(columns []dbdrivers.Column) string {
 	params := make([]string, 0, len(columns))
 	for i := range columns {
 		params = append(params, fmt.Sprintf("$%d", i+1))
@@ -238,10 +238,10 @@ func insertParamFlags(columns []dbdrivers.DBColumn) string {
 	return strings.Join(params, ", ")
 }
 
-// insertParamVariables takes a prefix and a []DBColumns and returns a
+// insertParamVariables takes a prefix and a []Columns and returns a
 // comma seperated list of parameter variable names for the insert statement.
 // For example: prefix("o."), column("name_id") -> "o.NameID, ..."
-func insertParamVariables(prefix string, columns []dbdrivers.DBColumn) string {
+func insertParamVariables(prefix string, columns []dbdrivers.Column) string {
 	names := make([]string, 0, len(columns))
 
 	for _, c := range columns {
@@ -252,11 +252,11 @@ func insertParamVariables(prefix string, columns []dbdrivers.DBColumn) string {
 	return strings.Join(names, ", ")
 }
 
-// selectParamNames takes a []DBColumn and returns a comma seperated
+// selectParamNames takes a []Column and returns a comma seperated
 // list of parameter names with for the select statement template.
 // It also uses the table name to generate the "AS" part of the statement, for
 // example: var_name AS table_name_var_name, ...
-func selectParamNames(tableName string, columns []dbdrivers.DBColumn) string {
+func selectParamNames(tableName string, columns []dbdrivers.Column) string {
 	selects := make([]string, 0, len(columns))
 	for _, c := range columns {
 		statement := fmt.Sprintf("%s AS %s", c.Name, makeDBName(tableName, c.Name))
@@ -266,9 +266,9 @@ func selectParamNames(tableName string, columns []dbdrivers.DBColumn) string {
 	return strings.Join(selects, ", ")
 }
 
-// scanParamNames takes a []DBColumn and returns a comma seperated
+// scanParamNames takes a []Column and returns a comma seperated
 // list of parameter names for use in a db.Scan() call.
-func scanParamNames(object string, columns []dbdrivers.DBColumn) string {
+func scanParamNames(object string, columns []dbdrivers.Column) string {
 	scans := make([]string, 0, len(columns))
 	for _, c := range columns {
 		statement := fmt.Sprintf("&%s.%s", object, titleCase(c.Name))
@@ -279,7 +279,7 @@ func scanParamNames(object string, columns []dbdrivers.DBColumn) string {
 }
 
 // hasPrimaryKey returns true if one of the columns passed in is a primary key
-func hasPrimaryKey(columns []dbdrivers.DBColumn) bool {
+func hasPrimaryKey(columns []dbdrivers.Column) bool {
 	for _, c := range columns {
 		if c.IsPrimaryKey {
 			return true
@@ -290,7 +290,7 @@ func hasPrimaryKey(columns []dbdrivers.DBColumn) bool {
 }
 
 // getPrimaryKey returns the primary key column name if one is present
-func getPrimaryKey(columns []dbdrivers.DBColumn) string {
+func getPrimaryKey(columns []dbdrivers.Column) string {
 	for _, c := range columns {
 		if c.IsPrimaryKey {
 			return c.Name

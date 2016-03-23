@@ -18,16 +18,16 @@ type CobraRunFunc func(cmd *cobra.Command, args []string)
 // output file, if one is specified with a flag.
 type CmdData struct {
 	Tables    []string
-	Columns   [][]dbdrivers.DBColumn
+	Columns   [][]dbdrivers.Column
 	PkgName   string
 	OutFolder string
-	DBDriver  dbdrivers.DBDriver
+	Interface  dbdrivers.Interface
 }
 
 // tplData is used to pass data to the template
 type tplData struct {
 	Table   string
-	Columns []dbdrivers.DBColumn
+	Columns []dbdrivers.Column
 	PkgName string
 }
 

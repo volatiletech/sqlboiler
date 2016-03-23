@@ -55,7 +55,7 @@ func init() {
 // sqlBoilerPostRun cleans up the output file and database connection once
 // all commands are finished running.
 func sqlBoilerPostRun(cmd *cobra.Command, args []string) {
-	cmdData.DBDriver.Close()
+	cmdData.Interface.Close()
 }
 
 // sqlBoilerPreRun executes before all commands start running. Its job is to
@@ -68,11 +68,11 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	var err error
 	cmdData = &CmdData{}
 
-	// Initialize the cmdData.DBDriver
-	initDBDriver()
+	// Initialize the cmdData.Interface
+	initInterface()
 
 	// Connect to the driver database
-	if err = cmdData.DBDriver.Open(); err != nil {
+	if err = cmdData.Interface.Open(); err != nil {
 		errorQuit(fmt.Errorf("Unable to connect to the database: %s", err))
 	}
 
@@ -103,9 +103,9 @@ func sqlBoilerPreRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-// initDBDriver attempts to set the cmdData DBDriver based off the passed in
+// initInterface attempts to set the cmdData Interface based off the passed in
 // driver flag value. If an invalid flag string is provided the program will exit.
-func initDBDriver() {
+func initInterface() {
 	// Retrieve driver flag
 	driverName := SQLBoiler.PersistentFlags().Lookup("driver").Value.String()
 	if driverName == "" {
@@ -115,7 +115,7 @@ func initDBDriver() {
 	// Create a driver based off driver flag
 	switch driverName {
 	case "postgres":
-		cmdData.DBDriver = dbdrivers.NewPostgresDriver(
+		cmdData.Interface = dbdrivers.NewPostgresDriver(
 			cfg.Postgres.User,
 			cfg.Postgres.Pass,
 			cfg.Postgres.DBName,
@@ -124,7 +124,7 @@ func initDBDriver() {
 		)
 	}
 
-	if cmdData.DBDriver == nil {
+	if cmdData.Interface == nil {
 		errorQuit(errors.New("An invalid driver name was provided"))
 	}
 }
@@ -147,7 +147,7 @@ func initTables() {
 	if len(cmdData.Tables) == 0 {
 		// get all table names
 		var err error
-		cmdData.Tables, err = cmdData.DBDriver.GetAllTables()
+		cmdData.Tables, err = cmdData.Interface.AllTables()
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to get all table names: %s", err))
 		}
@@ -159,11 +159,11 @@ func initTables() {
 }
 
 // initColumns builds a description of each table (column name, column type)
-// and assigns it to cmdData.Columns, the slice of dbdrivers.DBColumn slices.
+// and assigns it to cmdData.Columns, the slice of dbdrivers.Column slices.
 func initColumns() {
 	// loop over table Names and build Columns
 	for i := 0; i < len(cmdData.Tables); i++ {
-		tInfo, err := cmdData.DBDriver.GetTableInfo(cmdData.Tables[i])
+		tInfo, err := cmdData.Interface.Columns(cmdData.Tables[i])
 		if err != nil {
 			errorQuit(fmt.Errorf("Unable to get the table info: %s", err))
 		}

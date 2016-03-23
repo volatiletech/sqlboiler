@@ -30,17 +30,17 @@ func TestCombineConditionalTypeImports(t *testing.T) {
 		},
 	}
 
-	cols := []dbdrivers.DBColumn{
-		dbdrivers.DBColumn{
+	cols := []dbdrivers.Column{
+		dbdrivers.Column{
 			Type: "null.Time",
 		},
-		dbdrivers.DBColumn{
+		dbdrivers.Column{
 			Type: "null.Time",
 		},
-		dbdrivers.DBColumn{
+		dbdrivers.Column{
 			Type: "time.Time",
 		},
-		dbdrivers.DBColumn{
+		dbdrivers.Column{
 			Type: "null.Float",
 		},
 	}

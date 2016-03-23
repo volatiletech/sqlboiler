@@ -40,7 +40,7 @@ func combineImports(a, b imports) imports {
 	return c
 }
 
-func combineConditionalTypeImports(a imports, b map[string]imports, columns []dbdrivers.DBColumn) imports {
+func combineConditionalTypeImports(a imports, b map[string]imports, columns []dbdrivers.Column) imports {
 	tmpImp := imports{
 		standard:   make(importList, len(a.standard)),
 		thirdparty: make(importList, len(a.thirdparty)),

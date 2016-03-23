@@ -6,7 +6,7 @@ import (
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
-var testColumns = []dbdrivers.DBColumn{
+var testColumns = []dbdrivers.Column{
 	{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
 	{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
 }
@@ -98,7 +98,7 @@ func TestMakeDBName(t *testing.T) {
 func TestUpdateParamNames(t *testing.T) {
 	t.Parallel()
 
-	var testCols = []dbdrivers.DBColumn{
+	var testCols = []dbdrivers.Column{
 		{Name: "id", Type: "int", IsNullable: false, IsPrimaryKey: true},
 		{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
 		{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
@@ -113,7 +113,7 @@ func TestUpdateParamNames(t *testing.T) {
 func TestUpdateParamVariables(t *testing.T) {
 	t.Parallel()
 
-	var testCols = []dbdrivers.DBColumn{
+	var testCols = []dbdrivers.Column{
 		{Name: "id", Type: "int", IsNullable: false, IsPrimaryKey: true},
 		{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
 		{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},

@@ -34,7 +34,7 @@ var sqlBoilerDefaultTestImports = imports{
 }
 
 // sqlBoilerConditionalTypeImports imports are only included in the template output
-// if the database requires one of the following special types. Check ParseTableInfo
+// if the database requires one of the following special types. Check TranslateColumn
 // to see the type assignments.
 var sqlBoilerConditionalTypeImports = map[string]imports{
 	"null.Int": imports{

@@ -9,7 +9,7 @@ SQLBoiler is a tool to generate Go boilerplate code for database interactions. S
 # Supports?
 * Postgres
 
-If anyone wants to create a driver for their own database it's easy very to do. All you need to do is create a driver in the ````/dbdrivers```` package that implements the ````DBDriver```` interface (you can use ````postgres_driver.go```` as an example), and add your driver to the switch statement in the ````initDBDriver()```` function in ````sqlboiler.go````. That's it!
+If anyone wants to create a driver for their own database it's easy very to do. All you need to do is create a driver in the ````/dbdrivers```` package that implements the ````Interface```` interface (you can use ````postgres_driver.go```` as an example), and add your driver to the switch statement in the ````initInterface()```` function in ````sqlboiler.go````. That's it!
 
 I've included templates for struct definitions and select, delete and insert statement helpers. Editing the output of the existing templates is as easy as modifying the template file, but to add new types of statements you'll need to add a new command and a new template. This is also very easy to do, and you can use any of the existing command files as an example.
 

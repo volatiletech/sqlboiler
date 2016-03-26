@@ -124,6 +124,8 @@ func initInterface() {
 	if cmdData.Interface == nil {
 		errorQuit(errors.New("An invalid driver name was provided"))
 	}
+
+	cmdData.DriverName = driverName
 }
 
 // initTables will create a string slice out of the passed in table flag value

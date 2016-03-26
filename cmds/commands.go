@@ -30,6 +30,15 @@ var sqlBoilerDefaultImports = imports{
 var sqlBoilerDefaultTestImports = imports{
 	standard: importList{
 		`"testing"`,
+		`"os"`,
+		`"os/exec"`,
+		`"fmt"`,
+		`"io/ioutil"`,
+		`"bytes"`,
+		`"errors"`,
+	},
+	thirdparty: importList{
+		`"github.com/BurntSushi/toml"`,
 	},
 }
 
@@ -54,6 +63,15 @@ var sqlBoilerConditionalTypeImports = map[string]imports{
 	},
 	"time.Time": imports{
 		standard: importList{`"time"`},
+	},
+}
+
+// sqlBoilerConditionalDriverTestImports defines the test template imports
+// for the particular database interfaces
+var sqlBoilerConditionalDriverTestImports = map[string]imports{
+	"postgres": imports{
+		standard:   importList{`"database/sql"`},
+		thirdparty: importList{`_ "github.com/lib/pq"`},
 	},
 }
 

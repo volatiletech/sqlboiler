@@ -16,13 +16,7 @@ type PostgresCfg struct {
 }
 
 type Config struct {
-	Postgres PostgresCfg `toml:"postgres"`
-	// The TestPostgres object holds the configuration pointing to a test database.
-	// This test database is used to test all of the commands that have an accompanying
-	// command.testtpl file. These template files generate the go test functions.
-	//
-	// Note: These test templates will only be generated for the boil command,
-	// if an OutFolder is provided, and if all test config variables are present.
+	Postgres     PostgresCfg  `toml:"postgres"`
 	TestPostgres *PostgresCfg `toml:"postgres_test"`
 }
 

@@ -18,9 +18,9 @@ func boilRun(cmd *cobra.Command, args []string) {
 	// Prepend "struct" command to templateNames slice so it sits at top of sort
 	commandNames = append([]string{"struct"}, commandNames...)
 
-	// Create a testCommandNames with "main" prepended to the front for the test templates
+	// Create a testCommandNames with "driverName_main" prepended to the front for the test templates
 	// the main template initializes all of the testing assets
-	testCommandNames := append([]string{"main"}, commandNames...)
+	testCommandNames := append([]string{cmdData.DriverName + "_main"}, commandNames...)
 
 	for _, table := range cmdData.Tables {
 		data := &tplData{
@@ -53,6 +53,8 @@ func boilRun(cmd *cobra.Command, args []string) {
 
 			testImps.standard = sqlBoilerDefaultTestImports.standard
 			testImps.thirdparty = sqlBoilerDefaultTestImports.thirdparty
+
+			testImps = combineImports(testImps, sqlBoilerConditionalDriverTestImports[cmdData.DriverName])
 
 			// Loop through and generate every command test template (excluding skipTemplates)
 			for _, command := range testCommandNames {

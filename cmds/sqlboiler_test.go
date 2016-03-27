@@ -11,6 +11,8 @@ import (
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
+var cmdData *CmdData
+
 func init() {
 	cmdData = &CmdData{
 		Tables: []dbdrivers.Table{
@@ -46,7 +48,7 @@ func TestTemplates(t *testing.T) {
 
 	// Initialize the templates
 	var err error
-	templates, err = initTemplates("templates")
+	cmdData.Templates, err = loadTemplates("templates")
 	if err != nil {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
@@ -57,7 +59,7 @@ func TestTemplates(t *testing.T) {
 	}
 	defer os.RemoveAll(cmdData.OutFolder)
 
-	boilRun(sqlBoilerCommands["boil"], []string{})
+	cmdData.SQLBoilerRun(nil, []string{})
 
 	tplFile := cmdData.OutFolder + "/templates_test.go"
 	tplTestHandle, err := os.Create(tplFile)

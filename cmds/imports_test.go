@@ -7,7 +7,7 @@ import (
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
-func TestCombineConditionalTypeImports(t *testing.T) {
+func TestCombineTypeImports(t *testing.T) {
 	imports1 := imports{
 		standard: importList{
 			`"errors"`,
@@ -45,7 +45,7 @@ func TestCombineConditionalTypeImports(t *testing.T) {
 		},
 	}
 
-	res1 := combineConditionalTypeImports(imports1, sqlBoilerConditionalTypeImports, cols)
+	res1 := combineTypeImports(imports1, sqlBoilerTypeImports, cols)
 
 	if !reflect.DeepEqual(res1, importsExpected) {
 		t.Errorf("Expected res1 to match importsExpected, got:\n\n%#v\n", res1)
@@ -63,7 +63,7 @@ func TestCombineConditionalTypeImports(t *testing.T) {
 		},
 	}
 
-	res2 := combineConditionalTypeImports(imports2, sqlBoilerConditionalTypeImports, cols)
+	res2 := combineTypeImports(imports2, sqlBoilerTypeImports, cols)
 
 	if !reflect.DeepEqual(res2, importsExpected) {
 		t.Errorf("Expected res2 to match importsExpected, got:\n\n%#v\n", res1)

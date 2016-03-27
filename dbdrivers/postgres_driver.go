@@ -50,6 +50,7 @@ func (p *PostgresDriver) Tables(names ...string) ([]Table, error) {
 	var err error
 	if len(names) == 0 {
 		if names, err = p.tableNames(); err != nil {
+			fmt.Println("Unable to get table names.")
 			return nil, err
 		}
 	}
@@ -59,14 +60,17 @@ func (p *PostgresDriver) Tables(names ...string) ([]Table, error) {
 		t := Table{Name: name}
 
 		if t.Columns, err = p.columns(name); err != nil {
+			fmt.Println("Unable to get columnss.")
 			return nil, err
 		}
 
 		if t.PKey, err = p.primaryKeyInfo(name); err != nil {
+			fmt.Println("Unable to get primary key info.")
 			return nil, err
 		}
 
 		if t.FKeys, err = p.foreignKeyInfo(name); err != nil {
+			fmt.Println("Unable to get foreign key info.")
 			return nil, err
 		}
 
@@ -153,14 +157,25 @@ func (p *PostgresDriver) primaryKeyInfo(tableName string) (*PrimaryKey, error) {
 	pkey := &PrimaryKey{}
 	var err error
 
-	query := ``
+	query := `SELECT conname
+		FROM pg_constraint
+		WHERE conrelid =
+			(SELECT oid
+			FROM pg_class
+			WHERE relname LIKE $1)
+		AND contype='p';`
 
 	row := p.dbConn.QueryRow(query, tableName)
 	if err = row.Scan(&pkey.Name); err != nil {
 		return nil, err
 	}
 
-	queryColumns := ``
+	queryColumns := `SELECT a.attname AS column
+		FROM   pg_index i
+		JOIN   pg_attribute a ON a.attrelid = i.indrelid
+			AND a.attnum = ANY(i.indkey)
+		WHERE  i.indrelid = $1::regclass
+		AND    i.indisprimary;`
 
 	var rows *sql.Rows
 	if rows, err = p.dbConn.Query(queryColumns, tableName); err != nil {
@@ -197,7 +212,7 @@ func (p *PostgresDriver) foreignKeyInfo(tableName string) ([]ForeignKey, error) 
 	FROM information_schema.table_constraints as tc
 	JOIN information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
 	JOIN information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
-	WHERE source_table = $1, tc.constraint_type = 'FOREIGN KEY';`
+	WHERE tc.table_name = $1 AND tc.constraint_type = 'FOREIGN KEY';`
 
 	var rows *sql.Rows
 	var err error

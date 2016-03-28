@@ -1,9 +1,7 @@
 package cmds
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"reflect"
 	"sort"
 	"testing"
@@ -11,135 +9,66 @@ import (
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
-func TestOutHandler(t *testing.T) {
-	buf := &bytes.Buffer{}
-
-	saveTestHarnessStdout := testHarnessStdout
-	testHarnessStdout = buf
-	defer func() {
-		testHarnessStdout = saveTestHarnessStdout
-	}()
-
-	data := tplData{
-		Table: dbdrivers.Table{
-			Name: "patrick",
-		},
-	}
-
-	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
-
-	if err := outHandler(&CmdData{PkgName: "patrick"}, templateOutputs, &data, imports{}, false); err != nil {
-		t.Error(err)
-	}
-
-	if out := buf.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
-		t.Errorf("Wrong output: %q", out)
-	}
-}
-
-type NopWriteCloser struct {
-	io.Writer
-}
-
-func (NopWriteCloser) Close() error {
-	return nil
-}
-
-func nopCloser(w io.Writer) io.WriteCloser {
-	return NopWriteCloser{w}
-}
-
-func TestOutHandlerFiles(t *testing.T) {
-	saveTestHarnessFileOpen := testHarnessFileOpen
-	defer func() {
-		testHarnessFileOpen = saveTestHarnessFileOpen
-	}()
-
-	file := &bytes.Buffer{}
-	testHarnessFileOpen = func(path string) (io.WriteCloser, error) {
-		return nopCloser(file), nil
-	}
-
-	data := tplData{
-		Table: dbdrivers.Table{Name: "patrick"},
-	}
-
-	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
-
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, imports{}, false); err != nil {
-		t.Error(err)
-	}
-	if out := file.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
-		t.Errorf("Wrong output: %q", out)
-	}
-
-	a1 := imports{
+func TestCombineTypeImports(t *testing.T) {
+	imports1 := imports{
 		standard: importList{
-			`"fmt"`,
-		},
-	}
-	file = &bytes.Buffer{}
-
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, a1, false); err != nil {
-		t.Error(err)
-	}
-	if out := file.String(); out != "package patrick\n\nimport \"fmt\"\nhello world\npatrick's dreams\n" {
-		t.Errorf("Wrong output: %q", out)
-	}
-
-	a2 := imports{
-		thirdparty: []string{
-			`"github.com/spf13/cobra"`,
-		},
-	}
-	file = &bytes.Buffer{}
-
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, a2, false); err != nil {
-		t.Error(err)
-	}
-	if out := file.String(); out != "package patrick\n\nimport \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
-		t.Errorf("Wrong output: %q", out)
-	}
-
-	a3 := imports{
-		standard: importList{
-			`"fmt"`,
 			`"errors"`,
+			`"fmt"`,
 		},
 		thirdparty: importList{
-			`_ "github.com/lib/pq"`,
-			`_ "github.com/gorilla/n"`,
-			`"github.com/gorilla/mux"`,
-			`"github.com/gorilla/websocket"`,
+			`"github.com/pobri19/sqlboiler/boil"`,
 		},
 	}
-	file = &bytes.Buffer{}
 
-	sort.Sort(a3.standard)
-	sort.Sort(a3.thirdparty)
-
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, a3, false); err != nil {
-		t.Error(err)
+	importsExpected := imports{
+		standard: importList{
+			`"errors"`,
+			`"fmt"`,
+			`"time"`,
+		},
+		thirdparty: importList{
+			`"github.com/pobri19/sqlboiler/boil"`,
+			`"gopkg.in/guregu/null.v3"`,
+		},
 	}
 
-	expectedOut := `package patrick
+	cols := []dbdrivers.Column{
+		dbdrivers.Column{
+			Type: "null.Time",
+		},
+		dbdrivers.Column{
+			Type: "null.Time",
+		},
+		dbdrivers.Column{
+			Type: "time.Time",
+		},
+		dbdrivers.Column{
+			Type: "null.Float",
+		},
+	}
 
-import (
-	"errors"
-	"fmt"
+	res1 := combineTypeImports(imports1, sqlBoilerTypeImports, cols)
 
-	"github.com/gorilla/mux"
-	_ "github.com/gorilla/n"
-	"github.com/gorilla/websocket"
-	_ "github.com/lib/pq"
-)
+	if !reflect.DeepEqual(res1, importsExpected) {
+		t.Errorf("Expected res1 to match importsExpected, got:\n\n%#v\n", res1)
+	}
 
-hello world
-patrick's dreams
-`
+	imports2 := imports{
+		standard: importList{
+			`"errors"`,
+			`"fmt"`,
+			`"time"`,
+		},
+		thirdparty: importList{
+			`"github.com/pobri19/sqlboiler/boil"`,
+			`"gopkg.in/guregu/null.v3"`,
+		},
+	}
 
-	if out := file.String(); out != expectedOut {
-		t.Errorf("Wrong output (len %d, len %d): \n\n%q\n\n%q", len(out), len(expectedOut), out, expectedOut)
+	res2 := combineTypeImports(imports2, sqlBoilerTypeImports, cols)
+
+	if !reflect.DeepEqual(res2, importsExpected) {
+		t.Errorf("Expected res2 to match importsExpected, got:\n\n%#v\n", res1)
 	}
 }
 

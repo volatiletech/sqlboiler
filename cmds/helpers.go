@@ -96,3 +96,37 @@ func buildImportString(imps imports) []byte {
 
 	return buf.Bytes()
 }
+
+func combineStringSlices(a, b []string) []string {
+	c := make([]string, len(a)+len(b))
+	if len(a) > 0 {
+		copy(c, a)
+	}
+	if len(b) > 0 {
+		copy(c[len(a):], b)
+	}
+
+	return c
+}
+
+func removeDuplicates(dedup []string) []string {
+	if len(dedup) <= 1 {
+		return dedup
+	}
+
+	for i := 0; i < len(dedup)-1; i++ {
+		for j := i + 1; j < len(dedup); j++ {
+			if dedup[i] != dedup[j] {
+				continue
+			}
+
+			if j != len(dedup)-1 {
+				dedup[j] = dedup[len(dedup)-1]
+				j--
+			}
+			dedup = dedup[:len(dedup)-1]
+		}
+	}
+
+	return dedup
+}

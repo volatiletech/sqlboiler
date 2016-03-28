@@ -94,50 +94,14 @@ func (cmdData *CmdData) SQLBoilerRun(cmd *cobra.Command, args []string) error {
 			PkgName: cmdData.PkgName,
 		}
 
-		var out [][]byte
-		var imps imports
-
-		imps.standard = sqlBoilerImports.standard
-		imps.thirdparty = sqlBoilerImports.thirdparty
-
-		// Loop through and generate every command template (excluding skipTemplates)
-		for _, template := range cmdData.Templates {
-			imps = combineTypeImports(imps, sqlBoilerTypeImports, data.Table.Columns)
-			resp, err := generateTemplate(template, data)
-			if err != nil {
-				return err
-			}
-			out = append(out, resp)
+		// Generate the regular templates
+		if err := generateOutput(cmdData, data, false); err != nil {
+			return fmt.Errorf("Unable to generate test output: %s", err)
 		}
 
-		err := outHandler(cmdData, out, data, imps, false)
-		if err != nil {
-			return err
-		}
-
-		// Generate the test templates for all commands
-		if len(cmdData.TestTemplates) != 0 {
-			var testOut [][]byte
-			var testImps imports
-
-			testImps.standard = sqlBoilerTestImports.standard
-			testImps.thirdparty = sqlBoilerTestImports.thirdparty
-
-			testImps = combineImports(testImps, sqlBoilerDriverTestImports[cmdData.DriverName])
-
-			// Loop through and generate every command test template (excluding skipTemplates)
-			for _, template := range cmdData.TestTemplates {
-				resp, err := generateTemplate(template, data)
-				if err != nil {
-					return err
-				}
-				testOut = append(testOut, resp)
-			}
-
-			err = outHandler(cmdData, testOut, data, testImps, true)
-			if err != nil {
-				return err
-			}
+		// Generate the test templates
+		if err := generateOutput(cmdData, data, true); err != nil {
+			return fmt.Errorf("Unable to generate output: %s", err)
 		}
 	}
 

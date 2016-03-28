@@ -1,40 +1,12 @@
 package cmds
 
 import (
-	"bytes"
 	"fmt"
-	"go/format"
 	"strings"
-	"text/template"
 
 	"github.com/jinzhu/inflection"
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
-
-// generateTemplate generates the template associated to the passed in command name.
-func generateTemplate(template *template.Template, data *tplData) ([]byte, error) {
-	output, err := processTemplate(template, data)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to process the template %s for table %s: %s", template.Name(), data.Table.Name, err)
-	}
-
-	return output, nil
-}
-
-// processTemplate takes a template and returns the output of the template execution.
-func processTemplate(t *template.Template, data *tplData) ([]byte, error) {
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
-		return nil, err
-	}
-
-	output, err := format.Source(buf.Bytes())
-	if err != nil {
-		return nil, err
-	}
-
-	return output, nil
-}
 
 // plural converts singular words to plural words (eg: person to people)
 func plural(name string) string {

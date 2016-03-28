@@ -8,7 +8,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// sqlBoilerDefaultImports defines the list of default template imports.
+// sqlBoilerImports defines the list of default template imports.
 var sqlBoilerImports = imports{
 	standard: importList{
 		`"errors"`,
@@ -19,7 +19,7 @@ var sqlBoilerImports = imports{
 	},
 }
 
-// sqlBoilerDefaultTestImports defines the list of default test template imports.
+// sqlBoilerTestImports defines the list of default test template imports.
 var sqlBoilerTestImports = imports{
 	standard: importList{
 		`"testing"`,
@@ -58,7 +58,7 @@ var sqlBoilerTypeImports = map[string]imports{
 	},
 }
 
-// sqlBoilerConditionalDriverTestImports defines the test template imports
+// sqlBoilerDriverTestImports defines the test template imports
 // for the particular database interfaces
 var sqlBoilerDriverTestImports = map[string]imports{
 	"postgres": imports{

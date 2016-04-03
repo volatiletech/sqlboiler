@@ -91,7 +91,7 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 }
 
 // LoadConfigFile loads the toml config file into the cfg object
-func (cmdData *CmdData) LoadConfigFile(filename string) error {
+func (c *CmdData) LoadConfigFile(filename string) error {
 	cfg := &Config{}
 
 	_, err := toml.DecodeFile(filename, &cfg)

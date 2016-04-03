@@ -18,14 +18,14 @@ const (
 )
 
 // LoadTemplates loads all template folders into the cmdData object.
-func (cmdData *CmdData) LoadTemplates() error {
+func (c *CmdData) LoadTemplates() error {
 	var err error
-	cmdData.Templates, err = loadTemplates(templatesDirectory)
+	c.Templates, err = loadTemplates(templatesDirectory)
 	if err != nil {
 		return err
 	}
 
-	cmdData.TestTemplates, err = loadTemplates(templatesTestDirectory)
+	c.TestTemplates, err = loadTemplates(templatesTestDirectory)
 	if err != nil {
 		return err
 	}
@@ -51,13 +51,13 @@ func loadTemplates(dir string) ([]*template.Template, error) {
 }
 
 // SQLBoilerPostRun cleans up the output file and db connection once all cmds are finished.
-func (cmdData *CmdData) SQLBoilerPostRun(cmd *cobra.Command, args []string) error {
-	cmdData.Interface.Close()
+func (c *CmdData) SQLBoilerPostRun(cmd *cobra.Command, args []string) error {
+	c.Interface.Close()
 	return nil
 }
 
 // SQLBoilerPreRun performs the initialization tasks before the root command is run
-func (cmdData *CmdData) SQLBoilerPreRun(cmd *cobra.Command, args []string) error {
+func (c *CmdData) SQLBoilerPreRun(cmd *cobra.Command, args []string) error {
 	// Initialize package name
 	pkgName := cmd.PersistentFlags().Lookup("pkgname").Value.String()
 
@@ -74,30 +74,30 @@ func (cmdData *CmdData) SQLBoilerPreRun(cmd *cobra.Command, args []string) error
 		return fmt.Errorf("No output folder specified.")
 	}
 
-	return cmdData.initCmdData(pkgName, driverName, tableName, outFolder)
+	return c.initCmdData(pkgName, driverName, tableName, outFolder)
 }
 
 // SQLBoilerRun is a proxy method for the run function
-func (cmdData *CmdData) SQLBoilerRun(cmd *cobra.Command, args []string) error {
-	return cmdData.run(true)
+func (c *CmdData) SQLBoilerRun(cmd *cobra.Command, args []string) error {
+	return c.run(true)
 }
 
 // run executes the sqlboiler templates and outputs them to files.
-func (cmdData *CmdData) run(includeTests bool) error {
-	for _, table := range cmdData.Tables {
+func (c *CmdData) run(includeTests bool) error {
+	for _, table := range c.Tables {
 		data := &tplData{
 			Table:   table,
-			PkgName: cmdData.PkgName,
+			PkgName: c.PkgName,
 		}
 
 		// Generate the regular templates
-		if err := generateOutput(cmdData, data, false); err != nil {
+		if err := generateOutput(c, data, false); err != nil {
 			return fmt.Errorf("Unable to generate test output: %s", err)
 		}
 
 		// Generate the test templates
 		if includeTests {
-			if err := generateOutput(cmdData, data, true); err != nil {
+			if err := generateOutput(c, data, true); err != nil {
 				return fmt.Errorf("Unable to generate output: %s", err)
 			}
 		}
@@ -106,26 +106,26 @@ func (cmdData *CmdData) run(includeTests bool) error {
 	return nil
 }
 
-func (cmdData *CmdData) initCmdData(pkgName, driverName, tableName, outFolder string) error {
-	cmdData.OutFolder = outFolder
-	cmdData.PkgName = pkgName
+func (c *CmdData) initCmdData(pkgName, driverName, tableName, outFolder string) error {
+	c.OutFolder = outFolder
+	c.PkgName = pkgName
 
-	err := initInterface(driverName, cmdData)
+	err := initInterface(driverName, c)
 	if err != nil {
 		return err
 	}
 
 	// Connect to the driver database
-	if err = cmdData.Interface.Open(); err != nil {
+	if err = c.Interface.Open(); err != nil {
 		return fmt.Errorf("Unable to connect to the database: %s", err)
 	}
 
-	err = initTables(tableName, cmdData)
+	err = initTables(tableName, c)
 	if err != nil {
 		return fmt.Errorf("Unable to initialize tables: %s", err)
 	}
 
-	err = initOutFolder(cmdData)
+	err = initOutFolder(c)
 	if err != nil {
 		return fmt.Errorf("Unable to initialize the output folder: %s", err)
 	}

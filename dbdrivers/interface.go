@@ -96,8 +96,11 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 	return tables, nil
 }
 
+// setIsJoinTable iff there are:
+// There is a composite primary key involving two columns
+// Both primary key columns are also foreign keys
 func setIsJoinTable(t *Table) {
-	if t.PKey == nil {
+	if t.PKey == nil || len(t.PKey.Columns) != 2 || len(t.FKeys) < 2 {
 		return
 	}
 

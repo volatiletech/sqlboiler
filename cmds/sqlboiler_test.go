@@ -53,13 +53,28 @@ func TestTemplates(t *testing.T) {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
+	if len(cmdData.Templates) == 0 {
+		t.Errorf("Templates is empty.")
+	}
+
+	cmdData.TestTemplates, err = loadTemplates("templates_test")
+	if err != nil {
+		t.Fatalf("Unable to initialize templates: %s", err)
+	}
+
+	if len(cmdData.Templates) == 0 {
+		t.Errorf("Templates is empty.")
+	}
+
 	cmdData.OutFolder, err = ioutil.TempDir("", "templates")
 	if err != nil {
 		t.Fatalf("Unable to create tempdir: %s", err)
 	}
 	defer os.RemoveAll(cmdData.OutFolder)
 
-	cmdData.SQLBoilerRun(nil, []string{})
+	if err = cmdData.run(true); err != nil {
+		t.Errorf("Unable to run SQLBoilerRun: %s", err)
+	}
 
 	tplFile := cmdData.OutFolder + "/templates_test.go"
 	tplTestHandle, err := os.Create(tplFile)

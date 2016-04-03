@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/format"
 	"io"
@@ -17,8 +18,7 @@ var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
 
 func generateOutput(cmdData *CmdData, data *tplData, testOutput bool) error {
 	if (testOutput && len(cmdData.TestTemplates) == 0) || (!testOutput && len(cmdData.Templates) == 0) {
-		fmt.Println("No template files located for generation")
-		return nil
+		return errors.New("No template files located for generation")
 	}
 
 	var out [][]byte

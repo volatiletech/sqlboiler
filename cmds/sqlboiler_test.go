@@ -2,7 +2,6 @@ package cmds
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -75,15 +74,6 @@ func TestTemplates(t *testing.T) {
 	if err = cmdData.run(true); err != nil {
 		t.Errorf("Unable to run SQLBoilerRun: %s", err)
 	}
-
-	tplFile := cmdData.OutFolder + "/templates_test.go"
-	tplTestHandle, err := os.Create(tplFile)
-	if err != nil {
-		t.Errorf("Unable to create %s: %s", tplFile, err)
-	}
-	defer tplTestHandle.Close()
-
-	fmt.Fprintf(tplTestHandle, "package %s\n", cmdData.PkgName)
 
 	buf := bytes.Buffer{}
 	buf2 := bytes.Buffer{}

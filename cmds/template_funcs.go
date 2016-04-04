@@ -107,11 +107,11 @@ func makeDBName(tableName, colName string) string {
 // list of parameter names for the update statement template SET clause.
 // eg: col1=$1,col2=$2,col3=$3
 // Note: updateParamNames will exclude the PRIMARY KEY column.
-func updateParamNames(columns []dbdrivers.Column) string {
+func updateParamNames(columns []dbdrivers.Column, pkeyColumns []string) string {
 	names := make([]string, 0, len(columns))
 	counter := 0
 	for _, c := range columns {
-		if c.IsPrimaryKey {
+		if isPrimaryKey(c.Name, pkeyColumns) {
 			continue
 		}
 		counter++
@@ -124,11 +124,11 @@ func updateParamNames(columns []dbdrivers.Column) string {
 // comma seperated list of parameter variable names for the update statement.
 // eg: prefix("o."), column("name_id") -> "o.NameID, ..."
 // Note: updateParamVariables will exclude the PRIMARY KEY column.
-func updateParamVariables(prefix string, columns []dbdrivers.Column) string {
+func updateParamVariables(prefix string, columns []dbdrivers.Column, pkeyColumns []string) string {
 	names := make([]string, 0, len(columns))
 
 	for _, c := range columns {
-		if c.IsPrimaryKey {
+		if isPrimaryKey(c.Name, pkeyColumns) {
 			continue
 		}
 		n := prefix + titleCase(c.Name)
@@ -136,6 +136,17 @@ func updateParamVariables(prefix string, columns []dbdrivers.Column) string {
 	}
 
 	return strings.Join(names, ", ")
+}
+
+// isPrimaryKey checks if the column is found in the primary key columns
+func isPrimaryKey(col string, pkeyCols []string) bool {
+	for _, pkey := range pkeyCols {
+		if pkey == col {
+			return true
+		}
+	}
+
+	return false
 }
 
 // insertParamNames takes a []Column and returns a comma seperated
@@ -199,23 +210,48 @@ func scanParamNames(object string, columns []dbdrivers.Column) string {
 }
 
 // hasPrimaryKey returns true if one of the columns passed in is a primary key
-func hasPrimaryKey(columns []dbdrivers.Column) bool {
-	for _, c := range columns {
-		if c.IsPrimaryKey {
-			return true
-		}
+func hasPrimaryKey(pKey *dbdrivers.PrimaryKey) bool {
+	if pKey == nil || len(pKey.Columns) == 0 {
+		return false
 	}
 
-	return false
+	return true
 }
 
-// getPrimaryKey returns the primary key column name if one is present
-func getPrimaryKey(columns []dbdrivers.Column) string {
-	for _, c := range columns {
-		if c.IsPrimaryKey {
-			return c.Name
+// wherePrimaryKey returns the where clause using start as the $ flag index
+// For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
+func wherePrimaryKey(pkeyCols []string, start int) string {
+	var output string
+	for i, c := range pkeyCols {
+		output = fmt.Sprintf("%s%s=$%d", output, c, start)
+		start++
+
+		if i < len(pkeyCols)-1 {
+			output = fmt.Sprintf("%s AND ", output)
 		}
 	}
 
-	return ""
+	return output
+}
+
+// paramsPrimaryKey returns the parameters for the sql statement $ flags
+// For example, if prefix was "o.", and titleCase was true: "o.ColumnName1, o.ColumnName2"
+func paramsPrimaryKey(prefix string, columns []string, shouldTitleCase bool) string {
+	names := make([]string, 0, len(columns))
+
+	for _, c := range columns {
+		var n string
+		if shouldTitleCase {
+			n = prefix + titleCase(c)
+		} else {
+			n = prefix + c
+		}
+		names = append(names, n)
+	}
+
+	return strings.Join(names, ", ")
+}
+
+func primaryKeyFlagIndex(regularCols []dbdrivers.Column, pkeyCols []string) int {
+	return len(regularCols) - len(pkeyCols) + 1
 }

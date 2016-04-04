@@ -7,8 +7,8 @@ import (
 )
 
 var testColumns = []dbdrivers.Column{
-	{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
-	{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
+	{Name: "friend_column", Type: "int", IsNullable: false},
+	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 }
 
 func TestSingular(t *testing.T) {
@@ -99,12 +99,12 @@ func TestUpdateParamNames(t *testing.T) {
 	t.Parallel()
 
 	var testCols = []dbdrivers.Column{
-		{Name: "id", Type: "int", IsNullable: false, IsPrimaryKey: true},
-		{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
-		{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
+		{Name: "id", Type: "int", IsNullable: false},
+		{Name: "friend_column", Type: "int", IsNullable: false},
+		{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 	}
 
-	out := updateParamNames(testCols)
+	out := updateParamNames(testCols, []string{"id"})
 	if out != "friend_column=$1,enemy_column_thing=$2" {
 		t.Error("Wrong output:", out)
 	}
@@ -114,12 +114,12 @@ func TestUpdateParamVariables(t *testing.T) {
 	t.Parallel()
 
 	var testCols = []dbdrivers.Column{
-		{Name: "id", Type: "int", IsNullable: false, IsPrimaryKey: true},
-		{Name: "friend_column", Type: "int", IsNullable: false, IsPrimaryKey: false},
-		{Name: "enemy_column_thing", Type: "string", IsNullable: true, IsPrimaryKey: false},
+		{Name: "id", Type: "int", IsNullable: false},
+		{Name: "friend_column", Type: "int", IsNullable: false},
+		{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 	}
 
-	out := updateParamVariables("o.", testCols)
+	out := updateParamVariables("o.", testCols, []string{"id"})
 	if out != "o.FriendColumn, o.EnemyColumnThing" {
 		t.Error("Wrong output:", out)
 	}
@@ -165,5 +165,101 @@ func TestScanParams(t *testing.T) {
 	out := scanParamNames("object", testColumns)
 	if out != "&object.FriendColumn, &object.EnemyColumnThing" {
 		t.Error("Wrong output:", out)
+	}
+}
+
+func TestHasPrimaryKey(t *testing.T) {
+	t.Parallel()
+
+	var pkey *dbdrivers.PrimaryKey
+	if hasPrimaryKey(pkey) {
+		t.Errorf("1) Expected false, got true")
+	}
+
+	pkey = &dbdrivers.PrimaryKey{}
+	if hasPrimaryKey(pkey) {
+		t.Errorf("2) Expected false, got true")
+	}
+
+	pkey.Columns = append(pkey.Columns, "test")
+	if !hasPrimaryKey(pkey) {
+		t.Errorf("3) Expected true, got false")
+	}
+}
+
+func TestParamsPrimaryKey(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Pkey   dbdrivers.PrimaryKey
+		Prefix string
+		Should string
+	}{
+		{
+			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one"}},
+			Prefix: "o.", Should: "o.ColOne",
+		},
+		{
+			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two"}},
+			Prefix: "o.", Should: "o.ColOne, o.ColTwo",
+		},
+		{
+			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two", "col_three"}},
+			Prefix: "o.", Should: "o.ColOne, o.ColTwo, o.ColThree",
+		},
+	}
+
+	for i, test := range tests {
+		r := paramsPrimaryKey(test.Prefix, test.Pkey.Columns, true)
+		if r != test.Should {
+			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
+		}
+	}
+
+	tests2 := []struct {
+		Pkey   dbdrivers.PrimaryKey
+		Prefix string
+		Should string
+	}{
+		{
+			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one"}},
+			Prefix: "o.", Should: "o.col_one",
+		},
+		{
+			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two"}},
+			Prefix: "o.", Should: "o.col_one, o.col_two",
+		},
+		{
+			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two", "col_three"}},
+			Prefix: "o.", Should: "o.col_one, o.col_two, o.col_three",
+		},
+	}
+
+	for i, test := range tests2 {
+		r := paramsPrimaryKey(test.Prefix, test.Pkey.Columns, false)
+		if r != test.Should {
+			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
+		}
+	}
+}
+
+func TestWherePrimaryKey(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Pkey   dbdrivers.PrimaryKey
+		Start  int
+		Should string
+	}{
+		{Pkey: dbdrivers.PrimaryKey{Columns: []string{"col1"}}, Start: 2, Should: "col1=$2"},
+		{Pkey: dbdrivers.PrimaryKey{Columns: []string{"col1", "col2"}}, Start: 4, Should: "col1=$4 AND col2=$5"},
+		{Pkey: dbdrivers.PrimaryKey{Columns: []string{"col1", "col2", "col3"}}, Start: 4, Should: "col1=$4 AND col2=$5 AND col3=$6"},
+	}
+
+	for i, test := range tests {
+		r := wherePrimaryKey(&test.Pkey, test.Start)
+		if r != test.Should {
+			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
+		}
 	}
 }

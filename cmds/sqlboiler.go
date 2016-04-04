@@ -170,7 +170,7 @@ func initTables(tableName string, cmdData *CmdData) error {
 	}
 
 	var err error
-	cmdData.Tables, err = cmdData.Interface.Tables(tableNames...)
+	cmdData.Tables, err = dbdrivers.Tables(cmdData.Interface, tableNames...)
 	if err != nil {
 		return fmt.Errorf("Unable to get all table names: %s", err)
 	}

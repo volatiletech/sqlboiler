@@ -85,7 +85,9 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"insertParamVariables": insertParamVariables,
 	"scanParamNames":       scanParamNames,
 	"hasPrimaryKey":        hasPrimaryKey,
-	"getPrimaryKey":        getPrimaryKey,
+	"wherePrimaryKey":      wherePrimaryKey,
+	"paramsPrimaryKey":     paramsPrimaryKey,
+	"primaryKeyFlagIndex":  primaryKeyFlagIndex,
 	"updateParamNames":     updateParamNames,
 	"updateParamVariables": updateParamVariables,
 }
@@ -104,6 +106,6 @@ func (c *CmdData) LoadConfigFile(filename string) error {
 		return fmt.Errorf("Failed to decode toml configuration file: %s", err)
 	}
 
-	cmdData.Config = cfg
+	c.Config = cfg
 	return nil
 }

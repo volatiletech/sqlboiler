@@ -13,12 +13,11 @@ func {{$tableNameSingular}}Delete(db boil.DB, id int) error {
   return nil
 }
 
-{{if hasPrimaryKey .Table.Columns -}}
+{{if hasPrimaryKey .Table.PKey -}}
 // Delete deletes a single {{$tableNameSingular}} record.
 // Delete will match against the primary key column to find the record to delete.
 func (o *{{$tableNameSingular}}) Delete(db boil.DB) error {
-  {{- $pkeyName := getPrimaryKey .Table.Columns -}}
-  _, err := db.Exec("DELETE FROM {{.Table.Name}} WHERE {{$pkeyName}}=$1", o.{{titleCase $pkeyName}})
+  _, err := db.Exec("DELETE FROM {{.Table.Name}} WHERE {{wherePrimaryKey .Table.PKey.Columns 1}}", {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to delete from {{.Table.Name}}: %s", err)
   }

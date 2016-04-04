@@ -15,16 +15,16 @@ func {{$tableNameSingular}}Update(db boil.DB, id int, columns map[string]interfa
   return nil
 }
 
-{{if hasPrimaryKey .Table.Columns -}}
+{{if hasPrimaryKey .Table.PKey -}}
 // Update updates a single {{$tableNameSingular}} record.
 // Update will match against the primary key column to find the record to update.
 // WARNING: This Update method will NOT ignore nil members.
 // If you pass in nil members, those columnns will be set to null.
 func (o *{{$tableNameSingular}}) Update(db boil.DB) error {
-  {{- $pkeyName := getPrimaryKey .Table.Columns -}}
-  _, err := db.Exec("UPDATE {{.Table.Name}} SET {{updateParamNames .Table.Columns}} WHERE {{$pkeyName}}=${{len .Table.Columns}}", {{updateParamVariables "o." .Table.Columns}}, o.{{titleCase $pkeyName}})
+  {{$flagIndex := primaryKeyFlagIndex .Table.Columns .Table.PKey.Columns}}
+  _, err := db.Exec("UPDATE {{.Table.Name}} SET {{updateParamNames .Table.Columns .Table.PKey.Columns}} WHERE {{wherePrimaryKey .Table.PKey.Columns $flagIndex}}", {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}} row using primary key {{$pkeyName}}: %s", err)
+    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}} row: %s", err)
   }
 
   return nil

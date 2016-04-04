@@ -134,6 +134,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 		return nil, err
 	}
 
+	var columns []string
 	for rows.Next() {
 		var column string
 
@@ -141,7 +142,11 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		columns = append(columns, column)
 	}
+
+	pkey.Columns = columns
 
 	if err = rows.Err(); err != nil {
 		return nil, err

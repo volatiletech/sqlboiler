@@ -101,58 +101,6 @@ func generateTestMainOutput(cmdData *CmdData) error {
 	return nil
 }
 
-// outHandler loops over each template in the slice of byte slices and builds an output file.
-// func outHandler(cmdData *CmdData, output [][]byte, data *tplData, imps imports, testTemplate bool) error {
-// 	out := testHarnessStdout
-//
-// 	var path string
-//
-// 	if len(cmdData.OutFolder) != 0 {
-// 		if testTemplate {
-// 			path = cmdData.OutFolder + "/" + data.Table.Name + "_test.go"
-// 		} else {
-// 			path = cmdData.OutFolder + "/" + data.Table.Name + ".go"
-// 		}
-//
-// 		outFile, err := testHarnessFileOpen(path)
-// 		if err != nil {
-// 			return fmt.Errorf("Unable to create output file %s: %s", path, err)
-// 		}
-// 		defer outFile.Close()
-// 		out = outFile
-// 	}
-//
-// 	if _, err := fmt.Fprintf(out, "package %s\n\n", cmdData.PkgName); err != nil {
-// 		return fmt.Errorf("Unable to write package name %s to file: %s", cmdData.PkgName, path)
-// 	}
-//
-// 	impStr := buildImportString(imps)
-// 	if len(impStr) > 0 {
-// 		if _, err := fmt.Fprintf(out, "%s\n", impStr); err != nil {
-// 			return fmt.Errorf("Unable to write imports to file handle: %v", err)
-// 		}
-// 	}
-//
-// 	for _, templateOutput := range output {
-// 		if _, err := fmt.Fprintf(out, "%s\n", templateOutput); err != nil {
-// 			return fmt.Errorf("Unable to write template output to file handle: %v", err)
-// 		}
-// 	}
-//
-// 	return nil
-// }
-//
-// func outHandler(cmdData *CmdData, data *tplData, imps imports, output [][]byte, testTemplate bool) error {
-// 	var fileName string
-// 	if testTemplate == true {
-// 		fileName = data.Table.Name + "_test.go"
-// 	} else {
-// 		fileName = data.Table.Name + ".go"
-// 	}
-//
-// 	outGenerator()
-// }
-
 func outHandler(outFolder string, fileName string, pkgName string, imps imports, contents [][]byte) error {
 	out := testHarnessStdout
 

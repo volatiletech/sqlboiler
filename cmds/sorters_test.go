@@ -77,6 +77,4 @@ func TestSortTemplates(t *testing.T) {
 			t.Errorf("Order mismatch, expected: %s, got: %s", expected[i], v.Name())
 		}
 	}
-
-	t.Errorf("cant sort templates")
 }

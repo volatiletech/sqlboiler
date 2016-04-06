@@ -57,6 +57,7 @@ func LoadConfigFile(filename string) error {
 func TestMain(m *testing.M) {
   err := setup()
 	if err != nil {
+		fmt.Println(err)
 		os.Exit(-1)
 	}
   code := m.Run()
@@ -111,5 +112,9 @@ func setup() error {
 
 	err = DBConnect(cfg.Postgres.User, cfg.Postgres.Pass, cfg.Postgres.DBName, cfg.Postgres.Host, cfg.Postgres.Port)
 	_, err = dbConn.Exec(fmt.Sprintf(`CREATE DATABASE %s WITH ENCODING 'UTF8'`, cfg.TestPostgres.DBName))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

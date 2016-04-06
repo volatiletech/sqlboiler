@@ -5,35 +5,7 @@ import (
 	"io"
 	"sort"
 	"testing"
-
-	"github.com/pobri19/sqlboiler/dbdrivers"
 )
-
-func TestOutHandler(t *testing.T) {
-	buf := &bytes.Buffer{}
-
-	saveTestHarnessStdout := testHarnessStdout
-	testHarnessStdout = buf
-	defer func() {
-		testHarnessStdout = saveTestHarnessStdout
-	}()
-
-	data := tplData{
-		Table: dbdrivers.Table{
-			Name: "patrick",
-		},
-	}
-
-	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
-
-	if err := outHandler(&CmdData{PkgName: "patrick"}, templateOutputs, &data, imports{}, false); err != nil {
-		t.Error(err)
-	}
-
-	if out := buf.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
-		t.Errorf("Wrong output: %q", out)
-	}
-}
 
 type NopWriteCloser struct {
 	io.Writer
@@ -47,6 +19,30 @@ func nopCloser(w io.Writer) io.WriteCloser {
 	return NopWriteCloser{w}
 }
 
+func TestOutHandler(t *testing.T) {
+	// set the function pointer back to its original value
+	// after we modify it for the test
+	saveTestHarnessFileOpen := testHarnessFileOpen
+	defer func() {
+		testHarnessFileOpen = saveTestHarnessFileOpen
+	}()
+
+	buf := &bytes.Buffer{}
+	testHarnessFileOpen = func(path string) (io.WriteCloser, error) {
+		return nopCloser(buf), nil
+	}
+
+	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
+
+	if err := outHandler("", "file.go", "patrick", imports{}, templateOutputs); err != nil {
+		t.Error(err)
+	}
+
+	if out := buf.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
+		t.Errorf("Wrong output: %q", out)
+	}
+}
+
 func TestOutHandlerFiles(t *testing.T) {
 	saveTestHarnessFileOpen := testHarnessFileOpen
 	defer func() {
@@ -58,13 +54,9 @@ func TestOutHandlerFiles(t *testing.T) {
 		return nopCloser(file), nil
 	}
 
-	data := tplData{
-		Table: dbdrivers.Table{Name: "patrick"},
-	}
-
 	templateOutputs := [][]byte{[]byte("hello world"), []byte("patrick's dreams")}
 
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, imports{}, false); err != nil {
+	if err := outHandler("folder", "file.go", "patrick", imports{}, templateOutputs); err != nil {
 		t.Error(err)
 	}
 	if out := file.String(); out != "package patrick\n\nhello world\npatrick's dreams\n" {
@@ -78,7 +70,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 	file = &bytes.Buffer{}
 
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, a1, false); err != nil {
+	if err := outHandler("folder", "file.go", "patrick", a1, templateOutputs); err != nil {
 		t.Error(err)
 	}
 	if out := file.String(); out != "package patrick\n\nimport \"fmt\"\nhello world\npatrick's dreams\n" {
@@ -92,7 +84,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 	file = &bytes.Buffer{}
 
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, a2, false); err != nil {
+	if err := outHandler("folder", "file.go", "patrick", a2, templateOutputs); err != nil {
 		t.Error(err)
 	}
 	if out := file.String(); out != "package patrick\n\nimport \"github.com/spf13/cobra\"\nhello world\npatrick's dreams\n" {
@@ -116,7 +108,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	sort.Sort(a3.standard)
 	sort.Sort(a3.thirdparty)
 
-	if err := outHandler(&CmdData{OutFolder: "folder", PkgName: "patrick"}, templateOutputs, &data, a3, false); err != nil {
+	if err := outHandler("folder", "file.go", "patrick", a3, templateOutputs); err != nil {
 		t.Error(err)
 	}
 

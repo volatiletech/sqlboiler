@@ -34,9 +34,23 @@ func init() {
 				},
 			},
 		},
-		PkgName:   "patrick",
-		OutFolder: "",
-		Interface: nil,
+		PkgName:    "patrick",
+		OutFolder:  "",
+		DriverName: "postgres",
+		Interface:  nil,
+	}
+}
+
+func TestLoadTemplate(t *testing.T) {
+	t.Parallel()
+
+	template, err := loadTemplate("templates_test/main_test", "postgres_main.tpl")
+	if err != nil {
+		t.Fatalf("Unable to loadTemplate: %s", err)
+	}
+
+	if template == nil {
+		t.Fatal("Unable to load template.")
 	}
 }
 
@@ -65,6 +79,11 @@ func TestTemplates(t *testing.T) {
 		t.Errorf("Templates is empty.")
 	}
 
+	cmdData.TestMainTemplate, err = loadTemplate("templates_test/main_test", "postgres_main.tpl")
+	if err != nil {
+		t.Fatalf("Unable to initialize templates: %s", err)
+	}
+
 	cmdData.OutFolder, err = ioutil.TempDir("", "templates")
 	if err != nil {
 		t.Fatalf("Unable to create tempdir: %s", err)
@@ -78,7 +97,7 @@ func TestTemplates(t *testing.T) {
 	buf := bytes.Buffer{}
 	buf2 := bytes.Buffer{}
 
-	cmd := exec.Command("go", "test")
+	cmd := exec.Command("go", "test", "-c")
 	cmd.Dir = cmdData.OutFolder
 	cmd.Stderr = &buf
 	cmd.Stdout = &buf2

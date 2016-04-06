@@ -257,7 +257,7 @@ func TestWherePrimaryKey(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		r := wherePrimaryKey(&test.Pkey, test.Start)
+		r := wherePrimaryKey(test.Pkey.Columns, test.Start)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}

@@ -24,13 +24,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// Load all templates
-	err = cmdData.LoadTemplates()
-	if err != nil {
-		fmt.Printf("Failed to load templates: %s\n", err)
-		os.Exit(-1)
-	}
-
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
 		Use:   "sqlboiler",

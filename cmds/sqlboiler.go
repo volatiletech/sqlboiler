@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -13,19 +14,26 @@ import (
 )
 
 const (
-	templatesDirectory     = "/cmds/templates"
-	templatesTestDirectory = "/cmds/templates_test"
+	templatesDirectory         = "/cmds/templates"
+	templatesTestDirectory     = "/cmds/templates_test"
+	templatesTestMainDirectory = "/cmds/templates_test/main_test"
 )
 
 // LoadTemplates loads all template folders into the cmdData object.
-func (c *CmdData) LoadTemplates() error {
+func initTemplates(cmdData *CmdData) error {
 	var err error
-	c.Templates, err = loadTemplates(templatesDirectory)
+	cmdData.Templates, err = loadTemplates(templatesDirectory)
 	if err != nil {
 		return err
 	}
 
-	c.TestTemplates, err = loadTemplates(templatesTestDirectory)
+	cmdData.TestTemplates, err = loadTemplates(templatesTestDirectory)
+	if err != nil {
+		return err
+	}
+
+	filename := cmdData.DriverName + "_main.tpl"
+	cmdData.TestMainTemplate, err = loadTemplate(templatesTestMainDirectory, filename)
 	if err != nil {
 		return err
 	}
@@ -47,7 +55,27 @@ func loadTemplates(dir string) ([]*template.Template, error) {
 		return nil, err
 	}
 
-	return tpl.Templates(), err
+	templates := templater(tpl.Templates())
+	sort.Sort(templates)
+
+	return templates, err
+}
+
+// loadTemplate loads a single template file.
+func loadTemplate(dir string, filename string) (*template.Template, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	pattern := filepath.Join(wd, dir, filename)
+	tpl, err := template.New("").Funcs(sqlBoilerTemplateFuncs).ParseFiles(pattern)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tpl.Lookup(filename), err
 }
 
 // SQLBoilerPostRun cleans up the output file and db connection once all cmds are finished.
@@ -84,6 +112,12 @@ func (c *CmdData) SQLBoilerRun(cmd *cobra.Command, args []string) error {
 
 // run executes the sqlboiler templates and outputs them to files.
 func (c *CmdData) run(includeTests bool) error {
+	if includeTests {
+		if err := generateTestMainOutput(c); err != nil {
+			return fmt.Errorf("Unable to generate TestMain output: %s", err)
+		}
+	}
+
 	for _, table := range c.Tables {
 		data := &tplData{
 			Table:   table,
@@ -91,13 +125,13 @@ func (c *CmdData) run(includeTests bool) error {
 		}
 
 		// Generate the regular templates
-		if err := generateOutput(c, data, false); err != nil {
+		if err := generateOutput(c, data); err != nil {
 			return fmt.Errorf("Unable to generate test output: %s", err)
 		}
 
 		// Generate the test templates
 		if includeTests {
-			if err := generateOutput(c, data, true); err != nil {
+			if err := generateTestOutput(c, data); err != nil {
 				return fmt.Errorf("Unable to generate output: %s", err)
 			}
 		}
@@ -128,6 +162,11 @@ func (c *CmdData) initCmdData(pkgName, driverName, tableName, outFolder string) 
 	err = initOutFolder(c)
 	if err != nil {
 		return fmt.Errorf("Unable to initialize the output folder: %s", err)
+	}
+
+	err = initTemplates(c)
+	if err != nil {
+		return fmt.Errorf("Unable to initialize templates: %s", err)
 	}
 
 	return nil

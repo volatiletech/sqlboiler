@@ -58,8 +58,9 @@ var sqlBoilerTestMainImports = map[string]imports{
 			`"fmt"`,
 			`"io/ioutil"`,
 			`"bytes"`,
-			`"errors"`,
 			`"database/sql"`,
+			`"time"`,
+			`"math/rand"`,
 		},
 		thirdparty: importList{
 			`"github.com/BurntSushi/toml"`,

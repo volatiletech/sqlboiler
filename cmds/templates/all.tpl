@@ -3,10 +3,10 @@
 {{- $tableNamePlural := titleCasePlural .Table.Name -}}
 {{- $varNamePlural := camelCasePlural .Table.Name -}}
 // {{$tableNamePlural}}All retrieves all records.
-func {{$tableNamePlural}}All(db boil.DB) ([]*{{$tableNameSingular}}, error) {
+func {{$tableNamePlural}}All() ([]*{{$tableNameSingular}}, error) {
   var {{$varNamePlural}} []*{{$tableNameSingular}}
 
-  rows, err := db.Query(`SELECT {{selectParamNames $dbName .Table.Columns}} FROM {{.Table.Name}}`)
+  rows, err := boil.GetDB().Query(`SELECT {{selectParamNames $dbName .Table.Columns}} FROM {{.Table.Name}}`)
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to query: %v", err)
   }

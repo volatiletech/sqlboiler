@@ -33,7 +33,7 @@ func generateOutput(cmdData *CmdData, data *tplData) error {
 		imps = combineTypeImports(imps, sqlBoilerTypeImports, data.Table.Columns)
 		resp, err := generateTemplate(template, data)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
 		}
 		out = append(out, resp)
 	}
@@ -62,7 +62,7 @@ func generateTestOutput(cmdData *CmdData, data *tplData) error {
 	for _, template := range cmdData.TestTemplates {
 		resp, err := generateTemplate(template, data)
 		if err != nil {
-			return err
+			return fmt.Errorf("Error generating test template %s: %s", template.Name(), err)
 		}
 		out = append(out, resp)
 	}

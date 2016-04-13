@@ -50,7 +50,7 @@ func TestSelectNames(t *testing.T) {
 	}
 }
 
-func TestWhere(t *testing.T) {
+func TestWhereClause(t *testing.T) {
 	t.Parallel()
 
 	columns := map[string]interface{}{
@@ -59,7 +59,7 @@ func TestWhere(t *testing.T) {
 		"date": time.Now(),
 	}
 
-	result := Where(columns)
+	result := WhereClause(columns)
 
 	if result != `date=$1 AND id=$2 AND name=$3` {
 		t.Error("Result was wrong, got:", result)

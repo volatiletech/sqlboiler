@@ -126,13 +126,13 @@ func (c *CmdData) run(includeTests bool) error {
 
 		// Generate the regular templates
 		if err := generateOutput(c, data); err != nil {
-			return fmt.Errorf("Unable to generate test output: %s", err)
+			return fmt.Errorf("Unable to generate output: %s", err)
 		}
 
 		// Generate the test templates
 		if includeTests {
 			if err := generateTestOutput(c, data); err != nil {
-				return fmt.Errorf("Unable to generate output: %s", err)
+				return fmt.Errorf("Unable to generate test output: %s", err)
 			}
 		}
 	}

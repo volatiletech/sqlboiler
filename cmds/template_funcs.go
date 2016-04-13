@@ -234,6 +234,11 @@ func wherePrimaryKey(pkeyCols []string, start int) string {
 	return output
 }
 
+// commaList returns a comma seperated list: "col1, col2, col3"
+func commaList(cols []string) string {
+	return strings.Join(cols, ", ")
+}
+
 // paramsPrimaryKey returns the parameters for the sql statement $ flags
 // For example, if prefix was "o.", and titleCase was true: "o.ColumnName1, o.ColumnName2"
 func paramsPrimaryKey(prefix string, columns []string, shouldTitleCase bool) string {

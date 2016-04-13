@@ -9,6 +9,9 @@ import (
 	"unicode"
 )
 
+// M type is for providing where filters to Where helpers.
+type M map[string]interface{}
+
 // SelectNames returns the column names for a select statement
 // Eg: col1, col2, col3
 func SelectNames(results interface{}) string {
@@ -36,9 +39,9 @@ func SelectNames(results interface{}) string {
 	return strings.Join(names, ", ")
 }
 
-// Where returns the where clause for an sql statement
+// WhereClause returns the where clause for an sql statement
 // eg: col1=$1 AND col2=$2 AND col3=$3
-func Where(columns map[string]interface{}) string {
+func WhereClause(columns map[string]interface{}) string {
 	names := make([]string, 0, len(columns))
 
 	for c := range columns {
@@ -88,6 +91,35 @@ func WhereParams(columns map[string]interface{}) []interface{} {
 	}
 
 	return results
+}
+
+// SetParamNames takes a slice of columns and returns a comma seperated
+// list of parameter names for a template statement SET clause.
+// eg: col1=$1,col2=$2,col3=$3
+func SetParamNames(columns []string) string {
+	names := make([]string, 0, len(columns))
+	counter := 0
+	for _, c := range columns {
+		counter++
+		names = append(names, fmt.Sprintf("%s=$%d", c, counter))
+	}
+	return strings.Join(names, ",")
+}
+
+// WherePrimaryKey returns the where clause using start as the $ flag index
+// For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
+func WherePrimaryKey(start int, pkeys ...string) string {
+	var output string
+	for i, c := range pkeys {
+		output = fmt.Sprintf("%s%s=$%d", output, c, start)
+		start++
+
+		if i < len(pkeys)-1 {
+			output = fmt.Sprintf("%s AND ", output)
+		}
+	}
+
+	return output
 }
 
 // goVarToSQLName converts a go variable name to a column name

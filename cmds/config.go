@@ -80,6 +80,7 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"camelCase":            camelCase,
 	"camelCaseSingular":    camelCaseSingular,
 	"camelCasePlural":      camelCasePlural,
+	"commaList":            commaList,
 	"makeDBName":           makeDBName,
 	"selectParamNames":     selectParamNames,
 	"insertParamNames":     insertParamNames,

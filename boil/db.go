@@ -24,7 +24,7 @@ var currentDB Executor
 func Begin() (Transactor, error) {
 	creator, ok := currentDB.(Creator)
 	if !ok {
-		panic("Your database handle does not support transactions.")
+		panic("Your database does not support transactions.")
 	}
 
 	return creator.Begin()

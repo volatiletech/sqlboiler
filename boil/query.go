@@ -6,13 +6,15 @@ type where struct {
 }
 
 type Query struct {
-	limit    int
-	where    []where
-	executor Executor
-	groupBy  []string
-	orderBy  []string
-	having   []string
-	from     string
+	executor   Executor
+	selectCols []string
+	from       string
+	joins      []string
+	where      []where
+	groupBy    []string
+	orderBy    []string
+	having     []string
+	limit      int
 }
 
 func (q *Query) buildQuery() string {

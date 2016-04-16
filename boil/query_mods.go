@@ -20,6 +20,18 @@ func Limit(limit int) QueryMod {
 	}
 }
 
+func Join(join string) QueryMod {
+	return func(q *Query) {
+		q.joins = append(q.joins, join)
+	}
+}
+
+func Select(columns ...string) QueryMod {
+	return func(q *Query) {
+		q.selectCols = append(q.selectCols, columns...)
+	}
+}
+
 func Where(clause string, args ...interface{}) QueryMod {
 	return func(q *Query) {
 		w := where{
@@ -49,8 +61,8 @@ func Having(clause string) QueryMod {
 	}
 }
 
-func From(clause string) QueryMod {
+func From(table string) QueryMod {
 	return func(q *Query) {
-		q.from = clause
+		q.from = table
 	}
 }

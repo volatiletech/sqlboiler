@@ -1,11 +1,16 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 {{if hasPrimaryKey .Table.PKey -}}
+{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $varNameSingular := camelCaseSingular .Table.Name -}}
 // Update updates a single {{$tableNameSingular}} record.
 // whitelist is a list of column_name's that should be updated.
 // Update will match against the primary key column to find the record to update.
 // WARNING: This Update method will NOT ignore nil members.
 // If you pass in nil members, those columnns will be set to null.
-func (o *{{$tableNameSingular}}) UpdateX(db Executor, whitelist ... string) error {
+func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
+  return o.UpdateX(boil.GetDB(), whitelist...)
+}
+
+func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... string) error {
   if err := o.doBeforeUpdateHooks(); err != nil {
     return err
   }
@@ -30,7 +35,8 @@ func (o *{{$tableNameSingular}}) UpdateX(db Executor, whitelist ... string) erro
   return nil
 }
 
-func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
-  return o.UpdateX(boil.GetDB(), whitelist...)
+func (v {{$varNameSingular}}Query) UpdateAll(cols boil.M) error {
+
 }
+
 {{- end}}

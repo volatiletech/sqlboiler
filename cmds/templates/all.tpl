@@ -1,9 +1,14 @@
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 {{- $dbName := singular .Table.Name -}}
 {{- $tableNamePlural := titleCasePlural .Table.Name -}}
+{{- $varNameSingular := camelCaseSingular .Table.Name -}}
 {{- $varNamePlural := camelCasePlural .Table.Name -}}
+type {{$varNameSingular}}Query struct {
+  *boil.Query
+}
+
 // {{$tableNamePlural}}All retrieves all records.
-func {{$tableNamePlural}}All() ([]*{{$tableNameSingular}}, error) {
+func {{$tableNamePlural}}(mods ...QueryMod) {{$varNameSingular}}Query {
   var {{$varNamePlural}} []*{{$tableNameSingular}}
 
   rows, err := boil.GetDB().Query(`SELECT {{selectParamNames $dbName .Table.Columns}} FROM {{.Table.Name}}`)
@@ -27,4 +32,9 @@ func {{$tableNamePlural}}All() ([]*{{$tableNameSingular}}, error) {
   }
 
   return {{$varNamePlural}}, nil
+}
+
+func {{$tableNamePlural}}X(exec boil.Executor, mods ...QueryMod) {{$tableNameSingular}}Query {
+
+
 }

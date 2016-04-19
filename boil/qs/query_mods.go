@@ -4,61 +4,68 @@ import "github.com/pobri19/sqlboiler/boil"
 
 type QueryMod func(q *boil.Query)
 
-func (q *boil.Query) Apply(mods ...QueryMod) {
-	for _, mod := range mods {
-		mod(q)
-	}
-}
-
 func Limit(limit int) QueryMod {
 	return func(q *boil.Query) {
-		q.limit = limit
+		boil.SetLimit(q, limit)
 	}
 }
 
-func Join(join string) QueryMod {
+func InnerJoin(on string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		q.joins = append(q.joins, join)
+		boil.SetInnerJoin(q, on, args...)
+	}
+}
+
+func OuterJoin(on string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetOuterJoin(q, on, args...)
+	}
+}
+
+func LeftOuterJoin(on string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetLeftOuterJoin(q, on, args...)
+	}
+}
+
+func RightOuterJoin(on string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetRightOuterJoin(q, on, args...)
 	}
 }
 
 func Select(columns ...string) QueryMod {
 	return func(q *boil.Query) {
-		q.selectCols = append(q.selectCols, columns...)
+		boil.SetSelect(q, columns...)
 	}
 }
 
 func Where(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		w := where{
-			clause: clause,
-			args:   args,
-		}
-
-		q.where = append(q.where, w)
+		boil.SetWhere(q, clause, args...)
 	}
 }
 
 func GroupBy(clause string) QueryMod {
 	return func(q *boil.Query) {
-		q.groupBy = append(q.groupBy, clause)
+		boil.SetGroupBy(q, clause)
 	}
 }
 
 func OrderBy(clause string) QueryMod {
 	return func(q *boil.Query) {
-		q.orderBy = append(q.orderBy, clause)
+		boil.SetOrderBy(q, clause)
 	}
 }
 
 func Having(clause string) QueryMod {
 	return func(q *boil.Query) {
-		q.having = append(q.having, clause)
+		boil.SetHaving(q, clause)
 	}
 }
 
 func From(table string) QueryMod {
 	return func(q *boil.Query) {
-		q.from = table
+		boil.SetFrom(q, table)
 	}
 }

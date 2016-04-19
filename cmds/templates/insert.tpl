@@ -1,6 +1,6 @@
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 // {{$tableNameSingular}}Insert inserts a single record.
-func (o *{{$tableNameSingular}}) Insert(mods ...QueryMod) error {
+func (o *{{$tableNameSingular}}) Insert(whitelist ... string) error {
   if o == nil {
     return 0, errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }
@@ -23,7 +23,7 @@ func (o *{{$tableNameSingular}}) Insert(mods ...QueryMod) error {
   return rowID, nil
 }
 
-func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, mods ...QueryMod) error {
+func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... string) error {
   if o == nil {
     return 0, errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }

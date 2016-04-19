@@ -42,6 +42,15 @@ var sqlBoilerImports = imports{
 	},
 }
 
+var sqlBoilerSinglesImports = map[string]imports{
+	"helpers": imports{
+		standard: importList{},
+		thirdparty: importList{
+			`"github.com/pobri19/sqlboiler/boil"`,
+		},
+	},
+}
+
 // sqlBoilerTestImports defines the list of default test template imports.
 var sqlBoilerTestImports = imports{
 	standard: importList{

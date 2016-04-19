@@ -38,5 +38,4 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
 func (v {{$varNameSingular}}Query) UpdateAll(cols boil.M) error {
 
 }
-
 {{- end}}

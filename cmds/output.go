@@ -76,6 +76,37 @@ func generateTestOutput(cmdData *CmdData, data *tplData) error {
 	return nil
 }
 
+func generateSinglesOutput(cmdData *CmdData) error {
+	if cmdData.SingleTemplates == nil {
+		return errors.New("No single templates located for generation")
+	}
+
+	for _, template := range cmdData.SingleTemplates {
+		var imps imports
+
+		resp, err := generateTemplate(template, &tplData{})
+		if err != nil {
+			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
+		}
+
+		fName := template.Name()
+		ext := filepath.Ext(fName)
+		fName = fName[0 : len(fName)-len(ext)]
+
+		imps.standard = sqlBoilerSinglesImports[fName].standard
+		imps.thirdparty = sqlBoilerSinglesImports[fName].thirdparty
+
+		fName = fName + ".go"
+
+		err = outHandler(cmdData.OutFolder, fName, cmdData.PkgName, imps, [][]byte{resp})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func generateTestMainOutput(cmdData *CmdData) error {
 	if cmdData.TestMainTemplate == nil {
 		return errors.New("No TestMain template located for generation")

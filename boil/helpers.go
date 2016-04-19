@@ -9,9 +9,6 @@ import (
 	"unicode"
 )
 
-// M type is for providing where filters to Where helpers.
-type M map[string]interface{}
-
 // SelectNames returns the column names for a select statement
 // Eg: col1, col2, col3
 func SelectNames(results interface{}) string {

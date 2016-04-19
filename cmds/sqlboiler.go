@@ -15,6 +15,7 @@ import (
 
 const (
 	templatesDirectory         = "/cmds/templates"
+	templatesSinglesDirectory  = "/cmds/templates/singles"
 	templatesTestDirectory     = "/cmds/templates_test"
 	templatesTestMainDirectory = "/cmds/templates_test/main_test"
 )
@@ -23,6 +24,11 @@ const (
 func initTemplates(cmdData *CmdData) error {
 	var err error
 	cmdData.Templates, err = loadTemplates(templatesDirectory)
+	if err != nil {
+		return err
+	}
+
+	cmdData.SingleTemplates, err = loadTemplates(templatesSinglesDirectory)
 	if err != nil {
 		return err
 	}
@@ -116,6 +122,10 @@ func (c *CmdData) run(includeTests bool) error {
 		if err := generateTestMainOutput(c); err != nil {
 			return fmt.Errorf("Unable to generate TestMain output: %s", err)
 		}
+	}
+
+	if err := generateSinglesOutput(c); err != nil {
+		return fmt.Errorf("Unable to generate single templates output: %s", err)
 	}
 
 	for _, table := range c.Tables {

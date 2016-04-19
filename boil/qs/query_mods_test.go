@@ -1,11 +1,15 @@
-package boil
+package qs
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/pobri19/sqlboiler/boil"
+)
 
 func TestApply(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn1 := Limit(10)
 	qfn2 := Where("x > $1 AND y > $2", 5, 3)
 
@@ -43,7 +47,7 @@ func TestDB(t *testing.T) {
 func TestLimit(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn := Limit(10)
 
 	qfn(q)
@@ -57,7 +61,7 @@ func TestLimit(t *testing.T) {
 func TestWhere(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn := Where("x > $1 AND y > $2", 5, 3)
 
 	qfn(q)
@@ -83,7 +87,7 @@ func TestWhere(t *testing.T) {
 func TestGroupBy(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn := GroupBy("col1, col2")
 
 	qfn(q)
@@ -97,7 +101,7 @@ func TestGroupBy(t *testing.T) {
 func TestOrderBy(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn := OrderBy("col1 desc, col2 asc")
 
 	qfn(q)
@@ -111,7 +115,7 @@ func TestOrderBy(t *testing.T) {
 func TestHaving(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn := Having("count(orders.order_id) > 10")
 
 	qfn(q)
@@ -125,7 +129,7 @@ func TestHaving(t *testing.T) {
 func TestFrom(t *testing.T) {
 	t.Parallel()
 
-	q := &Query{}
+	q := &boil.Query{}
 	qfn := From("videos a, orders b")
 
 	qfn(q)

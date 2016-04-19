@@ -17,13 +17,17 @@ type templater []*template.Template
 // the database driver chosen by the driver flag at runtime, and a pointer to the
 // output file, if one is specified with a flag.
 type CmdData struct {
-	Tables           []dbdrivers.Table
-	PkgName          string
-	OutFolder        string
-	Interface        dbdrivers.Interface
-	DriverName       string
-	Config           *Config
-	Templates        templater
+	Tables     []dbdrivers.Table
+	PkgName    string
+	OutFolder  string
+	Interface  dbdrivers.Interface
+	DriverName string
+	Config     *Config
+
+	Templates templater
+	// SingleTemplates are only created once, not per table
+	SingleTemplates templater
+
 	TestTemplates    templater
 	TestMainTemplate *template.Template
 }

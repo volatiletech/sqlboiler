@@ -79,16 +79,22 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, nil
 }
 
-func ExecQuery(q *Query) error {
-	return nil
+// ExecQuery executes a query that does not need a row returned
+func ExecQuery(q *Query) (sql.Result, error) {
+	qs, args := buildQuery(q)
+	return q.executor.Exec(qs, args...)
 }
 
-func ExecQueryOne(q *Query) (*sql.Row, error) {
-	return nil, nil
+// ExecQueryOne executes the query for the One finisher and returns a row
+func ExecQueryOne(q *Query) *sql.Row {
+	qs, args := buildQuery(q)
+	return q.executor.QueryRow(qs, args)
 }
 
+// ExecQueryAll executes the query for the All finisher and returns multiple rows
 func ExecQueryAll(q *Query) (*sql.Rows, error) {
-	return nil, nil
+	qs, args := buildQuery(q)
+	return q.executor.Query(qs, args)
 }
 
 func SetDelete(q *Query) {

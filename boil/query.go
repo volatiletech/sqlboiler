@@ -91,14 +91,8 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	return nil, nil
 }
 
-func Apply(q *Query, mods ...func(q *Query)) {
-	for _, mod := range mods {
-		mod(q)
-	}
-}
-
-func SetDelete(q *Query, flag bool) {
-	q.delete = flag
+func SetDelete(q *Query) {
+	q.delete = true
 }
 
 func SetUpdate(q *Query, cols map[string]interface{}) {

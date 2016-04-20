@@ -8,8 +8,8 @@ func NewQuery(mods ...qs.QueryMod) *boil.Query {
 
 // NewQueryX initializes a new Query using the passed in QueryMods
 func NewQueryX(executor boil.Executor, mods ...qs.QueryMod) *boil.Query {
-	q := &Query{executor: executor}
-	q.Apply(mods...)
+	q := &boil.Query{executor: executor}
+	qs.Apply(q, mods...)
 
 	return q
 }

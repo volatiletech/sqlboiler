@@ -4,6 +4,12 @@ import "github.com/pobri19/sqlboiler/boil"
 
 type QueryMod func(q *boil.Query)
 
+func Apply(q *boil.Query, mods ...QueryMod) {
+	for _, mod := range mods {
+		mod(q)
+	}
+}
+
 func Limit(limit int) QueryMod {
 	return func(q *boil.Query) {
 		boil.SetLimit(q, limit)

@@ -9,6 +9,49 @@ import (
 	"unicode"
 )
 
+// WherePrimaryKeyIn generates a "in" string for where queries
+// For example: (col1, col2) IN (($1, $2), ($3, $4))
+func WherePrimaryKeyIn(numRows int, keyNames ...string) string {
+	in := &bytes.Buffer{}
+
+	if len(keyNames) == 0 {
+		return ""
+	}
+
+	in.WriteByte('(')
+	for i := 0; i < len(keyNames); i++ {
+		in.WriteString(`"` + keyNames[i] + `"`)
+		if i < len(keyNames)-1 {
+			in.WriteByte(',')
+		}
+	}
+
+	in.WriteString(") IN (")
+
+	c := 1
+	for i := 0; i < numRows; i++ {
+		for y := 0; y < len(keyNames); y++ {
+			if len(keyNames) > 1 && y == 0 {
+				in.WriteByte('(')
+			}
+
+			in.WriteString(fmt.Sprintf("$%d", c))
+			c++
+
+			if len(keyNames) > 1 && y == len(keyNames)-1 {
+				in.WriteByte(')')
+			}
+
+			if i != numRows-1 || y != len(keyNames)-1 {
+				in.WriteByte(',')
+			}
+		}
+	}
+	in.WriteByte(')')
+
+	return in.String()
+}
+
 // SelectNames returns the column names for a select statement
 // Eg: col1, col2, col3
 func SelectNames(results interface{}) string {

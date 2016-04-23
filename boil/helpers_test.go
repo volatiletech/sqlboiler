@@ -11,6 +11,58 @@ type testObj struct {
 	HeadSize int
 }
 
+func TestWherePrimaryKeyIn(t *testing.T) {
+	t.Parallel()
+
+	x := WherePrimaryKeyIn(1, "aa")
+	expect := `("aa") IN ($1)`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(2, "aa")
+	expect = `("aa") IN ($1,$2)`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(3, "aa")
+	expect = `("aa") IN ($1,$2,$3)`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(1, "aa", "bb")
+	expect = `("aa","bb") IN (($1,$2))`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(2, "aa", "bb")
+	expect = `("aa","bb") IN (($1,$2),($3,$4))`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(3, "aa", "bb")
+	expect = `("aa","bb") IN (($1,$2),($3,$4),($5,$6))`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(4, "aa", "bb")
+	expect = `("aa","bb") IN (($1,$2),($3,$4),($5,$6),($7,$8))`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+
+	x = WherePrimaryKeyIn(4, "aa", "bb", "cc")
+	expect = `("aa","bb","cc") IN (($1,$2,$3),($4,$5,$6),($7,$8,$9),($10,$11,$12))`
+	if x != expect {
+		t.Errorf("Expected %s, got %s\n", expect, x)
+	}
+}
+
 func TestGoVarToSQLName(t *testing.T) {
 	t.Parallel()
 

@@ -39,6 +39,7 @@ var sqlBoilerImports = imports{
 	},
 	thirdparty: importList{
 		`"github.com/pobri19/sqlboiler/boil"`,
+		`"github.com/pobri19/sqlboiler/boil/qs"`,
 	},
 }
 
@@ -47,6 +48,7 @@ var sqlBoilerSinglesImports = map[string]imports{
 		standard: importList{},
 		thirdparty: importList{
 			`"github.com/pobri19/sqlboiler/boil"`,
+			`"github.com/pobri19/sqlboiler/boil/qs"`,
 		},
 	},
 }
@@ -102,6 +104,7 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"primaryKeyFlagIndex":  primaryKeyFlagIndex,
 	"updateParamNames":     updateParamNames,
 	"updateParamVariables": updateParamVariables,
+	"primaryKeyStrList":    primaryKeyStrList,
 }
 
 // LoadConfigFile loads the toml config file into the cfg object

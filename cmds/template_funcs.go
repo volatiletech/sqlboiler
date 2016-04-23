@@ -234,6 +234,16 @@ func wherePrimaryKey(pkeyCols []string, start int) string {
 	return output
 }
 
+// primaryKeyStrList returns a list of primary key column names in strings
+// For example: "col1", "col2", "col3"
+func primaryKeyStrList(pkeyCols []string) string {
+	for i, c := range pkeyCols {
+		pkeyCols[i] = fmt.Sprintf(`"%s"`, c)
+	}
+
+	return strings.Join(pkeyCols, ", ")
+}
+
 // commaList returns a comma seperated list: "col1, col2, col3"
 func commaList(cols []string) string {
 	return strings.Join(cols, ", ")

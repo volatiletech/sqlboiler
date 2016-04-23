@@ -21,7 +21,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, id int64, selectList ...str
     return nil, errors.New("{{.PkgName}}: no id provided for {{.Table.Name}} select")
   }
   var {{$varNameSingular}} *{{$tableNameSingular}}
-  err := boil.GetDB().Select(&{{$varNameSingular}}, `SELECT {{selectParamNames $dbName .Table.Columns}} WHERE id=$1`, id)
+  //err := boil.GetDB().Select(&{{$varNameSingular}}, `SELECT {{selectParamNames $dbName .Table.Columns}} WHERE id=$1`, id)
 
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table.Name}}: %s", err)

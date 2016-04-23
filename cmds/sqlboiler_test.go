@@ -176,12 +176,12 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 		}
 
 		scanner := bufio.NewScanner(fh)
-		throwaway := eObj.lineNumber - 2
+		throwaway := eObj.lineNumber - 5
 		for throwaway > 0 && scanner.Scan() {
 			throwaway--
 		}
 
-		for i := 0; i < 3; i++ {
+		for i := 0; i < 6; i++ {
 			if scanner.Scan() {
 				b := scanner.Bytes()
 				if len(b) != 0 {

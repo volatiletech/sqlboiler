@@ -56,18 +56,6 @@ func TestBuildQuery(t *testing.T) {
 	}
 }
 
-func TestExecQuery(t *testing.T) {
-	t.Parallel()
-}
-
-func TestExecQueryOne(t *testing.T) {
-	t.Parallel()
-}
-
-func TestExecQueryAll(t *testing.T) {
-	t.Parallel()
-}
-
 func TestSetLimit(t *testing.T) {
 	t.Parallel()
 

@@ -222,11 +222,15 @@ func hasPrimaryKey(pKey *dbdrivers.PrimaryKey) bool {
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
 func wherePrimaryKey(pkeyCols []string, start int) string {
 	var output string
-	for i, c := range pkeyCols {
+
+	cols := make([]string, len(pkeyCols))
+	copy(cols, pkeyCols)
+
+	for i, c := range cols {
 		output = fmt.Sprintf("%s%s=$%d", output, c, start)
 		start++
 
-		if i < len(pkeyCols)-1 {
+		if i < len(cols)-1 {
 			output = fmt.Sprintf("%s AND ", output)
 		}
 	}
@@ -237,11 +241,14 @@ func wherePrimaryKey(pkeyCols []string, start int) string {
 // primaryKeyStrList returns a list of primary key column names in strings
 // For example: "col1", "col2", "col3"
 func primaryKeyStrList(pkeyCols []string) string {
-	for i, c := range pkeyCols {
-		pkeyCols[i] = fmt.Sprintf(`"%s"`, c)
+	cols := make([]string, len(pkeyCols))
+	copy(cols, pkeyCols)
+
+	for i, c := range cols {
+		cols[i] = fmt.Sprintf(`"%s"`, c)
 	}
 
-	return strings.Join(pkeyCols, ", ")
+	return strings.Join(cols, ", ")
 }
 
 // commaList returns a comma seperated list: "col1, col2, col3"

@@ -9,6 +9,11 @@ func (q *Query) Bind(obj interface{}) error {
 	return nil
 }
 
+func getStructPointers(obj interface{}, columns ...string) []interface{} {
+
+	return nil
+}
+
 func checkType(obj interface{}) (reflect.Type, bool, error) {
 	val := reflect.ValueOf(obj)
 	typ := val.Type()

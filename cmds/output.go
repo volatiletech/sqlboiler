@@ -22,7 +22,6 @@ func generateOutput(cmdData *CmdData, data *tplData) error {
 	if len(cmdData.Templates) == 0 {
 		return errors.New("No template files located for generation")
 	}
-
 	var out [][]byte
 	var imps imports
 

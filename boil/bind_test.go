@@ -2,6 +2,28 @@ package boil
 
 import "testing"
 
+func TestGetStructPointers(t *testing.T) {
+	t.Parallel()
+
+	o := struct {
+		Title string
+		ID    *int
+	}{
+		Title: "patrick",
+	}
+
+	ptrs := GetStructPointers(&o, "title", "id")
+	*ptrs[0].(*string) = "test"
+	if o.Title != "test" {
+		t.Errorf("Expected test, got %s", o.Title)
+	}
+	x := 5
+	*ptrs[1].(**int) = &x
+	if *o.ID != 5 {
+		t.Errorf("Expected 5, got %d", *o.ID)
+	}
+}
+
 func TestCheckType(t *testing.T) {
 	t.Parallel()
 

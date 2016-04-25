@@ -32,6 +32,10 @@ func init() {
 					{Name: "fun_time", Type: "time.Time", IsNullable: false},
 					{Name: "cool_stuff_forever", Type: "[]byte", IsNullable: false},
 				},
+				PKey: &dbdrivers.PrimaryKey{
+					Name:    "pkey_thing",
+					Columns: []string{"id", "fun_id"},
+				},
 			},
 			{
 				Name: "spiderman",

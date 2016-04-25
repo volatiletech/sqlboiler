@@ -1,4 +1,4 @@
-package cmds
+package strmangle
 
 import (
 	"fmt"
@@ -8,25 +8,25 @@ import (
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
 
-// plural converts singular words to plural words (eg: person to people)
-func plural(name string) string {
+// Plural converts singular words to plural words (eg: person to people)
+func Plural(name string) string {
 	splits := strings.Split(name, "_")
 	splits[len(splits)-1] = inflection.Plural(splits[len(splits)-1])
 	return strings.Join(splits, "_")
 }
 
-// singular converts plural words to singular words (eg: people to person)
-func singular(name string) string {
+// Singular converts plural words to singular words (eg: people to person)
+func Singular(name string) string {
 	splits := strings.Split(name, "_")
 	splits[len(splits)-1] = inflection.Singular(splits[len(splits)-1])
 	return strings.Join(splits, "_")
 }
 
-// titleCase changes a snake-case variable name
+// TitleCase changes a snake-case variable name
 // into a go styled object variable name of "ColumnName".
 // titleCase also fully uppercases "ID" components of names, for example
 // "column_name_id" to "ColumnNameID".
-func titleCase(name string) string {
+func TitleCase(name string) string {
 	splits := strings.Split(name, "_")
 
 	for i, split := range splits {
@@ -41,27 +41,27 @@ func titleCase(name string) string {
 	return strings.Join(splits, "")
 }
 
-// titleCaseSingular changes a snake-case variable name
+// TitleCaseSingular changes a snake-case variable name
 // to a go styled object variable name of "ColumnName".
 // titleCaseSingular also converts the last word in the
 // variable name to a singularized version of itself.
-func titleCaseSingular(name string) string {
-	return titleCase(singular(name))
+func TitleCaseSingular(name string) string {
+	return TitleCase(Singular(name))
 }
 
-// titleCasePlural changes a snake-case variable name
+// TitleCasePlural changes a snake-case variable name
 // to a go styled object variable name of "ColumnName".
 // titleCasePlural also converts the last word in the
 // variable name to a pluralized version of itself.
-func titleCasePlural(name string) string {
-	return titleCase(plural(name))
+func TitleCasePlural(name string) string {
+	return TitleCase(Plural(name))
 }
 
-// camelCase takes a variable name in the format of "var_name" and converts
+// CamelCase takes a variable name in the format of "var_name" and converts
 // it into a go styled variable name of "varName".
 // camelCase also fully uppercases "ID" components of names, for example
 // "var_name_id" to "varNameID".
-func camelCase(name string) string {
+func CamelCase(name string) string {
 	splits := strings.Split(name, "_")
 
 	for i, split := range splits {
@@ -80,38 +80,50 @@ func camelCase(name string) string {
 	return strings.Join(splits, "")
 }
 
-// camelCaseSingular takes a variable name in the format of "var_name" and converts
+// CamelCaseSingular takes a variable name in the format of "var_name" and converts
 // it into a go styled variable name of "varName".
-// camelCaseSingular also converts the last word in the
+// CamelCaseSingular also converts the last word in the
 // variable name to a singularized version of itself.
-func camelCaseSingular(name string) string {
-	return camelCase(singular(name))
+func CamelCaseSingular(name string) string {
+	return CamelCase(Singular(name))
 }
 
-// camelCasePlural takes a variable name in the format of "var_name" and converts
+// CamelCasePlural takes a variable name in the format of "var_name" and converts
 // it into a go styled variable name of "varName".
-// camelCasePlural also converts the last word in the
+// CamelCasePlural also converts the last word in the
 // variable name to a pluralized version of itself.
-func camelCasePlural(name string) string {
-	return camelCase(plural(name))
+func CamelCasePlural(name string) string {
+	return CamelCase(Plural(name))
 }
 
-// makeDBName takes a table name in the format of "table_name" and a
+// CamelCaseCommaList generates a list of comma seperated camel cased column names
+// example: thingName, stuffName, etc
+func CamelCaseCommaList(pkeyColumns []string) string {
+	var output []string
+
+	for _, c := range pkeyColumns {
+		output = append(output, CamelCase(c))
+	}
+
+	return strings.Join(output, ", ")
+}
+
+// MakeDBName takes a table name in the format of "table_name" and a
 // column name in the format of "column_name" and returns a name used in the
 // `db:""` component of an object in the format of "table_name_column_name"
-func makeDBName(tableName, colName string) string {
+func MakeDBName(tableName, colName string) string {
 	return tableName + "_" + colName
 }
 
-// updateParamNames takes a []Column and returns a comma seperated
+// UpdateParamNames takes a []Column and returns a comma seperated
 // list of parameter names for the update statement template SET clause.
 // eg: col1=$1,col2=$2,col3=$3
 // Note: updateParamNames will exclude the PRIMARY KEY column.
-func updateParamNames(columns []dbdrivers.Column, pkeyColumns []string) string {
+func UpdateParamNames(columns []dbdrivers.Column, pkeyColumns []string) string {
 	names := make([]string, 0, len(columns))
 	counter := 0
 	for _, c := range columns {
-		if isPrimaryKey(c.Name, pkeyColumns) {
+		if IsPrimaryKey(c.Name, pkeyColumns) {
 			continue
 		}
 		counter++
@@ -120,26 +132,26 @@ func updateParamNames(columns []dbdrivers.Column, pkeyColumns []string) string {
 	return strings.Join(names, ",")
 }
 
-// updateParamVariables takes a prefix and a []Columns and returns a
+// UpdateParamVariables takes a prefix and a []Columns and returns a
 // comma seperated list of parameter variable names for the update statement.
 // eg: prefix("o."), column("name_id") -> "o.NameID, ..."
 // Note: updateParamVariables will exclude the PRIMARY KEY column.
-func updateParamVariables(prefix string, columns []dbdrivers.Column, pkeyColumns []string) string {
+func UpdateParamVariables(prefix string, columns []dbdrivers.Column, pkeyColumns []string) string {
 	names := make([]string, 0, len(columns))
 
 	for _, c := range columns {
-		if isPrimaryKey(c.Name, pkeyColumns) {
+		if IsPrimaryKey(c.Name, pkeyColumns) {
 			continue
 		}
-		n := prefix + titleCase(c.Name)
+		n := prefix + TitleCase(c.Name)
 		names = append(names, n)
 	}
 
 	return strings.Join(names, ", ")
 }
 
-// isPrimaryKey checks if the column is found in the primary key columns
-func isPrimaryKey(col string, pkeyCols []string) bool {
+// IsPrimaryKey checks if the column is found in the primary key columns
+func IsPrimaryKey(col string, pkeyCols []string) bool {
 	for _, pkey := range pkeyCols {
 		if pkey == col {
 			return true
@@ -149,9 +161,9 @@ func isPrimaryKey(col string, pkeyCols []string) bool {
 	return false
 }
 
-// insertParamNames takes a []Column and returns a comma seperated
+// InsertParamNames takes a []Column and returns a comma seperated
 // list of parameter names for the insert statement template.
-func insertParamNames(columns []dbdrivers.Column) string {
+func InsertParamNames(columns []dbdrivers.Column) string {
 	names := make([]string, 0, len(columns))
 	for _, c := range columns {
 		names = append(names, c.Name)
@@ -159,9 +171,9 @@ func insertParamNames(columns []dbdrivers.Column) string {
 	return strings.Join(names, ", ")
 }
 
-// insertParamFlags takes a []Column and returns a comma seperated
+// InsertParamFlags takes a []Column and returns a comma seperated
 // list of parameter flags for the insert statement template.
-func insertParamFlags(columns []dbdrivers.Column) string {
+func InsertParamFlags(columns []dbdrivers.Column) string {
 	params := make([]string, 0, len(columns))
 	for i := range columns {
 		params = append(params, fmt.Sprintf("$%d", i+1))
@@ -169,48 +181,48 @@ func insertParamFlags(columns []dbdrivers.Column) string {
 	return strings.Join(params, ", ")
 }
 
-// insertParamVariables takes a prefix and a []Columns and returns a
+// InsertParamVariables takes a prefix and a []Columns and returns a
 // comma seperated list of parameter variable names for the insert statement.
 // For example: prefix("o."), column("name_id") -> "o.NameID, ..."
-func insertParamVariables(prefix string, columns []dbdrivers.Column) string {
+func InsertParamVariables(prefix string, columns []dbdrivers.Column) string {
 	names := make([]string, 0, len(columns))
 
 	for _, c := range columns {
-		n := prefix + titleCase(c.Name)
+		n := prefix + TitleCase(c.Name)
 		names = append(names, n)
 	}
 
 	return strings.Join(names, ", ")
 }
 
-// selectParamNames takes a []Column and returns a comma seperated
+// SelectParamNames takes a []Column and returns a comma seperated
 // list of parameter names with for the select statement template.
 // It also uses the table name to generate the "AS" part of the statement, for
 // example: var_name AS table_name_var_name, ...
-func selectParamNames(tableName string, columns []dbdrivers.Column) string {
+func SelectParamNames(tableName string, columns []dbdrivers.Column) string {
 	selects := make([]string, 0, len(columns))
 	for _, c := range columns {
-		statement := fmt.Sprintf("%s AS %s", c.Name, makeDBName(tableName, c.Name))
+		statement := fmt.Sprintf("%s AS %s", c.Name, MakeDBName(tableName, c.Name))
 		selects = append(selects, statement)
 	}
 
 	return strings.Join(selects, ", ")
 }
 
-// scanParamNames takes a []Column and returns a comma seperated
+// ScanParamNames takes a []Column and returns a comma seperated
 // list of parameter names for use in a db.Scan() call.
-func scanParamNames(object string, columns []dbdrivers.Column) string {
+func ScanParamNames(object string, columns []dbdrivers.Column) string {
 	scans := make([]string, 0, len(columns))
 	for _, c := range columns {
-		statement := fmt.Sprintf("&%s.%s", object, titleCase(c.Name))
+		statement := fmt.Sprintf("&%s.%s", object, TitleCase(c.Name))
 		scans = append(scans, statement)
 	}
 
 	return strings.Join(scans, ", ")
 }
 
-// hasPrimaryKey returns true if one of the columns passed in is a primary key
-func hasPrimaryKey(pKey *dbdrivers.PrimaryKey) bool {
+// HasPrimaryKey returns true if one of the columns passed in is a primary key
+func HasPrimaryKey(pKey *dbdrivers.PrimaryKey) bool {
 	if pKey == nil || len(pKey.Columns) == 0 {
 		return false
 	}
@@ -218,9 +230,26 @@ func hasPrimaryKey(pKey *dbdrivers.PrimaryKey) bool {
 	return true
 }
 
-// wherePrimaryKey returns the where clause using start as the $ flag index
+// PrimaryKeyFuncSig generates the function signature parameters.
+// example: id int64, thingName string
+func PrimaryKeyFuncSig(cols []dbdrivers.Column, pkeyCols []string) string {
+	var output []string
+
+	for _, pk := range pkeyCols {
+		for _, c := range cols {
+			if pk == c.Name {
+				output = append(output, fmt.Sprintf("%s %s", CamelCase(pk), c.Type))
+				break
+			}
+		}
+	}
+
+	return strings.Join(output, ", ")
+}
+
+// WherePrimaryKey returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func wherePrimaryKey(pkeyCols []string, start int) string {
+func WherePrimaryKey(pkeyCols []string, start int) string {
 	var output string
 
 	cols := make([]string, len(pkeyCols))
@@ -238,9 +267,9 @@ func wherePrimaryKey(pkeyCols []string, start int) string {
 	return output
 }
 
-// primaryKeyStrList returns a list of primary key column names in strings
+// PrimaryKeyStrList returns a list of primary key column names in strings
 // For example: "col1", "col2", "col3"
-func primaryKeyStrList(pkeyCols []string) string {
+func PrimaryKeyStrList(pkeyCols []string) string {
 	cols := make([]string, len(pkeyCols))
 	copy(cols, pkeyCols)
 
@@ -251,20 +280,20 @@ func primaryKeyStrList(pkeyCols []string) string {
 	return strings.Join(cols, ", ")
 }
 
-// commaList returns a comma seperated list: "col1, col2, col3"
-func commaList(cols []string) string {
+// CommaList returns a comma seperated list: "col1, col2, col3"
+func CommaList(cols []string) string {
 	return strings.Join(cols, ", ")
 }
 
-// paramsPrimaryKey returns the parameters for the sql statement $ flags
+// ParamsPrimaryKey returns the parameters for the sql statement $ flags
 // For example, if prefix was "o.", and titleCase was true: "o.ColumnName1, o.ColumnName2"
-func paramsPrimaryKey(prefix string, columns []string, shouldTitleCase bool) string {
+func ParamsPrimaryKey(prefix string, columns []string, shouldTitleCase bool) string {
 	names := make([]string, 0, len(columns))
 
 	for _, c := range columns {
 		var n string
 		if shouldTitleCase {
-			n = prefix + titleCase(c)
+			n = prefix + TitleCase(c)
 		} else {
 			n = prefix + c
 		}
@@ -274,6 +303,7 @@ func paramsPrimaryKey(prefix string, columns []string, shouldTitleCase bool) str
 	return strings.Join(names, ", ")
 }
 
-func primaryKeyFlagIndex(regularCols []dbdrivers.Column, pkeyCols []string) int {
+// PrimaryKeyFlagIndex generates the primary key column flag number for the query params
+func PrimaryKeyFlagIndex(regularCols []dbdrivers.Column, pkeyCols []string) int {
 	return len(regularCols) - len(pkeyCols) + 1
 }

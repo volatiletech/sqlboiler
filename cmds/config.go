@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/BurntSushi/toml"
+	"github.com/pobri19/sqlboiler/strmangle"
 )
 
 // sqlBoilerTypeImports imports are only included in the template output if the database
@@ -83,28 +84,30 @@ var sqlBoilerTestMainImports = map[string]imports{
 // sqlBoilerTemplateFuncs is a map of all the functions that get passed into the templates.
 // If you wish to pass a new function into your own template, add a pointer to it here.
 var sqlBoilerTemplateFuncs = template.FuncMap{
-	"singular":             singular,
-	"plural":               plural,
-	"titleCase":            titleCase,
-	"titleCaseSingular":    titleCaseSingular,
-	"titleCasePlural":      titleCasePlural,
-	"camelCase":            camelCase,
-	"camelCaseSingular":    camelCaseSingular,
-	"camelCasePlural":      camelCasePlural,
-	"commaList":            commaList,
-	"makeDBName":           makeDBName,
-	"selectParamNames":     selectParamNames,
-	"insertParamNames":     insertParamNames,
-	"insertParamFlags":     insertParamFlags,
-	"insertParamVariables": insertParamVariables,
-	"scanParamNames":       scanParamNames,
-	"hasPrimaryKey":        hasPrimaryKey,
-	"wherePrimaryKey":      wherePrimaryKey,
-	"paramsPrimaryKey":     paramsPrimaryKey,
-	"primaryKeyFlagIndex":  primaryKeyFlagIndex,
-	"updateParamNames":     updateParamNames,
-	"updateParamVariables": updateParamVariables,
-	"primaryKeyStrList":    primaryKeyStrList,
+	"singular":             strmangle.Singular,
+	"plural":               strmangle.Plural,
+	"titleCase":            strmangle.TitleCase,
+	"titleCaseSingular":    strmangle.TitleCaseSingular,
+	"titleCasePlural":      strmangle.TitleCasePlural,
+	"camelCase":            strmangle.CamelCase,
+	"camelCaseSingular":    strmangle.CamelCaseSingular,
+	"camelCasePlural":      strmangle.CamelCasePlural,
+	"camelCaseCommaList":   strmangle.CamelCaseCommaList,
+	"commaList":            strmangle.CommaList,
+	"makeDBName":           strmangle.MakeDBName,
+	"selectParamNames":     strmangle.SelectParamNames,
+	"insertParamNames":     strmangle.InsertParamNames,
+	"insertParamFlags":     strmangle.InsertParamFlags,
+	"insertParamVariables": strmangle.InsertParamVariables,
+	"scanParamNames":       strmangle.ScanParamNames,
+	"hasPrimaryKey":        strmangle.HasPrimaryKey,
+	"primaryKeyFuncSig":    strmangle.PrimaryKeyFuncSig,
+	"wherePrimaryKey":      strmangle.WherePrimaryKey,
+	"paramsPrimaryKey":     strmangle.ParamsPrimaryKey,
+	"primaryKeyFlagIndex":  strmangle.PrimaryKeyFlagIndex,
+	"updateParamNames":     strmangle.UpdateParamNames,
+	"updateParamVariables": strmangle.UpdateParamVariables,
+	"primaryKeyStrList":    strmangle.PrimaryKeyStrList,
 }
 
 // LoadConfigFile loads the toml config file into the cfg object

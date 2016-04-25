@@ -3,14 +3,11 @@ package boil
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/pobri19/sqlboiler/strmangle"
 )
 
 func (q *Query) Bind(obj interface{}) error {
-	return nil
-}
-
-func getStructPointers(obj interface{}, columns ...string) []interface{} {
-
 	return nil
 }
 
@@ -50,4 +47,22 @@ func checkType(obj interface{}) (reflect.Type, bool, error) {
 	}
 
 	return typ, isSlice, nil
+}
+
+// GetStructPointers returns a slice of pointers to the matching columns in obj
+func GetStructPointers(obj interface{}, columns ...string) []interface{} {
+	val := reflect.ValueOf(obj).Elem()
+	ret := make([]interface{}, len(columns))
+
+	for i, c := range columns {
+		field := val.FieldByName(strmangle.TitleCase(c))
+		if !field.IsValid() {
+			panic(fmt.Sprintf("Could not find field on struct %T for field %s", obj, strmangle.TitleCase(c)))
+		}
+
+		field = field.Addr()
+		ret[i] = field.Interface()
+	}
+
+	return ret
 }

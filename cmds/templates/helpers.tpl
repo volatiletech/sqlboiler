@@ -6,7 +6,7 @@ func (o {{$varNameSingular}}Slice) inPrimaryKeyArgs() []interface{} {
 
   for i := 0; i < len(o); i++ {
     {{- range $key, $value := .Table.PKey.Columns }}
-    args = append(args, o.{{titleCase $value}})
+    args = append(args, o[i].{{titleCase $value}})
     {{ end -}}
   }
 

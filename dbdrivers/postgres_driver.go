@@ -80,7 +80,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 	var columns []Column
 
 	rows, err := p.dbConn.Query(`
-		SELECT column_name, data_type, is_nullable from
+		SELECT column_name, data_type, column_default, is_nullable from
     information_schema.columns WHERE table_name=$1
 	`, tableName)
 
@@ -90,13 +90,14 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		var colName, colType, isNullable string
-		if err := rows.Scan(&colName, &colType, &isNullable); err != nil {
+		var colName, colType, colDefault, isNullable string
+		if err := rows.Scan(&colName, &colType, &colDefault, &isNullable); err != nil {
 			return nil, err
 		}
 		column := Column{
 			Name:       colName,
 			Type:       colType,
+			Default:    colDefault,
 			IsNullable: isNullable == "YES",
 		}
 		columns = append(columns, column)

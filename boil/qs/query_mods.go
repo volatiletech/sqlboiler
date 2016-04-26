@@ -70,8 +70,8 @@ func Having(clause string) QueryMod {
 	}
 }
 
-func From(table string) QueryMod {
+func Table(table string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetFrom(q, table)
+		boil.SetTable(q, table)
 	}
 }

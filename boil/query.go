@@ -22,7 +22,7 @@ type Query struct {
 	delete          bool
 	update          map[string]interface{}
 	selectCols      []string
-	from            string
+	table           string
 	innerJoins      []join
 	outerJoins      []join
 	leftOuterJoins  []join
@@ -62,7 +62,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	}
 
 	buf.WriteString(" FROM ")
-	fmt.Fprintf(buf, `"%s"`, q.from)
+	fmt.Fprintf(buf, `"%s"`, q.table)
 
 	return buf, []interface{}{}
 }
@@ -113,8 +113,8 @@ func SetSelect(q *Query, columns ...string) {
 	q.selectCols = append(q.selectCols, columns...)
 }
 
-func SetFrom(q *Query, table string) {
-	q.from = table
+func SetTable(q *Query, table string) {
+	q.table = table
 }
 
 func SetInnerJoin(q *Query, on string, args ...interface{}) {

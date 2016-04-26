@@ -4,14 +4,22 @@
 // Delete deletes a single {{$tableNameSingular}} record.
 // Delete will match against the primary key column to find the record to delete.
 func (o *{{$tableNameSingular}}) Delete() error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
+  }
+
   return o.DeleteX(boil.GetDB())
 }
 
 func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
+  }
+
   var mods []qs.QueryMod
 
   mods = append(mods,
-    qs.From("{{.Table.Name}}"),
+    qs.Table("{{.Table.Name}}"),
     qs.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{paramsPrimaryKey "o." .Table.PKey.Columns true}}),
   )
 
@@ -27,9 +35,13 @@ func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
 }
 
 func (o {{$varNameSingular}}Query) DeleteAll() error {
-  boil.SetDelete(o)
+  if o.Query == nil {
+    return errors.New("{{.PkgName}}: no {{$varNameSingular}}Query provided for delete all")
+  }
 
-  _, err := boil.ExecQuery(query)
+  boil.SetDelete(o.Query)
+
+  _, err := boil.ExecQuery(o.Query)
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to delete all from {{.Table.Name}}: %s", err)
   }
@@ -38,17 +50,25 @@ func (o {{$varNameSingular}}Query) DeleteAll() error {
 }
 
 func (o {{$varNameSingular}}Slice) DeleteAll() error {
-  return DeleteAllX(boil.GetDB())
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
+  }
+
+  return o.DeleteAllX(boil.GetDB())
 }
 
 func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
+  }
+
   var mods []qs.QueryMod
 
   args := o.inPrimaryKeyArgs()
   in := boil.WherePrimaryKeyIn(len(o), {{primaryKeyStrList .Table.PKey.Columns}})
 
   mods = append(mods,
-    qs.From("{{.Table.Name}}"),
+    qs.Table("{{.Table.Name}}"),
     qs.Where(in, args...),
   )
 

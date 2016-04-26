@@ -25,7 +25,7 @@ func TestBuildQuery(t *testing.T) {
 		q    *Query
 		args []interface{}
 	}{
-		{&Query{from: "t"}, []interface{}{}},
+		{&Query{table: "t"}, []interface{}{}},
 	}
 
 	for i, test := range tests {
@@ -128,15 +128,15 @@ func TestSetHaving(t *testing.T) {
 	}
 }
 
-func TestSetFrom(t *testing.T) {
+func TestSetTable(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetFrom(q, "videos a, orders b")
+	SetTable(q, "videos a, orders b")
 
 	expect := "videos a, orders b"
-	if q.from != expect {
-		t.Errorf("Expected %s, got %s", expect, q.from)
+	if q.table != expect {
+		t.Errorf("Expected %s, got %s", expect, q.table)
 	}
 }
 

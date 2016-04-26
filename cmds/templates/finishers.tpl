@@ -1,12 +1,12 @@
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
-type {{$tableNameSingular}}Slice []*{{$tableNameSingular}}
+type {{$varNameSingular}}Slice []*{{$tableNameSingular}}
 
 func ({{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 return nil, nil
 }
 
-func ({{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
+func ({{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
 return nil, nil
 }
 

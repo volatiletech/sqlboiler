@@ -11,6 +11,6 @@ func {{$tableNamePlural}}(mods ...qs.QueryMod) {{$varNameSingular}}Query {
 }
 
 func {{$tableNamePlural}}X(exec boil.Executor, mods ...qs.QueryMod) {{$varNameSingular}}Query {
-  mods = append(mods, qs.From("{{.Table.Name}}"))
+  mods = append(mods, qs.Table("{{.Table.Name}}"))
   return {{$varNameSingular}}Query{NewQueryX(exec, mods...)}
 }

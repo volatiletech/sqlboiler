@@ -36,6 +36,7 @@ type Table struct {
 type Column struct {
 	Name       string
 	Type       string
+	Default    string
 	IsNullable bool
 }
 

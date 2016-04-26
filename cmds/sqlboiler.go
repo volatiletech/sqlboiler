@@ -130,8 +130,9 @@ func (c *CmdData) run(includeTests bool) error {
 
 	for _, table := range c.Tables {
 		data := &tplData{
-			Table:   table,
-			PkgName: c.PkgName,
+			Table:      table,
+			DriverName: c.DriverName,
+			PkgName:    c.PkgName,
 		}
 
 		// Generate the regular templates

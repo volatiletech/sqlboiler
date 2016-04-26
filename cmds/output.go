@@ -80,10 +80,15 @@ func generateSinglesOutput(cmdData *CmdData) error {
 		return errors.New("No single templates located for generation")
 	}
 
+	tplData := &tplData{
+		PkgName:    cmdData.PkgName,
+		DriverName: cmdData.DriverName,
+	}
+
 	for _, template := range cmdData.SingleTemplates {
 		var imps imports
 
-		resp, err := generateTemplate(template, &tplData{})
+		resp, err := generateTemplate(template, tplData)
 		if err != nil {
 			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
 		}
@@ -117,7 +122,12 @@ func generateTestMainOutput(cmdData *CmdData) error {
 	imps.standard = sqlBoilerTestMainImports[cmdData.DriverName].standard
 	imps.thirdparty = sqlBoilerTestMainImports[cmdData.DriverName].thirdparty
 
-	resp, err := generateTemplate(cmdData.TestMainTemplate, &tplData{})
+	tplData := &tplData{
+		PkgName:    cmdData.PkgName,
+		DriverName: cmdData.DriverName,
+	}
+
+	resp, err := generateTemplate(cmdData.TestMainTemplate, tplData)
 	if err != nil {
 		return err
 	}

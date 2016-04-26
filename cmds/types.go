@@ -34,8 +34,9 @@ type CmdData struct {
 
 // tplData is used to pass data to the template
 type tplData struct {
-	Table   dbdrivers.Table
-	PkgName string
+	Table      dbdrivers.Table
+	DriverName string
+	PkgName    string
 }
 
 type importList []string

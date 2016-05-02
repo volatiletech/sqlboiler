@@ -229,6 +229,26 @@ func initTables(tableName string, cmdData *CmdData) error {
 		return errors.New("No tables found in database, migrate some tables first")
 	}
 
+	if err := checkPKeys(cmdData.Tables); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// checkPKeys ensures every table has a primary key column
+func checkPKeys(tables []dbdrivers.Table) error {
+	var missingPkey []string
+	for _, t := range tables {
+		if t.PKey == nil {
+			missingPkey = append(missingPkey, t.Name)
+		}
+	}
+
+	if len(missingPkey) != 0 {
+		return fmt.Errorf("Cannot continue until the follow tables have PRIMARY KEY columns: %s", strings.Join(missingPkey, ", "))
+	}
+
 	return nil
 }
 

@@ -40,7 +40,22 @@ func init() {
 			{
 				Name: "spiderman",
 				Columns: []dbdrivers.Column{
+					{Name: "id", Type: "int64", IsNullable: false},
+				},
+				PKey: &dbdrivers.PrimaryKey{
+					Name:    "pkey_id",
+					Columns: []string{"id"},
+				},
+			},
+			{
+				Name: "spiderman_table_two",
+				Columns: []dbdrivers.Column{
+					{Name: "id", Type: "int64", IsNullable: false},
 					{Name: "patrick", Type: "string", IsNullable: false},
+				},
+				PKey: &dbdrivers.PrimaryKey{
+					Name:    "pkey_id",
+					Columns: []string{"id"},
 				},
 			},
 		},
@@ -67,6 +82,10 @@ func TestLoadTemplate(t *testing.T) {
 func TestTemplates(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
+	}
+
+	if err := checkPKeys(cmdData.Tables); err != nil {
+		t.Fatalf("%s", err)
 	}
 
 	// Initialize the templates

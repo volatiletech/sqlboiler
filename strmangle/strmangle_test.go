@@ -11,6 +11,73 @@ var testColumns = []dbdrivers.Column{
 	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 }
 
+func TestAutoIncPrimaryKey(t *testing.T) {
+	t.Parallel()
+
+	var pkey *dbdrivers.PrimaryKey
+	var cols []dbdrivers.Column
+
+	r := AutoIncPrimaryKey(cols, pkey)
+	if r != "" {
+		t.Errorf("Expected empty string, got %s", r)
+	}
+
+	pkey = &dbdrivers.PrimaryKey{
+		Columns: []string{
+			"col1", "auto",
+		},
+		Name: "",
+	}
+
+	cols = []dbdrivers.Column{
+		{
+			Name:       "thing",
+			IsNullable: true,
+			Type:       "int64",
+			Default:    "nextval('abc'::regclass)",
+		},
+		{
+			Name:       "stuff",
+			IsNullable: false,
+			Type:       "string",
+			Default:    "nextval('abc'::regclass)",
+		},
+		{
+			Name:       "other",
+			IsNullable: false,
+			Type:       "int64",
+			Default:    "nextval",
+		},
+	}
+
+	r = AutoIncPrimaryKey(cols, pkey)
+	if r != "" {
+		t.Errorf("Expected empty string, got %s", r)
+	}
+
+	cols = append(cols, dbdrivers.Column{
+		Name:       "auto",
+		IsNullable: false,
+		Type:       "int64",
+		Default:    "nextval('abc'::regclass)",
+	})
+
+	r = AutoIncPrimaryKey(cols, pkey)
+	if r != "auto" {
+		t.Errorf("Expected empty string, got %s", r)
+	}
+}
+
+func TestGenerateParamFlags(t *testing.T) {
+	t.Parallel()
+
+	x := GenerateParamFlags(5, 1)
+	want := "$1,$2,$3,$4,$5"
+	if want != x {
+		t.Errorf("want %s, got %s", want, x)
+	}
+}
+
 func TestSingular(t *testing.T) {
 	t.Parallel()
 
@@ -261,5 +328,43 @@ func TestWherePrimaryKey(t *testing.T) {
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}
+	}
+}
+
+func TestFilterColumnsByDefault(t *testing.T) {
+	t.Parallel()
+
+	cols := []dbdrivers.Column{
+		{
+			Name:    "col1",
+			Default: "",
+		},
+		{
+			Name:    "col2",
+			Default: "things",
+		},
+		{
+			Name:    "col3",
+			Default: "",
+		},
+		{
+			Name:    "col4",
+			Default: "things2",
+		},
+	}
+
+	res := FilterColumnsByDefault(cols, false)
+	if res != `"col1","col3"` {
+		t.Errorf("Invalid result: %s", res)
+	}
+
+	res = FilterColumnsByDefault(cols, true)
+	if res != `"col2","col4"` {
+		t.Errorf("Invalid result: %s", res)
+	}
+
+	res = FilterColumnsByDefault([]dbdrivers.Column{}, false)
+	if res != `` {
+		t.Errorf("Invalid result: %s", res)
 	}
 }

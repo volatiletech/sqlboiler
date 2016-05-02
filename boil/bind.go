@@ -49,6 +49,22 @@ func checkType(obj interface{}) (reflect.Type, bool, error) {
 	return typ, isSlice, nil
 }
 
+// GetStructValues returns the values (as interface) of the matching columns in obj
+func GetStructValues(obj interface{}, columns ...string) []interface{} {
+	ret := make([]interface{}, len(columns))
+	val := reflect.ValueOf(obj)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	for i, c := range columns {
+		field := val.FieldByName(strmangle.TitleCase(c))
+		ret[i] = field.Interface()
+	}
+
+	return ret
+}
+
 // GetStructPointers returns a slice of pointers to the matching columns in obj
 func GetStructPointers(obj interface{}, columns ...string) []interface{} {
 	val := reflect.ValueOf(obj).Elem()

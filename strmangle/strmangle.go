@@ -2,11 +2,14 @@ package strmangle
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/jinzhu/inflection"
 	"github.com/pobri19/sqlboiler/dbdrivers"
 )
+
+var rgxAutoIncColumn = regexp.MustCompile(`^nextval\(.*\)`)
 
 // Plural converts singular words to plural words (eg: person to people)
 func Plural(name string) string {
@@ -247,6 +250,18 @@ func PrimaryKeyFuncSig(cols []dbdrivers.Column, pkeyCols []string) string {
 	return strings.Join(output, ", ")
 }
 
+// GenerateParamFlags generates the SQL statement parameter flags
+// For example, $1,$2,$3 etc. It will start counting at startAt.
+func GenerateParamFlags(colCount int, startAt int) string {
+	cols := make([]string, 0, colCount)
+
+	for i := startAt; i < colCount+startAt; i++ {
+		cols = append(cols, fmt.Sprintf("$%d", i))
+	}
+
+	return strings.Join(cols, ",")
+}
+
 // WherePrimaryKey returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
 func WherePrimaryKey(pkeyCols []string, start int) string {
@@ -280,6 +295,26 @@ func PrimaryKeyStrList(pkeyCols []string) string {
 	return strings.Join(cols, ", ")
 }
 
+// AutoIncPrimKey returns the auto-increment primary key column name or an empty string
+func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) string {
+	if pkey == nil {
+		return ""
+	}
+
+	for _, c := range cols {
+		if rgxAutoIncColumn.MatchString(c.Default) &&
+			c.IsNullable == false && c.Type == "int64" {
+			for _, p := range pkey.Columns {
+				if c.Name == p {
+					return p
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
 // CommaList returns a comma seperated list: "col1, col2, col3"
 func CommaList(cols []string) string {
 	return strings.Join(cols, ", ")
@@ -307,3 +342,32 @@ func ParamsPrimaryKey(prefix string, columns []string, shouldTitleCase bool) str
 func PrimaryKeyFlagIndex(regularCols []dbdrivers.Column, pkeyCols []string) int {
 	return len(regularCols) - len(pkeyCols) + 1
 }
+
+// SupportsResult returns whether the database driver supports the sql.Results
+// interface, i.e. LastReturnId and RowsAffected
+func SupportsResultObject(driverName string) bool {
+	switch driverName {
+	case "postgres":
+		return false
+	default:
+		return true
+	}
+}
+
+// FilterColumnsByDefault generates the list of columns that have default values
+func FilterColumnsByDefault(columns []dbdrivers.Column, defaults bool) string {
+	var cols []string
+
+	for _, c := range columns {
+		if (defaults && len(c.Default) != 0) || (!defaults && len(c.Default) == 0) {
+			cols = append(cols, fmt.Sprintf(`"%s"`, c.Name))
+		}
+	}
+
+	return strings.Join(cols, `,`)
+}
+
+// DEFAULT WHITELIST: The things that are not default values. The things we want to insert all the time.
+// WHITELIST: The things that we will NEVER return. The things that we will ALWAYS insert.
+// DEFAULTS: The things that we will return (if not in WHITELIST)
+// NON-ZEROS: The things that we will return (if not in WHITELIST)

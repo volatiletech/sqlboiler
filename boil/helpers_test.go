@@ -1,14 +1,145 @@
 package boil
 
 import (
+	"reflect"
 	"testing"
 	"time"
+
+	"github.com/guregu/null"
 )
 
 type testObj struct {
 	ID       int
 	Name     string `db:"TestHello"`
 	HeadSize int
+}
+
+func TestSetComplement(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		A []string
+		B []string
+		C []string
+	}{
+		{
+			[]string{"thing1", "thing2", "thing3"},
+			[]string{"thing2", "otherthing", "stuff"},
+			[]string{"thing1", "thing3"},
+		},
+		{
+			[]string{},
+			[]string{"thing1", "thing2"},
+			[]string{},
+		},
+		{
+			[]string{"thing1", "thing2"},
+			[]string{},
+			[]string{"thing1", "thing2"},
+		},
+		{
+			[]string{"thing1", "thing2"},
+			[]string{"thing1", "thing2"},
+			[]string{},
+		},
+	}
+
+	for i, test := range tests {
+		c := SetComplement(test.A, test.B)
+		if !reflect.DeepEqual(test.C, c) {
+			t.Errorf("[%d] mismatch:\nWant: %#v\nGot:  %#v", i, test.C, c)
+		}
+	}
+}
+
+func TestSetIntersect(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		A []string
+		B []string
+		C []string
+	}{
+		{
+			[]string{"thing1", "thing2", "thing3"},
+			[]string{"thing2", "otherthing", "stuff"},
+			[]string{"thing2"},
+		},
+		{
+			[]string{},
+			[]string{"thing1", "thing2"},
+			[]string{},
+		},
+		{
+			[]string{"thing1", "thing2"},
+			[]string{},
+			[]string{},
+		},
+		{
+			[]string{"thing1", "thing2"},
+			[]string{"thing1", "thing2"},
+			[]string{"thing1", "thing2"},
+		},
+	}
+
+	for i, test := range tests {
+		c := SetIntersect(test.A, test.B)
+		if !reflect.DeepEqual(test.C, c) {
+			t.Errorf("[%d] mismatch:\nWant: %#v\nGot:  %#v", i, test.C, c)
+		}
+	}
+}
+
+func TestNonZeroDefaultSet(t *testing.T) {
+	t.Parallel()
+
+	type Anything struct {
+		ID        int
+		Name      string
+		CreatedAt *time.Time
+		UpdatedAt null.Time
+	}
+
+	now := time.Now()
+
+	tests := []struct {
+		Defaults []string
+		Obj      interface{}
+		Ret      []string
+	}{
+		{
+			[]string{"id"},
+			Anything{Name: "hi", CreatedAt: nil, UpdatedAt: null.Time{Valid: false}},
+			[]string{},
+		},
+		{
+			[]string{"id"},
+			Anything{ID: 5, Name: "hi", CreatedAt: nil, UpdatedAt: null.Time{Valid: false}},
+			[]string{"id"},
+		},
+		{
+			[]string{},
+			Anything{ID: 5, Name: "hi", CreatedAt: nil, UpdatedAt: null.Time{Valid: false}},
+			[]string{},
+		},
+		{
+			[]string{"id", "created_at", "updated_at"},
+			Anything{ID: 5, Name: "hi", CreatedAt: nil, UpdatedAt: null.Time{Valid: false}},
+			[]string{"id"},
+		},
+		{
+			[]string{"id", "created_at", "updated_at"},
+			Anything{ID: 5, Name: "hi", CreatedAt: &now, UpdatedAt: null.Time{Valid: true, Time: time.Now()}},
+			[]string{"id", "created_at", "updated_at"},
+		},
+	}
+
+	for i, test := range tests {
+		z := NonZeroDefaultSet(test.Defaults, test.Obj)
+		if !reflect.DeepEqual(test.Ret, z) {
+			t.Errorf("[%d] mismatch:\nWant: %#v\nGot:  %#v", i, test.Ret, z)
+		}
+	}
 }
 
 func TestWherePrimaryKeyIn(t *testing.T) {
@@ -105,34 +236,15 @@ func TestSelectNames(t *testing.T) {
 func TestWhereClause(t *testing.T) {
 	t.Parallel()
 
-	columns := map[string]interface{}{
-		"name": "bob",
-		"id":   5,
-		"date": time.Now(),
+	columns := []string{
+		"id",
+		"name",
+		"date",
 	}
 
 	result := WhereClause(columns)
 
-	if result != `date=$1 AND id=$2 AND name=$3` {
+	if result != `id=$1 AND name=$2 AND date=$3` {
 		t.Error("Result was wrong, got:", result)
-	}
-}
-
-func TestWhereParams(t *testing.T) {
-	t.Parallel()
-
-	columns := map[string]interface{}{
-		"name": "bob",
-		"id":   5,
-	}
-
-	result := WhereParams(columns)
-
-	if result[0].(int) != 5 {
-		t.Error("Result[0] was wrong, got:", result[0])
-	}
-
-	if result[1].(string) != "bob" {
-		t.Error("Result[1] was wrong, got:", result[1])
 	}
 }

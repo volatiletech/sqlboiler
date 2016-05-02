@@ -7,7 +7,78 @@ import (
 	"sort"
 	"strings"
 	"unicode"
+
+	"github.com/pobri19/sqlboiler/strmangle"
 )
+
+// SetComplement subtracts the elements in b from a
+func SetComplement(a []string, b []string) []string {
+	c := make([]string, 0, len(a))
+
+	for _, aVal := range a {
+		found := false
+		for _, bVal := range b {
+			if aVal == bVal {
+				found = true
+				break
+			}
+		}
+		if !found {
+			c = append(c, aVal)
+		}
+	}
+
+	return c
+}
+
+// SetIntersect returns the elements that are common in a and b
+func SetIntersect(a []string, b []string) []string {
+	c := make([]string, 0, len(a))
+
+	for _, aVal := range a {
+		found := false
+		for _, bVal := range b {
+			if aVal == bVal {
+				found = true
+				break
+			}
+		}
+		if found {
+			c = append(c, aVal)
+		}
+	}
+
+	return c
+}
+
+// NonZeroDefaultSet returns the fields included in the
+// defaults slice that are non zero values
+func NonZeroDefaultSet(defaults []string, obj interface{}) []string {
+	c := make([]string, 0, len(defaults))
+
+	val := reflect.ValueOf(obj)
+
+	for _, d := range defaults {
+		fieldName := strmangle.TitleCase(d)
+		field := val.FieldByName(fieldName)
+		if !field.IsValid() {
+			panic(fmt.Sprintf("Could not find field name %s in type %T", fieldName, obj))
+		}
+
+		zero := reflect.Zero(field.Type())
+		if !reflect.DeepEqual(zero.Interface(), field.Interface()) {
+			c = append(c, d)
+		}
+	}
+
+	return c
+}
+
+// GenerateParamFlags generates the SQL statement parameter flags
+// For example, $1,$2,$3 etc. It will start counting at startAt.
+func GenerateParamFlags(colCount int, startAt int) string {
+	return strmangle.GenerateParamFlags(colCount, startAt)
+}
 
 // WherePrimaryKeyIn generates a "in" string for where queries
 // For example: (col1, col2) IN (($1, $2), ($3, $4))
@@ -81,14 +152,12 @@ func SelectNames(results interface{}) string {
 
 // WhereClause returns the where clause for an sql statement
 // eg: col1=$1 AND col2=$2 AND col3=$3
-func WhereClause(columns map[string]interface{}) string {
+func WhereClause(columns []string) string {
 	names := make([]string, 0, len(columns))
 
-	for c := range columns {
+	for _, c := range columns {
 		names = append(names, c)
 	}
-
-	sort.Strings(names)
 
 	for i, c := range names {
 		names[i] = fmt.Sprintf("%s=$%d", c, i+1)
@@ -113,24 +182,6 @@ func Update(columns map[string]interface{}) string {
 	}
 
 	return strings.Join(names, ",")
-}
-
-// WhereParams returns a list of sql parameter values for the query
-func WhereParams(columns map[string]interface{}) []interface{} {
-	names := make([]string, 0, len(columns))
-	results := make([]interface{}, 0, len(columns))
-
-	for c := range columns {
-		names = append(names, c)
-	}
-
-	sort.Strings(names)
-
-	for _, c := range names {
-		results = append(results, columns[c])
-	}
-
-	return results
 }
 
 // SetParamNames takes a slice of columns and returns a comma seperated

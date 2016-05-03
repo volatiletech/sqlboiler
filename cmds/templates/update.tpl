@@ -18,10 +18,10 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
   {{$flagIndex := primaryKeyFlagIndex .Table.Columns .Table.PKey.Columns}}
   var err error
   if len(whitelist) == 0 {
-    _, err = db.Exec("UPDATE {{.Table.Name}} SET {{updateParamNames .Table.Columns .Table.PKey.Columns}} WHERE {{wherePrimaryKey .Table.PKey.Columns $flagIndex}}", {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
+    _, err = exec.Exec(`UPDATE {{.Table.Name}} SET {{updateParamNames .Table.Columns .Table.PKey.Columns}} WHERE {{wherePrimaryKey .Table.PKey.Columns $flagIndex}}`, {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
   } else {
-    query := fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), WherePrimaryKey(len(whitelist)+1, {{commaList .Table.PKey.Columns}}))
-    _, err = db.Exec(query, {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
+    query := fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{commaList .Table.PKey.Columns}}))
+    _, err = exec.Exec(query, {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
   }
 
   if err != nil {
@@ -35,7 +35,7 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
   return nil
 }
 
-func (v {{$varNameSingular}}Query) UpdateAll(cols boil.M) error {
-
+func (v {{$varNameSingular}}Query) UpdateAll(cols M) error {
+return nil
 }
 {{- end}}

@@ -315,9 +315,9 @@ func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) stri
 	return ""
 }
 
-// CommaList returns a comma seperated list: "col1, col2, col3"
+// CommaList returns a comma seperated list: "col1", "col2", "col3"
 func CommaList(cols []string) string {
-	return strings.Join(cols, ", ")
+	return fmt.Sprintf(`"%s"`, strings.Join(cols, `", "`))
 }
 
 // ParamsPrimaryKey returns the parameters for the sql statement $ flags

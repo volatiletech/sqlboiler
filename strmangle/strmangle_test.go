@@ -11,6 +11,36 @@ var testColumns = []dbdrivers.Column{
 	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 }
 
+func TestCommaList(t *testing.T) {
+	t.Parallel()
+
+	cols := []string{
+		"test1",
+	}
+
+	x := CommaList(cols)
+
+	if x != `"test1"` {
+		t.Errorf(`Expected "test1" - got %s`, x)
+	}
+
+	cols = append(cols, "test2")
+
+	x = CommaList(cols)
+
+	if x != `"test1", "test2"` {
+		t.Errorf(`Expected "test1", "test2" - got %s`, x)
+	}
+
+	cols = append(cols, "test3")
+
+	x = CommaList(cols)
+
+	if x != `"test1", "test2", "test3"` {
+		t.Errorf(`Expected "test1", "test2", "test3" - got %s`, x)
+	}
+}
+
 func TestAutoIncPrimaryKey(t *testing.T) {
 	t.Parallel()
 

@@ -6,17 +6,13 @@ func (o *{{$tableNameSingular}}) Insert(whitelist ... string) error {
   return o.InsertX(boil.GetDB(), whitelist...)
 }
 
-var {{$varNameSingular}}DefaultInsertWhitelist = []string{{"{"}}{{filterColumnsByDefault .Table.Columns false}}{{"}"}}
-var {{$varNameSingular}}ColumnsWithDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns true}}{{"}"}}
-var {{$varNameSingular}}AutoIncPrimaryKey = "{{autoIncPrimaryKey .Table.Columns .Table.PKey}}"
-
 func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... string) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }
 
   if len(whitelist) == 0 {
-    whitelist = {{$varNameSingular}}DefaultInsertWhitelist
+    whitelist = {{$varNameSingular}}ColumnsWithoutDefault
   }
 
   nzDefaultSet := boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)

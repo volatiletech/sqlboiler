@@ -1,6 +1,12 @@
+{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+var {{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns false}}{{"}"}}
+var {{$varNameSingular}}ColumnsWithDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns true}}{{"}"}}
+var {{$varNameSingular}}PrimaryKeyColumns = []string{{"{"}}{{primaryKeyStrList .Table.PKey.Columns}}{{"}"}}
+var {{$varNameSingular}}AutoIncrementColumns = []string{{"{"}}{{filterColumnsByAutoIncrement .Table.Columns}}{{"}"}}
+var {{$varNameSingular}}AutoIncPrimaryKey = "{{autoIncPrimaryKey .Table.Columns .Table.PKey}}"
+
 {{if hasPrimaryKey .Table.PKey -}}
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
 func (o {{$varNameSingular}}Slice) inPrimaryKeyArgs() []interface{} {
   var args []interface{}
 

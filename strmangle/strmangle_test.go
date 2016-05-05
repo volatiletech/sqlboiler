@@ -41,6 +41,21 @@ func TestCommaList(t *testing.T) {
 	}
 }
 
+func TestCamelCaseCommaList(t *testing.T) {
+	cols := []string{
+		"test_id",
+		"test_thing",
+		"test_stuff_thing",
+		"test",
+	}
+
+	x := CamelCaseCommaList(cols)
+	expected := `testID, testThing, testStuffThing, test`
+	if x != expected {
+		t.Errorf("Expected %s, got %s", expected, x)
+	}
+}
+
 func TestAutoIncPrimaryKey(t *testing.T) {
 	t.Parallel()
 
@@ -394,6 +409,39 @@ func TestFilterColumnsByDefault(t *testing.T) {
 	}
 
 	res = FilterColumnsByDefault([]dbdrivers.Column{}, false)
+	if res != `` {
+		t.Errorf("Invalid result: %s", res)
+	}
+}
+
+func TestFilterColumnsByAutoIncrement(t *testing.T) {
+	t.Parallel()
+
+	cols := []dbdrivers.Column{
+		{
+			Name:    "col1",
+			Default: `nextval("thing"::thing)`,
+		},
+		{
+			Name:    "col2",
+			Default: "things",
+		},
+		{
+			Name:    "col3",
+			Default: "",
+		},
+		{
+			Name:    "col4",
+			Default: `nextval("thing"::thing)`,
+		},
+	}
+
+	res := FilterColumnsByAutoIncrement(cols)
+	if res != `"col1","col4"` {
+		t.Errorf("Invalid result: %s", res)
+	}
+
+	res = FilterColumnsByAutoIncrement([]dbdrivers.Column{})
 	if res != `` {
 		t.Errorf("Invalid result: %s", res)
 	}

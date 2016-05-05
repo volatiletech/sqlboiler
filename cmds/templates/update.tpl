@@ -15,13 +15,19 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
     return err
   }
 
-  {{$flagIndex := primaryKeyFlagIndex .Table.Columns .Table.PKey.Columns}}
-  var err error
   if len(whitelist) == 0 {
-    _, err = exec.Exec(`UPDATE {{.Table.Name}} SET {{updateParamNames .Table.Columns .Table.PKey.Columns}} WHERE {{wherePrimaryKey .Table.PKey.Columns $flagIndex}}`, {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
-  } else {
+    whitelist = {{$varNameSingular}}ColumnsWithoutDefault
+    whitelist = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), whitelist...)
+    whitelist = boil.SetComplement(whitelist, {{$varNameSingular}}PrimaryKeyColumns)
+    whitelist = boil.SetComplement(whitelist, {{$varNameSingular}}AutoIncrementColumns)
+  }
+
+  var err error
+  if len(whitelist) != 0 {
     query := fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{commaList .Table.PKey.Columns}}))
-    _, err = exec.Exec(query, {{updateParamVariables "o." .Table.Columns .Table.PKey.Columns}}, {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
+    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
+  } else {
+    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build a whitelist for row: %s")
   }
 
   if err != nil {
@@ -32,6 +38,14 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
     return err
   }
 
+  return nil
+}
+
+func (o *{{$tableNameSingular}}) UpdateAt({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
+  return o.UpdateAtX(boil.GetDB(), {{camelCaseCommaList .Table.PKey.Columns}}, whitelist...)
+}
+
+func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
   return nil
 }
 

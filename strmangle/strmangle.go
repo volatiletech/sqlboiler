@@ -367,7 +367,15 @@ func FilterColumnsByDefault(columns []dbdrivers.Column, defaults bool) string {
 	return strings.Join(cols, `,`)
 }
 
-// DEFAULT WHITELIST: The things that are not default values. The things we want to insert all the time.
-// WHITELIST: The things that we will NEVER return. The things that we will ALWAYS insert.
-// DEFAULTS: The things that we will return (if not in WHITELIST)
-// NON-ZEROS: The things that we will return (if not in WHITELIST)
+// FilterColumnsByAutoIncrement generates the list of auto increment columns
+func FilterColumnsByAutoIncrement(columns []dbdrivers.Column) string {
+	var cols []string
+
+	for _, c := range columns {
+		if rgxAutoIncColumn.MatchString(c.Default) {
+			cols = append(cols, fmt.Sprintf(`"%s"`, c.Name))
+		}
+	}
+
+	return strings.Join(cols, `,`)
+}

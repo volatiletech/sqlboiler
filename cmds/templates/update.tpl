@@ -11,15 +11,27 @@ func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
 }
 
 func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... string) error {
+  return o.UpdateAtX(exec, {{titleCaseCommaList "o." .Table.PKey.Columns}}, whitelist...)
+}
+
+func (o *{{$tableNameSingular}}) UpdateAt({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
+  return o.UpdateAtX(boil.GetDB(), {{camelCaseCommaList "" .Table.PKey.Columns}}, whitelist...)
+}
+
+func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
   if err := o.doBeforeUpdateHooks(); err != nil {
     return err
   }
 
   if len(whitelist) == 0 {
-    whitelist = {{$varNameSingular}}ColumnsWithoutDefault
-    whitelist = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), whitelist...)
-    whitelist = boil.SetComplement(whitelist, {{$varNameSingular}}PrimaryKeyColumns)
-    whitelist = boil.SetComplement(whitelist, {{$varNameSingular}}AutoIncrementColumns)
+    cols := {{$varNameSingular}}ColumnsWithoutDefault
+    cols = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), cols...)
+    // Subtract primary keys and autoincrement columns
+    cols = boil.SetComplement(cols, {{$varNameSingular}}PrimaryKeyColumns)
+    cols = boil.SetComplement(cols, {{$varNameSingular}}AutoIncrementColumns)
+
+    whitelist = make([]string, len(cols))
+    copy(whitelist, cols)
   }
 
   var err error
@@ -27,7 +39,7 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
     query := fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{commaList .Table.PKey.Columns}}))
     _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
   } else {
-    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build a whitelist for row: %s")
+    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build a whitelist for row: %s", err)
   }
 
   if err != nil {
@@ -38,14 +50,6 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
     return err
   }
 
-  return nil
-}
-
-func (o *{{$tableNameSingular}}) UpdateAt({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
-  return o.UpdateAtX(boil.GetDB(), {{camelCaseCommaList .Table.PKey.Columns}}, whitelist...)
-}
-
-func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
   return nil
 }
 

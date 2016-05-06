@@ -4,7 +4,7 @@
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
 // {{$tableNameSingular}}Find retrieves a single record by ID.
 func {{$tableNameSingular}}Find({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-  return {{$tableNameSingular}}FindX(boil.GetDB(), {{camelCaseCommaList .Table.PKey.Columns}}, selectCols...)
+  return {{$tableNameSingular}}FindX(boil.GetDB(), {{camelCaseCommaList "" .Table.PKey.Columns}}, selectCols...)
 }
 
 func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
@@ -12,7 +12,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.
   mods := []qs.QueryMod{
     qs.Select(selectCols...),
     qs.Table("{{.Table.Name}}"),
-    qs.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{camelCaseCommaList .Table.PKey.Columns}}),
+    qs.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{camelCaseCommaList "" .Table.PKey.Columns}}),
   }
 
   q := NewQueryX(exec, mods...)

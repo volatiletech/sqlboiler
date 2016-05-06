@@ -41,6 +41,27 @@ func TestCommaList(t *testing.T) {
 	}
 }
 
+func TestTitleCaseCommaList(t *testing.T) {
+	cols := []string{
+		"test_id",
+		"test_thing",
+		"test_stuff_thing",
+		"test",
+	}
+
+	x := TitleCaseCommaList("", cols)
+	expected := `TestID, TestThing, TestStuffThing, Test`
+	if x != expected {
+		t.Errorf("Expected %s, got %s", expected, x)
+	}
+
+	x = TitleCaseCommaList("o.", cols)
+	expected = `o.TestID, o.TestThing, o.TestStuffThing, o.Test`
+	if x != expected {
+		t.Errorf("Expected %s, got %s", expected, x)
+	}
+}
+
 func TestCamelCaseCommaList(t *testing.T) {
 	cols := []string{
 		"test_id",
@@ -49,8 +70,14 @@ func TestCamelCaseCommaList(t *testing.T) {
 		"test",
 	}
 
-	x := CamelCaseCommaList(cols)
+	x := CamelCaseCommaList("", cols)
 	expected := `testID, testThing, testStuffThing, test`
+	if x != expected {
+		t.Errorf("Expected %s, got %s", expected, x)
+	}
+
+	x = CamelCaseCommaList("o.", cols)
+	expected = `o.testID, o.testThing, o.testStuffThing, o.test`
 	if x != expected {
 		t.Errorf("Expected %s, got %s", expected, x)
 	}

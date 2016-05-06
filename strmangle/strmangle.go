@@ -100,12 +100,24 @@ func CamelCasePlural(name string) string {
 }
 
 // CamelCaseCommaList generates a list of comma seperated camel cased column names
-// example: thingName, stuffName, etc
-func CamelCaseCommaList(pkeyColumns []string) string {
+// example: thingName, o.stuffName, etc
+func CamelCaseCommaList(prefix string, cols []string) string {
 	var output []string
 
-	for _, c := range pkeyColumns {
-		output = append(output, CamelCase(c))
+	for _, c := range cols {
+		output = append(output, prefix+CamelCase(c))
+	}
+
+	return strings.Join(output, ", ")
+}
+
+// TitleCaseCommaList generates a list of comma seperated title cased column names
+// example: o.ThingName, o.Stuff, ThingStuff, etc
+func TitleCaseCommaList(prefix string, cols []string) string {
+	var output []string
+
+	for _, c := range cols {
+		output = append(output, prefix+TitleCase(c))
 	}
 
 	return strings.Join(output, ", ")

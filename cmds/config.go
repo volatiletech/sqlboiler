@@ -90,6 +90,7 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"titleCase":                    strmangle.TitleCase,
 	"titleCaseSingular":            strmangle.TitleCaseSingular,
 	"titleCasePlural":              strmangle.TitleCasePlural,
+	"titleCaseCommaList":           strmangle.TitleCaseCommaList,
 	"camelCase":                    strmangle.CamelCase,
 	"camelCaseSingular":            strmangle.CamelCaseSingular,
 	"camelCasePlural":              strmangle.CamelCasePlural,

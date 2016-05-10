@@ -22,6 +22,7 @@ type Query struct {
 	delete          bool
 	update          map[string]interface{}
 	selectCols      []string
+	count           bool
 	table           string
 	innerJoins      []join
 	outerJoins      []join
@@ -95,6 +96,10 @@ func ExecQueryOne(q *Query) *sql.Row {
 func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	qs, args := buildQuery(q)
 	return q.executor.Query(qs, args)
+}
+
+func SetCount(q *Query) {
+	q.count = true
 }
 
 func SetDelete(q *Query) {

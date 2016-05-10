@@ -53,7 +53,14 @@ func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncS
   return nil
 }
 
-func (v {{$varNameSingular}}Query) UpdateAll(cols M) error {
-return nil
+func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
+  boil.SetUpdate(q.Query, cols)
+
+  _, err := boil.ExecQuery(q.Query)
+  if err != nil {
+    return fmt.Errorf("{{.PkgName}}: unable to update all for {{.Table.Name}}: %s", err)
+  }
+
+  return nil
 }
 {{- end}}

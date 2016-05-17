@@ -56,7 +56,7 @@ func SetIntersect(a []string, b []string) []string {
 func NonZeroDefaultSet(defaults []string, obj interface{}) []string {
 	c := make([]string, 0, len(defaults))
 
-	val := reflect.ValueOf(obj)
+	val := reflect.Indirect(reflect.ValueOf(obj))
 
 	for _, d := range defaults {
 		fieldName := strmangle.TitleCase(d)
@@ -128,10 +128,7 @@ func WherePrimaryKeyIn(numRows int, keyNames ...string) string {
 func SelectNames(results interface{}) string {
 	var names []string
 
-	structValue := reflect.ValueOf(results)
-	if structValue.Kind() == reflect.Ptr {
-		structValue = structValue.Elem()
-	}
+	structValue := reflect.Indirect(reflect.ValueOf(results))
 
 	structType := structValue.Type()
 	for i := 0; i < structValue.NumField(); i++ {

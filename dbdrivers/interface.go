@@ -71,8 +71,8 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 		t := Table{Name: name}
 
 		if t.Columns, err = db.Columns(name); err != nil {
+			fmt.Println("Unable to get columns.")
 			return nil, err
-			fmt.Println("Unable to get columnss.")
 		}
 
 		for i, c := range t.Columns {

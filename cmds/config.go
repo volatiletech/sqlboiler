@@ -60,6 +60,9 @@ var sqlBoilerTestImports = imports{
 	standard: importList{
 		`"testing"`,
 	},
+	thirdparty: importList{
+		`"github.com/pobri19/sqlboiler/boil"`,
+	},
 }
 
 var sqlBoilerTestMainImports = map[string]imports{
@@ -76,6 +79,7 @@ var sqlBoilerTestMainImports = map[string]imports{
 			`"math/rand"`,
 		},
 		thirdparty: importList{
+			`"github.com/pobri19/sqlboiler/boil"`,
 			`"github.com/BurntSushi/toml"`,
 			`_ "github.com/lib/pq"`,
 		},
@@ -114,6 +118,9 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"filterColumnsByDefault":       strmangle.FilterColumnsByDefault,
 	"filterColumnsByAutoIncrement": strmangle.FilterColumnsByAutoIncrement,
 	"autoIncPrimaryKey":            strmangle.AutoIncPrimaryKey,
+
+	"randDBStruct":      strmangle.RandDBStruct,
+	"randDBStructSlice": strmangle.RandDBStructSlice,
 }
 
 // LoadConfigFile loads the toml config file into the cfg object

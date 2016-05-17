@@ -24,6 +24,7 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 
+	boil.SetDB(dbConn)
   code := m.Run()
 
 	err = teardown()
@@ -37,6 +38,7 @@ func TestMain(m *testing.M) {
 
 // teardown switches its connection to the template1 database temporarily
 // so that it can drop the test database and the test user.
+// The template1 database should be present on all default postgres installations.
 func teardown() error {
 	err := dbConn.Close()
 	if err != nil {

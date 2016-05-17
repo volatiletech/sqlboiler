@@ -32,7 +32,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
 
   {{if supportsResultObject .DriverName}}
   if len(returnColumns) != 0 {
-    result, err := exec.Exec(ins, boil.GetStructValues(o, wl...))
+    result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
     if err != nil {
       return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)
     }
@@ -40,7 +40,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
     lastId, err := result.lastInsertId()
     if err != nil || lastId == 0 {
       sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, ","), boil.WhereClause(wl))
-      rows, err := exec.Query(sel, boil.GetStructValues(o, wl...))
+      rows, err := exec.Query(sel, boil.GetStructValues(o, wl...)...)
       if err != nil {
         return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)
       }
@@ -58,12 +58,12 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
       sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s=$1`, strings.Join(returnColumns, ","), {{$varNameSingular}}AutoIncPrimaryKey, lastId)
     }
   } else {
-    _, err = exec.Exec(ins, boil.GetStructValues(o, wl...))
+    _, err = exec.Exec(ins, boil.GetStructValues(o, wl...)...)
   }
   {{else}}
   if len(returnColumns) != 0 {
     ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
-    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)).Scan(boil.GetStructPointers(o, returnColumns...))
+    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...))
   } else {
     _, err = exec.Exec(ins, {{insertParamVariables "o." .Table.Columns}})
   }

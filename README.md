@@ -1,5 +1,7 @@
 <img src="http://i.imgur.com/R5g99sO.png"/>
 
+# STILL IN DEVELOPMENT. ETA RELEASE: 1 MONTH
+
 # SQLBoiler
 
 [![GoDoc](https://godoc.org/github.com/pobri19/sqlboiler?status.svg)](https://godoc.org/github.com/pobri19/sqlboiler)

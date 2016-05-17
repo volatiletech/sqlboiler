@@ -91,9 +91,17 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var colName, colType, colDefault, isNullable string
-		if err := rows.Scan(&colName, &colType, &colDefault, &isNullable); err != nil {
-			return nil, err
+		var defaultPtr *string
+		if err := rows.Scan(&colName, &colType, &defaultPtr, &isNullable); err != nil {
+			return nil, fmt.Errorf("Unable to scan for table %s: %s", tableName, err)
 		}
+
+		if defaultPtr == nil {
+			colDefault = ""
+		} else {
+			colDefault = *defaultPtr
+		}
+
 		column := Column{
 			Name:       colName,
 			Type:       colType,

@@ -3,22 +3,33 @@ package boil
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"sort"
 	"time"
 
-	"github.com/guregu/null"
 	"github.com/pobri19/sqlboiler/strmangle"
+	"gopkg.in/BlackBaronsTux/null-extended.v1"
 )
 
 var (
-	typeNullInt    = reflect.TypeOf(null.Int{})
-	typeNullFloat  = reflect.TypeOf(null.Float{})
-	typeNullString = reflect.TypeOf(null.String{})
-	typeNullBool   = reflect.TypeOf(null.Bool{})
-	typeNullTime   = reflect.TypeOf(null.Time{})
-	typeTime       = reflect.TypeOf(time.Time{})
+	typeNullFloat32 = reflect.TypeOf(null.Float32{})
+	typeNullFloat64 = reflect.TypeOf(null.Float64{})
+	typeNullInt     = reflect.TypeOf(null.Int{})
+	typeNullInt8    = reflect.TypeOf(null.Int8{})
+	typeNullInt16   = reflect.TypeOf(null.Int16{})
+	typeNullInt32   = reflect.TypeOf(null.Int32{})
+	typeNullInt64   = reflect.TypeOf(null.Int64{})
+	typeNullUint    = reflect.TypeOf(null.Uint{})
+	typeNullUint8   = reflect.TypeOf(null.Uint8{})
+	typeNullUint16  = reflect.TypeOf(null.Uint16{})
+	typeNullUint32  = reflect.TypeOf(null.Uint32{})
+	typeNullUint64  = reflect.TypeOf(null.Uint64{})
+	typeNullString  = reflect.TypeOf(null.String{})
+	typeNullBool    = reflect.TypeOf(null.Bool{})
+	typeNullTime    = reflect.TypeOf(null.Time{})
+	typeTime        = reflect.TypeOf(time.Time{})
 )
 
 // Bind executes the query and inserts the
@@ -163,27 +174,65 @@ func randomizeField(field reflect.Value) error {
 
 	if kind == reflect.Struct {
 		switch typ {
-		case typeNullInt:
-			newVal = null.NewInt(rand.Int63(), rand.Intn(2) == 1)
-		case typeNullFloat:
-			newVal = null.NewFloat(rand.Float64(), rand.Intn(2) == 1)
 		case typeNullBool:
 			newVal = null.NewBool(rand.Intn(2) == 1, rand.Intn(2) == 1)
 		case typeNullString:
 			newVal = null.NewString(randStr(5+rand.Intn(25)), rand.Intn(2) == 1)
 		case typeNullTime:
-			newVal = null.NewTime(time.Unix(rand.Int63(), 0), rand.Intn(2) == 1)
+			newVal = null.NewTime(time.Now().Add(time.Duration(rand.Intn((int(time.Hour * 24 * 10))))), rand.Intn(2) == 1)
 		case typeTime:
-			newVal = time.Unix(rand.Int63(), 0)
+			newVal = time.Now().Add(time.Duration(rand.Intn((int(time.Hour * 24 * 10)))))
+		case typeNullFloat32:
+			newVal = null.NewFloat32(rand.Float32(), rand.Intn(2) == 1)
+		case typeNullFloat64:
+			newVal = null.NewFloat64(rand.Float64(), rand.Intn(2) == 1)
+		case typeNullInt:
+			newVal = null.NewInt(rand.Int(), rand.Intn(2) == 1)
+		case typeNullInt8:
+			newVal = null.NewInt8(int8(rand.Intn(int(math.MaxInt8))), rand.Intn(2) == 1)
+		case typeNullInt16:
+			newVal = null.NewInt16(int16(rand.Intn(int(math.MaxInt16))), rand.Intn(2) == 1)
+		case typeNullInt32:
+			newVal = null.NewInt32(rand.Int31(), rand.Intn(2) == 1)
+		case typeNullInt64:
+			newVal = null.NewInt64(rand.Int63(), rand.Intn(2) == 1)
+		case typeNullUint:
+			newVal = null.NewUint(uint(rand.Int()), rand.Intn(2) == 1)
+		case typeNullUint8:
+			newVal = null.NewUint8(uint8(rand.Intn(int(math.MaxInt8))), rand.Intn(2) == 1)
+		case typeNullUint16:
+			newVal = null.NewUint16(uint16(rand.Intn(int(math.MaxInt16))), rand.Intn(2) == 1)
+		case typeNullUint32:
+			newVal = null.NewUint32(uint32(rand.Int31()), rand.Intn(2) == 1)
+		case typeNullUint64:
+			newVal = null.NewUint64(uint64(rand.Int63()), rand.Intn(2) == 1)
 		}
 	} else {
 		switch kind {
-		case reflect.Int:
-			newVal = rand.Int()
-		case reflect.Int64:
-			newVal = rand.Int63()
+		case reflect.Float32:
+			newVal = rand.Float32()
 		case reflect.Float64:
 			newVal = rand.Float64()
+		case reflect.Int:
+			newVal = rand.Int()
+		case reflect.Int8:
+			newVal = int8(rand.Intn(int(math.MaxInt8)))
+		case reflect.Int16:
+			newVal = int16(rand.Intn(int(math.MaxInt16)))
+		case reflect.Int32:
+			newVal = rand.Int31()
+		case reflect.Int64:
+			newVal = rand.Int63()
+		case reflect.Uint:
+			newVal = uint(rand.Int())
+		case reflect.Uint8:
+			newVal = uint8(rand.Intn(int(math.MaxInt8)))
+		case reflect.Uint16:
+			newVal = uint16(rand.Intn(int(math.MaxInt16)))
+		case reflect.Uint32:
+			newVal = uint32(rand.Int31())
+		case reflect.Uint64:
+			newVal = uint64(rand.Int63())
 		case reflect.Bool:
 			var b bool
 			if rand.Intn(2) == 1 {

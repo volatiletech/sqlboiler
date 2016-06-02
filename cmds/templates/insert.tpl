@@ -63,11 +63,15 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
   {{else}}
   if len(returnColumns) != 0 {
     ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
-    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...))
+    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
   } else {
     _, err = exec.Exec(ins, {{insertParamVariables "o." .Table.Columns}})
   }
   {{end}}
+
+  if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, ins)
+  }
 
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)

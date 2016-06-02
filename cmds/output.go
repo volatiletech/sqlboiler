@@ -111,6 +111,42 @@ func generateSinglesOutput(cmdData *CmdData) error {
 	return nil
 }
 
+func generateSinglesTestOutput(cmdData *CmdData) error {
+	if cmdData.SingleTestTemplates == nil {
+		return errors.New("No single test templates located for generation")
+	}
+
+	tplData := &tplData{
+		PkgName:    cmdData.PkgName,
+		DriverName: cmdData.DriverName,
+	}
+
+	for _, template := range cmdData.SingleTestTemplates {
+		var imps imports
+
+		resp, err := generateTemplate(template, tplData)
+		if err != nil {
+			return fmt.Errorf("Error generating test template %s: %s", template.Name(), err)
+		}
+
+		fName := template.Name()
+		ext := filepath.Ext(fName)
+		fName = fName[0 : len(fName)-len(ext)]
+
+		imps.standard = sqlBoilerSinglesTestImports[fName].standard
+		imps.thirdparty = sqlBoilerSinglesTestImports[fName].thirdparty
+
+		fName = fName + "_test.go"
+
+		err = outHandler(cmdData.OutFolder, fName, cmdData.PkgName, imps, [][]byte{resp})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func generateTestMainOutput(cmdData *CmdData) error {
 	if cmdData.TestMainTemplate == nil {
 		return errors.New("No TestMain template located for generation")
@@ -122,9 +158,15 @@ func generateTestMainOutput(cmdData *CmdData) error {
 	imps.standard = sqlBoilerTestMainImports[cmdData.DriverName].standard
 	imps.thirdparty = sqlBoilerTestMainImports[cmdData.DriverName].thirdparty
 
+	var tables []string
+	for _, v := range cmdData.Tables {
+		tables = append(tables, v.Name)
+	}
+
 	tplData := &tplData{
 		PkgName:    cmdData.PkgName,
 		DriverName: cmdData.DriverName,
+		Tables:     tables,
 	}
 
 	resp, err := generateTemplate(cmdData.TestMainTemplate, tplData)

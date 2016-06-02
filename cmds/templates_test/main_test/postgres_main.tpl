@@ -16,46 +16,81 @@ var testCfg *Config
 var dbConn *sql.DB
 
 func TestMain(m *testing.M) {
-	rand.Seed(time.Now().UnixNano())
+	// Set the DebugMode to true so we can see generated sql statements
+	boil.DebugMode = true
 
-  err := setup()
+	rand.Seed(time.Now().UnixNano())
+	var err error
+
+  err = setup()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Unable to execute setup: %s", err)
 		os.Exit(-1)
 	}
 
+	err = disableTriggers()
+	if err != nil {
+		fmt.Printf("Unable to disable triggers: %s", err)
+	}
 	boil.SetDB(dbConn)
   code := m.Run()
 
 	err = teardown()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Unable to execute teardown: %s", err)
 		os.Exit(-1)
 	}
 
   os.Exit(code)
 }
 
-// teardown switches its connection to the template1 database temporarily
-// so that it can drop the test database and the test user.
-// The template1 database should be present on all default postgres installations.
+// disableTriggers is used to disable foreign key constraints for every table.
+// If this is not used we cannot test inserts due to foreign key constraint errors.
+func disableTriggers() error {
+	var stmts []string
+
+	{{range .Tables}}
+	stmts = append(stmts, `ALTER TABLE {{.}} DISABLE TRIGGER ALL;`)
+	{{- end}}
+
+	if len(stmts) == 0 {
+		return nil
+	}
+
+	var err error
+	for _, s := range stmts {
+		_, err = dbConn.Exec(s)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// teardown executes cleanup tasks when the tests finish running
 func teardown() error {
-	err := dbConn.Close()
+	err := dropTestDB()
+	return err
+}
+
+// dropTestDB switches its connection to the template1 database temporarily
+// so that it can drop the test database without causing "in use" conflicts.
+// The template1 database should be present on all default postgres installations.
+func dropTestDB() error {
+	var err error
+	if dbConn != nil {
+		if err = dbConn.Close(); err != nil {
+			return err
+		}
+	}
+
+	dbConn, err = DBConnect(testCfg.Postgres.User, testCfg.Postgres.Pass, "template1", testCfg.Postgres.Host, testCfg.Postgres.Port)
 	if err != nil {
 		return err
 	}
 
-	dbConn, err = DBConnect(cfg.Postgres.User, cfg.Postgres.Pass, "template1", cfg.Postgres.Host, cfg.Postgres.Port)
-	if err != nil {
-		return err
-	}
-
-	_, err = dbConn.Exec(fmt.Sprintf(`DROP DATABASE %s;`, testCfg.Postgres.DBName))
-	if err != nil {
-		return err
-	}
-
-	_, err = dbConn.Exec(fmt.Sprintf(`DROP USER %s;`, testCfg.Postgres.User))
+	_, err = dbConn.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testCfg.Postgres.DBName))
 	if err != nil {
 		return err
 	}
@@ -69,16 +104,6 @@ func DBConnect(user, pass, dbname, host string, port int) (*sql.DB, error) {
 		user, pass, dbname, host, port)
 
 		return sql.Open("postgres", connStr)
-}
-
-func randSeq(n int) string {
-	var letters = []rune("abcdefghijklmnopqrstuvwxyz")
-
-  randStr := make([]rune, n)
-  for i := range randStr {
-    randStr[i] = letters[rand.Intn(len(letters))]
-  }
-  return string(randStr)
 }
 
 func LoadConfigFile(filename string) error {
@@ -105,13 +130,21 @@ func setup() error {
 		return fmt.Errorf("Unable to load config file: %s", err)
 	}
 
+	testDBName := getDBNameHash(cfg.Postgres.DBName)
+
 	// Create a randomized test configuration object.
 	testCfg = &Config{}
 	testCfg.Postgres.Host = cfg.Postgres.Host
 	testCfg.Postgres.Port = cfg.Postgres.Port
-	testCfg.Postgres.User = randSeq(20)
-	testCfg.Postgres.Pass = randSeq(20)
-	testCfg.Postgres.DBName = cfg.Postgres.DBName + "_" + randSeq(10)
+	testCfg.Postgres.User = cfg.Postgres.User
+	testCfg.Postgres.Pass = cfg.Postgres.Pass
+	testCfg.Postgres.DBName = testDBName
+
+	err = dropTestDB()
+	if err != nil {
+		fmt.Printf("%#v\n", err)
+		return err
+	}
 
 	fhSchema, err := ioutil.TempFile(os.TempDir(), "sqlboilerschema")
 	if err != nil {
@@ -166,35 +199,24 @@ func setup() error {
 		return err
 	}
 
-	// Create the randomly generated database test user
-	if err = createTestUser(dbConn); err != nil {
-		return err
-	}
-
 	// Create the randomly generated database
 	_, err = dbConn.Exec(fmt.Sprintf(`CREATE DATABASE %s WITH ENCODING 'UTF8'`, testCfg.Postgres.DBName))
 	if err != nil {
 		return err
 	}
 
-	// Assign the randomly generated db test user to the generated test db
-	_, err = dbConn.Exec(fmt.Sprintf(`ALTER DATABASE %s OWNER TO %s;`, testCfg.Postgres.DBName, testCfg.Postgres.User))
-	if err != nil {
-		return err
-	}
-
-	// Close the old connection so we can reconnect with the restricted access generated user
+	// Close the old connection so we can reconnect to the test database
 	if err = dbConn.Close(); err != nil {
 		return err
 	}
 
-	// Connect to the generated test db with the restricted privilege generated user
+	// Connect to the generated test db
 	dbConn, err = DBConnect(testCfg.Postgres.User, testCfg.Postgres.Pass, testCfg.Postgres.DBName, testCfg.Postgres.Host, testCfg.Postgres.Port)
 	if err != nil {
 		return err
 	}
 
-	// Write the generated user password to a tmp file for pg_dump
+	// Write the test config credentials to a tmp file for pg_dump
 	testPwBytes := []byte(fmt.Sprintf("%s:%d:%s:%s:%s",
 		testCfg.Postgres.Host,
 		testCfg.Postgres.Port,
@@ -232,19 +254,4 @@ func setup() error {
 	}
 
 	return nil
-}
-
-// createTestUser creates a temporary database user with restricted privileges
-func createTestUser(db *sql.DB) error {
-	now := time.Now().Add(time.Hour * 24 * 2)
-	valid := now.Format("2006-1-2")
-
-	query := fmt.Sprintf(`CREATE USER %s WITH PASSWORD '%s' VALID UNTIL '%s';`,
-		testCfg.Postgres.User,
-		testCfg.Postgres.Pass,
-		valid,
-	)
-
-	_, err := dbConn.Exec(query)
-	return err
 }

@@ -8,8 +8,9 @@ import (
 )
 
 type where struct {
-	clause string
-	args   []interface{}
+	clause      string
+	orSeperator bool
+	args        []interface{}
 }
 
 type join struct {
@@ -65,11 +66,30 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString(" FROM ")
 	fmt.Fprintf(buf, `"%s"`, q.table)
 
+	buf.WriteByte(';')
 	return buf, []interface{}{}
 }
 
 func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
+
+	buf.WriteString("DELETE FROM ")
+	fmt.Fprintf(buf, `"%s"`, q.table)
+
+	if len(q.where) > 0 {
+		for i := 0; i < len(q.where); i++ {
+			buf.WriteString(fmt.Sprintf(` WHERE %s`, q.where[i].clause))
+			if i != len(q.where)-1 {
+				if q.where[i].orSeperator {
+					buf.WriteString(` OR `)
+				} else {
+					buf.WriteString(` AND `)
+				}
+			}
+		}
+	}
+
+	buf.WriteByte(';')
 
 	return buf, nil
 }
@@ -77,24 +97,34 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
 
+	buf.WriteByte(';')
 	return buf, nil
 }
 
 // ExecQuery executes a query that does not need a row returned
 func ExecQuery(q *Query) (sql.Result, error) {
 	qs, args := buildQuery(q)
+	if DebugMode {
+		fmt.Fprintln(DebugWriter, qs)
+	}
 	return q.executor.Exec(qs, args...)
 }
 
 // ExecQueryOne executes the query for the One finisher and returns a row
 func ExecQueryOne(q *Query) *sql.Row {
 	qs, args := buildQuery(q)
+	if DebugMode {
+		fmt.Fprintln(DebugWriter, qs)
+	}
 	return q.executor.QueryRow(qs, args)
 }
 
 // ExecQueryAll executes the query for the All finisher and returns multiple rows
 func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	qs, args := buildQuery(q)
+	if DebugMode {
+		fmt.Fprintln(DebugWriter, qs)
+	}
 	return q.executor.Query(qs, args)
 }
 

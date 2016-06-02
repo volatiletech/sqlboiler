@@ -1,6 +1,9 @@
 package boil
 
-import "database/sql"
+import (
+	"database/sql"
+	"os"
+)
 
 type Executor interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
@@ -20,6 +23,15 @@ type Creator interface {
 }
 
 var currentDB Executor
+
+// DebugMode is a flag controlling whether generated sql statements and
+// debug information is outputted to the DebugWriter handle
+//
+// NOTE: This should be disabled in production to avoid leaking sensitive data
+var DebugMode = false
+
+// DebugWriter is where the debug output will be sent if DebugMode is true
+var DebugWriter = os.Stdout
 
 func Begin() (Transactor, error) {
 	creator, ok := currentDB.(Creator)

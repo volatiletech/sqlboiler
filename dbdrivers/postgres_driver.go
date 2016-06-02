@@ -210,23 +210,37 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) 
 func (p *PostgresDriver) TranslateColumnType(c Column) Column {
 	if c.IsNullable {
 		switch c.Type {
-		case "bigint", "bigserial", "integer", "smallint", "smallserial", "serial":
-			c.Type = "null.Int"
+		case "bigint", "bigserial":
+			c.Type = "null.Int64"
+		case "integer", "serial":
+			c.Type = "null.Int32"
+		case "smallint", "smallserial":
+			c.Type = "null.Int16"
+		case "decimal", "numeric", "double precision", "money":
+			c.Type = "null.Float64"
+		case "real":
+			c.Type = "null.Float32"
 		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
 		case "boolean":
 			c.Type = "null.Bool"
 		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "null.Time"
-		case "double precision", "money", "numeric", "real":
-			c.Type = "null.Float"
 		default:
 			c.Type = "null.String"
 		}
 	} else {
 		switch c.Type {
-		case "bigint", "bigserial", "integer", "smallint", "smallserial", "serial":
+		case "bigint", "bigserial":
 			c.Type = "int64"
+		case "integer", "serial":
+			c.Type = "int32"
+		case "smallint", "smallserial":
+			c.Type = "int16"
+		case "decimal", "numeric", "double precision", "money":
+			c.Type = "float64"
+		case "real":
+			c.Type = "float32"
 		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
 			c.Type = "string"
 		case "bytea":
@@ -235,8 +249,6 @@ func (p *PostgresDriver) TranslateColumnType(c Column) Column {
 			c.Type = "bool"
 		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "time.Time"
-		case "double precision", "money", "numeric", "real":
-			c.Type = "float64"
 		default:
 			c.Type = "string"
 		}

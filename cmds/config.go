@@ -12,20 +12,50 @@ import (
 // sqlBoilerTypeImports imports are only included in the template output if the database
 // requires one of the following special types. Check TranslateColumnType to see the type assignments.
 var sqlBoilerTypeImports = map[string]imports{
+	"null.Float32": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Float64": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
 	"null.Int": imports{
-		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Int8": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Int16": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Int32": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Int64": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Uint": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Uint8": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Uint16": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Uint32": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+	},
+	"null.Uint64": imports{
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
 	},
 	"null.String": imports{
-		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
 	},
 	"null.Bool": imports{
-		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
-	},
-	"null.Float": imports{
-		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
 	},
 	"null.Time": imports{
-		thirdparty: importList{`"gopkg.in/guregu/null.v3"`},
+		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
 	},
 	"time.Time": imports{
 		standard: importList{`"time"`},
@@ -62,6 +92,19 @@ var sqlBoilerTestImports = imports{
 	},
 	thirdparty: importList{
 		`"github.com/pobri19/sqlboiler/boil"`,
+	},
+}
+
+var sqlBoilerSinglesTestImports = map[string]imports{
+	"helper_funcs": imports{
+		standard: importList{
+			`"crypto/md5"`,
+			`"fmt"`,
+			`"os"`,
+			`"strconv"`,
+			`"math/rand"`,
+		},
+		thirdparty: importList{},
 	},
 }
 

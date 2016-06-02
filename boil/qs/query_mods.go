@@ -10,6 +10,15 @@ func Apply(q *boil.Query, mods ...QueryMod) {
 	}
 }
 
+func Or(whereMods ...QueryMod) QueryMod {
+	return func(q *boil.Query) {
+		if len(whereMods) < 2 {
+			// error, needs to be at least 2 for an or
+		}
+		// add the where mods to query with or seperators
+	}
+}
+
 func Limit(limit int) QueryMod {
 	return func(q *boil.Query) {
 		boil.SetLimit(q, limit)

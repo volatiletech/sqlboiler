@@ -28,7 +28,10 @@ type CmdData struct {
 	// SingleTemplates are only created once, not per table
 	SingleTemplates templater
 
-	TestTemplates    templater
+	TestTemplates templater
+	// SingleTestTemplates are only created once, not per table
+	SingleTestTemplates templater
+	//TestMainTemplate is only created once, not per table
 	TestMainTemplate *template.Template
 }
 
@@ -37,6 +40,7 @@ type tplData struct {
 	Table      dbdrivers.Table
 	DriverName string
 	PkgName    string
+	Tables     []string
 }
 
 type importList []string

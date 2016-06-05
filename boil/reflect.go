@@ -40,13 +40,44 @@ func (q *Query) Bind(obj interface{}) error {
 
 // BindOne inserts the returned row columns into the
 // passed in object pointer
-func BindOne(row *sql.Row, obj interface{}) error {
+func BindOne(row *sql.Row, selectCols []string, obj interface{}) error {
+	kind := reflect.ValueOf(obj).Kind()
+	if kind != reflect.Ptr {
+		return fmt.Errorf("BindOne given a non-pointer type")
+	}
+
+	pointers := GetStructPointers(obj, selectCols...)
+	if err := row.Scan(pointers...); err != nil {
+		return fmt.Errorf("Unable to scan into pointers: %s", err)
+	}
+
 	return nil
 }
 
 // BindAll inserts the returned rows columns into the
 // passed in slice of object pointers
-func BindAll(rows *sql.Rows, obj interface{}) error {
+func BindAll(rows *sql.Rows, selectCols []string, obj interface{}) error {
+	val := reflect.ValueOf(obj)
+	typ := reflect.TypeOf(obj)
+	kind := val.Kind()
+
+	if kind != reflect.Slice {
+		return fmt.Errorf("BindAll given a non-slice type")
+	}
+
+	spare := reflect.New(typ.Elem().Elem())
+	fmt.Printf("%T, %#v, %s\n", spare, spare, spare.Type().String())
+
+	index := 0
+	for rows.Next() {
+		val = reflect.Append(val, spare)
+		pointers := GetStructPointers(val.Index(index), selectCols...)
+		if err := rows.Scan(pointers...); err != nil {
+			return fmt.Errorf("Unable to scan into pointers: %s", err)
+		}
+		index++
+	}
+
 	return nil
 }
 

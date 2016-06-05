@@ -8,7 +8,7 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
   boil.SetLimit(q.Query, 1)
 
   res := boil.ExecQueryOne(q.Query)
-  err := boil.BindOne(res, o)
+  err := boil.BindOne(res, boil.GetSelect(q.Query), o)
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to execute a one query for {{.Table.Name}}: %s", err)
   }
@@ -17,14 +17,14 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 }
 
 func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
-  var o []*{{$tableNameSingular}}
+  var o *{{$varNameSingular}}Slice
 
   res, err := boil.ExecQueryAll(q.Query)
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to execute an all query for {{.Table.Name}}: %s", err)
   }
 
-  err = boil.BindAll(res, o)
+  err = boil.BindAll(res, boil.GetSelect(q.Query), o)
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to assign all query results to {{$tableNameSingular}} slice: %s", err)
   }

@@ -116,7 +116,7 @@ func ExecQueryOne(q *Query) *sql.Row {
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
 	}
-	return q.executor.QueryRow(qs, args)
+	return q.executor.QueryRow(qs, args...)
 }
 
 // ExecQueryAll executes the query for the All finisher and returns multiple rows
@@ -125,7 +125,7 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
 	}
-	return q.executor.Query(qs, args)
+	return q.executor.Query(qs, args...)
 }
 
 func SetCount(q *Query) {
@@ -146,6 +146,12 @@ func SetExecutor(q *Query, exec Executor) {
 
 func SetSelect(q *Query, columns ...string) {
 	q.selectCols = append(q.selectCols, columns...)
+}
+
+func GetSelect(q *Query) []string {
+	cols := make([]string, len(q.selectCols))
+	copy(cols, q.selectCols)
+	return cols
 }
 
 func SetTable(q *Query, table string) {

@@ -7,6 +7,18 @@ import (
 	"github.com/guregu/null"
 )
 
+func TestBind(t *testing.T) {
+
+}
+
+func TestBindOne(t *testing.T) {
+
+}
+
+func TestBindAll(t *testing.T) {
+
+}
+
 func TestGetStructValues(t *testing.T) {
 	t.Parallel()
 	timeThing := time.Now()

@@ -148,7 +148,7 @@ func SetSelect(q *Query, columns ...string) {
 	q.selectCols = append(q.selectCols, columns...)
 }
 
-func GetSelect(q *Query) []string {
+func Select(q *Query) []string {
 	cols := make([]string, len(q.selectCols))
 	copy(cols, q.selectCols)
 	return cols

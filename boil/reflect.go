@@ -57,25 +57,36 @@ func BindOne(row *sql.Row, selectCols []string, obj interface{}) error {
 // BindAll inserts the returned rows columns into the
 // passed in slice of object pointers
 func BindAll(rows *sql.Rows, selectCols []string, obj interface{}) error {
-	val := reflect.ValueOf(obj)
-	typ := reflect.TypeOf(obj)
-	kind := val.Kind()
+	ptrSlice := reflect.ValueOf(obj)
+	typ := ptrSlice.Type()
+	ptrSlice = ptrSlice.Elem()
+	kind := typ.Kind()
 
-	if kind != reflect.Slice {
-		return fmt.Errorf("BindAll given a non-slice type")
+	var structTyp reflect.Type
+
+	for i, exp := range []reflect.Kind{reflect.Ptr, reflect.Slice, reflect.Ptr, reflect.Struct} {
+		if i != 0 {
+			typ = typ.Elem()
+			kind = typ.Kind()
+		}
+
+		if kind != exp {
+			return fmt.Errorf("[%d] BindAll object type should be *[]*Type but was: %s", i, ptrSlice.Type().String())
+		}
+
+		if kind == reflect.Struct {
+			structTyp = typ
+		}
 	}
 
-	spare := reflect.New(typ.Elem().Elem())
-	fmt.Printf("%T, %#v, %s\n", spare, spare, spare.Type().String())
-
-	index := 0
+	newStruct := reflect.New(structTyp)
 	for rows.Next() {
-		val = reflect.Append(val, spare)
-		pointers := GetStructPointers(val.Index(index), selectCols...)
+		pointers := GetStructPointers(newStruct.Interface(), selectCols...)
 		if err := rows.Scan(pointers...); err != nil {
 			return fmt.Errorf("Unable to scan into pointers: %s", err)
 		}
-		index++
+
+		ptrSlice.Set(reflect.Append(ptrSlice, newStruct))
 	}
 
 	return nil
@@ -135,7 +146,18 @@ func GetStructValues(obj interface{}, columns ...string) []interface{} {
 // GetStructPointers returns a slice of pointers to the matching columns in obj
 func GetStructPointers(obj interface{}, columns ...string) []interface{} {
 	val := reflect.ValueOf(obj).Elem()
-	ret := make([]interface{}, len(columns))
+	var ret []interface{}
+
+	if len(columns) == 0 {
+		fieldsLen := val.NumField()
+		ret = make([]interface{}, fieldsLen)
+		for i := 0; i < fieldsLen; i++ {
+			ret[i] = val.Field(i).Addr().Interface()
+		}
+		return ret
+	}
+
+	ret = make([]interface{}, len(columns))
 
 	for i, c := range columns {
 		field := val.FieldByName(strmangle.TitleCase(c))

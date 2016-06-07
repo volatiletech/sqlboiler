@@ -156,7 +156,6 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"primaryKeyFlagIndex":          strmangle.PrimaryKeyFlagIndex,
 	"updateParamNames":             strmangle.UpdateParamNames,
 	"updateParamVariables":         strmangle.UpdateParamVariables,
-	"primaryKeyStrList":            strmangle.PrimaryKeyStrList,
 	"supportsResultObject":         strmangle.SupportsResultObject,
 	"filterColumnsByDefault":       strmangle.FilterColumnsByDefault,
 	"filterColumnsByAutoIncrement": strmangle.FilterColumnsByAutoIncrement,

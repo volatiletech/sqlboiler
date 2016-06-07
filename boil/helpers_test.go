@@ -142,6 +142,39 @@ func TestNonZeroDefaultSet(t *testing.T) {
 	}
 }
 
+func TestSortByKeys(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Keys []string
+		Strs []string
+		Ret  []string
+	}{
+		{
+			[]string{"id", "name", "thing", "stuff"},
+			[]string{"thing", "stuff", "name", "id"},
+			[]string{"id", "name", "thing", "stuff"},
+		},
+		{
+			[]string{"id", "name", "thing", "stuff"},
+			[]string{"id", "name", "thing", "stuff"},
+			[]string{"id", "name", "thing", "stuff"},
+		},
+		{
+			[]string{"id", "name", "thing", "stuff"},
+			[]string{"stuff", "thing"},
+			[]string{"thing", "stuff"},
+		},
+	}
+
+	for i, test := range tests {
+		z := SortByKeys(test.Keys, test.Strs)
+		if !reflect.DeepEqual(test.Ret, z) {
+			t.Errorf("[%d] mismatch:\nWant: %#v\nGot:  %#v", i, test.Ret, z)
+		}
+	}
+}
+
 func TestWherePrimaryKeyIn(t *testing.T) {
 	t.Parallel()
 

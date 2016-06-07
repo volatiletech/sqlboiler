@@ -65,7 +65,7 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   var mods []qs.QueryMod
 
   args := o.inPrimaryKeyArgs()
-  in := boil.WherePrimaryKeyIn(len(o), {{primaryKeyStrList .Table.PKey.Columns}})
+  in := boil.WherePrimaryKeyIn(len(o), {{commaList .Table.PKey.Columns}})
 
   mods = append(mods,
     qs.Table("{{.Table.Name}}"),

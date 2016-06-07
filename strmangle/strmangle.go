@@ -158,8 +158,7 @@ func UpdateParamVariables(prefix string, columns []dbdrivers.Column, pkeyColumns
 		if IsPrimaryKey(c.Name, pkeyColumns) {
 			continue
 		}
-		n := prefix + TitleCase(c.Name)
-		names = append(names, n)
+		names = append(names, fmt.Sprintf("%s%s", prefix, TitleCase(c.Name)))
 	}
 
 	return strings.Join(names, ", ")
@@ -179,9 +178,9 @@ func IsPrimaryKey(col string, pkeyCols []string) bool {
 // InsertParamNames takes a []Column and returns a comma seperated
 // list of parameter names for the insert statement template.
 func InsertParamNames(columns []dbdrivers.Column) string {
-	names := make([]string, 0, len(columns))
-	for _, c := range columns {
-		names = append(names, c.Name)
+	names := make([]string, len(columns))
+	for i, c := range columns {
+		names[i] = c.Name
 	}
 	return strings.Join(names, ", ")
 }
@@ -189,9 +188,9 @@ func InsertParamNames(columns []dbdrivers.Column) string {
 // InsertParamFlags takes a []Column and returns a comma seperated
 // list of parameter flags for the insert statement template.
 func InsertParamFlags(columns []dbdrivers.Column) string {
-	params := make([]string, 0, len(columns))
+	params := make([]string, len(columns))
 	for i := range columns {
-		params = append(params, fmt.Sprintf("$%d", i+1))
+		params[i] = fmt.Sprintf("$%d", i+1)
 	}
 	return strings.Join(params, ", ")
 }
@@ -200,11 +199,10 @@ func InsertParamFlags(columns []dbdrivers.Column) string {
 // comma seperated list of parameter variable names for the insert statement.
 // For example: prefix("o."), column("name_id") -> "o.NameID, ..."
 func InsertParamVariables(prefix string, columns []dbdrivers.Column) string {
-	names := make([]string, 0, len(columns))
+	names := make([]string, len(columns))
 
-	for _, c := range columns {
-		n := prefix + TitleCase(c.Name)
-		names = append(names, n)
+	for i, c := range columns {
+		names[i] = prefix + TitleCase(c.Name)
 	}
 
 	return strings.Join(names, ", ")
@@ -215,10 +213,9 @@ func InsertParamVariables(prefix string, columns []dbdrivers.Column) string {
 // It also uses the table name to generate the "AS" part of the statement, for
 // example: var_name AS table_name_var_name, ...
 func SelectParamNames(tableName string, columns []dbdrivers.Column) string {
-	selects := make([]string, 0, len(columns))
-	for _, c := range columns {
-		statement := fmt.Sprintf("%s AS %s", c.Name, MakeDBName(tableName, c.Name))
-		selects = append(selects, statement)
+	selects := make([]string, len(columns))
+	for i, c := range columns {
+		selects[i] = fmt.Sprintf("%s AS %s", c.Name, MakeDBName(tableName, c.Name))
 	}
 
 	return strings.Join(selects, ", ")
@@ -227,10 +224,9 @@ func SelectParamNames(tableName string, columns []dbdrivers.Column) string {
 // ScanParamNames takes a []Column and returns a comma seperated
 // list of parameter names for use in a db.Scan() call.
 func ScanParamNames(object string, columns []dbdrivers.Column) string {
-	scans := make([]string, 0, len(columns))
-	for _, c := range columns {
-		statement := fmt.Sprintf("&%s.%s", object, TitleCase(c.Name))
-		scans = append(scans, statement)
+	scans := make([]string, len(columns))
+	for i, c := range columns {
+		scans[i] = fmt.Sprintf("&%s.%s", object, TitleCase(c.Name))
 	}
 
 	return strings.Join(scans, ", ")
@@ -292,19 +288,6 @@ func WherePrimaryKey(pkeyCols []string, start int) string {
 	}
 
 	return output
-}
-
-// PrimaryKeyStrList returns a list of primary key column names in strings
-// For example: "col1", "col2", "col3"
-func PrimaryKeyStrList(pkeyCols []string) string {
-	cols := make([]string, len(pkeyCols))
-	copy(cols, pkeyCols)
-
-	for i, c := range cols {
-		cols[i] = fmt.Sprintf(`"%s"`, c)
-	}
-
-	return strings.Join(cols, ", ")
 }
 
 // AutoIncPrimKey returns the auto-increment primary key column name or an empty string

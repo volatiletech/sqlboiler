@@ -74,6 +74,28 @@ func NonZeroDefaultSet(defaults []string, obj interface{}) []string {
 	return c
 }
 
+func SortByKeys(keys []string, strs []string) []string {
+	c := make([]string, len(strs))
+
+	index := 0
+Outer:
+	for _, v := range keys {
+		for _, k := range strs {
+			if v == k {
+				c[index] = v
+				index++
+
+				if index > len(strs)-1 {
+					break Outer
+				}
+				break
+			}
+		}
+	}
+
+	return c
+}
+
 // GenerateParamFlags generates the SQL statement parameter flags
 // For example, $1,$2,$3 etc. It will start counting at startAt.
 func GenerateParamFlags(colCount int, startAt int) string {

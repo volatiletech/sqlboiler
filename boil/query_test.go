@@ -1,6 +1,7 @@
 package boil
 
 import (
+	"bytes"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -46,7 +47,7 @@ func TestBuildQuery(t *testing.T) {
 			t.Fatalf("Failed to read golden file %q: %v", filename, err)
 		}
 
-		if string(byt) != out {
+		if string(bytes.TrimSpace(byt)) != out {
 			t.Errorf("[%02d] Test failed:\nWant:\n%s\nGot:\n%s", i, byt, out)
 		}
 

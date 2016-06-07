@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/guregu/null"
+	"gopkg.in/BlackBaronsTux/null-extended.v1"
 )
 
 func TestBind(t *testing.T) {
@@ -135,11 +135,11 @@ func TestRandomizeStruct(t *testing.T) {
 
 		Ignore int
 
-		NullInt    null.Int
-		NullFloat  null.Float
-		NullBool   null.Bool
-		NullString null.String
-		NullTime   null.Time
+		NullInt     null.Int
+		NullFloat64 null.Float64
+		NullBool    null.Bool
+		NullString  null.String
+		NullTime    null.Time
 	}{}
 
 	err := RandomizeStruct(&testStruct, "Ignore")
@@ -162,7 +162,7 @@ func TestRandomizeStruct(t *testing.T) {
 	}
 
 	if testStruct.NullInt.Valid == false &&
-		testStruct.NullFloat.Valid == false &&
+		testStruct.NullFloat64.Valid == false &&
 		testStruct.NullBool.Valid == false &&
 		testStruct.NullString.Valid == false &&
 		testStruct.NullTime.Valid == false {

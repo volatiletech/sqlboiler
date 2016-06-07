@@ -304,7 +304,6 @@ func randomizeField(field reflect.Value) error {
 			return fmt.Errorf("unsupported type: %T", typ.String())
 		}
 	}
-
 	field.Set(reflect.ValueOf(newVal))
 
 	return nil

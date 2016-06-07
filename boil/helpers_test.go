@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/guregu/null"
+	"gopkg.in/BlackBaronsTux/null-extended.v1"
 )
 
 type testObj struct {

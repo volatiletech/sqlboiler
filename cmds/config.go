@@ -142,6 +142,7 @@ var sqlBoilerTemplateFuncs = template.FuncMap{
 	"camelCaseSingular":            strmangle.CamelCaseSingular,
 	"camelCasePlural":              strmangle.CamelCasePlural,
 	"camelCaseCommaList":           strmangle.CamelCaseCommaList,
+	"columnsToStrings":             strmangle.ColumnsToStrings,
 	"commaList":                    strmangle.CommaList,
 	"makeDBName":                   strmangle.MakeDBName,
 	"selectParamNames":             strmangle.SelectParamNames,

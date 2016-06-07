@@ -310,6 +310,16 @@ func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) stri
 	return ""
 }
 
+// ColumnsToString changes the columns into a list of column names
+func ColumnsToStrings(cols []dbdrivers.Column) []string {
+	names := make([]string, len(cols))
+	for i, c := range cols {
+		names[i] = c.Name
+	}
+
+	return names
+}
+
 // CommaList returns a comma seperated list: "col1", "col2", "col3"
 func CommaList(cols []string) string {
 	return fmt.Sprintf(`"%s"`, strings.Join(cols, `", "`))

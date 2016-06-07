@@ -1,5 +1,5 @@
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
-var {{$varNameSingular}}Columns = []string{{"{"}}{{commaList .Table.Columns}}{{"}"}}
+var {{$varNameSingular}}Columns = []string{{"{"}}{{columnsToStrings .Table.Columns | commaList}}{{"}"}}
 var {{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns false}}{{"}"}}
 var {{$varNameSingular}}ColumnsWithDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns true}}{{"}"}}
 var {{$varNameSingular}}PrimaryKeyColumns = []string{{"{"}}{{commaList .Table.PKey.Columns}}{{"}"}}

@@ -74,6 +74,7 @@ func NonZeroDefaultSet(defaults []string, obj interface{}) []string {
 	return c
 }
 
+// SortByKeys returns a new ordered slice based on the keys ordering
 func SortByKeys(keys []string, strs []string) []string {
 	c := make([]string, len(strs))
 

@@ -19,6 +19,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
   }
 
   wl = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), wl...)
+  wl = boil.SortByKeys({{$varNameSingular}}Columns, wl)
 
   // Only return the columns with default values that are not in the insert whitelist
   returnColumns := boil.SetComplement({{$varNameSingular}}ColumnsWithDefault, wl)

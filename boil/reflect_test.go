@@ -4,19 +4,19 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/BlackBaronsTux/null-extended.v1"
+	"gopkg.in/nullbio/null.v4"
 )
 
 func TestBind(t *testing.T) {
-
+	t.Errorf("Not implemented")
 }
 
 func TestBindOne(t *testing.T) {
-
+	t.Errorf("Not implemented")
 }
 
 func TestBindAll(t *testing.T) {
-
+	t.Errorf("Not implemented")
 }
 
 func TestGetStructValues(t *testing.T) {

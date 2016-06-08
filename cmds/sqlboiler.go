@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/dbdrivers"
 	"github.com/spf13/cobra"
 )
 

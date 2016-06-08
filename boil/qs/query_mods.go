@@ -1,6 +1,6 @@
 package qs
 
-import "github.com/pobri19/sqlboiler/boil"
+import "github.com/nullbio/sqlboiler/boil"
 
 type QueryMod func(q *boil.Query)
 

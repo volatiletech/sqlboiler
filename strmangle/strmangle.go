@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/inflection"
-	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/dbdrivers"
 )
 
 var rgxAutoIncColumn = regexp.MustCompile(`^nextval\(.*\)`)

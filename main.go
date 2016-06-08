@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pobri19/sqlboiler/cmds"
+	"github.com/nullbio/sqlboiler/cmds"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +29,7 @@ func main() {
 		Use:   "sqlboiler",
 		Short: "SQL Boiler generates boilerplate structs and statements",
 		Long: "SQL Boiler generates boilerplate structs and statements from the template files.\n" +
-			`Complete documentation is available at http://github.com/pobri19/sqlboiler`,
+			`Complete documentation is available at http://github.com/nullbio/sqlboiler`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return cmdData.SQLBoilerPreRun(cmd, args)
 		},

@@ -3,7 +3,7 @@ package strmangle
 import (
 	"testing"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/dbdrivers"
 )
 
 var testColumns = []dbdrivers.Column{

@@ -9,8 +9,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/pobri19/sqlboiler/strmangle"
-	"gopkg.in/BlackBaronsTux/null-extended.v1"
+	"github.com/nullbio/sqlboiler/strmangle"
+	"gopkg.in/nullbio/null.v4"
 )
 
 var (
@@ -35,6 +35,35 @@ var (
 // Bind executes the query and inserts the
 // result into the passed in object pointer
 func (q *Query) Bind(obj interface{}) error {
+	typ := reflect.TypeOf(obj)
+	kind := typ.Kind()
+
+	if kind != reflect.Ptr {
+		return fmt.Errorf("Bind not given a pointer to a slice or struct: %s", typ.String())
+	}
+
+	typ = typ.Elem()
+	kind = typ.Kind()
+
+	if kind == reflect.Struct {
+		row := ExecQueryOne(q)
+		err := BindOne(row, q.selectCols, obj)
+		if err != nil {
+			return fmt.Errorf("Failed to execute Bind query for %s: %s", q.table, err)
+		}
+	} else if kind == reflect.Slice {
+		rows, err := ExecQueryAll(q)
+		if err != nil {
+			return fmt.Errorf("Failed to execute Bind query for %s: %s", q.table, err)
+		}
+		err = BindAll(rows, q.selectCols, obj)
+		if err != nil {
+			return fmt.Errorf("Failed to Bind results to object provided for %s: %s", q.table, err)
+		}
+	} else {
+		return fmt.Errorf("Bind given a pointer to a non-slice or non-struct: %s", typ.String())
+	}
+
 	return nil
 }
 
@@ -232,9 +261,11 @@ func randomizeField(field reflect.Value) error {
 		case typeNullString:
 			newVal = null.NewString(randStr(5+rand.Intn(25)), rand.Intn(2) == 1)
 		case typeNullTime:
-			newVal = null.NewTime(time.Now().Add(time.Duration(rand.Intn((int(time.Hour * 24 * 10))))), rand.Intn(2) == 1)
+			randTime := rand.Int63n(int64(time.Hour) * 24 * 365 * 65)
+			newVal = null.NewTime(time.Unix(0, 0).Add(time.Duration(randTime)), rand.Intn(2) == 1)
 		case typeTime:
-			newVal = time.Now().Add(time.Duration(rand.Intn((int(time.Hour * 24 * 10)))))
+			randTime := rand.Int63n(int64(time.Hour) * 24 * 365 * 65)
+			newVal = time.Now().Add(time.Duration(randTime))
 		case typeNullFloat32:
 			newVal = null.NewFloat32(rand.Float32(), rand.Intn(2) == 1)
 		case typeNullFloat64:

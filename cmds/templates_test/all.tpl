@@ -2,22 +2,24 @@
 {{- $dbName := singular .Table.Name -}}
 {{- $tableNamePlural := titleCasePlural .Table.Name -}}
 {{- $varNamePlural := camelCasePlural .Table.Name -}}
-// {{$tableNamePlural}}All retrieves all records.
 func Test{{$tableNamePlural}}All(t *testing.T) {
   var err error
+
+  // Start from a clean slate
+  {{$varNamePlural}}DeleteAllRows(t)
 
   r := make([]{{$tableNameSingular}}, 2)
 
   // insert two random columns to test DeleteAll
-  for i, v := range r {
-    err = boil.RandomizeStruct(&v)
+  for i := 0; i < len(r); i++ {
+    err = boil.RandomizeStruct(&r[i])
     if err != nil {
       t.Errorf("%d: Unable to randomize {{$tableNameSingular}} struct: %s", i, err)
     }
 
-    err = v.Insert()
+    err = r[i].Insert()
     if err != nil {
-      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", v, err)
+      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", r[i], err)
     }
   }
 
@@ -37,15 +39,15 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
 
   o := make([]{{$tableNameSingular}}, 3)
 
-  for i, v := range o {
-    err = boil.RandomizeStruct(&v)
+  for i := 0; i < len(o); i++ {
+    err = boil.RandomizeStruct(&o[i])
     if err != nil {
       t.Errorf("%d: Unable to randomize {{$tableNameSingular}} struct: %s", i, err)
     }
 
-    err = v.Insert()
+    err = o[i].Insert()
     if err != nil {
-      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", v, err)
+      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
   }
 

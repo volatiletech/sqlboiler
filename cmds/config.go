@@ -6,56 +6,56 @@ import (
 	"text/template"
 
 	"github.com/BurntSushi/toml"
-	"github.com/pobri19/sqlboiler/strmangle"
+	"github.com/nullbio/sqlboiler/strmangle"
 )
 
 // sqlBoilerTypeImports imports are only included in the template output if the database
 // requires one of the following special types. Check TranslateColumnType to see the type assignments.
 var sqlBoilerTypeImports = map[string]imports{
 	"null.Float32": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Float64": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Int": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Int8": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Int16": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Int32": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Int64": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Uint": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Uint8": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Uint16": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Uint32": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Uint64": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.String": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Bool": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"null.Time": imports{
-		thirdparty: importList{`"gopkg.in/BlackBaronsTux/null-extended.v1"`},
+		thirdparty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
 	"time.Time": imports{
 		standard: importList{`"time"`},
@@ -70,8 +70,8 @@ var sqlBoilerImports = imports{
 		`"strings"`,
 	},
 	thirdparty: importList{
-		`"github.com/pobri19/sqlboiler/boil"`,
-		`"github.com/pobri19/sqlboiler/boil/qs"`,
+		`"github.com/nullbio/sqlboiler/boil"`,
+		`"github.com/nullbio/sqlboiler/boil/qs"`,
 	},
 }
 
@@ -79,8 +79,8 @@ var sqlBoilerSinglesImports = map[string]imports{
 	"helpers": imports{
 		standard: importList{},
 		thirdparty: importList{
-			`"github.com/pobri19/sqlboiler/boil"`,
-			`"github.com/pobri19/sqlboiler/boil/qs"`,
+			`"github.com/nullbio/sqlboiler/boil"`,
+			`"github.com/nullbio/sqlboiler/boil/qs"`,
 		},
 	},
 }
@@ -91,7 +91,7 @@ var sqlBoilerTestImports = imports{
 		`"testing"`,
 	},
 	thirdparty: importList{
-		`"github.com/pobri19/sqlboiler/boil"`,
+		`"github.com/nullbio/sqlboiler/boil"`,
 	},
 }
 
@@ -122,7 +122,7 @@ var sqlBoilerTestMainImports = map[string]imports{
 			`"math/rand"`,
 		},
 		thirdparty: importList{
-			`"github.com/pobri19/sqlboiler/boil"`,
+			`"github.com/nullbio/sqlboiler/boil"`,
 			`"github.com/BurntSushi/toml"`,
 			`_ "github.com/lib/pq"`,
 		},

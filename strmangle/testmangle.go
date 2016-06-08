@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/dbdrivers"
 )
 
 func RandDBStruct(varName string, table dbdrivers.Table) string {

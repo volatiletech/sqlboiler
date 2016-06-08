@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/dbdrivers"
 )
 
 func TestCombineTypeImports(t *testing.T) {
@@ -15,7 +15,7 @@ func TestCombineTypeImports(t *testing.T) {
 			`"fmt"`,
 		},
 		thirdparty: importList{
-			`"github.com/pobri19/sqlboiler/boil"`,
+			`"github.com/nullbio/sqlboiler/boil"`,
 		},
 	}
 
@@ -26,8 +26,8 @@ func TestCombineTypeImports(t *testing.T) {
 			`"time"`,
 		},
 		thirdparty: importList{
-			`"github.com/pobri19/sqlboiler/boil"`,
-			`"gopkg.in/guregu/null.v3"`,
+			`"github.com/nullbio/sqlboiler/boil"`,
+			`"gopkg.in/nullbio/null.v4"`,
 		},
 	}
 
@@ -59,8 +59,8 @@ func TestCombineTypeImports(t *testing.T) {
 			`"time"`,
 		},
 		thirdparty: importList{
-			`"github.com/pobri19/sqlboiler/boil"`,
-			`"gopkg.in/guregu/null.v3"`,
+			`"github.com/nullbio/sqlboiler/boil"`,
+			`"gopkg.in/nullbio/null.v4"`,
 		},
 	}
 
@@ -76,11 +76,11 @@ func TestCombineImports(t *testing.T) {
 
 	a := imports{
 		standard:   importList{"fmt"},
-		thirdparty: importList{"github.com/pobri19/sqlboiler", "gopkg.in/guregu/null.v3"},
+		thirdparty: importList{"github.com/nullbio/sqlboiler", "gopkg.in/nullbio/null.v4"},
 	}
 	b := imports{
 		standard:   importList{"os"},
-		thirdparty: importList{"github.com/pobri19/sqlboiler"},
+		thirdparty: importList{"github.com/nullbio/sqlboiler"},
 	}
 
 	c := combineImports(a, b)
@@ -88,8 +88,8 @@ func TestCombineImports(t *testing.T) {
 	if c.standard[0] != "fmt" && c.standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.standard)
 	}
-	if c.thirdparty[0] != "github.com/pobri19/sqlboiler" && c.thirdparty[1] != "gopkg.in/guregu/null.v3" {
-		t.Errorf("Wanted: github.com/pobri19/sqlboiler, gopkg.in/guregu/null.v3 got: %#v", c.thirdparty)
+	if c.thirdparty[0] != "github.com/nullbio/sqlboiler" && c.thirdparty[1] != "gopkg.in/nullbio/null.v4" {
+		t.Errorf("Wanted: github.com/nullbio/sqlboiler, gopkg.in/nullbio/null.v4 got: %#v", c.thirdparty)
 	}
 }
 

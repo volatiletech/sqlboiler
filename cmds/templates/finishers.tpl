@@ -23,6 +23,7 @@ func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: failed to execute an all query for {{.Table.Name}}: %s", err)
   }
+  defer res.Close()
 
   err = boil.BindAll(res, boil.Select(q.Query), &o)
   if err != nil {

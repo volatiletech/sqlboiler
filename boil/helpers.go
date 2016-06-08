@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/pobri19/sqlboiler/strmangle"
+	"github.com/nullbio/sqlboiler/strmangle"
 )
 
 // SetComplement subtracts the elements in b from a

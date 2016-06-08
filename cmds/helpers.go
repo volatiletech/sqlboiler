@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/pobri19/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/dbdrivers"
 )
 
 func combineImports(a, b imports) imports {

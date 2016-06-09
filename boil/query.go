@@ -57,10 +57,17 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	buf.WriteString("SELECT ")
 
+	if q.count {
+		buf.WriteString("COUNT(")
+	}
 	if len(q.selectCols) > 0 {
 		buf.WriteString(strings.Join(q.selectCols, ","))
 	} else {
 		buf.WriteByte('*')
+	}
+	// close sql COUNT function
+	if q.count {
+		buf.WriteString(")")
 	}
 
 	buf.WriteString(" FROM ")

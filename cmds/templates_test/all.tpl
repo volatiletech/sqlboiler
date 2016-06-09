@@ -51,6 +51,12 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
     }
   }
 
+  // Ensure Count is valid
+  c, err = {{$tableNamePlural}}().Count()
+  if c != 3 {
+    t.Errorf("Expected {{.Table.Name}} table to have 3 rows, but got %d", c)
+  }
+
   // Attempt to retrieve all objects
   res, err := {{$tableNamePlural}}().All()
   if err != nil {

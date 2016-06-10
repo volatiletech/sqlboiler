@@ -8,7 +8,8 @@ func {{$tableNameSingular}}Find({{primaryKeyFuncSig .Table.Columns .Table.PKey.C
 }
 
 func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-  var {{$varNameSingular}} *{{$tableNameSingular}}
+  {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  
   mods := []qs.QueryMod{
     qs.Select(selectCols...),
     qs.Table("{{.Table.Name}}"),
@@ -17,7 +18,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.
 
   q := NewQueryX(exec, mods...)
 
-  err := boil.ExecQueryOne(q).Scan(boil.GetStructPointers(&{{$varNameSingular}}, selectCols...)...)
+  err := boil.ExecQueryOne(q).Scan(boil.GetStructPointers({{$varNameSingular}}, selectCols...)...)
 
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table.Name}}: %s", err)

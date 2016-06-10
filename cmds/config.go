@@ -89,6 +89,7 @@ var sqlBoilerSinglesImports = map[string]imports{
 var sqlBoilerTestImports = imports{
 	standard: importList{
 		`"testing"`,
+		`"reflect"`,
 	},
 	thirdparty: importList{
 		`"github.com/nullbio/sqlboiler/boil"`,

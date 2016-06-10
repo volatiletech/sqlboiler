@@ -79,18 +79,21 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
+	var args []interface{}
 
 	buf.WriteString("DELETE FROM ")
 	fmt.Fprintf(buf, `"%s"`, q.table)
 
 	if len(q.where) > 0 {
+		buf.WriteString(" WHERE ")
 		for i := 0; i < len(q.where); i++ {
-			buf.WriteString(fmt.Sprintf(` WHERE %s`, q.where[i].clause))
+			buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
+			args = append(args, q.where[i].args...)
 			if i != len(q.where)-1 {
 				if q.where[i].orSeperator {
-					buf.WriteString(` OR `)
+					buf.WriteString(" OR ")
 				} else {
-					buf.WriteString(` AND `)
+					buf.WriteString(" AND ")
 				}
 			}
 		}
@@ -98,7 +101,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	buf.WriteByte(';')
 
-	return buf, nil
+	return buf, args
 }
 
 func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {

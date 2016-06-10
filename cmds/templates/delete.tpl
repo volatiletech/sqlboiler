@@ -53,7 +53,6 @@ func (o {{$varNameSingular}}Slice) DeleteAll() error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
   }
-
   return o.DeleteAllX(boil.GetDB())
 }
 

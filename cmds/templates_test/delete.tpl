@@ -65,7 +65,9 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
   }
 
   // test DeleteAll slice function
-  err = o.DeleteAll()
+  if err = o.DeleteAll(); err != nil {
+    t.Errorf("Unable to objSlice.DeleteAll(): %s", err)
+  }
 
   // Check number of rows in table to ensure DeleteAll was successful
   c, err = {{$tableNamePlural}}().Count()

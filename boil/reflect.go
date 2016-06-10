@@ -320,9 +320,9 @@ func randomizeField(field reflect.Value) error {
 		case typeTime:
 			newVal = randDate()
 		case typeNullFloat32:
-			newVal = null.NewFloat32(float32(rand.Intn(9))/10.0, rand.Intn(2) == 1)
+			newVal = null.NewFloat32(float32(rand.Intn(9))/10.0+float32(rand.Intn(9)), rand.Intn(2) == 1)
 		case typeNullFloat64:
-			newVal = null.NewFloat64(float64(rand.Intn(9))/10.0, rand.Intn(2) == 1)
+			newVal = null.NewFloat64(float64(rand.Intn(9))/10.0+float64(rand.Intn(9)), rand.Intn(2) == 1)
 		case typeNullInt:
 			newVal = null.NewInt(rand.Int(), rand.Intn(2) == 1)
 		case typeNullInt8:
@@ -347,9 +347,9 @@ func randomizeField(field reflect.Value) error {
 	} else {
 		switch kind {
 		case reflect.Float32:
-			newVal = float32(rand.Intn(9)) / 10.0
+			newVal = float32(rand.Intn(9))/10.0 + float32(rand.Intn(9))
 		case reflect.Float64:
-			newVal = float64(rand.Intn(9)) / 10.0
+			newVal = float64(rand.Intn(9))/10.0 + float64(rand.Intn(9))
 		case reflect.Int:
 			newVal = rand.Int()
 		case reflect.Int8:

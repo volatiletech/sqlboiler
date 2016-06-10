@@ -11,7 +11,7 @@ func {{$varNamePlural}}DeleteAllRows(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}Delete(t *testing.T) {
+func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   var err error
   var c int64
 
@@ -50,9 +50,14 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
   if c != 0 {
     t.Errorf("Expected 0 rows after Obj().DeleteAll() call, but got %d rows", c)
   }
+}
+
+func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
+  var err error
+  var c int64
 
   // insert random columns to test DeleteAll
-  o = make({{$varNameSingular}}Slice, 3)
+  o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
     t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
@@ -75,9 +80,14 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
   if c != 0 {
     t.Errorf("Expected 0 rows after objSlice.DeleteAll() call, but got %d rows", c)
   }
+}
+
+func Test{{$tableNamePlural}}Delete(t *testing.T) {
+  var err error
+  var c int64
 
   // insert random columns to test Delete
-  o = make({{$varNameSingular}}Slice, 3)
+  o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
     t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
@@ -101,5 +111,15 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
 
   if c != 2 {
     t.Errorf("Expected 2 rows after obj.Delete() call, but got %d rows", c)
+  }
+
+  o[1].Delete()
+  o[2].Delete()
+
+  // Check number of rows in table to ensure Delete worked for all rows
+  c, err = {{$tableNamePlural}}().Count()
+
+  if c != 0 {
+    t.Errorf("Expected 0 rows after all obj.Delete() calls, but got %d rows", c)
   }
 }

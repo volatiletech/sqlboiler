@@ -108,8 +108,8 @@ func BindAll(rows *sql.Rows, selectCols []string, obj interface{}) error {
 		}
 	}
 
-	newStruct := reflect.New(structTyp)
 	for rows.Next() {
+		newStruct := reflect.New(structTyp)
 		pointers := GetStructPointers(newStruct.Interface(), selectCols...)
 		if err := rows.Scan(pointers...); err != nil {
 			return fmt.Errorf("Unable to scan into pointers: %s", err)
@@ -201,6 +201,43 @@ func GetStructPointers(obj interface{}, columns ...string) []interface{} {
 	return ret
 }
 
+// RandomizeSlice takes a pointer to a slice of pointers to objects
+// and fills the pointed to objects with random data.
+// It will ignore the fields in the blacklist.
+func RandomizeSlice(obj interface{}, blacklist ...string) error {
+	ptrSlice := reflect.ValueOf(obj)
+	typ := ptrSlice.Type()
+	ptrSlice = ptrSlice.Elem()
+	kind := typ.Kind()
+
+	var structTyp reflect.Type
+
+	for i, exp := range []reflect.Kind{reflect.Ptr, reflect.Slice, reflect.Ptr, reflect.Struct} {
+		if i != 0 {
+			typ = typ.Elem()
+			kind = typ.Kind()
+		}
+
+		if kind != exp {
+			return fmt.Errorf("[%d] RandomizeSlice object type should be *[]*Type but was: %s", i, ptrSlice.Type().String())
+		}
+
+		if kind == reflect.Struct {
+			structTyp = typ
+		}
+	}
+
+	for i := 0; i < ptrSlice.Len(); i++ {
+		o := ptrSlice.Index(i)
+		o.Set(reflect.New(structTyp))
+		if err := RandomizeStruct(o.Interface(), blacklist...); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // RandomizeStruct takes an object and fills it with random data.
 // It will ignore the fields in the blacklist.
 func RandomizeStruct(str interface{}, blacklist ...string) error {
@@ -215,14 +252,14 @@ func RandomizeStruct(str interface{}, blacklist ...string) error {
 	value := reflect.ValueOf(str)
 	kind := value.Kind()
 	if kind != reflect.Ptr {
-		return fmt.Errorf("can only randomize pointers to structs, given: %T", str)
+		return fmt.Errorf("Outer element should be a pointer, given a non-pointer: %T", str)
 	}
 
 	// Check if it's a struct
 	value = value.Elem()
 	kind = value.Kind()
 	if kind != reflect.Struct {
-		return fmt.Errorf("can only randomize pointers to structs, given: %T", str)
+		return fmt.Errorf("Inner element should be a struct, given a non-struct: %T", str)
 	}
 
 	typ := value.Type()

@@ -285,6 +285,24 @@ func RandomizeStruct(str interface{}, blacklist ...string) error {
 	return nil
 }
 
+// randDate generates a random time.Time between 1850 and 2050.
+// Only the Day/Month/Year columns are set so that Dates and DateTimes do
+// not cause mismatches in the test data comparisons.
+func randDate() time.Time {
+	t := time.Date(
+		1850+rand.Intn(200),
+		time.Month(1+rand.Intn(12)),
+		1+rand.Intn(25),
+		0,
+		0,
+		0,
+		0,
+		time.UTC,
+	)
+
+	return t
+}
+
 func randomizeField(field reflect.Value) error {
 	kind := field.Kind()
 	typ := field.Type()
@@ -298,11 +316,9 @@ func randomizeField(field reflect.Value) error {
 		case typeNullString:
 			newVal = null.NewString(randStr(5+rand.Intn(25)), rand.Intn(2) == 1)
 		case typeNullTime:
-			randTime := rand.Int63n(int64(time.Hour) * 24 * 365 * 65)
-			newVal = null.NewTime(time.Unix(0, 0).Add(time.Duration(randTime)), rand.Intn(2) == 1)
+			newVal = null.NewTime(randDate(), rand.Intn(2) == 1)
 		case typeTime:
-			randTime := rand.Int63n(int64(time.Hour) * 24 * 365 * 65)
-			newVal = time.Now().Add(time.Duration(randTime))
+			newVal = randDate()
 		case typeNullFloat32:
 			newVal = null.NewFloat32(rand.Float32(), rand.Intn(2) == 1)
 		case typeNullFloat64:

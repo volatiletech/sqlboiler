@@ -3,7 +3,7 @@
 {{- $tableNamePlural := titleCasePlural .Table.Name -}}
 {{- $varNamePlural := camelCasePlural .Table.Name -}}
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
-func Test{{$tableNamePlural}}All(t *testing.T) {
+func Test{{$tableNamePlural}}(t *testing.T) {
   var err error
 
   // Start from a clean slate

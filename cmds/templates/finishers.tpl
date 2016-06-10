@@ -3,7 +3,7 @@
 type {{$varNameSingular}}Slice []*{{$tableNameSingular}}
 
 func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
-  var o *{{$tableNameSingular}}
+  o := &{{$tableNameSingular}}{}
 
   boil.SetLimit(q.Query, 1)
 

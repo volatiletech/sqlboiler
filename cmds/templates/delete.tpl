@@ -79,6 +79,9 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice: %s", err)
   }
+  if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, args)
+  }
 
   return nil
 }

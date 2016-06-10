@@ -9,16 +9,16 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
   // Start from a clean slate
   {{$varNamePlural}}DeleteAllRows(t)
 
-  r := make({{$varNameSingular}}Slice, 2)
-  if err = boil.RandomizeSlice(&r); err != nil {
+  o := make({{$varNameSingular}}Slice, 2)
+  if err = boil.RandomizeSlice(&o); err != nil {
     t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
   // insert two random columns to test DeleteAll
-  for i := 0; i < len(r); i++ {
-    err = r[i].Insert()
+  for i := 0; i < len(o); i++ {
+    err = o[i].Insert()
     if err != nil {
-      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", r[i], err)
+      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
   }
 
@@ -36,7 +36,7 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
     t.Errorf("Expected {{.Table.Name}} table to be empty, but got %d rows", c)
   }
 
-  o := make({{$varNameSingular}}Slice, 3)
+  o = make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
     t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }

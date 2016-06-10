@@ -8,6 +8,16 @@ var {{$varNameSingular}}AutoIncPrimaryKey = "{{autoIncPrimaryKey .Table.Columns 
 
 {{if hasPrimaryKey .Table.PKey -}}
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+func (o {{$tableNameSingular}}) inPrimaryKeyArgs() []interface{} {
+  var args []interface{}
+
+  {{- range $key, $value := .Table.PKey.Columns }}
+  args = append(args, o.{{titleCase $value}})
+  {{ end -}}
+
+  return args
+}
+
 func (o {{$varNameSingular}}Slice) inPrimaryKeyArgs() []interface{} {
   var args []interface{}
 

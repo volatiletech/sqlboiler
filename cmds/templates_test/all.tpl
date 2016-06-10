@@ -11,7 +11,7 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
 
   o := make({{$varNameSingular}}Slice, 2)
   if err = boil.RandomizeSlice(&o); err != nil {
-    t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
   // insert two random columns to test DeleteAll
@@ -38,7 +38,7 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
 
   o = make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
-    t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
   for i := 0; i < len(o); i++ {

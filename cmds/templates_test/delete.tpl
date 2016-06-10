@@ -27,7 +27,7 @@ func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
-    t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
   // insert random columns to test DeleteAll
@@ -59,7 +59,7 @@ func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
   // insert random columns to test DeleteAll
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
-    t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
   for i := 0; i < len(o); i++ {
@@ -89,15 +89,10 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
   // insert random columns to test Delete
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
-    t.Errorf("%d: Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
   for i := 0; i < len(o); i++ {
-    err = boil.RandomizeStruct(o[i])
-    if err != nil {
-      t.Errorf("%d: Unable to randomize {{$tableNameSingular}} struct: %s", i, err)
-    }
-
     err = o[i].Insert()
     if err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)

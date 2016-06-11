@@ -140,6 +140,10 @@ func (c *CmdData) run(includeTests bool) error {
 	}
 
 	for _, table := range c.Tables {
+		if table.IsJoinTable {
+			continue
+		}
+
 		data := &tplData{
 			Table:      table,
 			DriverName: c.DriverName,

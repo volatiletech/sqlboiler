@@ -19,7 +19,7 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
     }
   }
 
-  j := make({{$varNameSingular}}Slice, 0, 3)
+  j := make({{$varNameSingular}}Slice, 3)
   // Perform all Find queries and assign result objects to slice for comparison
   for i := 0; i < len(j); i++ {
     j[i], err = {{$tableNameSingular}}Find({{titleCaseCommaList "o[i]." .Table.PKey.Columns}})

@@ -310,39 +310,100 @@ func randomizeField(field reflect.Value) error {
 	var newVal interface{}
 
 	if kind == reflect.Struct {
+		b := rand.Intn(2) == 1
 		switch typ {
 		case typeNullBool:
-			newVal = null.NewBool(rand.Intn(2) == 1, rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewBool(rand.Intn(2) == 1, b)
+			} else {
+				newVal = null.NewBool(false, false)
+			}
 		case typeNullString:
-			newVal = null.NewString(randStr(5+rand.Intn(25)), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewString(randStr(5+rand.Intn(25)), b)
+			} else {
+				newVal = null.NewString("", false)
+			}
 		case typeNullTime:
-			newVal = null.NewTime(randDate(), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewTime(randDate(), b)
+			} else {
+				newVal = null.NewTime(time.Time{}, false)
+			}
 		case typeTime:
 			newVal = randDate()
 		case typeNullFloat32:
-			newVal = null.NewFloat32(float32(rand.Intn(9))/10.0+float32(rand.Intn(9)), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewFloat32(float32(rand.Intn(9))/10.0+float32(rand.Intn(9)), b)
+			} else {
+				newVal = null.NewFloat32(0.0, false)
+			}
 		case typeNullFloat64:
-			newVal = null.NewFloat64(float64(rand.Intn(9))/10.0+float64(rand.Intn(9)), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewFloat64(float64(rand.Intn(9))/10.0+float64(rand.Intn(9)), b)
+			} else {
+				newVal = null.NewFloat64(0.0, false)
+			}
 		case typeNullInt:
-			newVal = null.NewInt(rand.Int(), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewInt(rand.Int(), b)
+			} else {
+				newVal = null.NewInt(0, false)
+			}
 		case typeNullInt8:
-			newVal = null.NewInt8(int8(rand.Intn(int(math.MaxInt8))), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewInt8(int8(rand.Intn(int(math.MaxInt8))), b)
+			} else {
+				newVal = null.NewInt8(0, false)
+			}
 		case typeNullInt16:
-			newVal = null.NewInt16(int16(rand.Intn(int(math.MaxInt16))), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewInt16(int16(rand.Intn(int(math.MaxInt16))), b)
+			} else {
+				newVal = null.NewInt16(0, false)
+			}
 		case typeNullInt32:
-			newVal = null.NewInt32(rand.Int31(), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewInt32(rand.Int31(), b)
+			} else {
+				newVal = null.NewInt32(0, false)
+			}
 		case typeNullInt64:
-			newVal = null.NewInt64(rand.Int63(), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewInt64(rand.Int63(), b)
+			} else {
+				newVal = null.NewInt64(0, false)
+			}
 		case typeNullUint:
-			newVal = null.NewUint(uint(rand.Int()), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewUint(uint(rand.Int()), b)
+			} else {
+				newVal = null.NewUint(0, false)
+			}
 		case typeNullUint8:
-			newVal = null.NewUint8(uint8(rand.Intn(int(math.MaxInt8))), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewUint8(uint8(rand.Intn(int(math.MaxInt8))), b)
+			} else {
+				newVal = null.NewUint8(0, false)
+			}
 		case typeNullUint16:
-			newVal = null.NewUint16(uint16(rand.Intn(int(math.MaxInt16))), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewUint16(uint16(rand.Intn(int(math.MaxInt16))), b)
+			} else {
+				newVal = null.NewUint16(0, false)
+			}
 		case typeNullUint32:
-			newVal = null.NewUint32(uint32(rand.Int31()), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewUint32(uint32(rand.Int31()), b)
+			} else {
+				newVal = null.NewUint32(0, false)
+			}
 		case typeNullUint64:
-			newVal = null.NewUint64(uint64(rand.Int63()), rand.Intn(2) == 1)
+			if b {
+				newVal = null.NewUint64(uint64(rand.Int63()), b)
+			} else {
+				newVal = null.NewUint64(0, false)
+			}
 		}
 	} else {
 		switch kind {
@@ -388,6 +449,7 @@ func randomizeField(field reflect.Value) error {
 			return fmt.Errorf("unsupported type: %T", typ.String())
 		}
 	}
+
 	field.Set(reflect.ValueOf(newVal))
 
 	return nil

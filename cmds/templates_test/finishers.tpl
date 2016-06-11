@@ -94,7 +94,7 @@ func Test{{$tableNamePlural}}Count(t *testing.T) {
 
   {{$varNamePlural}}DeleteAllRows(t)
 
-  o := make({{$varNameSingular}}Slice, 0, 3)
+  o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }

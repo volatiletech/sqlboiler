@@ -1,11 +1,11 @@
 {{if hasPrimaryKey .Table.PKey -}}
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
-// Update updates a single {{$tableNameSingular}} record.
-// whitelist is a list of column_name's that should be updated.
-// Update will match against the primary key column to find the record to update.
-// WARNING: This Update method will NOT ignore nil members.
-// If you pass in nil members, those columnns will be set to null.
+// Update a single {{$tableNameSingular}} record. It takes a whitelist of
+// column_name's that should be updated. The primary key will be used to find
+// the record to update.
+// WARNING: Update does NOT ignore nil members - only the whitelist can be used
+// to control the set of columns that will be saved.
 func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
   return o.UpdateX(boil.GetDB(), whitelist...)
 }

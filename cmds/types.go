@@ -52,6 +52,7 @@ type imports struct {
 	thirdparty importList
 }
 
+// PostgresCfg configures a postgres database
 type PostgresCfg struct {
 	User   string `toml:"user"`
 	Pass   string `toml:"pass"`
@@ -60,6 +61,7 @@ type PostgresCfg struct {
 	DBName string `toml:"dbname"`
 }
 
+// Config is loaded from a file
 type Config struct {
 	Postgres PostgresCfg `toml:"postgres"`
 }

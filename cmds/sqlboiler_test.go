@@ -99,9 +99,9 @@ func TestTemplates(t *testing.T) {
 		t.Errorf("Templates is empty.")
 	}
 
-	cmdData.SingleTemplates, err = loadTemplates("templates/singles")
+	cmdData.SingleTemplates, err = loadTemplates("templates/singleton")
 	if err != nil {
-		t.Fatalf("Unable to initialize single templates: %s", err)
+		t.Fatalf("Unable to initialize singleton templates: %s", err)
 	}
 
 	if len(cmdData.SingleTemplates) == 0 {

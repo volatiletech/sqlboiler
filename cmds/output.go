@@ -75,9 +75,11 @@ func generateTestOutput(cmdData *CmdData, data *tplData) error {
 	return nil
 }
 
-func generateSinglesOutput(cmdData *CmdData) error {
+// generateSingletonOutput processes the templates that should only be run
+// one time.
+func generateSingletonOutput(cmdData *CmdData) error {
 	if cmdData.SingleTemplates == nil {
-		return errors.New("No single templates located for generation")
+		return errors.New("No singleton templates located for generation")
 	}
 
 	tplData := &tplData{
@@ -111,9 +113,11 @@ func generateSinglesOutput(cmdData *CmdData) error {
 	return nil
 }
 
-func generateSinglesTestOutput(cmdData *CmdData) error {
+// generateSingletonTestOutput processes the templates that should only be run
+// one time.
+func generateSingletonTestOutput(cmdData *CmdData) error {
 	if cmdData.SingleTestTemplates == nil {
-		return errors.New("No single test templates located for generation")
+		return errors.New("No singleton test templates located for generation")
 	}
 
 	tplData := &tplData{

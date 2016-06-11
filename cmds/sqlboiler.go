@@ -14,12 +14,12 @@ import (
 )
 
 const (
-	templatesDirectory        = "/cmds/templates"
-	templatesSinglesDirectory = "/cmds/templates/singles"
+	templatesDirectory        = "cmds/templates"
+	templatesSinglesDirectory = "cmds/templates/singleton"
 
-	templatesTestDirectory        = "/cmds/templates_test"
-	templatesSinglesTestDirectory = "/cmds/templates_test/singles"
-	templatesTestMainDirectory    = "/cmds/templates_test/main_test"
+	templatesTestDirectory        = "cmds/templates_test"
+	templatesSinglesTestDirectory = "cmds/templates_test/singleton"
+	templatesTestMainDirectory    = "cmds/templates_test/main_test"
 )
 
 // LoadTemplates loads all template folders into the cmdData object.
@@ -125,8 +125,8 @@ func (c *CmdData) SQLBoilerRun(cmd *cobra.Command, args []string) error {
 
 // run executes the sqlboiler templates and outputs them to files.
 func (c *CmdData) run(includeTests bool) error {
-	if err := generateSinglesOutput(c); err != nil {
-		return fmt.Errorf("Unable to generate single templates output: %s", err)
+	if err := generateSingletonOutput(c); err != nil {
+		return fmt.Errorf("Unable to generate singleton template output: %s", err)
 	}
 
 	if includeTests {
@@ -134,8 +134,8 @@ func (c *CmdData) run(includeTests bool) error {
 			return fmt.Errorf("Unable to generate TestMain output: %s", err)
 		}
 
-		if err := generateSinglesTestOutput(c); err != nil {
-			return fmt.Errorf("Unable to generate single test templates output: %s", err)
+		if err := generateSingletonTestOutput(c); err != nil {
+			return fmt.Errorf("Unable to generate singleton test template output: %s", err)
 		}
 	}
 

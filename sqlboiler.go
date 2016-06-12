@@ -70,16 +70,22 @@ func New(config *Config) (*State, error) {
 // Run executes the sqlboiler templates and outputs them to files based on the
 // state given.
 func (s *State) Run(includeTests bool) error {
-	if err := generateSingletonOutput(s); err != nil {
+	singletonData := &templateData{
+		Tables:     s.Tables,
+		DriverName: s.Config.DriverName,
+		PkgName:    s.Config.PkgName,
+	}
+
+	if err := generateSingletonOutput(s, singletonData); err != nil {
 		return fmt.Errorf("Unable to generate singleton template output: %s", err)
 	}
 
 	if includeTests {
-		if err := generateTestMainOutput(s); err != nil {
+		if err := generateTestMainOutput(s, singletonData); err != nil {
 			return fmt.Errorf("Unable to generate TestMain output: %s", err)
 		}
 
-		if err := generateSingletonTestOutput(s); err != nil {
+		if err := generateSingletonTestOutput(s, singletonData); err != nil {
 			return fmt.Errorf("Unable to generate singleton test template output: %s", err)
 		}
 	}

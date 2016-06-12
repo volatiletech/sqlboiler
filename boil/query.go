@@ -73,31 +73,21 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString(" FROM ")
 	fmt.Fprintf(buf, `"%s"`, q.table)
 
+	where, args := whereClause(q)
+	buf.WriteString(where)
+
 	buf.WriteByte(';')
-	return buf, []interface{}{}
+	return buf, args
 }
 
 func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
-	var args []interface{}
 
 	buf.WriteString("DELETE FROM ")
 	fmt.Fprintf(buf, `"%s"`, q.table)
 
-	if len(q.where) > 0 {
-		buf.WriteString(" WHERE ")
-		for i := 0; i < len(q.where); i++ {
-			buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
-			args = append(args, q.where[i].args...)
-			if i != len(q.where)-1 {
-				if q.where[i].orSeperator {
-					buf.WriteString(" OR ")
-				} else {
-					buf.WriteString(" AND ")
-				}
-			}
-		}
-	}
+	where, args := whereClause(q)
+	buf.WriteString(where)
 
 	buf.WriteByte(';')
 
@@ -202,4 +192,26 @@ func SetHaving(q *Query, clause string) {
 
 func SetLimit(q *Query, limit int) {
 	q.limit = limit
+}
+
+func whereClause(q *Query) (string, []interface{}) {
+	buf := &bytes.Buffer{}
+	var args []interface{}
+
+	if len(q.where) > 0 {
+		buf.WriteString(" WHERE ")
+		for i := 0; i < len(q.where); i++ {
+			buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
+			args = append(args, q.where[i].args...)
+			if i != len(q.where)-1 {
+				if q.where[i].orSeperator {
+					buf.WriteString(" OR ")
+				} else {
+					buf.WriteString(" AND ")
+				}
+			}
+		}
+	}
+
+	return buf.String(), args
 }

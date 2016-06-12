@@ -88,7 +88,6 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
     {{else if eq $value.Type "[]byte"}}
     if !byteSliceEqual(o[i].{{titleCase $value.Name}}, j[i].{{titleCase $value.Name}}) {
       t.Errorf("%d) Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", i, o[i].{{titleCase $value.Name}}, j[i].{{titleCase $value.Name}})
-
     }
     {{else}}
     if j[i].{{titleCase $value.Name}} != o[i].{{titleCase $value.Name}} {

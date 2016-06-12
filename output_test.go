@@ -1,4 +1,4 @@
-package cmds
+package sqlboiler
 
 import (
 	"bytes"
@@ -78,7 +78,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	}
 
 	a2 := imports{
-		thirdparty: []string{
+		thirdParty: []string{
 			`"github.com/spf13/cobra"`,
 		},
 	}
@@ -96,7 +96,7 @@ func TestOutHandlerFiles(t *testing.T) {
 			`"fmt"`,
 			`"errors"`,
 		},
-		thirdparty: importList{
+		thirdParty: importList{
 			`_ "github.com/lib/pq"`,
 			`_ "github.com/gorilla/n"`,
 			`"github.com/gorilla/mux"`,
@@ -106,7 +106,7 @@ func TestOutHandlerFiles(t *testing.T) {
 	file = &bytes.Buffer{}
 
 	sort.Sort(a3.standard)
-	sort.Sort(a3.thirdparty)
+	sort.Sort(a3.thirdParty)
 
 	if err := outHandler("folder", "file.go", "patrick", a3, templateOutputs); err != nil {
 		t.Error(err)

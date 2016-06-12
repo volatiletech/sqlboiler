@@ -1,4 +1,4 @@
-package cmds
+package sqlboiler
 
 import (
 	"bufio"
@@ -15,11 +15,11 @@ import (
 	"github.com/nullbio/sqlboiler/dbdrivers"
 )
 
-var cmdData *CmdData
+var state *State
 var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 func init() {
-	cmdData = &CmdData{
+	state = &State{
 		Tables: []dbdrivers.Table{
 			{
 				Name: "patrick_table",
@@ -59,10 +59,11 @@ func init() {
 				},
 			},
 		},
-		PkgName:    "patrick",
-		OutFolder:  "",
-		DriverName: "postgres",
-		Interface:  nil,
+		Config: &Config{
+			PkgName:    "patrick",
+			OutFolder:  "",
+			DriverName: "postgres",
+		},
 	}
 }
 
@@ -84,63 +85,63 @@ func TestTemplates(t *testing.T) {
 		t.SkipNow()
 	}
 
-	if err := checkPKeys(cmdData.Tables); err != nil {
+	if err := checkPKeys(state.Tables); err != nil {
 		t.Fatalf("%s", err)
 	}
 
 	// Initialize the templates
 	var err error
-	cmdData.Templates, err = loadTemplates("templates")
+	state.Templates, err = loadTemplates("templates")
 	if err != nil {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
-	if len(cmdData.Templates) == 0 {
+	if len(state.Templates) == 0 {
 		t.Errorf("Templates is empty.")
 	}
 
-	cmdData.SingleTemplates, err = loadTemplates("templates/singles")
+	state.SingletonTemplates, err = loadTemplates("templates/singleton")
 	if err != nil {
-		t.Fatalf("Unable to initialize single templates: %s", err)
+		t.Fatalf("Unable to initialize singleton templates: %s", err)
 	}
 
-	if len(cmdData.SingleTemplates) == 0 {
-		t.Errorf("SingleTemplates is empty.")
+	if len(state.SingletonTemplates) == 0 {
+		t.Errorf("SingletonTemplates is empty.")
 	}
 
-	cmdData.TestTemplates, err = loadTemplates("templates_test")
+	state.TestTemplates, err = loadTemplates("templates_test")
 	if err != nil {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
-	if len(cmdData.Templates) == 0 {
+	if len(state.Templates) == 0 {
 		t.Errorf("Templates is empty.")
 	}
 
-	cmdData.TestMainTemplate, err = loadTemplate("templates_test/main_test", "postgres_main.tpl")
+	state.TestMainTemplate, err = loadTemplate("templates_test/main_test", "postgres_main.tpl")
 	if err != nil {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
-	cmdData.OutFolder, err = ioutil.TempDir("", "templates")
+	state.Config.OutFolder, err = ioutil.TempDir("", "templates")
 	if err != nil {
 		t.Fatalf("Unable to create tempdir: %s", err)
 	}
-	defer os.RemoveAll(cmdData.OutFolder)
+	defer os.RemoveAll(state.Config.OutFolder)
 
-	if err = cmdData.run(true); err != nil {
+	if err = state.Run(true); err != nil {
 		t.Errorf("Unable to run SQLBoilerRun: %s", err)
 	}
 
 	buf := &bytes.Buffer{}
 
 	cmd := exec.Command("go", "test", "-c")
-	cmd.Dir = cmdData.OutFolder
+	cmd.Dir = state.Config.OutFolder
 	cmd.Stderr = buf
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go test cmd execution failed: %s", err)
-		outputCompileErrors(buf, cmdData.OutFolder)
+		outputCompileErrors(buf, state.Config.OutFolder)
 		fmt.Println()
 	}
 }

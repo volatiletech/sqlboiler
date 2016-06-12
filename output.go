@@ -1,4 +1,4 @@
-package cmds
+package sqlboiler
 
 import (
 	"bytes"
@@ -18,18 +18,18 @@ var testHarnessFileOpen = func(filename string) (io.WriteCloser, error) {
 }
 
 // generateOutput builds the file output and sends it to outHandler for saving
-func generateOutput(cmdData *CmdData, data *tplData) error {
-	if len(cmdData.Templates) == 0 {
+func generateOutput(state *State, data *templateData) error {
+	if len(state.Templates) == 0 {
 		return errors.New("No template files located for generation")
 	}
 	var out [][]byte
 	var imps imports
 
-	imps.standard = sqlBoilerImports.standard
-	imps.thirdparty = sqlBoilerImports.thirdparty
+	imps.standard = defaultTemplateImports.standard
+	imps.thirdParty = defaultTemplateImports.thirdParty
 
-	for _, template := range cmdData.Templates {
-		imps = combineTypeImports(imps, sqlBoilerTypeImports, data.Table.Columns)
+	for _, template := range state.Templates {
+		imps = combineTypeImports(imps, importsBasedOnType, data.Table.Columns)
 		resp, err := generateTemplate(template, data)
 		if err != nil {
 			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
@@ -38,7 +38,7 @@ func generateOutput(cmdData *CmdData, data *tplData) error {
 	}
 
 	fName := data.Table.Name + ".go"
-	err := outHandler(cmdData.OutFolder, fName, cmdData.PkgName, imps, out)
+	err := outHandler(state.Config.OutFolder, fName, state.Config.PkgName, imps, out)
 	if err != nil {
 		return err
 	}
@@ -47,18 +47,18 @@ func generateOutput(cmdData *CmdData, data *tplData) error {
 }
 
 // generateTestOutput builds the test file output and sends it to outHandler for saving
-func generateTestOutput(cmdData *CmdData, data *tplData) error {
-	if len(cmdData.TestTemplates) == 0 {
+func generateTestOutput(state *State, data *templateData) error {
+	if len(state.TestTemplates) == 0 {
 		return errors.New("No template files located for generation")
 	}
 
 	var out [][]byte
 	var imps imports
 
-	imps.standard = sqlBoilerTestImports.standard
-	imps.thirdparty = sqlBoilerTestImports.thirdparty
+	imps.standard = defaultTestTemplateImports.standard
+	imps.thirdParty = defaultTestTemplateImports.thirdParty
 
-	for _, template := range cmdData.TestTemplates {
+	for _, template := range state.TestTemplates {
 		resp, err := generateTemplate(template, data)
 		if err != nil {
 			return fmt.Errorf("Error generating test template %s: %s", template.Name(), err)
@@ -67,7 +67,7 @@ func generateTestOutput(cmdData *CmdData, data *tplData) error {
 	}
 
 	fName := data.Table.Name + "_test.go"
-	err := outHandler(cmdData.OutFolder, fName, cmdData.PkgName, imps, out)
+	err := outHandler(state.Config.OutFolder, fName, state.Config.PkgName, imps, out)
 	if err != nil {
 		return err
 	}
@@ -75,20 +75,22 @@ func generateTestOutput(cmdData *CmdData, data *tplData) error {
 	return nil
 }
 
-func generateSinglesOutput(cmdData *CmdData) error {
-	if cmdData.SingleTemplates == nil {
-		return errors.New("No single templates located for generation")
+// generateSingletonOutput processes the templates that should only be run
+// one time.
+func generateSingletonOutput(state *State) error {
+	if state.SingletonTemplates == nil {
+		return errors.New("No singleton templates located for generation")
 	}
 
-	tplData := &tplData{
-		PkgName:    cmdData.PkgName,
-		DriverName: cmdData.DriverName,
+	templateData := &templateData{
+		PkgName:    state.Config.PkgName,
+		DriverName: state.Config.DriverName,
 	}
 
-	for _, template := range cmdData.SingleTemplates {
+	for _, template := range state.SingletonTemplates {
 		var imps imports
 
-		resp, err := generateTemplate(template, tplData)
+		resp, err := generateTemplate(template, templateData)
 		if err != nil {
 			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
 		}
@@ -97,12 +99,12 @@ func generateSinglesOutput(cmdData *CmdData) error {
 		ext := filepath.Ext(fName)
 		fName = fName[0 : len(fName)-len(ext)]
 
-		imps.standard = sqlBoilerSinglesImports[fName].standard
-		imps.thirdparty = sqlBoilerSinglesImports[fName].thirdparty
+		imps.standard = defaultSingletonTemplateImports[fName].standard
+		imps.thirdParty = defaultSingletonTemplateImports[fName].thirdParty
 
 		fName = fName + ".go"
 
-		err = outHandler(cmdData.OutFolder, fName, cmdData.PkgName, imps, [][]byte{resp})
+		err = outHandler(state.Config.OutFolder, fName, state.Config.PkgName, imps, [][]byte{resp})
 		if err != nil {
 			return err
 		}
@@ -111,20 +113,22 @@ func generateSinglesOutput(cmdData *CmdData) error {
 	return nil
 }
 
-func generateSinglesTestOutput(cmdData *CmdData) error {
-	if cmdData.SingleTestTemplates == nil {
-		return errors.New("No single test templates located for generation")
+// generateSingletonTestOutput processes the templates that should only be run
+// one time.
+func generateSingletonTestOutput(state *State) error {
+	if state.SingletonTestTemplates == nil {
+		return errors.New("No singleton test templates located for generation")
 	}
 
-	tplData := &tplData{
-		PkgName:    cmdData.PkgName,
-		DriverName: cmdData.DriverName,
+	templateData := &templateData{
+		PkgName:    state.Config.PkgName,
+		DriverName: state.Config.DriverName,
 	}
 
-	for _, template := range cmdData.SingleTestTemplates {
+	for _, template := range state.SingletonTestTemplates {
 		var imps imports
 
-		resp, err := generateTemplate(template, tplData)
+		resp, err := generateTemplate(template, templateData)
 		if err != nil {
 			return fmt.Errorf("Error generating test template %s: %s", template.Name(), err)
 		}
@@ -133,12 +137,12 @@ func generateSinglesTestOutput(cmdData *CmdData) error {
 		ext := filepath.Ext(fName)
 		fName = fName[0 : len(fName)-len(ext)]
 
-		imps.standard = sqlBoilerSinglesTestImports[fName].standard
-		imps.thirdparty = sqlBoilerSinglesTestImports[fName].thirdparty
+		imps.standard = defaultSingletonTestTemplateImports[fName].standard
+		imps.thirdParty = defaultSingletonTestTemplateImports[fName].thirdParty
 
 		fName = fName + "_test.go"
 
-		err = outHandler(cmdData.OutFolder, fName, cmdData.PkgName, imps, [][]byte{resp})
+		err = outHandler(state.Config.OutFolder, fName, state.Config.PkgName, imps, [][]byte{resp})
 		if err != nil {
 			return err
 		}
@@ -147,35 +151,30 @@ func generateSinglesTestOutput(cmdData *CmdData) error {
 	return nil
 }
 
-func generateTestMainOutput(cmdData *CmdData) error {
-	if cmdData.TestMainTemplate == nil {
+func generateTestMainOutput(state *State) error {
+	if state.TestMainTemplate == nil {
 		return errors.New("No TestMain template located for generation")
 	}
 
 	var out [][]byte
 	var imps imports
 
-	imps.standard = sqlBoilerTestMainImports[cmdData.DriverName].standard
-	imps.thirdparty = sqlBoilerTestMainImports[cmdData.DriverName].thirdparty
+	imps.standard = defaultTestMainImports[state.Config.DriverName].standard
+	imps.thirdParty = defaultTestMainImports[state.Config.DriverName].thirdParty
 
-	var tables []string
-	for _, v := range cmdData.Tables {
-		tables = append(tables, v.Name)
+	templateData := &templateData{
+		Tables:     state.Tables,
+		PkgName:    state.Config.PkgName,
+		DriverName: state.Config.DriverName,
 	}
 
-	tplData := &tplData{
-		PkgName:    cmdData.PkgName,
-		DriverName: cmdData.DriverName,
-		Tables:     tables,
-	}
-
-	resp, err := generateTemplate(cmdData.TestMainTemplate, tplData)
+	resp, err := generateTemplate(state.TestMainTemplate, templateData)
 	if err != nil {
 		return err
 	}
 	out = append(out, resp)
 
-	err = outHandler(cmdData.OutFolder, "main_test.go", cmdData.PkgName, imps, out)
+	err = outHandler(state.Config.OutFolder, "main_test.go", state.Config.PkgName, imps, out)
 	if err != nil {
 		return err
 	}
@@ -216,7 +215,7 @@ func outHandler(outFolder string, fileName string, pkgName string, imps imports,
 }
 
 // generateTemplate takes a template and returns the output of the template execution.
-func generateTemplate(t *template.Template, data *tplData) ([]byte, error) {
+func generateTemplate(t *template.Template, data *templateData) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
 		return nil, err

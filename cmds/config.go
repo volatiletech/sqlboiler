@@ -104,6 +104,7 @@ var sqlBoilerSinglesTestImports = map[string]imports{
 			`"os"`,
 			`"strconv"`,
 			`"math/rand"`,
+			`"bytes"`,
 		},
 		thirdparty: importList{},
 	},

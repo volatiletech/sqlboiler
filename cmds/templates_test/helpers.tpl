@@ -18,7 +18,7 @@ func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
     t.Errorf("Expected args to be len %d, but got %d", len({{$varNameSingular}}PrimaryKeyColumns), len(args))
   }
 
-  {{range $key, $value := .Table.PKey.Columns -}}
+  {{range $key, $value := .Table.PKey.Columns}}
   if o.{{titleCase $value}} != args[{{$key}}] {
     t.Errorf("Expected args[{{$key}}] to be value of o.{{titleCase $value}}, but got %#v", args[{{$key}}])
   }
@@ -40,10 +40,10 @@ func Test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
   }
 
   for i := 0; i < len({{$varNameSingular}}PrimaryKeyColumns) * 3; i++ {
-    {{range $key, $value := .Table.PKey.Columns -}}
+    {{range $key, $value := .Table.PKey.Columns}}
     if o[i].{{titleCase $value}} != args[i] {
       t.Errorf("Expected args[%d] to be value of o.{{titleCase $value}}, but got %#v", i, args[i])
     }
+    {{- end}}
   }
-  {{- end}}
 }

@@ -122,6 +122,15 @@ func TestTemplates(t *testing.T) {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
+	cmdData.SingleTestTemplates, err = loadTemplates("templates_test/singles")
+	if err != nil {
+		t.Fatalf("Unable to initialize single test templates: %s", err)
+	}
+
+	if len(cmdData.SingleTestTemplates) == 0 {
+		t.Errorf("SingleTestTemplates is empty.")
+	}
+
 	cmdData.OutFolder, err = ioutil.TempDir("", "templates")
 	if err != nil {
 		t.Fatalf("Unable to create tempdir: %s", err)

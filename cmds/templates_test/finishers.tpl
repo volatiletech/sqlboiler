@@ -35,6 +35,11 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
   if o.{{titleCase $value.Name}}.Format("02/01/2006") != j.{{titleCase $value.Name}}.Format("02/01/2006") {
     t.Errorf("Expected Time {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006"))
   }
+  {{else if eq $value.Type "[]byte"}}
+  if !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}) {
+    t.Errorf("%d) Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
+
+  }
   {{else}}
   if j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}} {
     t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
@@ -79,6 +84,11 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
     {{else if eq $value.Type "time.Time"}}
     if o[i].{{titleCase $value.Name}}.Format("02/01/2006") != j[i].{{titleCase $value.Name}}.Format("02/01/2006") {
       t.Errorf("%d) Expected Time {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", i, o[i].{{titleCase $value.Name}}.Format("02/01/2006"), j[i].{{titleCase $value.Name}}.Format("02/01/2006"))
+    }
+    {{else if eq $value.Type "[]byte"}}
+    if !byteSliceEqual(o[i].{{titleCase $value.Name}}, j[i].{{titleCase $value.Name}}) {
+      t.Errorf("%d) Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", i, o[i].{{titleCase $value.Name}}, j[i].{{titleCase $value.Name}})
+
     }
     {{else}}
     if j[i].{{titleCase $value.Name}} != o[i].{{titleCase $value.Name}} {

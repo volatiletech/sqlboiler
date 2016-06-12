@@ -3,13 +3,13 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"text/template"
 
 	"github.com/nullbio/sqlboiler/dbdrivers"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -50,22 +50,22 @@ func New(config *Config) (*State, error) {
 
 	// Connect to the driver database
 	if err = s.Driver.Open(); err != nil {
-		return nil, fmt.Errorf("Unable to connect to the database: %s", err)
+		return nil, errors.Wrap(err, "unable to connect to the database")
 	}
 
-	err = s.initTables(config.TableName)
+	err = s.initTables(config.TableNames)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to initialize tables: %s", err)
+		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
 
 	err = s.initOutFolder()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to initialize the output folder: %s", err)
+		return nil, errors.Wrap(err, "unable to initialize the output folder")
 	}
 
 	err = s.initTemplates()
 	if err != nil {
-		return nil, fmt.Errorf("Unable to initialize templates: %s", err)
+		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
 
 	return s, nil
@@ -81,16 +81,16 @@ func (s *State) Run(includeTests bool) error {
 	}
 
 	if err := generateSingletonOutput(s, singletonData); err != nil {
-		return fmt.Errorf("Unable to generate singleton template output: %s", err)
+		return errors.Wrap(err, "singleton template output")
 	}
 
 	if includeTests {
 		if err := generateTestMainOutput(s, singletonData); err != nil {
-			return fmt.Errorf("Unable to generate TestMain output: %s", err)
+			return errors.Wrap(err, "unable to generate TestMain output")
 		}
 
 		if err := generateSingletonTestOutput(s, singletonData); err != nil {
-			return fmt.Errorf("Unable to generate singleton test template output: %s", err)
+			return errors.Wrap(err, "unable to generate singleton test template output")
 		}
 	}
 
@@ -107,13 +107,13 @@ func (s *State) Run(includeTests bool) error {
 
 		// Generate the regular templates
 		if err := generateOutput(s, data); err != nil {
-			return fmt.Errorf("Unable to generate output: %s", err)
+			return errors.Wrap(err, "unable to generate output")
 		}
 
 		// Generate the test templates
 		if includeTests {
 			if err := generateTestOutput(s, data); err != nil {
-				return fmt.Errorf("Unable to generate test output: %s", err)
+				return errors.Wrap(err, "unable to generate test output")
 			}
 		}
 	}
@@ -185,24 +185,15 @@ func (s *State) initDriver(driverName string) error {
 // if one is provided. If no flag is provided, it will attempt to connect to the
 // database to retrieve all "public" table names, and build a slice out of that
 // result.
-func (s *State) initTables(tableName string) error {
-	var tableNames []string
-
-	if len(tableName) != 0 {
-		tableNames = strings.Split(tableName, ",")
-		for i, name := range tableNames {
-			tableNames[i] = strings.TrimSpace(name)
-		}
-	}
-
+func (s *State) initTables(tableNames []string) error {
 	var err error
 	s.Tables, err = dbdrivers.Tables(s.Driver, tableNames...)
 	if err != nil {
-		return fmt.Errorf("Unable to get all table names: %s", err)
+		return errors.Wrap(err, "unable to fetch table data")
 	}
 
 	if len(s.Tables) == 0 {
-		return errors.New("No tables found in database, migrate some tables first")
+		return errors.New("no tables found in database")
 	}
 
 	if err := checkPKeys(s.Tables); err != nil {
@@ -214,11 +205,7 @@ func (s *State) initTables(tableName string) error {
 
 // initOutFolder creates the folder that will hold the generated output.
 func (s *State) initOutFolder() error {
-	if err := os.MkdirAll(s.Config.OutFolder, os.ModePerm); err != nil {
-		return fmt.Errorf("Unable to make output folder: %s", err)
-	}
-
-	return nil
+	return os.MkdirAll(s.Config.OutFolder, os.ModePerm)
 }
 
 // checkPKeys ensures every table has a primary key column
@@ -231,7 +218,7 @@ func checkPKeys(tables []dbdrivers.Table) error {
 	}
 
 	if len(missingPkey) != 0 {
-		return fmt.Errorf("Cannot continue until the follow tables have PRIMARY KEY columns: %s", strings.Join(missingPkey, ", "))
+		return fmt.Errorf("primary key missing in tables (%s)", strings.Join(missingPkey, ", "))
 	}
 
 	return nil

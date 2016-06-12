@@ -2,10 +2,10 @@ package main
 
 // Config for the running of the commands
 type Config struct {
-	DriverName string `toml:"driver_name"`
-	PkgName    string `toml:"pkg_name"`
-	OutFolder  string `toml:"out_folder"`
-	TableName  string `toml:"table_name"`
+	DriverName string   `toml:"driver_name"`
+	PkgName    string   `toml:"pkg_name"`
+	OutFolder  string   `toml:"out_folder"`
+	TableNames []string `toml:"table_names"`
 
 	Postgres PostgresConfig `toml:"postgres"`
 }

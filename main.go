@@ -2,12 +2,13 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -56,31 +57,42 @@ func main() {
 	}
 
 	// Set up the cobra root command flags
-	rootCmd.PersistentFlags().StringSliceP("table", "t", nil, "Tables to generate models for, all tables if empty")
+	rootCmd.PersistentFlags().StringSliceP("tables", "t", nil, "Tables to generate models for, all tables if empty")
 	rootCmd.PersistentFlags().StringP("output", "o", "output", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "model", "The name you wish to assign to your generated package")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		fmt.Printf("\n%+v\n", err)
+		os.Exit(1)
 	}
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
+	var err error
+
 	if len(args) == 0 {
-		_ = cmd.Help()
-		fmt.Println("\nmust provide a driver")
-		os.Exit(1)
+		return errors.New("must provide a driver name")
 	}
 
-	cmdConfig = new(Config)
+	cmdConfig = &Config{
+		DriverName: args[0],
+		OutFolder:  viper.GetString("output"),
+		PkgName:    viper.GetString("pkgname"),
+	}
 
-	cmdConfig.DriverName = args[0]
-	cmdConfig.TableName = viper.GetString("table")
-	cmdConfig.OutFolder = viper.GetString("output")
-	cmdConfig.PkgName = viper.GetString("pkgname")
+	// BUG: https://github.com/spf13/viper/issues/200
+	// Look up the value of TableNames directly from PFlags in Cobra if we
+	// detect a malformed value coming out of viper.
+	// Once the bug is fixed we'll be able to move this into the init above
+	cmdConfig.TableNames = viper.GetStringSlice("tables")
+	if len(cmdConfig.TableNames) == 1 && strings.HasPrefix(cmdConfig.TableNames[0], "[") {
+		cmdConfig.TableNames, err = cmd.PersistentFlags().GetStringSlice("tables")
+		if err != nil {
+			return err
+		}
+	}
 
 	if len(cmdConfig.DriverName) == 0 {
 		return errors.New("Must supply a driver flag.")
@@ -101,7 +113,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	spew.Dump(cmdConfig)
 
-	var err error
 	cmdState, err = New(cmdConfig)
 	return err
 }

@@ -1,6 +1,6 @@
 package dbdrivers
 
-import "fmt"
+import "github.com/pkg/errors"
 
 // Interface for a database driver. Functionality required to support a specific
 // database type (eg, MySQL, Postgres etc.)
@@ -61,8 +61,7 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 	var err error
 	if len(names) == 0 {
 		if names, err = db.TableNames(); err != nil {
-			fmt.Println("Unable to get table names.")
-			return nil, err
+			return nil, errors.Wrap(err, "unable to get table names")
 		}
 	}
 
@@ -71,8 +70,7 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 		t := Table{Name: name}
 
 		if t.Columns, err = db.Columns(name); err != nil {
-			fmt.Println("Unable to get columns.")
-			return nil, err
+			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 
 		for i, c := range t.Columns {
@@ -80,13 +78,11 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 		}
 
 		if t.PKey, err = db.PrimaryKeyInfo(name); err != nil {
-			fmt.Println("Unable to get primary key info.")
-			return nil, err
+			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
 		}
 
 		if t.FKeys, err = db.ForeignKeyInfo(name); err != nil {
-			fmt.Println("Unable to get foreign key info.")
-			return nil, err
+			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
 		}
 
 		setIsJoinTable(&t)

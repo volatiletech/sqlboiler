@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -62,7 +63,7 @@ func main() {
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println("Failed to execute sqlboiler command:", err)
+		fmt.Println(err)
 		os.Exit(-1)
 	}
 }
@@ -78,7 +79,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	cmdConfig.DriverName = args[0]
 	cmdConfig.TableName = viper.GetString("table")
-	cmdConfig.OutFolder = viper.GetString("folder")
+	cmdConfig.OutFolder = viper.GetString("output")
 	cmdConfig.PkgName = viper.GetString("pkgname")
 
 	if len(cmdConfig.DriverName) == 0 {
@@ -97,6 +98,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 			DBName: viper.GetString("postgres.dbname"),
 		}
 	}
+
+	spew.Dump(cmdConfig)
 
 	var err error
 	cmdState, err = New(cmdConfig)

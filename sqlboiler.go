@@ -13,11 +13,13 @@ import (
 )
 
 const (
-	templatesDirectory          = "cmds/templates"
-	templatesSingletonDirectory = "cmds/templates/singleton"
+	templatesDirectory          = "templates"
+	templatesSingletonDirectory = "templates/singleton"
 
-	templatesTestDirectory          = "cmds/templates_test"
-	templatesSingletonTestDirectory = "cmds/templates_test/singleton"
+	templatesTestDirectory          = "templates_test"
+	templatesSingletonTestDirectory = "templates_test/singleton"
+
+	templatesTestMainDirectory = "templates_test/main_test"
 )
 
 // State holds the global data needed by most pieces to run
@@ -37,7 +39,9 @@ type State struct {
 
 // New creates a new state based off of the config
 func New(config *Config) (*State, error) {
-	s := &State{}
+	s := &State{
+		Config: config,
+	}
 
 	err := s.initDriver(config.DriverName)
 	if err != nil {
@@ -143,6 +147,11 @@ func (s *State) initTemplates() error {
 	}
 
 	s.SingletonTestTemplates, err = loadTemplates(templatesSingletonTestDirectory)
+	if err != nil {
+		return err
+	}
+
+	s.TestMainTemplate, err = loadTemplate(templatesTestMainDirectory, s.Config.DriverName+"_main.tpl")
 	if err != nil {
 		return err
 	}

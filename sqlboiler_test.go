@@ -1,4 +1,4 @@
-package sqlboiler
+package main
 
 import (
 	"bufio"

@@ -5,40 +5,58 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/nullbio/sqlboiler"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+var (
+	cmdState  *State
+	cmdConfig *Config
 )
 
 func main() {
 	var err error
 
 	viper.SetConfigName("sqlboiler")
-	viper.AddConfigPath("$HOME/.sqlboiler")
-	viper.AddConfigPath(".")
 
-	err = viper.ReadInConfig()
+	configHome := os.Getenv("XDG_CONFIG_HOME")
+	homePath := os.Getenv("HOME")
+	wd, err := os.Getwd()
 	if err != nil {
-		fmt.Printf("Failed to load config file: %s\n", err)
-		os.Exit(-1)
+		wd = "./"
 	}
+
+	configPaths := []string{wd}
+	if len(configHome) > 0 {
+		configPaths = append(configPaths, filepath.Join(configHome, "sqlboiler"))
+	} else {
+		configPaths = append(configPaths, filepath.Join(homePath, ".config/sqlboiler"))
+	}
+
+	for _, p := range configPaths {
+		viper.AddConfigPath(p)
+	}
+
+	// Find and read config
+	err = viper.ReadInConfig()
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
-		Use:   "sqlboiler",
+		Use:   "sqlboiler [options] <driver>",
 		Short: "SQL Boiler generates boilerplate structs and statements",
-		Long: "SQL Boiler generates boilerplate structs and statements from the template files.\n" +
+		Long: "SQL Boiler generates boilerplate structs and statements from template files.\n" +
 			`Complete documentation is available at http://github.com/nullbio/sqlboiler`,
+		Example:  `sqlboiler -o mymodels -p mymodelpackage postgres`,
 		PreRunE:  preRun,
 		RunE:     run,
 		PostRunE: postRun,
 	}
 
 	// Set up the cobra root command flags
-	rootCmd.PersistentFlags().StringP("driver", "d", "", "The name of the driver in your config.toml (mandatory)")
-	rootCmd.PersistentFlags().StringP("table", "t", "", "A comma seperated list of table names")
-	rootCmd.PersistentFlags().StringP("folder", "f", "output", "The name of the output folder")
+	rootCmd.PersistentFlags().StringSliceP("table", "t", nil, "Tables to generate models for, all tables if empty")
+	rootCmd.PersistentFlags().StringP("output", "o", "output", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "model", "The name you wish to assign to your generated package")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
@@ -49,26 +67,29 @@ func main() {
 	}
 }
 
-var state *sqlboiler.State
-var config *sqlboiler.Config
-
 func preRun(cmd *cobra.Command, args []string) error {
-	config = new(sqlboiler.Config)
+	if len(args) == 0 {
+		_ = cmd.Help()
+		fmt.Println("\nmust provide a driver")
+		os.Exit(1)
+	}
 
-	config.DriverName = viper.GetString("driver")
-	config.TableName = viper.GetString("table")
-	config.OutFolder = viper.GetString("folder")
-	config.PkgName = viper.GetString("pkgname")
+	cmdConfig = new(Config)
 
-	if len(config.DriverName) == 0 {
+	cmdConfig.DriverName = args[0]
+	cmdConfig.TableName = viper.GetString("table")
+	cmdConfig.OutFolder = viper.GetString("folder")
+	cmdConfig.PkgName = viper.GetString("pkgname")
+
+	if len(cmdConfig.DriverName) == 0 {
 		return errors.New("Must supply a driver flag.")
 	}
-	if len(config.OutFolder) == 0 {
+	if len(cmdConfig.OutFolder) == 0 {
 		return fmt.Errorf("No output folder specified.")
 	}
 
 	if viper.IsSet("postgres.dbname") {
-		config.Postgres = sqlboiler.PostgresConfig{
+		cmdConfig.Postgres = PostgresConfig{
 			User:   viper.GetString("postgres.user"),
 			Pass:   viper.GetString("postgres.pass"),
 			Host:   viper.GetString("postgres.host"),
@@ -78,14 +99,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	var err error
-	state, err = sqlboiler.New(config)
+	cmdState, err = New(cmdConfig)
 	return err
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	return state.Run(true)
+	return cmdState.Run(true)
 }
 
 func postRun(cmd *cobra.Command, args []string) error {
-	return state.Cleanup()
+	return cmdState.Cleanup()
 }

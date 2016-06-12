@@ -1,4 +1,4 @@
-package sqlboiler
+package main
 
 // Config for the running of the commands
 type Config struct {

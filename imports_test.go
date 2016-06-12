@@ -1,12 +1,58 @@
-package cmds
+package sqlboiler
 
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/nullbio/sqlboiler/dbdrivers"
 )
+
+func TestImportsSort(t *testing.T) {
+	t.Parallel()
+
+	a1 := importList{
+		`"fmt"`,
+		`"errors"`,
+	}
+	a2 := importList{
+		`_ "github.com/lib/pq"`,
+		`_ "github.com/gorilla/n"`,
+		`"github.com/gorilla/mux"`,
+		`"github.com/gorilla/websocket"`,
+	}
+
+	a1Expected := importList{`"errors"`, `"fmt"`}
+	a2Expected := importList{
+		`"github.com/gorilla/mux"`,
+		`_ "github.com/gorilla/n"`,
+		`"github.com/gorilla/websocket"`,
+		`_ "github.com/lib/pq"`,
+	}
+
+	sort.Sort(a1)
+	if !reflect.DeepEqual(a1, a1Expected) {
+		t.Errorf("Expected a1 to match a1Expected, got: %v", a1)
+	}
+
+	for i, v := range a1 {
+		if v != a1Expected[i] {
+			t.Errorf("Expected a1[%d] to match a1Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
+		}
+	}
+
+	sort.Sort(a2)
+	if !reflect.DeepEqual(a2, a2Expected) {
+		t.Errorf("Expected a2 to match a2expected, got: %v", a2)
+	}
+
+	for i, v := range a2 {
+		if v != a2Expected[i] {
+			t.Errorf("Expected a2[%d] to match a2Expected[%d]:\n%s\n%s\n", i, i, v, a1Expected[i])
+		}
+	}
+}
 
 func TestCombineTypeImports(t *testing.T) {
 	imports1 := imports{
@@ -14,7 +60,7 @@ func TestCombineTypeImports(t *testing.T) {
 			`"errors"`,
 			`"fmt"`,
 		},
-		thirdparty: importList{
+		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
 		},
 	}
@@ -25,7 +71,7 @@ func TestCombineTypeImports(t *testing.T) {
 			`"fmt"`,
 			`"time"`,
 		},
-		thirdparty: importList{
+		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
 			`"gopkg.in/nullbio/null.v4"`,
 		},
@@ -46,7 +92,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 	}
 
-	res1 := combineTypeImports(imports1, sqlBoilerTypeImports, cols)
+	res1 := combineTypeImports(imports1, importsBasedOnType, cols)
 
 	if !reflect.DeepEqual(res1, importsExpected) {
 		t.Errorf("Expected res1 to match importsExpected, got:\n\n%#v\n", res1)
@@ -58,13 +104,13 @@ func TestCombineTypeImports(t *testing.T) {
 			`"fmt"`,
 			`"time"`,
 		},
-		thirdparty: importList{
+		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
 			`"gopkg.in/nullbio/null.v4"`,
 		},
 	}
 
-	res2 := combineTypeImports(imports2, sqlBoilerTypeImports, cols)
+	res2 := combineTypeImports(imports2, importsBasedOnType, cols)
 
 	if !reflect.DeepEqual(res2, importsExpected) {
 		t.Errorf("Expected res2 to match importsExpected, got:\n\n%#v\n", res1)
@@ -76,11 +122,11 @@ func TestCombineImports(t *testing.T) {
 
 	a := imports{
 		standard:   importList{"fmt"},
-		thirdparty: importList{"github.com/nullbio/sqlboiler", "gopkg.in/nullbio/null.v4"},
+		thirdParty: importList{"github.com/nullbio/sqlboiler", "gopkg.in/nullbio/null.v4"},
 	}
 	b := imports{
 		standard:   importList{"os"},
-		thirdparty: importList{"github.com/nullbio/sqlboiler"},
+		thirdParty: importList{"github.com/nullbio/sqlboiler"},
 	}
 
 	c := combineImports(a, b)
@@ -88,8 +134,8 @@ func TestCombineImports(t *testing.T) {
 	if c.standard[0] != "fmt" && c.standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.standard)
 	}
-	if c.thirdparty[0] != "github.com/nullbio/sqlboiler" && c.thirdparty[1] != "gopkg.in/nullbio/null.v4" {
-		t.Errorf("Wanted: github.com/nullbio/sqlboiler, gopkg.in/nullbio/null.v4 got: %#v", c.thirdparty)
+	if c.thirdParty[0] != "github.com/nullbio/sqlboiler" && c.thirdParty[1] != "gopkg.in/nullbio/null.v4" {
+		t.Errorf("Wanted: github.com/nullbio/sqlboiler, gopkg.in/nullbio/null.v4 got: %#v", c.thirdParty)
 	}
 }
 

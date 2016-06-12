@@ -1,2 +1,3 @@
-sqlboiler
-config.toml
+/sqlboiler
+/cmd/sqlboiler/sqlboiler
+sqlboiler.toml

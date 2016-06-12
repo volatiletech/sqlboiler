@@ -5,6 +5,7 @@ package sqlboiler
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"strings"
 
@@ -18,6 +19,21 @@ const (
 	templatesTestDirectory          = "cmds/templates_test"
 	templatesSingletonTestDirectory = "cmds/templates_test/singleton"
 )
+
+// State holds the global data needed by most pieces to run
+type State struct {
+	Config *Config
+
+	Driver dbdrivers.Interface
+	Tables []dbdrivers.Table
+
+	Templates              templateList
+	TestTemplates          templateList
+	SingletonTemplates     templateList
+	SingletonTestTemplates templateList
+
+	TestMainTemplate *template.Template
+}
 
 // New creates a new state based off of the config
 func New(config *Config) (*State, error) {

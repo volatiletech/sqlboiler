@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/nullbio/sqlboiler"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -44,8 +43,8 @@ func main() {
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
-	// Execute SQLBoiler
 	if err := rootCmd.Execute(); err != nil {
+		fmt.Println("Failed to execute sqlboiler command:", err)
 		os.Exit(-1)
 	}
 }
@@ -77,9 +76,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 			DBName: viper.GetString("postgres.dbname"),
 		}
 	}
-
-	spew.Dump(config)
-	panic("ROFL")
 
 	var err error
 	state, err = sqlboiler.New(config)

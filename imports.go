@@ -149,7 +149,7 @@ var defaultTemplateImports = imports{
 	},
 	thirdParty: importList{
 		`"github.com/nullbio/sqlboiler/boil"`,
-		`"github.com/nullbio/sqlboiler/boil/qs"`,
+		`"github.com/nullbio/sqlboiler/boil/qm"`,
 	},
 }
 
@@ -158,7 +158,7 @@ var defaultSingletonTemplateImports = map[string]imports{
 		standard: importList{},
 		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
-			`"github.com/nullbio/sqlboiler/boil/qs"`,
+			`"github.com/nullbio/sqlboiler/boil/qm"`,
 		},
 	},
 }
@@ -170,6 +170,7 @@ var defaultTestTemplateImports = imports{
 	},
 	thirdParty: importList{
 		`"github.com/nullbio/sqlboiler/boil"`,
+		`"github.com/nullbio/sqlboiler/boil/qm"`,
 	},
 }
 

@@ -16,11 +16,11 @@ func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
   }
 
-  var mods []qs.QueryMod
+  var mods []qm.QueryMod
 
   mods = append(mods,
-    qs.Table("{{.Table.Name}}"),
-    qs.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{paramsPrimaryKey "o." .Table.PKey.Columns true}}),
+    qm.Table("{{.Table.Name}}"),
+    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{paramsPrimaryKey "o." .Table.PKey.Columns true}}),
   )
 
   query := NewQueryX(exec, mods...)
@@ -61,14 +61,14 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
   }
 
-  var mods []qs.QueryMod
+  var mods []qm.QueryMod
 
   args := o.inPrimaryKeyArgs()
   in := boil.WherePrimaryKeyIn(len(o), {{commaList .Table.PKey.Columns}})
 
   mods = append(mods,
-    qs.Table("{{.Table.Name}}"),
-    qs.Where(in, args...),
+    qm.Table("{{.Table.Name}}"),
+    qm.Where(in, args...),
   )
 
   query := NewQueryX(exec, mods...)

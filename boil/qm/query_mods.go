@@ -1,4 +1,4 @@
-package qs
+package qm
 
 import "github.com/nullbio/sqlboiler/boil"
 

@@ -9,11 +9,11 @@ func {{$tableNameSingular}}Find({{primaryKeyFuncSig .Table.Columns .Table.PKey.C
 
 func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  
-  mods := []qs.QueryMod{
-    qs.Select(selectCols...),
-    qs.Table("{{.Table.Name}}"),
-    qs.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{camelCaseCommaList "" .Table.PKey.Columns}}),
+
+  mods := []qm.QueryMod{
+    qm.Select(selectCols...),
+    qm.Table("{{.Table.Name}}"),
+    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{camelCaseCommaList "" .Table.PKey.Columns}}),
   }
 
   q := NewQueryX(exec, mods...)

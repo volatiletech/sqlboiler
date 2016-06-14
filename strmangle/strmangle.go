@@ -275,6 +275,11 @@ func GenerateParamFlags(colCount int, startAt int) string {
 func WherePrimaryKey(pkeyCols []string, start int) string {
 	var output string
 
+	// 0 is not a valid start number
+	if start == 0 {
+		start = 1
+	}
+
 	cols := make([]string, len(pkeyCols))
 	copy(cols, pkeyCols)
 

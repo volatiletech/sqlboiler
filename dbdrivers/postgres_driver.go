@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	// Import the postgres driver
-
 	_ "github.com/lib/pq"
 )
 
@@ -52,9 +50,10 @@ func (p *PostgresDriver) Close() {
 func (p *PostgresDriver) TableNames() ([]string, error) {
 	var names []string
 
-	rows, err := p.dbConn.Query(`select table_name from
-    information_schema.tables where table_schema='public'
-    and table_name <> 'gorp_migrations'`)
+	rows, err := p.dbConn.Query(`
+		select table_name from information_schema.tables
+		where table_schema='public' and table_name not like '%migrations%'
+	`)
 
 	if err != nil {
 		return nil, err
@@ -80,8 +79,8 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 	var columns []Column
 
 	rows, err := p.dbConn.Query(`
-		SELECT column_name, data_type, column_default, is_nullable from
-    information_schema.columns WHERE table_name=$1
+	select column_name, data_type, column_default, is_nullable
+	from information_schema.columns where table_name=$1
 	`, tableName)
 
 	if err != nil {
@@ -93,7 +92,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 		var colName, colType, colDefault, isNullable string
 		var defaultPtr *string
 		if err := rows.Scan(&colName, &colType, &defaultPtr, &isNullable); err != nil {
-			return nil, fmt.Errorf("Unable to scan for table %s: %s", tableName, err)
+			return nil, fmt.Errorf("unable to scan for table %s: %s", tableName, err)
 		}
 
 		if defaultPtr == nil {
@@ -119,25 +118,23 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 	pkey := &PrimaryKey{}
 	var err error
 
-	query := `SELECT conname
-		FROM pg_constraint
-		WHERE conrelid =
-			(SELECT oid
-			FROM pg_class
-			WHERE relname LIKE $1)
-		AND contype='p';`
+	query := `
+	select tc.constraint_name
+	from information_schema.table_constraints as tc
+	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY';`
 
 	row := p.dbConn.QueryRow(query, tableName)
 	if err = row.Scan(&pkey.Name); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 
-	queryColumns := `SELECT a.attname AS column
-		FROM   pg_index i
-		JOIN   pg_attribute a ON a.attrelid = i.indrelid
-			AND a.attnum = ANY(i.indkey)
-		WHERE  i.indrelid = $1::regclass
-		AND    i.indisprimary;`
+	queryColumns := `
+	select kcu.column_name
+	from   information_schema.key_column_usage as kcu
+	where  constraint_name = $1;`
 
 	var rows *sql.Rows
 	if rows, err = p.dbConn.Query(queryColumns, tableName); err != nil {
@@ -170,16 +167,16 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) 
 	var fkeys []ForeignKey
 
 	query := `
-	SELECT
-    tc.constraint_name,
-    kcu.table_name as source_table,
-    kcu.column_name as source_column,
-    ccu.table_name as dest_table,
-    ccu.column_name as dest_column
-	FROM information_schema.table_constraints as tc
-	JOIN information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
-	JOIN information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
-	WHERE tc.table_name = $1 AND tc.constraint_type = 'FOREIGN KEY';`
+	select
+		tc.constraint_name,
+		kcu.table_name as source_table,
+		kcu.column_name as source_column,
+		ccu.table_name as dest_table,
+		ccu.column_name as dest_column
+	from information_schema.table_constraints as tc
+		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
+		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
+	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY';`
 
 	var rows *sql.Rows
 	var err error

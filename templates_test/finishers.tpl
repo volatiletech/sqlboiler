@@ -25,6 +25,36 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
   }
 
   {{$varNameSingular}}CompareVals(&o, &j, t)
+
+  // insert 3 rows, attempt to bind into slice
+  {{$varNamePlural}}DeleteAllRows(t)
+
+  y := make({{$varNameSingular}}Slice, 3)
+  if err = boil.RandomizeSlice(&y); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
+  }
+
+  // insert random columns to test DeleteAll
+  for i := 0; i < len(y); i++ {
+    err = y[i].Insert()
+    if err != nil {
+      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", y[i], err)
+    }
+  }
+
+  k := {{$varNameSingular}}Slice{}
+  err = {{$tableNamePlural}}().Bind(&k)
+  if err != nil {
+    t.Errorf("Unable to call Bind on {{$tableNameSingular}} slice of objects: %s", err)
+  }
+  
+  if len(k) != 3 {
+    t.Errorf("Expected 3 results, got %d", len(k))
+  }
+
+  for i := 0; i < len(y); i++ {
+    {{$varNameSingular}}CompareVals(y[i], k[i], t)
+  }
 }
 
 func Test{{$tableNamePlural}}One(t *testing.T) {

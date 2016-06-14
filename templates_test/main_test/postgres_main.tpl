@@ -50,7 +50,7 @@ func disableTriggers() error {
 	var stmts []string
 
 	{{range .Tables}}
-	stmts = append(stmts, `ALTER TABLE {{.}} DISABLE TRIGGER ALL;`)
+	stmts = append(stmts, `ALTER TABLE {{.Name}} DISABLE TRIGGER ALL;`)
 	{{- end}}
 
 	if len(stmts) == 0 {
@@ -125,7 +125,7 @@ func LoadConfigFile(filename string) error {
 // generated sqlboiler ORM package.
 func setup() error {
 	// Load the config file in the parent directory.
-  err := LoadConfigFile("../config.toml")
+  err := LoadConfigFile("../sqlboiler.toml")
 	if err != nil {
 		return fmt.Errorf("Unable to load config file: %s", err)
 	}

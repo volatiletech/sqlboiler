@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -46,11 +45,11 @@ func main() {
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
-		Use:   "sqlboiler [options] <driver>",
+		Use:   "sqlboiler <driver>",
 		Short: "SQL Boiler generates boilerplate structs and statements",
 		Long: "SQL Boiler generates boilerplate structs and statements from template files.\n" +
 			`Complete documentation is available at http://github.com/nullbio/sqlboiler`,
-		Example:  `sqlboiler -o mymodels -p mymodelpackage postgres`,
+		Example:  `sqlboiler postgres -o models -p models`,
 		PreRunE:  preRun,
 		RunE:     run,
 		PostRunE: postRun,
@@ -58,8 +57,8 @@ func main() {
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringSliceP("tables", "t", nil, "Tables to generate models for, all tables if empty")
-	rootCmd.PersistentFlags().StringP("output", "o", "output", "The name of the folder to output to")
-	rootCmd.PersistentFlags().StringP("pkgname", "p", "model", "The name you wish to assign to your generated package")
+	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
+	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
@@ -110,8 +109,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 			DBName: viper.GetString("postgres.dbname"),
 		}
 	}
-
-	spew.Dump(cmdConfig)
 
 	cmdState, err = New(cmdConfig)
 	return err

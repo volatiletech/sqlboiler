@@ -45,11 +45,11 @@ func main() {
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
-		Use:   "sqlboiler <driver>",
+		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates boilerplate structs and statements",
 		Long: "SQL Boiler generates boilerplate structs and statements from template files.\n" +
 			`Complete documentation is available at http://github.com/nullbio/sqlboiler`,
-		Example:  `sqlboiler postgres -o models -p models`,
+		Example:  `sqlboiler -o models -p models postgres`,
 		PreRunE:  preRun,
 		RunE:     run,
 		PostRunE: postRun,

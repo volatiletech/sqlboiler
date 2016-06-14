@@ -108,11 +108,20 @@ func Test{{$tableNamePlural}}Count(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
-  // insert random columns to test DeleteAll
+  // insert random columns to test Count
   for i := 0; i < len(o); i++ {
     err = o[i].Insert()
     if err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
+  }
+
+  c, err := {{$tableNamePlural}}().Count()
+  if err != nil {
+    t.Errorf("Unable to count query {{$tableNameSingular}}: %s", err)
+  }
+
+  if c != 3 {
+    t.Errorf("Expected 3 results from count {{$tableNameSingular}}, got %d", c)
   }
 }

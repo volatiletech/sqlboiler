@@ -138,7 +138,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 	where  constraint_name = $1;`
 
 	var rows *sql.Rows
-	if rows, err = p.dbConn.Query(queryColumns, tableName); err != nil {
+	if rows, err = p.dbConn.Query(queryColumns, pkey.Name); err != nil {
 		return nil, err
 	}
 
@@ -154,11 +154,11 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 		columns = append(columns, column)
 	}
 
-	pkey.Columns = columns
-
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+
+	pkey.Columns = columns
 
 	return pkey, nil
 }

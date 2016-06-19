@@ -1,7 +1,5 @@
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
-type {{$tableNameSingular}}Hook func(*{{$tableNameSingular}}) error
-
 var {{$varNameSingular}}BeforeCreateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterCreateHooks []{{$tableNameSingular}}Hook

@@ -1,7 +1,6 @@
 {{- $tableNameSingular := titleCaseSingular .Table.Name -}}
 {{- $varNameSingular := camelCaseSingular .Table.Name -}}
-type {{$varNameSingular}}Slice []*{{$tableNameSingular}}
-
+// One returns a single {{$varNameSingular}} record from the query.
 func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
   o := &{{$tableNameSingular}}{}
 
@@ -16,6 +15,7 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
   return o, nil
 }
 
+// All returns all {{$tableNameSingular}} records from the query.
 func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
   var o {{$varNameSingular}}Slice
 
@@ -33,6 +33,7 @@ func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
   return o, nil
 }
 
+// Count returns the count of all {{$tableNameSingular}} records in the query.
 func (q {{$varNameSingular}}Query) Count() (int64, error) {
   var count int64
 

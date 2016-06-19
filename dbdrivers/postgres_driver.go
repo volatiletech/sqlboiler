@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	// Side-effect import sql driver
 	_ "github.com/lib/pq"
 )
 
@@ -43,7 +44,7 @@ func (p *PostgresDriver) Close() {
 	p.dbConn.Close()
 }
 
-// tableNames connects to the postgres database and
+// TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is public. It excludes common migration tool tables
 // such as gorp_migrations
@@ -71,7 +72,7 @@ func (p *PostgresDriver) TableNames() ([]string, error) {
 	return names, nil
 }
 
-// columns takes a table name and attempts to retrieve the table information
+// Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
@@ -113,7 +114,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 	return columns, nil
 }
 
-// primaryKeyInfo looks up the primary key for a table.
+// PrimaryKeyInfo looks up the primary key for a table.
 func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 	pkey := &PrimaryKey{}
 	var err error
@@ -162,7 +163,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 	return pkey, nil
 }
 
-// foreignKeyInfo retrieves the foreign keys for a given table name.
+// ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) {
 	var fkeys []ForeignKey
 
@@ -192,6 +193,8 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) 
 		if err != nil {
 			return nil, err
 		}
+
+		fkeys = append(fkeys, fkey)
 	}
 
 	if err = rows.Err(); err != nil {

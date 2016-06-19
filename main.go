@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -40,8 +40,9 @@ func main() {
 		viper.AddConfigPath(p)
 	}
 
-	// Find and read config
-	err = viper.ReadInConfig()
+	// Find and read config, ignore errors because we'll fall back to defaults
+	// and other validation mechanisms
+	_ = viper.ReadInConfig()
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
@@ -49,10 +50,12 @@ func main() {
 		Short: "SQL Boiler generates boilerplate structs and statements",
 		Long: "SQL Boiler generates boilerplate structs and statements from template files.\n" +
 			`Complete documentation is available at http://github.com/nullbio/sqlboiler`,
-		Example:  `sqlboiler -o models -p models postgres`,
-		PreRunE:  preRun,
-		RunE:     run,
-		PostRunE: postRun,
+		Example:       `sqlboiler -o models -p models postgres`,
+		PreRunE:       preRun,
+		RunE:          run,
+		PostRunE:      postRun,
+		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 
 	// Set up the cobra root command flags
@@ -63,16 +66,28 @@ func main() {
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
 	if err := rootCmd.Execute(); err != nil {
+		if e, ok := err.(commandFailure); ok {
+			rootCmd.Help()
+			fmt.Printf("\n%s\n", string(e))
+			return
+		}
+
 		fmt.Printf("\n%+v\n", err)
 		os.Exit(1)
 	}
+}
+
+type commandFailure string
+
+func (c commandFailure) Error() string {
+	return string(c)
 }
 
 func preRun(cmd *cobra.Command, args []string) error {
 	var err error
 
 	if len(args) == 0 {
-		return errors.New("must provide a driver name")
+		return commandFailure("must provide a driver name")
 	}
 
 	cmdConfig = &Config{
@@ -93,13 +108,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if len(cmdConfig.DriverName) == 0 {
-		return errors.New("Must supply a driver flag.")
-	}
-	if len(cmdConfig.OutFolder) == 0 {
-		return fmt.Errorf("No output folder specified.")
-	}
-
 	if viper.IsSet("postgres.dbname") {
 		cmdConfig.Postgres = PostgresConfig{
 			User:   viper.GetString("postgres.user"),
@@ -107,6 +115,18 @@ func preRun(cmd *cobra.Command, args []string) error {
 			Host:   viper.GetString("postgres.host"),
 			Port:   viper.GetInt("postgres.port"),
 			DBName: viper.GetString("postgres.dbname"),
+		}
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.Postgres.User, "postgres.user"),
+			vala.StringNotEmpty(cmdConfig.Postgres.Pass, "postgres.pass"),
+			vala.StringNotEmpty(cmdConfig.Postgres.Host, "postgres.host"),
+			vala.Not(vala.Equals(cmdConfig.Postgres.Port, 0, "postgres.port")),
+			vala.StringNotEmpty(cmdConfig.Postgres.DBName, "postgres.dbname"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
 		}
 	}
 

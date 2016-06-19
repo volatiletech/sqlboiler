@@ -42,6 +42,8 @@ func TestCommaList(t *testing.T) {
 }
 
 func TestTitleCaseCommaList(t *testing.T) {
+	t.Parallel()
+
 	cols := []string{
 		"test_id",
 		"test_thing",
@@ -63,6 +65,8 @@ func TestTitleCaseCommaList(t *testing.T) {
 }
 
 func TestCamelCaseCommaList(t *testing.T) {
+	t.Parallel()
+
 	cols := []string{
 		"test_id",
 		"test_thing",
@@ -283,6 +287,8 @@ func TestInsertParamFlags(t *testing.T) {
 }
 
 func TestInsertParamVariables(t *testing.T) {
+	t.Parallel()
+
 	out := InsertParamVariables("o.", testColumns)
 	if out != "o.FriendColumn, o.EnemyColumnThing" {
 		t.Error("Wrong output:", out)

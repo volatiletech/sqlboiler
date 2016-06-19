@@ -84,6 +84,9 @@ func loadTemplate(dir string, filename string) (*template.Template, error) {
 // templates. If you wish to pass a new function into your own template,
 // add a function pointer here.
 var templateFunctions = template.FuncMap{
+	"tolower":                      strings.ToLower,
+	"toupper":                      strings.ToUpper,
+	"substring":                    strmangle.Substring,
 	"singular":                     strmangle.Singular,
 	"plural":                       strmangle.Plural,
 	"titleCase":                    strmangle.TitleCase,
@@ -113,6 +116,8 @@ var templateFunctions = template.FuncMap{
 	"filterColumnsByDefault":       strmangle.FilterColumnsByDefault,
 	"filterColumnsByAutoIncrement": strmangle.FilterColumnsByAutoIncrement,
 	"autoIncPrimaryKey":            strmangle.AutoIncPrimaryKey,
+	"addID":                        strmangle.AddID,
+	"removeID":                     strmangle.RemoveID,
 
 	"randDBStruct":      strmangle.RandDBStruct,
 	"randDBStructSlice": strmangle.RandDBStructSlice,

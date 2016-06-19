@@ -295,7 +295,8 @@ func WherePrimaryKey(pkeyCols []string, start int) string {
 	return output
 }
 
-// AutoIncPrimKey returns the auto-increment primary key column name or an empty string
+// AutoIncPrimaryKey returns the auto-increment primary key column name or an
+// empty string.
 func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) string {
 	if pkey == nil {
 		return ""
@@ -315,7 +316,7 @@ func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) stri
 	return ""
 }
 
-// ColumnsToString changes the columns into a list of column names
+// ColumnsToStrings changes the columns into a list of column names
 func ColumnsToStrings(cols []dbdrivers.Column) []string {
 	names := make([]string, len(cols))
 	for i, c := range cols {
@@ -353,8 +354,8 @@ func PrimaryKeyFlagIndex(regularCols []dbdrivers.Column, pkeyCols []string) int 
 	return len(regularCols) - len(pkeyCols) + 1
 }
 
-// SupportsResult returns whether the database driver supports the sql.Results
-// interface, i.e. LastReturnId and RowsAffected
+// SupportsResultObject returns whether the database driver supports the
+// sql.Results interface, i.e. LastReturnId and RowsAffected
 func SupportsResultObject(driverName string) bool {
 	switch driverName {
 	case "postgres":
@@ -388,4 +389,20 @@ func FilterColumnsByAutoIncrement(columns []dbdrivers.Column) string {
 	}
 
 	return strings.Join(cols, `,`)
+}
+
+// AddID to the end of the string
+func AddID(str string) string {
+	return str + "_id"
+}
+
+// RemoveID from the end of the string
+func RemoveID(str string) string {
+	return strings.TrimSuffix(str, "_id")
+}
+
+// Substring returns a substring of str starting at index start and going
+// to end-1.
+func Substring(start, end int, str string) string {
+	return str[start:end]
 }

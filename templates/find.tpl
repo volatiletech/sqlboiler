@@ -21,7 +21,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.
   err := boil.ExecQueryOne(q).Scan(boil.GetStructPointers({{$varNameSingular}}, selectCols...)...)
 
   if err != nil {
-    return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table.Name}}: %s", err)
+    return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table.Name}}: %v", err)
   }
 
   return {{$varNameSingular}}, nil

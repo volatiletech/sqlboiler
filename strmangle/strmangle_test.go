@@ -90,57 +90,93 @@ func TestCamelCaseCommaList(t *testing.T) {
 func TestAutoIncPrimaryKey(t *testing.T) {
 	t.Parallel()
 
-	var pkey *dbdrivers.PrimaryKey
-	var cols []dbdrivers.Column
-
-	r := AutoIncPrimaryKey(cols, pkey)
-	if r != "" {
-		t.Errorf("Expected empty string, got %s", r)
+	tests := map[string]struct {
+		Expect  string
+		Pkey    *dbdrivers.PrimaryKey
+		Columns []dbdrivers.Column
+	}{
+		"easycase": {
+			Expect: "one",
+			Pkey: &dbdrivers.PrimaryKey{
+				Name:    "pkey",
+				Columns: []string{"one"},
+			},
+			Columns: []dbdrivers.Column{
+				dbdrivers.Column{
+					Name:       "one",
+					Type:       "int32",
+					IsNullable: false,
+					Default:    `nextval('abc'::regclass)`,
+				},
+			},
+		},
+		"missingcase": {
+			Expect: "",
+			Pkey: &dbdrivers.PrimaryKey{
+				Name:    "pkey",
+				Columns: []string{"two"},
+			},
+			Columns: []dbdrivers.Column{
+				dbdrivers.Column{
+					Name:       "one",
+					Type:       "int32",
+					IsNullable: false,
+					Default:    `nextval('abc'::regclass)`,
+				},
+			},
+		},
+		"wrongtype": {
+			Expect: "",
+			Pkey: &dbdrivers.PrimaryKey{
+				Name:    "pkey",
+				Columns: []string{"one"},
+			},
+			Columns: []dbdrivers.Column{
+				dbdrivers.Column{
+					Name:       "one",
+					Type:       "string",
+					IsNullable: false,
+					Default:    `nextval('abc'::regclass)`,
+				},
+			},
+		},
+		"nodefault": {
+			Expect: "",
+			Pkey: &dbdrivers.PrimaryKey{
+				Name:    "pkey",
+				Columns: []string{"one"},
+			},
+			Columns: []dbdrivers.Column{
+				dbdrivers.Column{
+					Name:       "one",
+					Type:       "string",
+					IsNullable: false,
+					Default:    ``,
+				},
+			},
+		},
+		"nullable": {
+			Expect: "",
+			Pkey: &dbdrivers.PrimaryKey{
+				Name:    "pkey",
+				Columns: []string{"one"},
+			},
+			Columns: []dbdrivers.Column{
+				dbdrivers.Column{
+					Name:       "one",
+					Type:       "string",
+					IsNullable: true,
+					Default:    `nextval('abc'::regclass)`,
+				},
+			},
+		},
 	}
 
-	pkey = &dbdrivers.PrimaryKey{
-		Columns: []string{
-			"col1", "auto",
-		},
-		Name: "",
-	}
-
-	cols = []dbdrivers.Column{
-		{
-			Name:       "thing",
-			IsNullable: true,
-			Type:       "int64",
-			Default:    "nextval('abc'::regclass)",
-		},
-		{
-			Name:       "stuff",
-			IsNullable: false,
-			Type:       "string",
-			Default:    "nextval('abc'::regclass)",
-		},
-		{
-			Name:       "other",
-			IsNullable: false,
-			Type:       "int64",
-			Default:    "nextval",
-		},
-	}
-
-	r = AutoIncPrimaryKey(cols, pkey)
-	if r != "" {
-		t.Errorf("Expected empty string, got %s", r)
-	}
-
-	cols = append(cols, dbdrivers.Column{
-		Name:       "auto",
-		IsNullable: false,
-		Type:       "int64",
-		Default:    "nextval('abc'::regclass)",
-	})
-
-	r = AutoIncPrimaryKey(cols, pkey)
-	if r != "auto" {
-		t.Errorf("Expected empty string, got %s", r)
+	for testName, test := range tests {
+		primaryKey := AutoIncPrimaryKey(test.Columns, test.Pkey)
+		if primaryKey != test.Expect {
+			t.Errorf("%s) wrong primary key, want: %q, got %q", testName, test.Expect, primaryKey)
+		}
 	}
 }
 

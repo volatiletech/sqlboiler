@@ -302,15 +302,18 @@ func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) stri
 		return ""
 	}
 
-	for _, c := range cols {
-		if rgxAutoIncColumn.MatchString(c.Default) &&
-			c.IsNullable == false &&
-			(strings.HasPrefix(c.Type, "int") || strings.HasPrefix(c.Type, "uint")) {
-			for _, p := range pkey.Columns {
-				if c.Name == p {
-					return p
-				}
+	for _, pkeyColumn := range pkey.Columns {
+		for _, c := range cols {
+			if c.Name != pkeyColumn {
+				continue
 			}
+
+			if !rgxAutoIncColumn.MatchString(c.Default) || c.IsNullable ||
+				!(strings.HasPrefix(c.Type, "int") || strings.HasPrefix(c.Type, "uint")) {
+				continue
+			}
+
+			return pkeyColumn
 		}
 	}
 

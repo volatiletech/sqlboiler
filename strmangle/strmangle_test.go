@@ -1,6 +1,7 @@
 package strmangle
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/nullbio/sqlboiler/dbdrivers"
@@ -11,82 +12,6 @@ var testColumns = []dbdrivers.Column{
 	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
 }
 
-func TestCommaList(t *testing.T) {
-	t.Parallel()
-
-	cols := []string{
-		"test1",
-	}
-
-	x := CommaList(cols)
-
-	if x != `"test1"` {
-		t.Errorf(`Expected "test1" - got %s`, x)
-	}
-
-	cols = append(cols, "test2")
-
-	x = CommaList(cols)
-
-	if x != `"test1", "test2"` {
-		t.Errorf(`Expected "test1", "test2" - got %s`, x)
-	}
-
-	cols = append(cols, "test3")
-
-	x = CommaList(cols)
-
-	if x != `"test1", "test2", "test3"` {
-		t.Errorf(`Expected "test1", "test2", "test3" - got %s`, x)
-	}
-}
-
-func TestTitleCaseCommaList(t *testing.T) {
-	t.Parallel()
-
-	cols := []string{
-		"test_id",
-		"test_thing",
-		"test_stuff_thing",
-		"test",
-	}
-
-	x := TitleCaseCommaList("", cols)
-	expected := `TestID, TestThing, TestStuffThing, Test`
-	if x != expected {
-		t.Errorf("Expected %s, got %s", expected, x)
-	}
-
-	x = TitleCaseCommaList("o.", cols)
-	expected = `o.TestID, o.TestThing, o.TestStuffThing, o.Test`
-	if x != expected {
-		t.Errorf("Expected %s, got %s", expected, x)
-	}
-}
-
-func TestCamelCaseCommaList(t *testing.T) {
-	t.Parallel()
-
-	cols := []string{
-		"test_id",
-		"test_thing",
-		"test_stuff_thing",
-		"test",
-	}
-
-	x := CamelCaseCommaList("", cols)
-	expected := `testID, testThing, testStuffThing, test`
-	if x != expected {
-		t.Errorf("Expected %s, got %s", expected, x)
-	}
-
-	x = CamelCaseCommaList("o.", cols)
-	expected = `o.testID, o.testThing, o.testStuffThing, o.test`
-	if x != expected {
-		t.Errorf("Expected %s, got %s", expected, x)
-	}
-}
-
 func TestAutoIncPrimaryKey(t *testing.T) {
 	t.Parallel()
 
@@ -95,6 +20,11 @@ func TestAutoIncPrimaryKey(t *testing.T) {
 		Pkey    *dbdrivers.PrimaryKey
 		Columns []dbdrivers.Column
 	}{
+		"nillcase": {
+			Expect:  "",
+			Pkey:    nil,
+			Columns: nil,
+		},
 		"easycase": {
 			Expect: "one",
 			Pkey: &dbdrivers.PrimaryKey{
@@ -177,6 +107,32 @@ func TestAutoIncPrimaryKey(t *testing.T) {
 		if primaryKey != test.Expect {
 			t.Errorf("%s) wrong primary key, want: %q, got %q", testName, test.Expect, primaryKey)
 		}
+	}
+}
+
+func TestColumnNames(t *testing.T) {
+	t.Parallel()
+
+	cols := []dbdrivers.Column{
+		dbdrivers.Column{Name: "one"},
+		dbdrivers.Column{Name: "two"},
+		dbdrivers.Column{Name: "three"},
+	}
+
+	out := strings.Join(ColumnNames(cols), " ")
+	if out != "one two three" {
+		t.Error("output was wrong:", out)
+	}
+}
+
+func TestDriverUsesResults(t *testing.T) {
+	t.Parallel()
+
+	if DriverUsesLastInsertID("postgres") {
+		t.Error("postgres does not support LastInsertId")
+	}
+	if !DriverUsesLastInsertID("mysql") {
+		t.Error("postgres does support LastInsertId")
 	}
 }
 
@@ -266,6 +222,15 @@ func TestCamelCase(t *testing.T) {
 	}
 }
 
+func TestStringMap(t *testing.T) {
+	t.Parallel()
+
+	mapped := StringMap(strings.ToLower, []string{"HELLO", "WORLD"})
+	if got := strings.Join(mapped, " "); got != "hello world" {
+		t.Errorf("mapped was wrong: %q", got)
+	}
+}
+
 func TestMakeDBName(t *testing.T) {
 	t.Parallel()
 
@@ -274,153 +239,53 @@ func TestMakeDBName(t *testing.T) {
 	}
 }
 
-func TestUpdateParamNames(t *testing.T) {
+func TestHasElement(t *testing.T) {
 	t.Parallel()
 
-	var testCols = []dbdrivers.Column{
-		{Name: "id", Type: "int", IsNullable: false},
-		{Name: "friend_column", Type: "int", IsNullable: false},
-		{Name: "enemy_column_thing", Type: "string", IsNullable: true},
+	elements := []string{"one", "two"}
+	if got := HasElement("one", elements); !got {
+		t.Error("should have found element key")
 	}
-
-	out := UpdateParamNames(testCols, []string{"id"})
-	if out != "friend_column=$1,enemy_column_thing=$2" {
-		t.Error("Wrong output:", out)
+	if got := HasElement("three", elements); got {
+		t.Error("should not have found element key")
 	}
 }
 
-func TestUpdateParamVariables(t *testing.T) {
+func TestPrefixStringSlice(t *testing.T) {
 	t.Parallel()
 
-	var testCols = []dbdrivers.Column{
-		{Name: "id", Type: "int", IsNullable: false},
-		{Name: "friend_column", Type: "int", IsNullable: false},
-		{Name: "enemy_column_thing", Type: "string", IsNullable: true},
-	}
-
-	out := UpdateParamVariables("o.", testCols, []string{"id"})
-	if out != "o.FriendColumn, o.EnemyColumnThing" {
-		t.Error("Wrong output:", out)
+	slice := PrefixStringSlice("o.", []string{"one", "two"})
+	if got := strings.Join(slice, " "); got != "o.one o.two" {
+		t.Error("wrong output:", got)
 	}
 }
 
-func TestInsertParamNames(t *testing.T) {
+func TestPrimaryKeyFuncSig(t *testing.T) {
 	t.Parallel()
 
-	out := InsertParamNames(testColumns)
-	if out != "friend_column, enemy_column_thing" {
-		t.Error("Wrong output:", out)
-	}
-}
-
-func TestInsertParamFlags(t *testing.T) {
-	t.Parallel()
-
-	out := InsertParamFlags(testColumns)
-	if out != "$1, $2" {
-		t.Error("Wrong output:", out)
-	}
-}
-
-func TestInsertParamVariables(t *testing.T) {
-	t.Parallel()
-
-	out := InsertParamVariables("o.", testColumns)
-	if out != "o.FriendColumn, o.EnemyColumnThing" {
-		t.Error("Wrong output:", out)
-	}
-}
-
-func TestSelectParamFlags(t *testing.T) {
-	t.Parallel()
-
-	out := SelectParamNames("table", testColumns)
-	if out != "friend_column AS table_friend_column, enemy_column_thing AS table_enemy_column_thing" {
-		t.Error("Wrong output:", out)
-	}
-}
-
-func TestScanParams(t *testing.T) {
-	t.Parallel()
-
-	out := ScanParamNames("object", testColumns)
-	if out != "&object.FriendColumn, &object.EnemyColumnThing" {
-		t.Error("Wrong output:", out)
-	}
-}
-
-func TestHasPrimaryKey(t *testing.T) {
-	t.Parallel()
-
-	var pkey *dbdrivers.PrimaryKey
-	if HasPrimaryKey(pkey) {
-		t.Errorf("1) Expected false, got true")
-	}
-
-	pkey = &dbdrivers.PrimaryKey{}
-	if HasPrimaryKey(pkey) {
-		t.Errorf("2) Expected false, got true")
-	}
-
-	pkey.Columns = append(pkey.Columns, "test")
-	if !HasPrimaryKey(pkey) {
-		t.Errorf("3) Expected true, got false")
-	}
-}
-
-func TestParamsPrimaryKey(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		Pkey   dbdrivers.PrimaryKey
-		Prefix string
-		Should string
-	}{
+	cols := []dbdrivers.Column{
 		{
-			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one"}},
-			Prefix: "o.", Should: "o.ColOne",
+			Name: "one",
+			Type: "int64",
 		},
 		{
-			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two"}},
-			Prefix: "o.", Should: "o.ColOne, o.ColTwo",
+			Name: "two",
+			Type: "string",
 		},
 		{
-			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two", "col_three"}},
-			Prefix: "o.", Should: "o.ColOne, o.ColTwo, o.ColThree",
+			Name: "three",
+			Type: "string",
 		},
 	}
 
-	for i, test := range tests {
-		r := ParamsPrimaryKey(test.Prefix, test.Pkey.Columns, true)
-		if r != test.Should {
-			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
-		}
+	sig := PrimaryKeyFuncSig(cols, []string{"one"})
+	if sig != "one int64" {
+		t.Error("wrong signature:", sig)
 	}
 
-	tests2 := []struct {
-		Pkey   dbdrivers.PrimaryKey
-		Prefix string
-		Should string
-	}{
-		{
-			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one"}},
-			Prefix: "o.", Should: "o.col_one",
-		},
-		{
-			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two"}},
-			Prefix: "o.", Should: "o.col_one, o.col_two",
-		},
-		{
-			Pkey:   dbdrivers.PrimaryKey{Columns: []string{"col_one", "col_two", "col_three"}},
-			Prefix: "o.", Should: "o.col_one, o.col_two, o.col_three",
-		},
-	}
-
-	for i, test := range tests2 {
-		r := ParamsPrimaryKey(test.Prefix, test.Pkey.Columns, false)
-		if r != test.Should {
-			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
-		}
+	sig = PrimaryKeyFuncSig(cols, []string{"one", "three"})
+	if sig != "one int64, three string" {
+		t.Error("wrong signature:", sig)
 	}
 }
 
@@ -443,6 +308,18 @@ func TestWherePrimaryKey(t *testing.T) {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}
 	}
+}
+
+func TestWherePrimaryKeyPanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Error("did not panic")
+		}
+	}()
+
+	WherePrimaryKey(nil, 0)
 }
 
 func TestFilterColumnsByDefault(t *testing.T) {
@@ -513,5 +390,24 @@ func TestFilterColumnsByAutoIncrement(t *testing.T) {
 	res = FilterColumnsByAutoIncrement([]dbdrivers.Column{})
 	if res != `` {
 		t.Errorf("Invalid result: %s", res)
+	}
+}
+
+func TestSubstring(t *testing.T) {
+	t.Parallel()
+
+	str := "hello"
+
+	if got := Substring(0, 5, str); got != "hello" {
+		t.Errorf("substring was wrong: %q", got)
+	}
+	if got := Substring(1, 4, str); got != "ell" {
+		t.Errorf("substring was wrong: %q", got)
+	}
+	if got := Substring(2, 3, str); got != "l" {
+		t.Errorf("substring was wrong: %q", got)
+	}
+	if got := Substring(5, 5, str); got != "" {
+		t.Errorf("substring was wrong: %q", got)
 	}
 }

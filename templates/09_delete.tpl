@@ -19,7 +19,7 @@ func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
 
   mods = append(mods,
     qm.Table("{{.Table.Name}}"),
-    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o." | join ", "}}),
+    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
   )
 
   query := NewQueryX(exec, mods...)
@@ -63,7 +63,7 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   var mods []qm.QueryMod
 
   args := o.inPrimaryKeyArgs()
-  in := boil.WherePrimaryKeyIn(len(o), {{.Table.PKey.Columns | join ", "}})
+  in := boil.WherePrimaryKeyIn(len(o), {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}})
 
   mods = append(mods,
     qm.Table("{{.Table.Name}}"),

@@ -1,10 +1,11 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-// {{$tableNameSingular}}Insert inserts a single record.
+// Insert a single record.
 func (o *{{$tableNameSingular}}) Insert(whitelist ... string) error {
   return o.InsertX(boil.GetDB(), whitelist...)
 }
 
+// InsertX a single record using an executor.
 func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... string) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
@@ -65,7 +66,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
     ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
     err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
   } else {
-    _, err = exec.Exec(ins, {{.Table.Columns | columnNames | prefixStringSlice "o." | join ", "}})
+    _, err = exec.Exec(ins, {{.Table.Columns | columnNames | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
   }
   {{end}}
 

@@ -120,7 +120,7 @@ func executeSingletonTemplates(e executeTemplateData) error {
 
 		fName := template.Name()
 		ext := filepath.Ext(fName)
-		fName = fName[0 : len(fName)-len(ext)]
+		fName = rgxRemove.ReplaceAllString(fName[:len(fName)-len(ext)], "")
 
 		imps := imports{
 			standard:   e.importNamedSet[fName].standard,
@@ -129,7 +129,7 @@ func executeSingletonTemplates(e executeTemplateData) error {
 
 		err = outHandler(
 			e.state.Config.OutFolder,
-			rgxRemove.ReplaceAllString(fName, "")+e.fileSuffix,
+			fName+e.fileSuffix,
 			e.state.Config.PkgName,
 			imps,
 			[][]byte{resp},

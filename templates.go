@@ -86,6 +86,10 @@ func loadTemplate(dir string, filename string) (*template.Template, error) {
 // templateStringMappers are placed into the data to make it easy to use the
 // stringMap function.
 var templateStringMappers = map[string]func(string) string{
+	// String ops
+	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+
+	// Pluralization
 	"singular": strmangle.Singular,
 	"plural":   strmangle.Plural,
 
@@ -104,6 +108,7 @@ var templateFunctions = template.FuncMap{
 	"substring": strmangle.Substring,
 	"remove":    func(rem string, str string) string { return strings.Replace(str, rem, "", -1) },
 	"prefix":    func(add string, str string) string { return fmt.Sprintf("%s%s", add, str) },
+	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
 
 	// Pluralization
 	"singular": strmangle.Singular,

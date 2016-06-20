@@ -9,14 +9,17 @@ func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
   return o.UpdateX(boil.GetDB(), whitelist...)
 }
 
+// UpdateX uses an executor to update the {{$tableNameSingular}}.
 func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... string) error {
-  return o.UpdateAtX(exec, {{.Table.PKey.Columns | prefixStringSlice "o." | stringMap .StringFuncs.titleCase | join ", "}}, whitelist...)
+  return o.UpdateAtX(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
 }
 
+// UpdateAt updates the {{$tableNameSingular}} using the primary key to find the row to update.
 func (o *{{$tableNameSingular}}) UpdateAt({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
   return o.UpdateAtX(boil.GetDB(), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}, whitelist...)
 }
 
+// UpdateAtX uses an executor to update the {{$tableNameSingular}} using the primary key to find the row to update.
 func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
   if err := o.doBeforeUpdateHooks(); err != nil {
     return err
@@ -36,8 +39,8 @@ func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncS
   var err error
   var query string
   if len(whitelist) != 0 {
-    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{.Table.PKey.Columns | join ", "}}))
-    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o." | join ", "}})
+    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}))
+    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
   } else {
     return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build a whitelist for row: %s", err)
   }

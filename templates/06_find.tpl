@@ -1,10 +1,9 @@
-{{- if hasPrimaryKey .Table.PKey -}}
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $dbName := singular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // {{$tableNameSingular}}Find retrieves a single record by ID.
 func {{$tableNameSingular}}Find({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-  return {{$tableNameSingular}}FindX(boil.GetDB(), {{camelCaseCommaList "" .Table.PKey.Columns}}, selectCols...)
+  return {{$tableNameSingular}}FindX(boil.GetDB(), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}, selectCols...)
 }
 
 func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
@@ -13,7 +12,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.
   mods := []qm.QueryMod{
     qm.Select(selectCols...),
     qm.Table("{{.Table.Name}}"),
-    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{camelCaseCommaList "" .Table.PKey.Columns}}),
+    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}),
   }
 
   q := NewQueryX(exec, mods...)
@@ -26,4 +25,3 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.
 
   return {{$varNameSingular}}, nil
 }
-{{- end -}}

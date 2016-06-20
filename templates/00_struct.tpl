@@ -1,4 +1,4 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $dbName := singular .Table.Name -}}
 // {{$tableNameSingular}} is an object representing the database table.
 type {{$tableNameSingular}} struct {

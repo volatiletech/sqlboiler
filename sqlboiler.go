@@ -78,6 +78,8 @@ func (s *State) Run(includeTests bool) error {
 		Tables:     s.Tables,
 		DriverName: s.Config.DriverName,
 		PkgName:    s.Config.PkgName,
+
+		StringFuncs: templateStringMappers,
 	}
 
 	if err := generateSingletonOutput(s, singletonData); err != nil {
@@ -103,6 +105,8 @@ func (s *State) Run(includeTests bool) error {
 			Table:      table,
 			DriverName: s.Config.DriverName,
 			PkgName:    s.Config.PkgName,
+
+			StringFuncs: templateStringMappers,
 		}
 
 		// Generate the regular templates

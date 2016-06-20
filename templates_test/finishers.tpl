@@ -1,8 +1,8 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $dbName := singular .Table.Name -}}
-{{- $tableNamePlural := titleCasePlural .Table.Name -}}
-{{- $varNamePlural := camelCasePlural .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
+{{- $varNamePlural := .Table.Name | plural | camelCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}Bind(t *testing.T) {
   var err error
 
@@ -19,7 +19,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
 
   j := {{$tableNameSingular}}{}
 
-  err = {{$tableNamePlural}}(qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{titleCaseCommaList "o." .Table.PKey.Columns}})).Bind(&j)
+  err = {{$tableNamePlural}}(qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o." | join ", "}})).Bind(&j)
   if err != nil {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} single object: %s", err)
   }
@@ -47,7 +47,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
   if err != nil {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} slice of objects: %s", err)
   }
-  
+
   if len(k) != 3 {
     t.Errorf("Expected 3 results, got %d", len(k))
   }

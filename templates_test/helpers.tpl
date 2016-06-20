@@ -1,8 +1,8 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $dbName := singular .Table.Name -}}
-{{- $tableNamePlural := titleCasePlural .Table.Name -}}
-{{- $varNamePlural := camelCasePlural .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
+{{- $varNamePlural := .Table.Name | plural | camelCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
   var err error
   var o {{$tableNameSingular}}

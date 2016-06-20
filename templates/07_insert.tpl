@@ -1,6 +1,5 @@
-{{- if hasPrimaryKey .Table.PKey -}}
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // {{$tableNameSingular}}Insert inserts a single record.
 func (o *{{$tableNameSingular}}) Insert(whitelist ... string) error {
   return o.InsertX(boil.GetDB(), whitelist...)
@@ -31,7 +30,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
 
   ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} (%s) VALUES (%s)`, strings.Join(wl, ","), boil.GenerateParamFlags(len(wl), 1))
 
-  {{if supportsResultObject .DriverName}}
+  {{if driverUsesLastInsertID .DriverName}}
   if len(returnColumns) != 0 {
     result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
     if err != nil {
@@ -66,7 +65,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
     ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
     err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
   } else {
-    _, err = exec.Exec(ins, {{insertParamVariables "o." .Table.Columns}})
+    _, err = exec.Exec(ins, {{.Table.Columns | columnNames | prefixStringSlice "o." | join ", "}})
   }
   {{end}}
 
@@ -84,4 +83,3 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
 
   return nil
 }
-{{- end -}}

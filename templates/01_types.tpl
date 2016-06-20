@@ -1,10 +1,10 @@
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 var (
-  {{$varNameSingular}}Columns = []string{{"{"}}{{columnsToStrings .Table.Columns | commaList}}{{"}"}}
+  {{$varNameSingular}}Columns = []string{{"{"}}{{.Table.Columns | columnNames | join ", "}}{{"}"}}
   {{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns false}}{{"}"}}
   {{$varNameSingular}}ColumnsWithDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns true}}{{"}"}}
-  {{$varNameSingular}}PrimaryKeyColumns = []string{{"{"}}{{commaList .Table.PKey.Columns}}{{"}"}}
+  {{$varNameSingular}}PrimaryKeyColumns = []string{{"{"}}{{.Table.PKey.Columns | join ", "}}{{"}"}}
   {{$varNameSingular}}AutoIncrementColumns = []string{{"{"}}{{filterColumnsByAutoIncrement .Table.Columns}}{{"}"}}
   {{$varNameSingular}}AutoIncPrimaryKey = "{{autoIncPrimaryKey .Table.Columns .Table.PKey}}"
 )

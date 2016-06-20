@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -17,6 +18,8 @@ type templateData struct {
 	Table      dbdrivers.Table
 	DriverName string
 	PkgName    string
+
+	StringFuncs map[string]func(string) string
 }
 
 type templateList []*template.Template
@@ -80,45 +83,53 @@ func loadTemplate(dir string, filename string) (*template.Template, error) {
 	return tpl.Lookup(filename), err
 }
 
+// templateStringMappers are placed into the data to make it easy to use the
+// stringMap function.
+var templateStringMappers = map[string]func(string) string{
+	"singular": strmangle.Singular,
+	"plural":   strmangle.Plural,
+
+	// Casing
+	"toLower":   strings.ToLower,
+	"toUpper":   strings.ToUpper,
+	"titleCase": strmangle.TitleCase,
+	"camelCase": strmangle.CamelCase,
+}
+
 // templateFunctions is a map of all the functions that get passed into the
 // templates. If you wish to pass a new function into your own template,
 // add a function pointer here.
 var templateFunctions = template.FuncMap{
-	"tolower":                      strings.ToLower,
-	"toupper":                      strings.ToUpper,
-	"substring":                    strmangle.Substring,
-	"singular":                     strmangle.Singular,
-	"plural":                       strmangle.Plural,
-	"titleCase":                    strmangle.TitleCase,
-	"titleCaseSingular":            strmangle.TitleCaseSingular,
-	"titleCasePlural":              strmangle.TitleCasePlural,
-	"titleCaseCommaList":           strmangle.TitleCaseCommaList,
-	"camelCase":                    strmangle.CamelCase,
-	"camelCaseSingular":            strmangle.CamelCaseSingular,
-	"camelCasePlural":              strmangle.CamelCasePlural,
-	"camelCaseCommaList":           strmangle.CamelCaseCommaList,
-	"columnsToStrings":             strmangle.ColumnsToStrings,
-	"commaList":                    strmangle.CommaList,
-	"makeDBName":                   strmangle.MakeDBName,
-	"selectParamNames":             strmangle.SelectParamNames,
-	"insertParamNames":             strmangle.InsertParamNames,
-	"insertParamFlags":             strmangle.InsertParamFlags,
-	"insertParamVariables":         strmangle.InsertParamVariables,
-	"scanParamNames":               strmangle.ScanParamNames,
-	"hasPrimaryKey":                strmangle.HasPrimaryKey,
-	"primaryKeyFuncSig":            strmangle.PrimaryKeyFuncSig,
-	"wherePrimaryKey":              strmangle.WherePrimaryKey,
-	"paramsPrimaryKey":             strmangle.ParamsPrimaryKey,
-	"primaryKeyFlagIndex":          strmangle.PrimaryKeyFlagIndex,
-	"updateParamNames":             strmangle.UpdateParamNames,
-	"updateParamVariables":         strmangle.UpdateParamVariables,
-	"supportsResultObject":         strmangle.SupportsResultObject,
+	// String ops
+	"substring": strmangle.Substring,
+	"remove":    func(rem string, str string) string { return strings.Replace(str, rem, "", -1) },
+	"prefix":    func(add string, str string) string { return fmt.Sprintf("%s%s", add, str) },
+
+	// Pluralization
+	"singular": strmangle.Singular,
+	"plural":   strmangle.Plural,
+
+	// Casing
+	"toLower":   strings.ToLower,
+	"toUpper":   strings.ToUpper,
+	"titleCase": strmangle.TitleCase,
+	"camelCase": strmangle.CamelCase,
+
+	// String Slice ops
+	"join":              func(sep string, slice []string) string { return strings.Join(slice, sep) },
+	"stringMap":         strmangle.StringMap,
+	"hasElement":        strmangle.HasElement,
+	"prefixStringSlice": strmangle.PrefixStringSlice,
+
+	// Database related mangling
+	"wherePrimaryKey": strmangle.WherePrimaryKey,
+
+	// dbdrivers ops
+	"driverUsesLastInsertID":       strmangle.DriverUsesLastInsertID,
 	"filterColumnsByDefault":       strmangle.FilterColumnsByDefault,
 	"filterColumnsByAutoIncrement": strmangle.FilterColumnsByAutoIncrement,
 	"autoIncPrimaryKey":            strmangle.AutoIncPrimaryKey,
-	"addID":                        strmangle.AddID,
-	"removeID":                     strmangle.RemoveID,
-
-	"randDBStruct":      strmangle.RandDBStruct,
-	"randDBStructSlice": strmangle.RandDBStructSlice,
+	"primaryKeyFuncSig":            strmangle.PrimaryKeyFuncSig,
+	"columnNames":                  strmangle.ColumnNames,
+	"makeDBName":                   strmangle.MakeDBName,
 }

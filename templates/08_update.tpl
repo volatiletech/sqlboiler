@@ -1,6 +1,5 @@
-{{if hasPrimaryKey .Table.PKey -}}
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // Update a single {{$tableNameSingular}} record. It takes a whitelist of
 // column_name's that should be updated. The primary key will be used to find
 // the record to update.
@@ -11,11 +10,11 @@ func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
 }
 
 func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... string) error {
-  return o.UpdateAtX(exec, {{titleCaseCommaList "o." .Table.PKey.Columns}}, whitelist...)
+  return o.UpdateAtX(exec, {{.Table.PKey.Columns | prefixStringSlice "o." | stringMap .StringFuncs.titleCase | join ", "}}, whitelist...)
 }
 
 func (o *{{$tableNameSingular}}) UpdateAt({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
-  return o.UpdateAtX(boil.GetDB(), {{camelCaseCommaList "" .Table.PKey.Columns}}, whitelist...)
+  return o.UpdateAtX(boil.GetDB(), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}, whitelist...)
 }
 
 func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
@@ -37,8 +36,8 @@ func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncS
   var err error
   var query string
   if len(whitelist) != 0 {
-    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{commaList .Table.PKey.Columns}}))
-    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{paramsPrimaryKey "o." .Table.PKey.Columns true}})
+    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{.Table.PKey.Columns | join ", "}}))
+    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o." | join ", "}})
   } else {
     return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build a whitelist for row: %s", err)
   }
@@ -68,4 +67,3 @@ func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
 
   return nil
 }
-{{- end}}

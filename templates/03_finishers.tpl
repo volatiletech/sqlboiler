@@ -1,5 +1,5 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // One returns a single {{$varNameSingular}} record from the query.
 func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
   o := &{{$tableNameSingular}}{}

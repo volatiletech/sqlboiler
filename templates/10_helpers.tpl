@@ -1,6 +1,5 @@
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
-{{- if hasPrimaryKey .Table.PKey -}}
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 func (o {{$tableNameSingular}}) inPrimaryKeyArgs() []interface{} {
   var args []interface{}
 
@@ -22,4 +21,3 @@ func (o {{$varNameSingular}}Slice) inPrimaryKeyArgs() []interface{} {
 
   return args
 }
-{{- end}}

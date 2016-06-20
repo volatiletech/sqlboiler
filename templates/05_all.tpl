@@ -1,6 +1,6 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $tableNamePlural := titleCasePlural .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // {{$tableNamePlural}}All retrieves all records.
 func {{$tableNamePlural}}(mods ...qm.QueryMod) {{$varNameSingular}}Query {
   return {{$tableNamePlural}}X(boil.GetDB(), mods...)

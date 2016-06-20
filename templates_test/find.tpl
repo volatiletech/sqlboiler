@@ -1,8 +1,8 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $dbName := singular .Table.Name -}}
-{{- $tableNamePlural := titleCasePlural .Table.Name -}}
-{{- $varNamePlural := camelCasePlural .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
+{{- $varNamePlural := .Table.Name | plural | camelCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}Find(t *testing.T) {
   var err error
 
@@ -22,17 +22,15 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
   j := make({{$varNameSingular}}Slice, 3)
   // Perform all Find queries and assign result objects to slice for comparison
   for i := 0; i < len(j); i++ {
-    j[i], err = {{$tableNameSingular}}Find({{titleCaseCommaList "o[i]." .Table.PKey.Columns}})
+    j[i], err = {{$tableNameSingular}}Find({{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o[i]." | join ", "}})
     {{$varNameSingular}}CompareVals(o[i], j[i], t)
   }
 
-  {{if hasPrimaryKey .Table.PKey}}
-  f, err := {{$tableNameSingular}}Find({{titleCaseCommaList "o[0]." .Table.PKey.Columns}}, {{$varNameSingular}}PrimaryKeyColumns...)
+  f, err := {{$tableNameSingular}}Find({{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o[0]." | join ", "}}, {{$varNameSingular}}PrimaryKeyColumns...)
   {{range $key, $value := .Table.PKey.Columns}}
   if o[0].{{titleCase $value}} != f.{{titleCase $value}} {
     t.Errorf("Expected primary key values to match, {{titleCase $value}} did not match")
   }
-  {{end}}
 
   colsWithoutPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
   fRef := reflect.ValueOf(f).Elem()

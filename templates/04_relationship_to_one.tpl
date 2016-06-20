@@ -1,13 +1,13 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $pkg := .PkgName -}}
-  {{- $localTable := titleCaseSingular .Table.Name -}}
+  {{- $localTable := .Table.Name | singular | titleCase -}}
   {{- range .Table.FKeys -}}
-    {{- $localColumn := .Column | removeID | titleCaseSingular -}}
-    {{- $foreignColumn := .Column | removeID | titleCaseSingular -}}
-    {{- $foreignTable := titleCaseSingular .ForeignTable -}}
-    {{- $varname := camelCaseSingular .ForeignTable -}}
-    {{- $receiver := $localTable | tolower | substring 0 1 -}}
+    {{- $localColumn := .Column | remove "_id" | singular | titleCase -}}
+    {{- $foreignColumn := .Column | remove "_id" | singular | titleCase -}}
+    {{- $foreignTable := .ForeignTable | singular | titleCase -}}
+    {{- $varname := .ForeignTable | singular | camelCase -}}
+    {{- $receiver := $localTable | toLower | substring 0 1 -}}
 // {{$foreignColumn}} fetches the {{$foreignTable}} pointed to by the foreign key.
 func ({{$receiver}} *{{$localTable}}) {{$foreignColumn}}(exec boil.Executor, selectCols ...string) (*{{$foreignTable}}, error) {
   {{$varname}} := &{{$foreignTable}}{}

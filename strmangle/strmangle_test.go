@@ -125,7 +125,7 @@ func TestColumnNames(t *testing.T) {
 	}
 }
 
-func TestDriverUsesResults(t *testing.T) {
+func TestDriverUsesLastInsertID(t *testing.T) {
 	t.Parallel()
 
 	if DriverUsesLastInsertID("postgres") {

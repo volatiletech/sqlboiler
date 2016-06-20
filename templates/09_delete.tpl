@@ -1,6 +1,5 @@
-{{if hasPrimaryKey .Table.PKey -}}
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // Delete deletes a single {{$tableNameSingular}} record.
 // Delete will match against the primary key column to find the record to delete.
 func (o *{{$tableNameSingular}}) Delete() error {
@@ -20,7 +19,7 @@ func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
 
   mods = append(mods,
     qm.Table("{{.Table.Name}}"),
-    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{paramsPrimaryKey "o." .Table.PKey.Columns true}}),
+    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | prefixStringSlice "o." | join ", "}}),
   )
 
   query := NewQueryX(exec, mods...)
@@ -64,7 +63,7 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   var mods []qm.QueryMod
 
   args := o.inPrimaryKeyArgs()
-  in := boil.WherePrimaryKeyIn(len(o), {{commaList .Table.PKey.Columns}})
+  in := boil.WherePrimaryKeyIn(len(o), {{.Table.PKey.Columns | join ", "}})
 
   mods = append(mods,
     qm.Table("{{.Table.Name}}"),
@@ -84,4 +83,3 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
 
   return nil
 }
-{{- end}}

@@ -1,5 +1,5 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}BeforeCreateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterCreateHooks []{{$tableNameSingular}}Hook

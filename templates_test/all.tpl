@@ -1,8 +1,8 @@
-{{- $tableNameSingular := titleCaseSingular .Table.Name -}}
+{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $dbName := singular .Table.Name -}}
-{{- $tableNamePlural := titleCasePlural .Table.Name -}}
-{{- $varNamePlural := camelCasePlural .Table.Name -}}
-{{- $varNameSingular := camelCaseSingular .Table.Name -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
+{{- $varNamePlural := .Table.Name | plural | camelCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, t *testing.T) {
   {{range $key, $value := .Table.Columns}}
   {{if eq $value.Type "null.Time"}}

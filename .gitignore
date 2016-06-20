@@ -1,3 +1,4 @@
 /sqlboiler
 /cmd/sqlboiler/sqlboiler
 sqlboiler.toml
+models/

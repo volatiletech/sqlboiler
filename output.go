@@ -2,13 +2,15 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"go/format"
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"text/template"
+
+	"github.com/pkg/errors"
 )
 
 var testHarnessStdout io.Writer = os.Stdout
@@ -108,6 +110,8 @@ func executeTemplates(e executeTemplateData) error {
 }
 
 func executeSingletonTemplates(e executeTemplateData) error {
+	rgxRemove := regexp.MustCompile(`[0-9]+_`)
+
 	for _, template := range e.templates {
 		resp, err := executeTemplate(template, e.data)
 		if err != nil {
@@ -125,7 +129,7 @@ func executeSingletonTemplates(e executeTemplateData) error {
 
 		err = outHandler(
 			e.state.Config.OutFolder,
-			fName+e.fileSuffix,
+			rgxRemove.ReplaceAllString(fName, "")+e.fileSuffix,
 			e.state.Config.PkgName,
 			imps,
 			[][]byte{resp},
@@ -200,12 +204,12 @@ func outHandler(outFolder string, fileName string, pkgName string, imps imports,
 func executeTemplate(t *template.Template, data *templateData) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to execute template")
 	}
 
 	output, err := format.Source(buf.Bytes())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to format template")
 	}
 
 	return output, nil

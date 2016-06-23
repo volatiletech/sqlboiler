@@ -127,14 +127,15 @@ var templateFunctions = template.FuncMap{
 	"prefixStringSlice": strmangle.PrefixStringSlice,
 
 	// Database related mangling
-	"wherePrimaryKey": strmangle.WherePrimaryKey,
+	"whereClause": strmangle.WhereClause,
 
 	// dbdrivers ops
 	"driverUsesLastInsertID":       strmangle.DriverUsesLastInsertID,
-	"filterColumnsByDefault":       strmangle.FilterColumnsByDefault,
-	"filterColumnsByAutoIncrement": strmangle.FilterColumnsByAutoIncrement,
-	"autoIncPrimaryKey":            strmangle.AutoIncPrimaryKey,
-	"primaryKeyFuncSig":            strmangle.PrimaryKeyFuncSig,
-	"columnNames":                  strmangle.ColumnNames,
 	"makeDBName":                   strmangle.MakeDBName,
+	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
+	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,
+	"autoIncPrimaryKey":            bdb.AutoIncPrimaryKey,
+	"sqlColDefinitions":            bdb.SQLColDefinitions,
+	"sqlColDefStrings":             bdb.SQLColDefStrings,
+	"columnNames":                  bdb.ColumnNames,
 }

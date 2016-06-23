@@ -20,7 +20,7 @@ func ColumnNames(cols []Column) []string {
 }
 
 // FilterColumnsByDefault generates the list of columns that have default values
-func FilterColumnsByDefault(columns []Column, defaults bool) []Column {
+func FilterColumnsByDefault(defaults bool, columns []Column) []Column {
 	var cols []Column
 
 	for _, c := range columns {

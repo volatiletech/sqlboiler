@@ -29,6 +29,7 @@ type SQLColumnDef struct {
 	Type string
 }
 
+// String for fmt.Stringer
 func (s SQLColumnDef) String() string {
 	return fmt.Sprintf("%s %s", s.Name, s.Type)
 }
@@ -51,11 +52,22 @@ func SQLColDefinitions(cols []Column, names []string) []SQLColumnDef {
 	return ret
 }
 
+// SQLColDefStrings turns SQLColumnDefs into strings.
+func SQLColDefStrings(defs []SQLColumnDef) []string {
+	strs := make([]string, len(defs))
+
+	for i, d := range defs {
+		strs[i] = d.String()
+	}
+
+	return strs
+}
+
 // AutoIncPrimaryKey returns the auto-increment primary key column name or an
 // empty string.
-func AutoIncPrimaryKey(cols []Column, pkey *PrimaryKey) (col Column, ok bool) {
+func AutoIncPrimaryKey(cols []Column, pkey *PrimaryKey) *Column {
 	if pkey == nil {
-		return col, false
+		return nil
 	}
 
 	for _, pkeyColumn := range pkey.Columns {
@@ -69,9 +81,9 @@ func AutoIncPrimaryKey(cols []Column, pkey *PrimaryKey) (col Column, ok bool) {
 				continue
 			}
 
-			return c, true
+			return &c
 		}
 	}
 
-	return col, false
+	return nil
 }

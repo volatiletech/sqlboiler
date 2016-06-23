@@ -30,7 +30,7 @@ func TestFilterColumnsByDefault(t *testing.T) {
 		{Name: "col4", Default: "things2"},
 	}
 
-	res := FilterColumnsByDefault(cols, false)
+	res := FilterColumnsByDefault(false, cols)
 	if res[0].Name != `col1` {
 		t.Errorf("Invalid result: %#v", res)
 	}
@@ -38,7 +38,7 @@ func TestFilterColumnsByDefault(t *testing.T) {
 		t.Errorf("Invalid result: %#v", res)
 	}
 
-	res = FilterColumnsByDefault(cols, true)
+	res = FilterColumnsByDefault(true, cols)
 	if res[0].Name != `col2` {
 		t.Errorf("Invalid result: %#v", res)
 	}
@@ -46,7 +46,7 @@ func TestFilterColumnsByDefault(t *testing.T) {
 		t.Errorf("Invalid result: %#v", res)
 	}
 
-	res = FilterColumnsByDefault([]Column{}, false)
+	res = FilterColumnsByDefault(false, []Column{})
 	if res != nil {
 		t.Errorf("Invalid result: %#v", res)
 	}

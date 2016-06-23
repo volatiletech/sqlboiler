@@ -2,17 +2,17 @@
 {{- $dbName := singular .Table.Name -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // {{$tableNameSingular}}Find retrieves a single record by ID.
-func {{$tableNameSingular}}Find({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
+func {{$tableNameSingular}}Find({{sqlColDefinitions .Table.Columns .Table.PKey.Columns | sqlColDefStrings | join " " }}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   return {{$tableNameSingular}}FindX(boil.GetDB(), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}, selectCols...)
 }
 
-func {{$tableNameSingular}}FindX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
+func {{$tableNameSingular}}FindX(exec boil.Executor, {{sqlColDefinitions .Table.Columns .Table.PKey.Columns | sqlColDefStrings | join " "}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
 
   mods := []qm.QueryMod{
     qm.Select(selectCols...),
     qm.Table("{{.Table.Name}}"),
-    qm.Where("{{wherePrimaryKey .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}),
+    qm.Where("{{whereClause .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}),
   }
 
   q := NewQueryX(exec, mods...)

@@ -15,12 +15,12 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
 }
 
 // UpdateAt updates the {{$tableNameSingular}} using the primary key to find the row to update.
-func (o *{{$tableNameSingular}}) UpdateAt({{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
+func (o *{{$tableNameSingular}}) UpdateAt({{sqlColDefinitions .Table.Columns .Table.PKey.Columns | sqlColDefStrings | join " "}}, whitelist ...string) error {
   return o.UpdateAtX(boil.GetDB(), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}, whitelist...)
 }
 
 // UpdateAtX uses an executor to update the {{$tableNameSingular}} using the primary key to find the row to update.
-func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{primaryKeyFuncSig .Table.Columns .Table.PKey.Columns}}, whitelist ...string) error {
+func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{sqlColDefinitions .Table.Columns .Table.PKey.Columns | sqlColDefStrings | join " "}}, whitelist ...string) error {
   if err := o.doBeforeUpdateHooks(); err != nil {
     return err
   }

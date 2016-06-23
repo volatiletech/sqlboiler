@@ -6,6 +6,7 @@ import (
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
+	"github.com/nullbio/sqlboiler/bdb"
 )
 
 // PostgresDriver holds the database connection string and a handle
@@ -76,8 +77,8 @@ func (p *PostgresDriver) TableNames() ([]string, error) {
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
-	var columns []Column
+func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
+	var columns []bdb.Column
 
 	rows, err := p.dbConn.Query(`
 	select column_name, data_type, column_default, is_nullable
@@ -102,7 +103,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 			colDefault = *defaultPtr
 		}
 
-		column := Column{
+		column := bdb.Column{
 			Name:       colName,
 			Type:       colType,
 			Default:    colDefault,
@@ -115,8 +116,8 @@ func (p *PostgresDriver) Columns(tableName string) ([]Column, error) {
 }
 
 // PrimaryKeyInfo looks up the primary key for a table.
-func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
-	pkey := &PrimaryKey{}
+func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
+	pkey := &bdb.PrimaryKey{}
 	var err error
 
 	query := `
@@ -164,8 +165,8 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
-func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) {
-	var fkeys []ForeignKey
+func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
+	var fkeys []bdb.ForeignKey
 
 	query := `
 	select
@@ -186,7 +187,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) 
 	}
 
 	for rows.Next() {
-		var fkey ForeignKey
+		var fkey bdb.ForeignKey
 		var sourceTable string
 
 		err = rows.Scan(&fkey.Name, &sourceTable, &fkey.Column, &fkey.ForeignTable, &fkey.ForeignColumn)
@@ -207,7 +208,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) 
 // TranslateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (p *PostgresDriver) TranslateColumnType(c Column) Column {
+func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	if c.IsNullable {
 		switch c.Type {
 		case "bigint", "bigserial":

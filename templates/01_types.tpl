@@ -2,11 +2,11 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 var (
   {{$varNameSingular}}Columns = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
-  {{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns false}}{{"}"}}
-  {{$varNameSingular}}ColumnsWithDefault = []string{{"{"}}{{filterColumnsByDefault .Table.Columns true}}{{"}"}}
+  {{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
+  {{$varNameSingular}}ColumnsWithDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
   {{$varNameSingular}}PrimaryKeyColumns = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
-  {{$varNameSingular}}AutoIncrementColumns = []string{{"{"}}{{filterColumnsByAutoIncrement .Table.Columns}}{{"}"}}
-  {{$varNameSingular}}AutoIncPrimaryKey = "{{autoIncPrimaryKey .Table.Columns .Table.PKey}}"
+  {{$varNameSingular}}AutoIncrementColumns = []string{{"{"}}{{.Table.Columns | filterColumnsByAutoIncrement | columnNames | stringMap .StringFuncs.quoteWrap | join "," }}{{"}"}}
+  {{$varNameSingular}}AutoIncPrimaryKey = "{{- with autoIncPrimaryKey .Table.Columns .Table.PKey -}}{{.Name}}{{- end -}}"
 )
 
 type (

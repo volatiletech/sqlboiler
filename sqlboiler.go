@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/nullbio/sqlboiler/bdb"
+	"github.com/nullbio/sqlboiler/bdb/drivers"
 	"github.com/pkg/errors"
 )
 
@@ -170,7 +171,7 @@ func (s *State) initDriver(driverName string) error {
 	// Create a driver based off driver flag
 	switch driverName {
 	case "postgres":
-		s.Driver = bdb.NewPostgresDriver(
+		s.Driver = drivers.NewPostgresDriver(
 			s.Config.Postgres.User,
 			s.Config.Postgres.Pass,
 			s.Config.Postgres.DBName,

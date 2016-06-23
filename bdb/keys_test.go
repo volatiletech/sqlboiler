@@ -31,6 +31,26 @@ func TestSQLColDefinitions(t *testing.T) {
 	}
 }
 
+func TestSQLDefStrings(t *testing.T) {
+	t.Parallel()
+
+	cols := []Column{
+		{Name: "one", Type: "int64"},
+		{Name: "two", Type: "string"},
+		{Name: "three", Type: "string"},
+	}
+
+	defs := SQLColDefinitions(cols, []string{"one", "three"})
+	strs := SQLColDefStrings(defs)
+
+	if got := strs[0]; got != "one int64" {
+		t.Error("wrong str:", got)
+	}
+	if got := strs[1]; got != "three string" {
+		t.Error("wrong str:", got)
+	}
+}
+
 func TestAutoIncPrimaryKey(t *testing.T) {
 	t.Parallel()
 
@@ -74,11 +94,10 @@ func TestAutoIncPrimaryKey(t *testing.T) {
 	}
 
 	for testName, test := range tests {
-		pkey, ok := AutoIncPrimaryKey(test.Columns, test.Pkey)
-		if ok != test.Ok {
+		pkey := AutoIncPrimaryKey(test.Columns, test.Pkey)
+		if ok := (pkey != nil); ok != test.Ok {
 			t.Errorf("%s) found state was wrong, want: %t, got: %t", testName, test.Ok, ok)
-		}
-		if pkey != test.Expect {
+		} else if test.Ok && *pkey != test.Expect {
 			t.Errorf("%s) wrong primary key, want: %#v, got %#v", testName, test.Expect, pkey)
 		}
 	}

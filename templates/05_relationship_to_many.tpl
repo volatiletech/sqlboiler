@@ -15,7 +15,7 @@
           {{- if eq $col $fkey.Column -}}
             {{- $col := $localTable -}}
           {{- end -}}
-func ({{$recv}} *{{$ltable}}) {{$fn}}
+//func ({{$recv}} *{{$ltable}}) {{$fn}}
 {{ end -}}
       {{- end -}}
     {{- end -}}

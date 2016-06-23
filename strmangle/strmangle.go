@@ -1,19 +1,15 @@
 // Package strmangle is used exclusively by the templates in sqlboiler.
-// There are many helper functions to deal with dbdrivers.* values as well
+// There are many helper functions to deal with bdb.* values as well
 // as string manipulation. Because it is focused on pipelining inside templates
 // you will see some odd parameter ordering.
 package strmangle
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/jinzhu/inflection"
-	"github.com/nullbio/sqlboiler/dbdrivers"
 )
-
-var rgxAutoIncColumn = regexp.MustCompile(`^nextval\(.*\)`)
 
 // Plural converts singular words to plural words (eg: person to people)
 func Plural(name string) string {
@@ -111,24 +107,6 @@ func PrefixStringSlice(str string, strs []string) []string {
 	return ret
 }
 
-// PrimaryKeyFuncSig generates the function signature parameters.
-// example: id int64, thingName string
-func PrimaryKeyFuncSig(cols []dbdrivers.Column, pkeyCols []string) string {
-	ret := make([]string, len(pkeyCols))
-
-	for i, pk := range pkeyCols {
-		for _, c := range cols {
-			if pk != c.Name {
-				continue
-			}
-
-			ret[i] = fmt.Sprintf("%s %s", CamelCase(pk), c.Type)
-		}
-	}
-
-	return strings.Join(ret, ", ")
-}
-
 // GenerateParamFlags generates the SQL statement parameter flags
 // For example, $1,$2,$3 etc. It will start counting at startAt.
 func GenerateParamFlags(colCount int, startAt int) string {
@@ -141,11 +119,11 @@ func GenerateParamFlags(colCount int, startAt int) string {
 	return strings.Join(cols, ",")
 }
 
-// WherePrimaryKey returns the where clause using start as the $ flag index
+// WhereClause returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func WherePrimaryKey(pkeyCols []string, start int) string {
+func WhereClause(pkeyCols []string, start int) string {
 	if start == 0 {
-		panic("0 is not a valid start number for wherePrimaryKey")
+		panic("0 is not a valid start number for whereClause")
 	}
 
 	cols := make([]string, len(pkeyCols))
@@ -154,41 +132,6 @@ func WherePrimaryKey(pkeyCols []string, start int) string {
 	}
 
 	return strings.Join(cols, " AND ")
-}
-
-// AutoIncPrimaryKey returns the auto-increment primary key column name or an
-// empty string.
-func AutoIncPrimaryKey(cols []dbdrivers.Column, pkey *dbdrivers.PrimaryKey) string {
-	if pkey == nil {
-		return ""
-	}
-
-	for _, pkeyColumn := range pkey.Columns {
-		for _, c := range cols {
-			if c.Name != pkeyColumn {
-				continue
-			}
-
-			if !rgxAutoIncColumn.MatchString(c.Default) || c.IsNullable ||
-				!(strings.HasPrefix(c.Type, "int") || strings.HasPrefix(c.Type, "uint")) {
-				continue
-			}
-
-			return pkeyColumn
-		}
-	}
-
-	return ""
-}
-
-// ColumnNames of the columns.
-func ColumnNames(cols []dbdrivers.Column) []string {
-	names := make([]string, len(cols))
-	for i, c := range cols {
-		names[i] = c.Name
-	}
-
-	return names
 }
 
 // DriverUsesLastInsertID returns whether the database driver supports the
@@ -200,32 +143,6 @@ func DriverUsesLastInsertID(driverName string) bool {
 	default:
 		return true
 	}
-}
-
-// FilterColumnsByDefault generates the list of columns that have default values
-func FilterColumnsByDefault(columns []dbdrivers.Column, defaults bool) string {
-	var cols []string
-
-	for _, c := range columns {
-		if (defaults && len(c.Default) != 0) || (!defaults && len(c.Default) == 0) {
-			cols = append(cols, fmt.Sprintf(`"%s"`, c.Name))
-		}
-	}
-
-	return strings.Join(cols, `,`)
-}
-
-// FilterColumnsByAutoIncrement generates the list of auto increment columns
-func FilterColumnsByAutoIncrement(columns []dbdrivers.Column) string {
-	var cols []string
-
-	for _, c := range columns {
-		if rgxAutoIncColumn.MatchString(c.Default) {
-			cols = append(cols, fmt.Sprintf(`"%s"`, c.Name))
-		}
-	}
-
-	return strings.Join(cols, `,`)
 }
 
 // Substring returns a substring of str starting at index start and going

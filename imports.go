@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/nullbio/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/bdb"
 )
 
 // imports defines the optional standard imports and
@@ -48,7 +48,7 @@ func combineImports(a, b imports) imports {
 	return c
 }
 
-func combineTypeImports(a imports, b map[string]imports, columns []dbdrivers.Column) imports {
+func combineTypeImports(a imports, b map[string]imports, columns []bdb.Column) imports {
 	tmpImp := imports{
 		standard:   make(importList, len(a.standard)),
 		thirdParty: make(importList, len(a.thirdParty)),

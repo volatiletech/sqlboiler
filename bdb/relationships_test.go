@@ -1,4 +1,4 @@
-package dbdrivers
+package bdb
 
 import "testing"
 
@@ -9,15 +9,15 @@ func TestToManyRelationships(t *testing.T) {
 		Table{
 			Name: "videos",
 			FKeys: []ForeignKey{
-				{Name: "videos_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignKey: "id"},
-				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignKey: "id"},
+				{Name: "videos_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id"},
+				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id"},
 			},
 		},
 		Table{
 			Name: "notifications",
 			FKeys: []ForeignKey{
-				{Name: "notifications_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignKey: "id"},
-				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignKey: "id"},
+				{Name: "notifications_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id"},
+				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id"},
 			},
 		},
 	}

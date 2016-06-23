@@ -3,127 +3,7 @@ package strmangle
 import (
 	"strings"
 	"testing"
-
-	"github.com/nullbio/sqlboiler/dbdrivers"
 )
-
-var testColumns = []dbdrivers.Column{
-	{Name: "friend_column", Type: "int", IsNullable: false},
-	{Name: "enemy_column_thing", Type: "string", IsNullable: true},
-}
-
-func TestAutoIncPrimaryKey(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		Expect  string
-		Pkey    *dbdrivers.PrimaryKey
-		Columns []dbdrivers.Column
-	}{
-		"nillcase": {
-			Expect:  "",
-			Pkey:    nil,
-			Columns: nil,
-		},
-		"easycase": {
-			Expect: "one",
-			Pkey: &dbdrivers.PrimaryKey{
-				Name:    "pkey",
-				Columns: []string{"one"},
-			},
-			Columns: []dbdrivers.Column{
-				dbdrivers.Column{
-					Name:       "one",
-					Type:       "int32",
-					IsNullable: false,
-					Default:    `nextval('abc'::regclass)`,
-				},
-			},
-		},
-		"missingcase": {
-			Expect: "",
-			Pkey: &dbdrivers.PrimaryKey{
-				Name:    "pkey",
-				Columns: []string{"two"},
-			},
-			Columns: []dbdrivers.Column{
-				dbdrivers.Column{
-					Name:       "one",
-					Type:       "int32",
-					IsNullable: false,
-					Default:    `nextval('abc'::regclass)`,
-				},
-			},
-		},
-		"wrongtype": {
-			Expect: "",
-			Pkey: &dbdrivers.PrimaryKey{
-				Name:    "pkey",
-				Columns: []string{"one"},
-			},
-			Columns: []dbdrivers.Column{
-				dbdrivers.Column{
-					Name:       "one",
-					Type:       "string",
-					IsNullable: false,
-					Default:    `nextval('abc'::regclass)`,
-				},
-			},
-		},
-		"nodefault": {
-			Expect: "",
-			Pkey: &dbdrivers.PrimaryKey{
-				Name:    "pkey",
-				Columns: []string{"one"},
-			},
-			Columns: []dbdrivers.Column{
-				dbdrivers.Column{
-					Name:       "one",
-					Type:       "string",
-					IsNullable: false,
-					Default:    ``,
-				},
-			},
-		},
-		"nullable": {
-			Expect: "",
-			Pkey: &dbdrivers.PrimaryKey{
-				Name:    "pkey",
-				Columns: []string{"one"},
-			},
-			Columns: []dbdrivers.Column{
-				dbdrivers.Column{
-					Name:       "one",
-					Type:       "string",
-					IsNullable: true,
-					Default:    `nextval('abc'::regclass)`,
-				},
-			},
-		},
-	}
-
-	for testName, test := range tests {
-		primaryKey := AutoIncPrimaryKey(test.Columns, test.Pkey)
-		if primaryKey != test.Expect {
-			t.Errorf("%s) wrong primary key, want: %q, got %q", testName, test.Expect, primaryKey)
-		}
-	}
-}
-
-func TestColumnNames(t *testing.T) {
-	t.Parallel()
-
-	cols := []dbdrivers.Column{
-		dbdrivers.Column{Name: "one"},
-		dbdrivers.Column{Name: "two"},
-		dbdrivers.Column{Name: "three"},
-	}
-
-	out := strings.Join(ColumnNames(cols), " ")
-	if out != "one two three" {
-		t.Error("output was wrong:", out)
-	}
-}
 
 func TestDriverUsesLastInsertID(t *testing.T) {
 	t.Parallel()
@@ -260,50 +140,21 @@ func TestPrefixStringSlice(t *testing.T) {
 	}
 }
 
-func TestPrimaryKeyFuncSig(t *testing.T) {
-	t.Parallel()
-
-	cols := []dbdrivers.Column{
-		{
-			Name: "one",
-			Type: "int64",
-		},
-		{
-			Name: "two",
-			Type: "string",
-		},
-		{
-			Name: "three",
-			Type: "string",
-		},
-	}
-
-	sig := PrimaryKeyFuncSig(cols, []string{"one"})
-	if sig != "one int64" {
-		t.Error("wrong signature:", sig)
-	}
-
-	sig = PrimaryKeyFuncSig(cols, []string{"one", "three"})
-	if sig != "one int64, three string" {
-		t.Error("wrong signature:", sig)
-	}
-}
-
-func TestWherePrimaryKey(t *testing.T) {
+func TestWhereClause(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		Pkey   dbdrivers.PrimaryKey
+		Cols   []string
 		Start  int
 		Should string
 	}{
-		{Pkey: dbdrivers.PrimaryKey{Columns: []string{"col1"}}, Start: 2, Should: "col1=$2"},
-		{Pkey: dbdrivers.PrimaryKey{Columns: []string{"col1", "col2"}}, Start: 4, Should: "col1=$4 AND col2=$5"},
-		{Pkey: dbdrivers.PrimaryKey{Columns: []string{"col1", "col2", "col3"}}, Start: 4, Should: "col1=$4 AND col2=$5 AND col3=$6"},
+		{Cols: []string{"col1"}, Start: 2, Should: "col1=$2"},
+		{Cols: []string{"col1", "col2"}, Start: 4, Should: "col1=$4 AND col2=$5"},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: "col1=$4 AND col2=$5 AND col3=$6"},
 	}
 
 	for i, test := range tests {
-		r := WherePrimaryKey(test.Pkey.Columns, test.Start)
+		r := WhereClause(test.Cols, test.Start)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}
@@ -319,78 +170,7 @@ func TestWherePrimaryKeyPanic(t *testing.T) {
 		}
 	}()
 
-	WherePrimaryKey(nil, 0)
-}
-
-func TestFilterColumnsByDefault(t *testing.T) {
-	t.Parallel()
-
-	cols := []dbdrivers.Column{
-		{
-			Name:    "col1",
-			Default: "",
-		},
-		{
-			Name:    "col2",
-			Default: "things",
-		},
-		{
-			Name:    "col3",
-			Default: "",
-		},
-		{
-			Name:    "col4",
-			Default: "things2",
-		},
-	}
-
-	res := FilterColumnsByDefault(cols, false)
-	if res != `"col1","col3"` {
-		t.Errorf("Invalid result: %s", res)
-	}
-
-	res = FilterColumnsByDefault(cols, true)
-	if res != `"col2","col4"` {
-		t.Errorf("Invalid result: %s", res)
-	}
-
-	res = FilterColumnsByDefault([]dbdrivers.Column{}, false)
-	if res != `` {
-		t.Errorf("Invalid result: %s", res)
-	}
-}
-
-func TestFilterColumnsByAutoIncrement(t *testing.T) {
-	t.Parallel()
-
-	cols := []dbdrivers.Column{
-		{
-			Name:    "col1",
-			Default: `nextval("thing"::thing)`,
-		},
-		{
-			Name:    "col2",
-			Default: "things",
-		},
-		{
-			Name:    "col3",
-			Default: "",
-		},
-		{
-			Name:    "col4",
-			Default: `nextval("thing"::thing)`,
-		},
-	}
-
-	res := FilterColumnsByAutoIncrement(cols)
-	if res != `"col1","col4"` {
-		t.Errorf("Invalid result: %s", res)
-	}
-
-	res = FilterColumnsByAutoIncrement([]dbdrivers.Column{})
-	if res != `` {
-		t.Errorf("Invalid result: %s", res)
-	}
+	WhereClause(nil, 0)
 }
 
 func TestSubstring(t *testing.T) {

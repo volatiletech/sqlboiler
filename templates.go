@@ -8,14 +8,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/nullbio/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/bdb"
 	"github.com/nullbio/sqlboiler/strmangle"
 )
 
 // templateData for sqlboiler templates
 type templateData struct {
-	Tables     []dbdrivers.Table
-	Table      dbdrivers.Table
+	Tables     []bdb.Table
+	Table      bdb.Table
 	DriverName string
 	PkgName    string
 

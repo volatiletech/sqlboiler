@@ -1,4 +1,4 @@
-package dbdrivers
+package bdb
 
 import (
 	"reflect"

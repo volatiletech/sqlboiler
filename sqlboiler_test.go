@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/nullbio/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/bdb"
 )
 
 var state *State
@@ -20,10 +20,10 @@ var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 func init() {
 	state = &State{
-		Tables: []dbdrivers.Table{
+		Tables: []bdb.Table{
 			{
 				Name: "patrick_table",
-				Columns: []dbdrivers.Column{
+				Columns: []bdb.Column{
 					{Name: "patrick_column", Type: "string", IsNullable: false},
 					{Name: "aaron_column", Type: "null.String", IsNullable: true},
 					{Name: "id", Type: "null.Int", IsNullable: true},
@@ -32,28 +32,28 @@ func init() {
 					{Name: "fun_time", Type: "time.Time", IsNullable: false},
 					{Name: "cool_stuff_forever", Type: "[]byte", IsNullable: false},
 				},
-				PKey: &dbdrivers.PrimaryKey{
+				PKey: &bdb.PrimaryKey{
 					Name:    "pkey_thing",
 					Columns: []string{"id", "fun_id"},
 				},
 			},
 			{
 				Name: "spiderman",
-				Columns: []dbdrivers.Column{
+				Columns: []bdb.Column{
 					{Name: "id", Type: "int64", IsNullable: false},
 				},
-				PKey: &dbdrivers.PrimaryKey{
+				PKey: &bdb.PrimaryKey{
 					Name:    "pkey_id",
 					Columns: []string{"id"},
 				},
 			},
 			{
 				Name: "spiderman_table_two",
-				Columns: []dbdrivers.Column{
+				Columns: []bdb.Column{
 					{Name: "id", Type: "int64", IsNullable: false},
 					{Name: "patrick", Type: "string", IsNullable: false},
 				},
-				PKey: &dbdrivers.PrimaryKey{
+				PKey: &bdb.PrimaryKey{
 					Name:    "pkey_id",
 					Columns: []string{"id"},
 				},

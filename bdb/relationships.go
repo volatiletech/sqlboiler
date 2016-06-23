@@ -1,10 +1,4 @@
-package dbdrivers
-
-import (
-	"fmt"
-
-	"github.com/nullbio/sqlboiler/strmangle"
-)
+package bdb
 
 // ToManyRelationship describes a relationship between two tables where the
 // local table has no id, and the foreign table has an id that matches a column
@@ -30,19 +24,19 @@ func ToManyRelationships(table string, tables []Table) []ToManyRelationship {
 				continue
 			}
 
-			singularName := strmangle.Singular(table)
-			standardColName := fmt.Sprintf("%s_id", singularName)
+			// singularName := strmangle.Singular(table)
+			// standardColName := fmt.Sprintf("%s_id", singularName)
 
 			relationship := ToManyRelationship{
 				ForeignTable:  t.Name,
 				ForeignColumn: f.Column,
 			}
 
-			if standardColName == f.ForeignColumn {
-				relationship.Name = strmangle.TitleCase(strmangle.Plural(name))
-			} else {
-				relationship.Name = strmangle.TitleCase(strmangle.Plural(name))
-			}
+			// if standardColName == f.ForeignColumn {
+			// 	relationship.Name = table
+			// } else {
+			// 	relationship.Name = table
+			// }
 
 			relationships = append(relationships, relationship)
 		}

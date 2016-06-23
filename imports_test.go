@@ -6,7 +6,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/nullbio/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/bdb"
 )
 
 func TestImportsSort(t *testing.T) {
@@ -77,17 +77,17 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 	}
 
-	cols := []dbdrivers.Column{
-		dbdrivers.Column{
+	cols := []bdb.Column{
+		bdb.Column{
 			Type: "null.Time",
 		},
-		dbdrivers.Column{
+		bdb.Column{
 			Type: "null.Time",
 		},
-		dbdrivers.Column{
+		bdb.Column{
 			Type: "time.Time",
 		},
-		dbdrivers.Column{
+		bdb.Column{
 			Type: "null.Float",
 		},
 	}

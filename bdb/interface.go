@@ -1,4 +1,5 @@
-package dbdrivers
+// Package bdb supplies the sql(b)oiler (d)ata(b)ase abstractions.
+package bdb
 
 import "github.com/pkg/errors"
 
@@ -18,41 +19,6 @@ type Interface interface {
 
 	// Close the database connection
 	Close()
-}
-
-// Table metadata from the database schema.
-type Table struct {
-	Name    string
-	Columns []Column
-
-	PKey  *PrimaryKey
-	FKeys []ForeignKey
-
-	IsJoinTable bool
-}
-
-// Column holds information about a database column.
-// Types are Go types, converted by TranslateColumnType.
-type Column struct {
-	Name       string
-	Type       string
-	Default    string
-	IsNullable bool
-}
-
-// PrimaryKey represents a primary key constraint in a database
-type PrimaryKey struct {
-	Name    string
-	Columns []string
-}
-
-// ForeignKey represents a foreign key constraint in a database
-type ForeignKey struct {
-	Name   string
-	Column string
-
-	ForeignTable  string
-	ForeignColumn string
 }
 
 // Tables returns the table metadata for the given tables, or all tables if
@@ -94,7 +60,7 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 }
 
 // setIsJoinTable iff there are:
-// There is a composite primary key involving two columns
+// A composite primary key involving two columns
 // Both primary key columns are also foreign keys
 func setIsJoinTable(t *Table) {
 	if t.PKey == nil || len(t.PKey.Columns) != 2 || len(t.FKeys) < 2 {

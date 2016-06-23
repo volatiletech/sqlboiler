@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/nullbio/sqlboiler/dbdrivers"
+	"github.com/nullbio/sqlboiler/bdb"
 	"github.com/pkg/errors"
 )
 
@@ -26,8 +26,8 @@ const (
 type State struct {
 	Config *Config
 
-	Driver dbdrivers.Interface
-	Tables []dbdrivers.Table
+	Driver bdb.Interface
+	Tables []bdb.Table
 
 	Templates              templateList
 	TestTemplates          templateList
@@ -170,7 +170,7 @@ func (s *State) initDriver(driverName string) error {
 	// Create a driver based off driver flag
 	switch driverName {
 	case "postgres":
-		s.Driver = dbdrivers.NewPostgresDriver(
+		s.Driver = bdb.NewPostgresDriver(
 			s.Config.Postgres.User,
 			s.Config.Postgres.Pass,
 			s.Config.Postgres.DBName,
@@ -192,7 +192,7 @@ func (s *State) initDriver(driverName string) error {
 // result.
 func (s *State) initTables(tableNames []string) error {
 	var err error
-	s.Tables, err = dbdrivers.Tables(s.Driver, tableNames...)
+	s.Tables, err = bdb.Tables(s.Driver, tableNames...)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}
@@ -214,7 +214,7 @@ func (s *State) initOutFolder() error {
 }
 
 // checkPKeys ensures every table has a primary key column
-func checkPKeys(tables []dbdrivers.Table) error {
+func checkPKeys(tables []bdb.Table) error {
 	var missingPkey []string
 	for _, t := range tables {
 		if t.PKey == nil {

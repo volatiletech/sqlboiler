@@ -102,6 +102,7 @@ func (s *State) Run(includeTests bool) error {
 		}
 
 		data := &templateData{
+			Tables:     s.Tables,
 			Table:      table,
 			DriverName: s.Config.DriverName,
 			PkgName:    s.Config.PkgName,

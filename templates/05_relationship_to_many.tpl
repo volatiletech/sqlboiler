@@ -1,25 +1,57 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-  {{- $pkg := .PkgName -}}
-  {{- $localTable := .Table.Name -}}
-  {{- $ltable := .Table.Name | singular | titleCase -}}
-  {{- range $table := .Tables -}}
-    {{- if eq $table.Name $localTable -}}
+  {{- $dot := . }}
+  {{- $table := .Table }}
+  {{- $localTableSing := .Table.Name | singular -}}
+  {{- $localTable := $localTableSing | titleCase -}}
+  {{- $colName := $localTableSing | printf "%s_id" -}}
+  {{- $receiver := .Table.Name | toLower | substring 0 1 -}}
+  {{- range toManyRelationships .Table.Name .Tables -}}
+    {{- $foreignTableSing := .ForeignTable | singular}}
+    {{- $foreignTable := $foreignTableSing | titleCase}}
+    {{- $foreignSlice := $foreignTableSing | camelCase | printf "%sSlice"}}
+    {{- $foreignTableHumanReadable := .ForeignTable | replace "_" " " -}}
+    {{- $foreignPluralNoun := .ForeignTable | plural | titleCase -}}
+    {{- $isNormal := eq $colName .ForeignColumn -}}
+
+    {{- if $isNormal -}}
+// {{$foreignPluralNoun}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}}.
+func ({{$receiver}} *{{$localTable}}) {{$foreignPluralNoun}}(
+
     {{- else -}}
-      {{ range $fkey := .FKeys -}}
-        {{- if eq $localTable $fkey.ForeignTable -}}
-          {{- $ftable := $table.Name | plural | titleCase -}}
-          {{- $recv := $localTable | substring 0 1 | toLower -}}
-          {{- $fn := $ftable -}}
-          {{- $col := $localTable | singular | printf "%s_id" -}}
-          {{- if eq $col $fkey.Column -}}
-            {{- $col := $localTable -}}
-          {{- end -}}
-//func ({{$recv}} *{{$ltable}}) {{$fn}}
-{{ end -}}
-      {{- end -}}
+      {{- $fnName := .ForeignColumn | remove "_id" | titleCase | printf "%[2]s%[1]s" $foreignPluralNoun -}}
+// {{$fnName}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}} via {{.ForeignColumn}} column.
+func ({{$receiver}} *{{$localTable}}) {{$fnName}}(
     {{- end -}}
-  {{- end -}}
+
+exec boil.Executor, selectCols ...string) ({{$foreignSlice}}, error) {
+  var ret {{$foreignSlice}}
+
+  query := fmt.Sprintf(`select "%s" from {{.ForeignTable}} where "{{.ForeignColumn}}"=$1`, strings.Join(selectCols, `","`))
+  rows, err := exec.Query(query, {{.Column | titleCase | printf "%s.%s" $receiver }})
+  if err != nil {
+    return nil, fmt.Errorf(`{{$dot.PkgName}}: unable to select from {{.ForeignTable}}: %v`, err)
+  }
+  defer rows.Close()
+
+  for rows.Next() {
+    next := new({{$foreignTable}})
+
+    err = rows.Scan(boil.GetStructPointers(next, selectCols...)...)
+    if err != nil {
+      return nil, fmt.Errorf(`{{$dot.PkgName}}: unable to scan into {{$foreignTable}}: %v`, err)
+    }
+
+    ret = append(ret, next)
+  }
+
+  if err = rows.Err(); err != nil {
+    return nil, fmt.Errorf(`{{$dot.PkgName}}: unable to select from {{.ForeignTable}}: %v`, err)
+  }
+
+  return ret, nil
+}
+{{end -}}
 {{- end -}}
 {{/*
 // Challengee fetches the Video pointed to by the foreign key.

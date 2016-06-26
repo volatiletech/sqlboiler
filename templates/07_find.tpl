@@ -12,7 +12,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{sqlColDefinitions .Table.
   mods := []qm.QueryMod{
     qm.Select(selectCols...),
     qm.Table("{{.Table.Name}}"),
-    qm.Where("{{whereClause .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}),
+    qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}),
   }
 
   q := NewQueryX(exec, mods...)

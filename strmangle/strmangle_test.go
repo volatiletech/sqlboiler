@@ -148,9 +148,9 @@ func TestWhereClause(t *testing.T) {
 		Start  int
 		Should string
 	}{
-		{Cols: []string{"col1"}, Start: 2, Should: "col1=$2"},
-		{Cols: []string{"col1", "col2"}, Start: 4, Should: "col1=$4 AND col2=$5"},
-		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: "col1=$4 AND col2=$5 AND col3=$6"},
+		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
+		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5`},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5 AND "col3"=$6`},
 	}
 
 	for i, test := range tests {

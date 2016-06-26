@@ -4,7 +4,7 @@ package bdb
 // local table has no id, and the foreign table has an id that matches a column
 // in the local table.
 type ToManyRelationship struct {
-	Name          string
+	Column        string
 	ForeignTable  string
 	ForeignColumn string
 }
@@ -28,6 +28,7 @@ func ToManyRelationships(table string, tables []Table) []ToManyRelationship {
 			// standardColName := fmt.Sprintf("%s_id", singularName)
 
 			relationship := ToManyRelationship{
+				Column:        f.ForeignColumn,
 				ForeignTable:  t.Name,
 				ForeignColumn: f.Column,
 			}

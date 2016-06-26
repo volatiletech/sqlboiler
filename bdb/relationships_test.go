@@ -24,8 +24,8 @@ func TestToManyRelationships(t *testing.T) {
 
 	relationships := ToManyRelationships("users", tables)
 	r := relationships[0]
-	if r.Name != "Videos" {
-		t.Error("wrong name:", r.Name)
+	if r.Column != "id" {
+		t.Error("wrong local column:", r.Column)
 	}
 	if r.ForeignTable != "videos" {
 		t.Error("wrong foreign table:", r.ForeignTable)

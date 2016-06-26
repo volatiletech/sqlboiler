@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"go/format"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -199,6 +201,8 @@ func outHandler(outFolder string, fileName string, pkgName string, imps imports,
 	return nil
 }
 
+var rgxSyntaxError = regexp.MustCompile(`(\d+):\d+: `)
+
 // executeTemplate takes a template and returns the output of the template
 // execution.
 func executeTemplate(t *template.Template, data *templateData) ([]byte, error) {
@@ -209,7 +213,31 @@ func executeTemplate(t *template.Template, data *templateData) ([]byte, error) {
 
 	output, err := format.Source(buf.Bytes())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to format template")
+		matches := rgxSyntaxError.FindStringSubmatch(err.Error())
+		if matches == nil {
+			return nil, errors.Wrap(err, "failed to format template")
+		}
+
+		lineNum, _ := strconv.Atoi(matches[1])
+		scanner := bufio.NewScanner(&buf)
+		errBuf := &bytes.Buffer{}
+		line := 0
+		for ; scanner.Scan(); line++ {
+			if delta := line - lineNum; delta < -5 || delta > 5 {
+				fmt.Println(delta)
+				continue
+			}
+
+			if line == lineNum {
+				errBuf.WriteString(">>> ")
+			} else {
+				fmt.Fprintf(errBuf, "% 3d ", line)
+			}
+			errBuf.Write(scanner.Bytes())
+			errBuf.WriteByte('\n')
+		}
+
+		return nil, errors.Wrapf(err, "failed to format template\n\n%s\n", errBuf.Bytes())
 	}
 
 	return output, nil

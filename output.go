@@ -224,7 +224,6 @@ func executeTemplate(t *template.Template, data *templateData) ([]byte, error) {
 		line := 0
 		for ; scanner.Scan(); line++ {
 			if delta := line - lineNum; delta < -5 || delta > 5 {
-				fmt.Println(delta)
 				continue
 			}
 

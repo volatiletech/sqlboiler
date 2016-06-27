@@ -54,7 +54,7 @@ func (p *PostgresDriver) TableNames() ([]string, error) {
 
 	rows, err := p.dbConn.Query(`
 		select table_name from information_schema.tables
-		where table_schema='public' and table_name not like '%migrations%'
+		where table_schema = 'public' and table_name not like '%migrations%'
 	`)
 
 	if err != nil {
@@ -82,7 +82,8 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 
 	rows, err := p.dbConn.Query(`
 	select column_name, data_type, column_default, is_nullable
-	from information_schema.columns where table_name=$1
+	from information_schema.columns
+	where table_name=$1 and table_schema = 'public'
 	`, tableName)
 
 	if err != nil {
@@ -123,7 +124,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 	query := `
 	select tc.constraint_name
 	from information_schema.table_constraints as tc
-	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY';`
+	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY' and tc.table_schema = 'public';`
 
 	row := p.dbConn.QueryRow(query, tableName)
 	if err = row.Scan(&pkey.Name); err != nil {
@@ -136,7 +137,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  constraint_name = $1;`
+	where  constraint_name = $1 and table_schema = 'public';`
 
 	var rows *sql.Rows
 	if rows, err = p.dbConn.Query(queryColumns, pkey.Name); err != nil {
@@ -178,7 +179,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 	from information_schema.table_constraints as tc
 		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
 		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
-	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY';`
+	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'information_schema';`
 
 	var rows *sql.Rows
 	var err error

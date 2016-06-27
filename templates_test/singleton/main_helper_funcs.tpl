@@ -16,7 +16,7 @@ func InitViper() error {
 	} else {
     wd = wd + "/.."
   }
-fmt.Println(wd)
+
 	configPaths := []string{wd}
 	if len(configHome) > 0 {
 		configPaths = append(configPaths, filepath.Join(configHome, "sqlboiler"))

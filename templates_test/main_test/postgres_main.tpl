@@ -10,11 +10,6 @@ type Config struct {
 	Postgres PostgresCfg `toml:"postgres"`
 }
 
-var cfg *Config
-var testCfg *Config
-
-var dbConn *sql.DB
-
 func TestMain(m *testing.M) {
 	// Set the DebugMode to true so we can see generated sql statements
 	boil.DebugMode = true
@@ -106,39 +101,36 @@ func DBConnect(user, pass, dbname, host string, port int) (*sql.DB, error) {
 		return sql.Open("postgres", connStr)
 }
 
-func LoadConfigFile(filename string) error {
-	_, err := toml.DecodeFile(filename, &cfg)
-
-	if os.IsNotExist(err) {
-		return fmt.Errorf("Failed to find the toml configuration file %s: %s", filename, err)
-	}
-
-	if err != nil {
-		return fmt.Errorf("Failed to decode toml configuration file: %s", err)
-	}
-
-	return nil
-}
-
 // setup dumps the database schema and imports it into a temporary randomly
 // generated test database so that tests can be run against it using the
 // generated sqlboiler ORM package.
 func setup() error {
-	// Load the config file in the parent directory.
-  err := LoadConfigFile("../sqlboiler.toml")
+	var err error
+
+	// Initialize Viper and load the config file
+	err = InitViper()
 	if err != nil {
 		return fmt.Errorf("Unable to load config file: %s", err)
 	}
 
-	testDBName := getDBNameHash(cfg.Postgres.DBName)
-
 	// Create a randomized test configuration object.
-	testCfg = &Config{}
-	testCfg.Postgres.Host = cfg.Postgres.Host
-	testCfg.Postgres.Port = cfg.Postgres.Port
-	testCfg.Postgres.User = cfg.Postgres.User
-	testCfg.Postgres.Pass = cfg.Postgres.Pass
-	testCfg.Postgres.DBName = testDBName
+	testCfg.Postgres.Host = viper.GetString("postgres.host")
+	testCfg.Postgres.Port = viper.GetInt("postgres.port")
+	testCfg.Postgres.User = viper.GetString("postgres.user")
+	testCfg.Postgres.Pass = viper.GetString("postgres.pass")
+	testCfg.Postgres.DBName = getDBNameHash(viper.GetString("postgres.dbname"))
+
+	err = vala.BeginValidation().Validate(
+		vala.StringNotEmpty(testCfg.Postgres.User, "postgres.user"),
+		vala.StringNotEmpty(testCfg.Postgres.Pass, "postgres.pass"),
+		vala.StringNotEmpty(testCfg.Postgres.Host, "postgres.host"),
+		vala.Not(vala.Equals(testCfg.Postgres.Port, 0, "postgres.port")),
+		vala.StringNotEmpty(testCfg.Postgres.DBName, "postgres.dbname"),
+	).Check()
+
+	if err != nil {
+		return fmt.Errorf("Unable to load testCfg: %s", err.Error())
+	}
 
 	err = dropTestDB()
 	if err != nil {
@@ -160,11 +152,11 @@ func setup() error {
 
 	// Write the postgres user password to a tmp file for pg_dump
 	pwBytes := []byte(fmt.Sprintf("%s:%d:%s:%s:%s",
-		cfg.Postgres.Host,
-		cfg.Postgres.Port,
-		cfg.Postgres.DBName,
-		cfg.Postgres.User,
-		cfg.Postgres.Pass,
+		viper.GetString("postgres.host"),
+		viper.GetInt("postgres.port"),
+		viper.GetString("postgres.dbname"),
+		viper.GetString("postgres.user"),
+		viper.GetString("postgres.pass"),
 	))
 
 	passFilePath := passDir + "/pwfile"
@@ -176,11 +168,11 @@ func setup() error {
 
 	// The params for the pg_dump command to dump the database schema
 	params := []string{
-		fmt.Sprintf(`--host=%s`, cfg.Postgres.Host),
-		fmt.Sprintf(`--port=%d`, cfg.Postgres.Port),
-		fmt.Sprintf(`--username=%s`, cfg.Postgres.User),
+		fmt.Sprintf(`--host=%s`, viper.GetString("postgres.host")),
+		fmt.Sprintf(`--port=%d`, viper.GetInt("postgres.port")),
+		fmt.Sprintf(`--username=%s`, viper.GetString("postgres.user")),
 		"--schema-only",
-		cfg.Postgres.DBName,
+		viper.GetString("postgres.dbname"),
 	}
 
 	// Dump the database schema into the sqlboilerschema tmp file
@@ -194,7 +186,13 @@ func setup() error {
 		fmt.Printf("pg_dump exec failed: %s\n\n%s\n", err, errBuf.String())
 	}
 
-	dbConn, err = DBConnect(cfg.Postgres.User, cfg.Postgres.Pass, cfg.Postgres.DBName, cfg.Postgres.Host, cfg.Postgres.Port)
+	dbConn, err = DBConnect(
+		viper.GetString("postgres.user"),
+		viper.GetString("postgres.pass"),
+		viper.GetString("postgres.dbname"),
+		viper.GetString("postgres.host"),
+		viper.GetInt("postgres.port"),
+	)
 	if err != nil {
 		return err
 	}

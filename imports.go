@@ -175,6 +175,17 @@ var defaultTestTemplateImports = imports{
 }
 
 var defaultSingletonTestTemplateImports = map[string]imports{
+	"main_helper_funcs": imports{
+		standard: importList{
+			`"database/sql"`,
+			`"os"`,
+			`"fmt"`,
+			`"path/filepath"`,
+		},
+		thirdParty: importList{
+			`"github.com/spf13/viper"`,
+		},
+	},
 	"helper_funcs": imports{
 		standard: importList{
 			`"crypto/md5"`,
@@ -203,8 +214,9 @@ var defaultTestMainImports = map[string]imports{
 		},
 		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
-			`"github.com/BurntSushi/toml"`,
 			`_ "github.com/lib/pq"`,
+			`"github.com/spf13/viper"`,
+			`"github.com/kat-co/vala"`,
 		},
 	},
 }

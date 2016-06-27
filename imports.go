@@ -179,7 +179,6 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 		standard: importList{
 			`"database/sql"`,
 			`"os"`,
-			`"fmt"`,
 			`"path/filepath"`,
 		},
 		thirdParty: importList{

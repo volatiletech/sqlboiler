@@ -7,6 +7,7 @@ type ToManyRelationship struct {
 	Column        string
 	ForeignTable  string
 	ForeignColumn string
+	ToJoinTable   bool
 }
 
 // ToManyRelationships relationship lookups
@@ -24,20 +25,12 @@ func ToManyRelationships(table string, tables []Table) []ToManyRelationship {
 				continue
 			}
 
-			// singularName := strmangle.Singular(table)
-			// standardColName := fmt.Sprintf("%s_id", singularName)
-
 			relationship := ToManyRelationship{
 				Column:        f.ForeignColumn,
 				ForeignTable:  t.Name,
 				ForeignColumn: f.Column,
+				ToJoinTable:   t.IsJoinTable,
 			}
-
-			// if standardColName == f.ForeignColumn {
-			// 	relationship.Name = table
-			// } else {
-			// 	relationship.Name = table
-			// }
 
 			relationships = append(relationships, relationship)
 		}

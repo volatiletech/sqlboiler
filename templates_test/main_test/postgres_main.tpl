@@ -10,30 +10,35 @@ type Config struct {
 	Postgres PostgresCfg `toml:"postgres"`
 }
 
+var (
+	cfg *Config
+	testCfg *Config
+	dbConn *sql.DB
+)
+
 func TestMain(m *testing.M) {
-	// Set the DebugMode to true so we can see generated sql statements
+	rand.Seed(time.Now().UnixNano())
+
+	// Set DebugMode so we can see generated sql statements
 	boil.DebugMode = true
 
-	rand.Seed(time.Now().UnixNano())
 	var err error
-
-  err = setup()
-	if err != nil {
-		fmt.Printf("Unable to execute setup: %s", err)
-		os.Exit(-1)
+	if err = setup(); err != nil {
+		fmt.Println("Unable to execute setup:", err)
+		os.Exit(-2)
 	}
 
-	err = disableTriggers()
-	if err != nil {
-		fmt.Printf("Unable to disable triggers: %s", err)
+	var code int
+	if err = disableTriggers(); err != nil {
+		fmt.Println("Unable to disable triggers:", err)
+	} else {
+		boil.SetDB(dbConn)
+	  code = m.Run()
 	}
-	boil.SetDB(dbConn)
-  code := m.Run()
 
-	err = teardown()
-	if err != nil {
-		fmt.Printf("Unable to execute teardown: %s", err)
-		os.Exit(-1)
+	if err = teardown(); err != nil {
+		fmt.Println("Unable to execute teardown:", err)
+		os.Exit(-3)
 	}
 
   os.Exit(code)
@@ -184,6 +189,7 @@ func setup() error {
 
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("pg_dump exec failed: %s\n\n%s\n", err, errBuf.String())
+		return err
 	}
 
 	dbConn, err = DBConnect(

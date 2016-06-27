@@ -10,12 +10,6 @@ type Config struct {
 	Postgres PostgresCfg `toml:"postgres"`
 }
 
-var (
-	cfg *Config
-	testCfg *Config
-	dbConn *sql.DB
-)
-
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 

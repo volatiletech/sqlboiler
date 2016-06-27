@@ -1,6 +1,7 @@
-var testCfg *Config
-
-var dbConn *sql.DB
+var (
+  testCfg *Config
+  dbConn *sql.DB
+)
 
 func InitViper() error {
   var err error
@@ -16,7 +17,7 @@ func InitViper() error {
 	} else {
     wd = wd + "/.."
   }
-fmt.Println(wd)
+  fmt.Println(wd)
 	configPaths := []string{wd}
 	if len(configHome) > 0 {
 		configPaths = append(configPaths, filepath.Join(configHome, "sqlboiler"))

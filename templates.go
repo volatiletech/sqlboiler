@@ -123,6 +123,7 @@ var templateFunctions = template.FuncMap{
 
 	// String Slice ops
 	"join":              func(sep string, slice []string) string { return strings.Join(slice, sep) },
+	"joinSlices":        strmangle.JoinSlices,
 	"stringMap":         strmangle.StringMap,
 	"hasElement":        strmangle.HasElement,
 	"prefixStringSlice": strmangle.PrefixStringSlice,

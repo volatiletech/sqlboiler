@@ -84,6 +84,11 @@ type executeTemplateData struct {
 }
 
 func executeTemplates(e executeTemplateData) error {
+	if e.data.Table.IsJoinTable {
+		return nil
+	}
+	fmt.Println(e.data.Table.Name, e.data.Table.IsJoinTable)
+
 	var out [][]byte
 	var imps imports
 
@@ -112,6 +117,11 @@ func executeTemplates(e executeTemplateData) error {
 }
 
 func executeSingletonTemplates(e executeTemplateData) error {
+	if e.data.Table.IsJoinTable {
+		return nil
+	}
+	fmt.Println(e.data.Table.Name, e.data.Table.IsJoinTable)
+
 	rgxRemove := regexp.MustCompile(`[0-9]+_`)
 
 	for _, template := range e.templates {

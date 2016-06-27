@@ -191,3 +191,32 @@ func TestSubstring(t *testing.T) {
 		t.Errorf("substring was wrong: %q", got)
 	}
 }
+
+func TestJoinSlices(t *testing.T) {
+	t.Parallel()
+
+	ret := JoinSlices("", nil, nil)
+	if ret != nil {
+		t.Error("want nil, got:", ret)
+	}
+
+	ret = JoinSlices(" ", []string{"one", "two"}, []string{"three", "four"})
+	if got := ret[0]; got != "one three" {
+		t.Error("ret element was wrong:", got)
+	}
+	if got := ret[1]; got != "two four" {
+		t.Error("ret element was wrong:", got)
+	}
+}
+
+func TestJoinSlicesFail(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Error("did not panic")
+		}
+	}()
+
+	JoinSlices("", nil, []string{"hello"})
+}

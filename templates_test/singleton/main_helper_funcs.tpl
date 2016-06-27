@@ -1,6 +1,7 @@
-var testCfg *Config
-
-var dbConn *sql.DB
+var (
+  testCfg *Config
+  dbConn *sql.DB
+)
 
 func InitViper() error {
   var err error

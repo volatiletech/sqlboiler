@@ -29,7 +29,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
     return err
   }
 
-  ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} (%s) VALUES (%s)`, strings.Join(wl, ","), boil.GenerateParamFlags(len(wl), 1))
+  ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), boil.GenerateParamFlags(len(wl), 1))
 
   {{if driverUsesLastInsertID .DriverName}}
   if len(returnColumns) != 0 {
@@ -40,7 +40,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
 
     lastId, err := result.lastInsertId()
     if err != nil || lastId == 0 {
-      sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, ","), boil.WhereClause(wl))
+      sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), boil.WhereClause(wl))
       rows, err := exec.Query(sel, boil.GetStructValues(o, wl...)...)
       if err != nil {
         return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)

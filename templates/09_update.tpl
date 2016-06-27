@@ -1,5 +1,8 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
+{{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
+{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
 // Update a single {{$tableNameSingular}} record. It takes a whitelist of
 // column_name's that should be updated. The primary key will be used to find
 // the record to update.
@@ -15,12 +18,12 @@ func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... strin
 }
 
 // UpdateAt updates the {{$tableNameSingular}} using the primary key to find the row to update.
-func (o *{{$tableNameSingular}}) UpdateAt({{sqlColDefinitions .Table.Columns .Table.PKey.Columns | sqlColDefStrings | join " "}}, whitelist ...string) error {
-  return o.UpdateAtX(boil.GetDB(), {{.Table.PKey.Columns | stringMap .StringFuncs.camelCase | join ", "}}, whitelist...)
+func (o *{{$tableNameSingular}}) UpdateAt({{$pkArgs}}, whitelist ...string) error {
+  return o.UpdateAtX(boil.GetDB(), {{$pkNames | join ", "}}, whitelist...)
 }
 
 // UpdateAtX uses an executor to update the {{$tableNameSingular}} using the primary key to find the row to update.
-func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{sqlColDefinitions .Table.Columns .Table.PKey.Columns | sqlColDefStrings | join " "}}, whitelist ...string) error {
+func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{$pkArgs}}, whitelist ...string) error {
   if err := o.doBeforeUpdateHooks(); err != nil {
     return err
   }

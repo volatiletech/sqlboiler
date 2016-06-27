@@ -148,9 +148,9 @@ func TestWhereClause(t *testing.T) {
 		Start  int
 		Should string
 	}{
-		{Cols: []string{"col1"}, Start: 2, Should: "col1=$2"},
-		{Cols: []string{"col1", "col2"}, Start: 4, Should: "col1=$4 AND col2=$5"},
-		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: "col1=$4 AND col2=$5 AND col3=$6"},
+		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
+		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5`},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5 AND "col3"=$6`},
 	}
 
 	for i, test := range tests {
@@ -190,4 +190,33 @@ func TestSubstring(t *testing.T) {
 	if got := Substring(5, 5, str); got != "" {
 		t.Errorf("substring was wrong: %q", got)
 	}
+}
+
+func TestJoinSlices(t *testing.T) {
+	t.Parallel()
+
+	ret := JoinSlices("", nil, nil)
+	if ret != nil {
+		t.Error("want nil, got:", ret)
+	}
+
+	ret = JoinSlices(" ", []string{"one", "two"}, []string{"three", "four"})
+	if got := ret[0]; got != "one three" {
+		t.Error("ret element was wrong:", got)
+	}
+	if got := ret[1]; got != "two four" {
+		t.Error("ret element was wrong:", got)
+	}
+}
+
+func TestJoinSlicesFail(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Error("did not panic")
+		}
+	}()
+
+	JoinSlices("", nil, []string{"hello"})
 }

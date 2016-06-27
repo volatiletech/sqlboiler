@@ -121,17 +121,17 @@ func GenerateParamFlags(colCount int, startAt int) string {
 
 // WhereClause returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func WhereClause(pkeyCols []string, start int) string {
+func WhereClause(cols []string, start int) string {
 	if start == 0 {
 		panic("0 is not a valid start number for whereClause")
 	}
 
-	cols := make([]string, len(pkeyCols))
-	for i, c := range pkeyCols {
-		cols[i] = fmt.Sprintf("%s=$%d", c, start+i)
+	ret := make([]string, len(cols))
+	for i, c := range cols {
+		ret[i] = fmt.Sprintf(`"%s"=$%d`, c, start+i)
 	}
 
-	return strings.Join(cols, " AND ")
+	return strings.Join(ret, " AND ")
 }
 
 // DriverUsesLastInsertID returns whether the database driver supports the
@@ -149,4 +149,21 @@ func DriverUsesLastInsertID(driverName string) bool {
 // to end-1.
 func Substring(start, end int, str string) string {
 	return str[start:end]
+}
+
+// JoinSlices merges two string slices of equal length
+func JoinSlices(sep string, a, b []string) []string {
+	lna, lnb := len(a), len(b)
+	if lna != lnb {
+		panic("joinSlices: can only merge slices of same length")
+	} else if lna == 0 {
+		return nil
+	}
+
+	ret := make([]string, len(a))
+	for i, elem := range a {
+		ret[i] = fmt.Sprintf("%s%s%s", elem, sep, b[i])
+	}
+
+	return ret
 }

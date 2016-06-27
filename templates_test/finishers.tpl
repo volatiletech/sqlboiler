@@ -19,7 +19,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
 
   j := {{$tableNameSingular}}{}
 
-  err = {{$tableNamePlural}}(qm.Where("{{whereClause .Table.PKey.Columns 1}}", {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})).Bind(&j)
+  err = {{$tableNamePlural}}(qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})).Bind(&j)
   if err != nil {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} single object: %s", err)
   }

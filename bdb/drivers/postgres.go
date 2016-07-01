@@ -179,7 +179,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 	from information_schema.table_constraints as tc
 		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
 		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
-	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'information_schema';`
+	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';`
 
 	var rows *sql.Rows
 	var err error

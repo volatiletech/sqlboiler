@@ -7,7 +7,11 @@ type ToManyRelationship struct {
 	Column        string
 	ForeignTable  string
 	ForeignColumn string
-	ToJoinTable   bool
+
+	ToJoinTable       bool
+	JoinTable         string
+	JoinLocalColumn   string
+	JoinForeignColumn string
 }
 
 // ToManyRelationships relationship lookups
@@ -25,16 +29,38 @@ func ToManyRelationships(table string, tables []Table) []ToManyRelationship {
 				continue
 			}
 
-			relationship := ToManyRelationship{
-				Column:        f.ForeignColumn,
-				ForeignTable:  t.Name,
-				ForeignColumn: f.Column,
-				ToJoinTable:   t.IsJoinTable,
-			}
-
-			relationships = append(relationships, relationship)
+			relationships = append(relationships, buildRelationship(table, f, t))
 		}
 	}
 
 	return relationships
+}
+
+func buildRelationship(localTable string, foreignKey ForeignKey, foreignTable Table) ToManyRelationship {
+	if !foreignTable.IsJoinTable {
+		return ToManyRelationship{
+			Column:        foreignKey.ForeignColumn,
+			ForeignTable:  foreignTable.Name,
+			ForeignColumn: foreignKey.Column,
+			ToJoinTable:   foreignTable.IsJoinTable,
+		}
+	}
+
+	relationship := ToManyRelationship{
+		Column:      foreignKey.ForeignColumn,
+		ToJoinTable: true,
+		JoinTable:   foreignTable.Name,
+	}
+
+	for _, fk := range foreignTable.FKeys {
+		if fk.ForeignTable != localTable {
+			relationship.JoinForeignColumn = fk.Column
+			relationship.ForeignTable = fk.ForeignTable
+			relationship.ForeignColumn = fk.ForeignColumn
+		} else {
+			relationship.JoinLocalColumn = fk.Column
+		}
+	}
+
+	return relationship
 }

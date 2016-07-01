@@ -110,6 +110,7 @@ var templateFunctions = template.FuncMap{
 	"replace":   func(rep, with, str string) string { return strings.Replace(str, rep, with, -1) },
 	"prefix":    func(add, str string) string { return fmt.Sprintf("%s%s", add, str) },
 	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"id":        strmangle.Identifier,
 
 	// Pluralization
 	"singular": strmangle.Singular,

@@ -6,10 +6,41 @@ package strmangle
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/jinzhu/inflection"
 )
+
+var (
+	idAlphabet = []byte("abcdefghijklmnopqrstuvwxyz")
+)
+
+// Identifier creates an identifier useful for a query
+// This is essentially a base conversion from Base 10 integers to Base 26
+// integers that are represented by an alphabet from a-z
+// See tests for example outputs.
+func Identifier(in int) string {
+	ln := len(idAlphabet)
+	var n int
+	if in == 0 {
+		n = 1
+	} else {
+		n = 1 + int(math.Log(float64(in))/math.Log(float64(ln)))
+	}
+
+	cols := make([]byte, n)
+
+	for i := 0; i < n; i++ {
+		divisor := int(math.Pow(float64(ln), float64(n-i-1)))
+		rem := in / divisor
+		cols[i] = idAlphabet[rem]
+
+		in -= rem * divisor
+	}
+
+	return string(cols)
+}
 
 // Plural converts singular words to plural words (eg: person to people)
 func Plural(name string) string {

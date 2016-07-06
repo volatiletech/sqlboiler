@@ -224,6 +224,8 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float32"
 		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
+		case "bytea":
+			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "null.Bool"
 		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":

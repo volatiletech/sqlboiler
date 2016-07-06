@@ -52,6 +52,25 @@ func TestFilterColumnsByDefault(t *testing.T) {
 	}
 }
 
+func TestDefaultValue(t *testing.T) {
+	c := Column{}
+
+	c.Default = `\x12345678`
+	c.Type = "[]byte"
+
+	res := DefaultValue(c)
+	if res != `[]byte{0x12, 0x34, 0x56, 0x78}` {
+		t.Errorf("Invalid result: %#v", res)
+	}
+
+	c.Default = `\x`
+
+	res = DefaultValue(c)
+	if res != `[]byte{}` {
+		t.Errorf("Invalid result: %#v", res)
+	}
+}
+
 func TestFilterColumnsByAutoIncrement(t *testing.T) {
 	t.Parallel()
 
@@ -62,7 +81,7 @@ func TestFilterColumnsByAutoIncrement(t *testing.T) {
 		{Name: "col4", Default: `nextval("thing"::thing)`},
 	}
 
-	res := FilterColumnsByAutoIncrement(cols)
+	res := FilterColumnsByAutoIncrement(true, cols)
 	if res[0].Name != `col1` {
 		t.Errorf("Invalid result: %#v", res)
 	}
@@ -70,7 +89,15 @@ func TestFilterColumnsByAutoIncrement(t *testing.T) {
 		t.Errorf("Invalid result: %#v", res)
 	}
 
-	res = FilterColumnsByAutoIncrement([]Column{})
+	res = FilterColumnsByAutoIncrement(false, cols)
+	if res[0].Name != `col2` {
+		t.Errorf("Invalid result: %#v", res)
+	}
+	if res[1].Name != `col3` {
+		t.Errorf("Invalid result: %#v", res)
+	}
+
+	res = FilterColumnsByAutoIncrement(true, []Column{})
 	if res != nil {
 		t.Errorf("Invalid result: %#v", res)
 	}

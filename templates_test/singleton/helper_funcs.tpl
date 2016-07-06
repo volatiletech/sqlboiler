@@ -1,5 +1,10 @@
 var dbNameRand *rand.Rand
 
+func isZeroTime(time string) bool {
+	re := regexp.MustCompile(`[2-9]+`)
+	return !re.MatchString(time)
+}
+
 func initDBNameRand(input string) {
 	sum := md5.Sum([]byte(input))
 

@@ -167,6 +167,7 @@ var defaultTestTemplateImports = imports{
 	standard: importList{
 		`"testing"`,
 		`"reflect"`,
+		`"time"`,
 	},
 	thirdParty: importList{
 		`"github.com/nullbio/sqlboiler/boil"`,
@@ -192,6 +193,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"os"`,
 			`"strconv"`,
 			`"math/rand"`,
+			`"regexp"`,
 			`"bytes"`,
 		},
 		thirdParty: importList{},

@@ -320,7 +320,7 @@ func randomizeField(field reflect.Value) error {
 			}
 		case typeNullString:
 			if b {
-				newVal = null.NewString(randStr(5+rand.Intn(25)), b)
+				newVal = null.NewString(randStr(1), b)
 			} else {
 				newVal = null.NewString("", false)
 			}
@@ -438,7 +438,7 @@ func randomizeField(field reflect.Value) error {
 			}
 			newVal = b
 		case reflect.String:
-			newVal = randStr(5 + rand.Intn(20))
+			newVal = randStr(1)
 		case reflect.Slice:
 			sliceVal := typ.Elem()
 			if sliceVal.Kind() != reflect.Uint8 {

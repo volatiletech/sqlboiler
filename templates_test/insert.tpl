@@ -26,7 +26,17 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     {{$varNameSingular}}CompareVals(o[i], j[i], t)
   }
 
-  // Ensure we can store zero-valued object successfully.
+  /**
+   * Edge case test for:
+   * No includes specified, all zero values.
+   *
+   * Expected result:
+   * Columns with default values set to their default values.
+   * Columns without default values set to their zero value.
+   */
+
+  {{$varNamePlural}}DeleteAllRows(t)
+
   item := &{{$tableNameSingular}}{}
   if err = item.Insert(); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
@@ -36,7 +46,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   // Ensure the auto increment columns are returned in the object
     {{range .}}
   if item.{{titleCase .}} <= 0 {
-    t.Errorf("Expected the auto-increment primary key to be greater than 0, got: %d", item.{{titleCase .}})
+    t.Errorf("Expected the auto-increment columns to be greater than 0, got: %d", item.{{titleCase .}})
   }
     {{end}}
   {{end}}
@@ -106,4 +116,59 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
       {{- end}}
     {{end}}
   {{end}}
+
+  /**
+   * Edge case test for:
+   * No includes specified, all non-zero values.
+   *
+   * Expected result:
+   * Non-zero auto-increment column values ignored by insert helper.
+   * Object updated with correct auto-increment values.
+   * All other column values in object remain.
+   */
+
+  {{$varNamePlural}}DeleteAllRows(t)
+
+  item = &{{$tableNameSingular}}{}
+  if err = item.Insert(); err != nil {
+    t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
+  }
+
+  /**
+   * Edge case test for:
+   * Auto-increment columns and nullable columns includes specified, all zero values.
+   *
+   * Expected result:
+   * Auto-increment value inserted and nullable column values inserted.
+   * Default values for nullable columns should NOT be present in returned object.
+   */
+
+  /**
+   * Edge case test for:
+   * Auto-increment columns and nullable columns includes specified, all non-zero values.
+   *
+   * Expected result:
+   * Auto-increment value inserted and nullable column values inserted.
+   * Default values for nullable columns should NOT be present in returned object.
+   * Should be no zero values anywhere.
+   */
+
+  /**
+   * Edge case test for:
+   * Non-nullable columns includes specified, all zero values.
+   *
+   * Expected result:
+   * Auto-increment values ignored by insert helper.
+   * Object updated with correct auto-increment values.
+   * All non-nullable columns should be returned as zero values, regardless of default values.
+   */
+
+  /**
+   * Edge case test for:
+   * Non-nullable columns includes specified, all non-zero values.
+   *
+   * Expected result:
+   * Auto-increment values ignored by insert helper.
+   * Object updated with correct auto-increment values.
+   */
 }

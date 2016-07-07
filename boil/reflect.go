@@ -159,6 +159,24 @@ func checkType(obj interface{}) (reflect.Type, bool, error) {
 	return typ, isSlice, nil
 }
 
+// IsZeroValue checks if the variables with matching columns in obj are zero values
+func isZeroValue(obj interface{}, columns ...string) bool {
+	val := reflect.ValueOf(obj)
+	for _, c := range columns {
+		field := val.FieldByName(strmangle.TitleCase(c))
+		if !field.IsValid() {
+			panic(fmt.Sprintf("Unable to find variable with column name %s", c))
+		}
+
+		zv := reflect.Zero(field.Type())
+		if !reflect.DeepEqual(field.Interface(), zv.Interface()) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // GetStructValues returns the values (as interface) of the matching columns in obj
 func GetStructValues(obj interface{}, columns ...string) []interface{} {
 	ret := make([]interface{}, len(columns))

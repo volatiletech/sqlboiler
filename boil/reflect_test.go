@@ -19,6 +19,39 @@ func TestBindAll(t *testing.T) {
 	t.Errorf("Not implemented")
 }
 
+func TestIsZeroValue(t *testing.T) {
+	o := struct {
+		A []byte
+		B time.Time
+		C null.Time
+		D null.Int64
+		E int64
+	}{}
+
+	if !isZeroValue(o, "A", "B", "C", "D", "E") {
+		t.Errorf("Expected all values to be zero values: %#v", o)
+	}
+
+	colNames := []string{"A", "B", "C", "D", "E"}
+	for _, c := range colNames {
+		if !isZeroValue(o, c) {
+			t.Errorf("Expected %s to be zero value: %#v", c, o)
+		}
+	}
+
+	o.A = []byte("asdf")
+	o.B = time.Now()
+	o.C = null.NewTime(time.Now(), false)
+	o.D = null.NewInt64(2, false)
+	o.E = 5
+
+	for _, c := range colNames {
+		if isZeroValue(o, c) {
+			t.Errorf("Expected %s to be non-zero value: %#v", c, o)
+		}
+	}
+}
+
 func TestGetStructValues(t *testing.T) {
 	t.Parallel()
 	timeThing := time.Now()

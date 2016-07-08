@@ -76,12 +76,12 @@ func TestSetWhere(t *testing.T) {
 	SetWhere(q, "x > $1 AND y > $2", 5, 3)
 
 	if len(q.where) != 1 {
-		t.Errorf("Expected %d where slices, got %d", len(q.where))
+		t.Errorf("Expected %d where slices, got %d", 1, len(q.where))
 	}
 
 	expect := "x > $1 AND y > $2"
 	if q.where[0].clause != expect {
-		t.Errorf("Expected %s, got %s", expect, q.where)
+		t.Errorf("Expected %s, got %v", expect, q.where)
 	}
 
 	if len(q.where[0].args) != 2 {

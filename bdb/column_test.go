@@ -52,21 +52,24 @@ func TestFilterColumnsByDefault(t *testing.T) {
 	}
 }
 
-func TestDefaultValue(t *testing.T) {
+func TestDefaultValues(t *testing.T) {
 	c := Column{}
 
 	c.Default = `\x12345678`
 	c.Type = "[]byte"
 
-	res := DefaultValue(c)
-	if res != `[]byte{0x12, 0x34, 0x56, 0x78}` {
+	res := DefaultValues([]Column{c})
+	if len(res) != 1 {
+		t.Errorf("Expected res len 1, got %d", len(res))
+	}
+	if res[0] != `[]byte{0x12, 0x34, 0x56, 0x78}` {
 		t.Errorf("Invalid result: %#v", res)
 	}
 
 	c.Default = `\x`
 
-	res = DefaultValue(c)
-	if res != `[]byte{}` {
+	res = DefaultValues([]Column{c})
+	if res[0] != `[]byte{}` {
 		t.Errorf("Invalid result: %#v", res)
 	}
 }

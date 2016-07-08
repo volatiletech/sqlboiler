@@ -3,8 +3,11 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $parent := .}}
 func Test{{$tableNamePlural}}Insert(t *testing.T) {
   var err error
+  var errs []error
+  emptyTime := time.Time{}.String()
 
   {{$varNamePlural}}DeleteAllRows(t)
 
@@ -42,22 +45,37 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
-  {{with .Table.Columns | filterColumnsByAutoIncrement true | columnNames}}
+  {{with .Table.Columns | filterColumnsByAutoIncrement true | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}
   // Ensure the auto increment columns are returned in the object
-    {{range .}}
-  if item.{{titleCase .}} <= 0 {
-    t.Errorf("Expected the auto-increment columns to be greater than 0, got: %d", item.{{titleCase .}})
+  if errs = boil.IsZeroValue(item, false, {{.}}); errs != nil {
+    for _, e := range errs {
+      t.Errorf("Expected auto-increment columns to be greater than 0, err: %s\n", e)
+    }
   }
-    {{end}}
   {{end}}
 
-  emptyTime := time.Time{}.String()
   {{with .Table.Columns | filterColumnsBySimpleDefault}}
+  simpleDefaults := []string{{"{"}}{{. | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
+  defaultValues := []interface{}{{"{"}}{{. | defaultValues | join ", "}}{{"}"}}
+
+  if len(simpleDefaults) != len(defaultValues) {
+    t.Fatalf("Mismatch between slice lengths: %d, %d", len(simpleDefaults), len(defaultValues))
+  }
+
+  if errs = boil.IsValueMatch(item, simpleDefaults, defaultValues); errs != nil {
+    for _, e := range errs {
+      t.Errorf("Expected default value to match column value, err: %s\n", e);
+    }
+  }
+  {{end}}
+
+
+  /*{{with .Table.Columns | filterColumnsBySimpleDefault}}
 	// Ensure the default value columns are returned in the object
     {{range .}}
       {{$tc := titleCase .Name}}
       {{$zv := zeroValue .}}
-      {{$dv := defaultValue .}}
+      {{$dv := "false"}}
       {{$ty := trimPrefix "null." .Type}}
       {{if and (ne $ty "[]byte") .IsNullable}}
   if item.{{$tc}}.Valid == false {
@@ -84,7 +102,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   }
       {{end}}
     {{end}}
-  {{end}}
+  {{end}}*/
 
   {{with .Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false}}
   // Ensure the non-defaultvalue columns and non-autoincrement columns are stored correctly as zero or null values.

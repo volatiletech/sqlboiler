@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"regexp"
 	"sort"
 	"time"
 
@@ -30,6 +31,8 @@ var (
 	typeNullBool    = reflect.TypeOf(null.Bool{})
 	typeNullTime    = reflect.TypeOf(null.Time{})
 	typeTime        = reflect.TypeOf(time.Time{})
+
+	rgxValidTime = regexp.MustCompile(`[2-9]+`)
 )
 
 // Bind executes the query and inserts the
@@ -159,9 +162,12 @@ func checkType(obj interface{}) (reflect.Type, bool, error) {
 	return typ, isSlice, nil
 }
 
-// IsZeroValue checks if the variables with matching columns in obj are zero values
-func isZeroValue(obj interface{}, columns ...string) bool {
-	val := reflect.ValueOf(obj)
+// IsZeroValue checks if the variables with matching columns in obj
+// are or are not zero values, depending on whether shouldZero is true or false
+func IsZeroValue(obj interface{}, shouldZero bool, columns ...string) []error {
+	val := reflect.Indirect(reflect.ValueOf(obj))
+
+	var errs []error
 	for _, c := range columns {
 		field := val.FieldByName(strmangle.TitleCase(c))
 		if !field.IsValid() {
@@ -169,12 +175,58 @@ func isZeroValue(obj interface{}, columns ...string) bool {
 		}
 
 		zv := reflect.Zero(field.Type())
-		if !reflect.DeepEqual(field.Interface(), zv.Interface()) {
-			return false
+		if shouldZero && !reflect.DeepEqual(field.Interface(), zv.Interface()) {
+			errs = append(errs, fmt.Errorf("Column with name %s is not zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
+		} else if !shouldZero && reflect.DeepEqual(field.Interface(), zv.Interface()) {
+			errs = append(errs, fmt.Errorf("Column with name %s is zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
 		}
 	}
 
-	return true
+	return errs
+}
+
+// IsValueMatch checks whether the variables in obj with matching column names
+// match the values in the values slice.
+func IsValueMatch(obj interface{}, columns []string, values []interface{}) []error {
+	val := reflect.Indirect(reflect.ValueOf(obj))
+
+	var errs []error
+	for i, c := range columns {
+		field := val.FieldByName(strmangle.TitleCase(c))
+		if !field.IsValid() {
+			panic(fmt.Sprintf("Unable to find variable with column name %s", c))
+		}
+
+		typ := field.Type().String()
+		if typ == "time.Time" || typ == "null.Time" {
+			var timeField reflect.Value
+			var valTimeStr string
+			if typ == "time.Time" {
+				valTimeStr = values[i].(time.Time).String()
+				timeField = field
+			} else {
+				valTimeStr = values[i].(null.Time).Time.String()
+				timeField = field.FieldByName("Time")
+				validField := field.FieldByName("Valid")
+				if validField.Interface() != values[i].(null.Time).Valid {
+					errs = append(errs, fmt.Errorf("Null.Time column with name %s Valid field does not match: %v ≠ %v", c, values[i].(null.Time).Valid, validField.Interface()))
+				}
+			}
+
+			if (rgxValidTime.MatchString(valTimeStr) && timeField.Interface() == reflect.Zero(timeField.Type()).Interface()) ||
+				(!rgxValidTime.MatchString(valTimeStr) && timeField.Interface() != reflect.Zero(timeField.Type()).Interface()) {
+				errs = append(errs, fmt.Errorf("Time column with name %s Time field does not match: %v ≠ %v", c, values[i], timeField.Interface()))
+			}
+
+			continue
+		}
+
+		if !reflect.DeepEqual(field.Interface(), values[i]) {
+			errs = append(errs, fmt.Errorf("Column with name %s does not match value: %#v ≠ %#v", c, values[i], field.Interface()))
+		}
+	}
+
+	return errs
 }
 
 // GetStructValues returns the values (as interface) of the matching columns in obj

@@ -28,14 +28,16 @@ func TestIsZeroValue(t *testing.T) {
 		E int64
 	}{}
 
-	if !isZeroValue(o, "A", "B", "C", "D", "E") {
-		t.Errorf("Expected all values to be zero values: %#v", o)
+	if errs := IsZeroValue(o, true, "A", "B", "C", "D", "E"); errs != nil {
+		for _, e := range errs {
+			t.Errorf("%s", e)
+		}
 	}
 
 	colNames := []string{"A", "B", "C", "D", "E"}
 	for _, c := range colNames {
-		if !isZeroValue(o, c) {
-			t.Errorf("Expected %s to be zero value: %#v", c, o)
+		if err := IsZeroValue(o, true, c); err != nil {
+			t.Errorf("Expected %s to be zero value: %s", c, err[0])
 		}
 	}
 
@@ -45,9 +47,83 @@ func TestIsZeroValue(t *testing.T) {
 	o.D = null.NewInt64(2, false)
 	o.E = 5
 
+	if errs := IsZeroValue(o, false, "A", "B", "C", "D", "E"); errs != nil {
+		for _, e := range errs {
+			t.Errorf("%s", e)
+		}
+	}
+
 	for _, c := range colNames {
-		if isZeroValue(o, c) {
-			t.Errorf("Expected %s to be non-zero value: %#v", c, o)
+		if err := IsZeroValue(o, false, c); err != nil {
+			t.Errorf("Expected %s to be non-zero value: %s", c, err[0])
+		}
+	}
+}
+
+func TestIsValueMatch(t *testing.T) {
+	var errs []error
+	var values []interface{}
+
+	o := struct {
+		A []byte
+		B time.Time
+		C null.Time
+		D null.Int64
+		E int64
+	}{}
+
+	values = []interface{}{
+		[]byte(nil),
+		time.Time{},
+		null.Time{},
+		null.Int64{},
+		int64(0),
+	}
+
+	cols := []string{"A", "B", "C", "D", "E"}
+	errs = IsValueMatch(o, cols, values)
+	if errs != nil {
+		for _, e := range errs {
+			t.Errorf("%s", e)
+		}
+	}
+
+	values = []interface{}{
+		[]byte("hi"),
+		time.Date(2007, 11, 2, 1, 1, 1, 1, time.UTC),
+		null.NewTime(time.Date(2007, 11, 2, 1, 1, 1, 1, time.UTC), true),
+		null.NewInt64(5, false),
+		int64(6),
+	}
+
+	errs = IsValueMatch(o, cols, values)
+	// Expect 6 errors
+	// 5 for each column and an additional 1 for the invalid Valid field match
+	if len(errs) != 6 {
+		t.Errorf("Expected 6 errors, got: %d", len(errs))
+		for _, e := range errs {
+			t.Errorf("%s", e)
+		}
+	}
+
+	o.A = []byte("hi")
+	o.B = time.Date(2007, 11, 2, 1, 1, 1, 1, time.UTC)
+	o.C = null.NewTime(time.Date(2007, 11, 2, 1, 1, 1, 1, time.UTC), true)
+	o.D = null.NewInt64(5, false)
+	o.E = 6
+
+	errs = IsValueMatch(o, cols, values)
+	if errs != nil {
+		for _, e := range errs {
+			t.Errorf("%s", e)
+		}
+	}
+
+	o.B = time.Date(2007, 11, 2, 2, 2, 2, 2, time.UTC)
+	errs = IsValueMatch(o, cols, values)
+	if errs != nil {
+		for _, e := range errs {
+			t.Errorf("%s", e)
 		}
 	}
 }

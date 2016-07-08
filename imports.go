@@ -193,7 +193,6 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"os"`,
 			`"strconv"`,
 			`"math/rand"`,
-			`"regexp"`,
 			`"bytes"`,
 		},
 		thirdParty: importList{},

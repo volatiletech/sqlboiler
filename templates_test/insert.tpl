@@ -3,7 +3,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $parent := .}}
+{{- $parent := . -}}
 func Test{{$tableNamePlural}}Insert(t *testing.T) {
   var err error
   var errs []error

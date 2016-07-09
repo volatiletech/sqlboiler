@@ -22,8 +22,8 @@ func ({{$receiver}} *{{$localTable}}) {{$foreignPluralNoun}}(
         {{- $fnName := .ForeignColumn | remove "_id" | titleCase | printf "%[2]s%[1]s" $foreignPluralNoun -}}
 // {{$fnName}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}} via {{.ForeignColumn}} column.
 func ({{$receiver}} *{{$localTable}}) {{$fnName}}(
-      {{- end -}}
 
+      {{- end -}}
 exec boil.Executor, selectCols ...string) ({{$foreignSlice}}, error) {
   var ret {{$foreignSlice}}
 

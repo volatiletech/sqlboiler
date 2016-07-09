@@ -67,29 +67,29 @@ func TestAutoIncPrimaryKey(t *testing.T) {
 		},
 		"easycase": {
 			Ok:      true,
-			Expect:  Column{Name: "one", Type: "int32", IsNullable: false, Default: `nextval('abc'::regclass)`},
+			Expect:  Column{Name: "one", Type: "int32", Nullable: false, Default: `nextval('abc'::regclass)`},
 			Pkey:    &PrimaryKey{Name: "pkey", Columns: []string{"one"}},
-			Columns: []Column{Column{Name: "one", Type: "int32", IsNullable: false, Default: `nextval('abc'::regclass)`}},
+			Columns: []Column{Column{Name: "one", Type: "int32", Nullable: false, Default: `nextval('abc'::regclass)`}},
 		},
 		"missingcase": {
 			Ok:      false,
 			Pkey:    &PrimaryKey{Name: "pkey", Columns: []string{"two"}},
-			Columns: []Column{Column{Name: "one", Type: "int32", IsNullable: false, Default: `nextval('abc'::regclass)`}},
+			Columns: []Column{Column{Name: "one", Type: "int32", Nullable: false, Default: `nextval('abc'::regclass)`}},
 		},
 		"wrongtype": {
 			Ok:      false,
 			Pkey:    &PrimaryKey{Name: "pkey", Columns: []string{"one"}},
-			Columns: []Column{Column{Name: "one", Type: "string", IsNullable: false, Default: `nextval('abc'::regclass)`}},
+			Columns: []Column{Column{Name: "one", Type: "string", Nullable: false, Default: `nextval('abc'::regclass)`}},
 		},
 		"nodefault": {
 			Ok:      false,
 			Pkey:    &PrimaryKey{Name: "pkey", Columns: []string{"one"}},
-			Columns: []Column{Column{Name: "one", Type: "string", IsNullable: false, Default: ``}},
+			Columns: []Column{Column{Name: "one", Type: "string", Nullable: false, Default: ``}},
 		},
 		"nullable": {
 			Ok:      false,
 			Pkey:    &PrimaryKey{Name: "pkey", Columns: []string{"one"}},
-			Columns: []Column{Column{Name: "one", Type: "string", IsNullable: true, Default: `nextval('abc'::regclass)`}},
+			Columns: []Column{Column{Name: "one", Type: "string", Nullable: true, Default: `nextval('abc'::regclass)`}},
 		},
 	}
 

@@ -24,13 +24,13 @@ func init() {
 			{
 				Name: "patrick_table",
 				Columns: []bdb.Column{
-					{Name: "patrick_column", Type: "string", IsNullable: false},
-					{Name: "aaron_column", Type: "null.String", IsNullable: true},
-					{Name: "id", Type: "null.Int", IsNullable: true},
-					{Name: "fun_id", Type: "int64", IsNullable: false},
-					{Name: "time", Type: "null.Time", IsNullable: true},
-					{Name: "fun_time", Type: "time.Time", IsNullable: false},
-					{Name: "cool_stuff_forever", Type: "[]byte", IsNullable: false},
+					{Name: "patrick_column", Type: "string", Nullable: false},
+					{Name: "aaron_column", Type: "null.String", Nullable: true},
+					{Name: "id", Type: "null.Int", Nullable: true},
+					{Name: "fun_id", Type: "int64", Nullable: false},
+					{Name: "time", Type: "null.Time", Nullable: true},
+					{Name: "fun_time", Type: "time.Time", Nullable: false},
+					{Name: "cool_stuff_forever", Type: "[]byte", Nullable: false},
 				},
 				PKey: &bdb.PrimaryKey{
 					Name:    "pkey_thing",
@@ -40,7 +40,7 @@ func init() {
 			{
 				Name: "spiderman",
 				Columns: []bdb.Column{
-					{Name: "id", Type: "int64", IsNullable: false},
+					{Name: "id", Type: "int64", Nullable: false},
 				},
 				PKey: &bdb.PrimaryKey{
 					Name:    "pkey_id",
@@ -50,8 +50,8 @@ func init() {
 			{
 				Name: "spiderman_table_two",
 				Columns: []bdb.Column{
-					{Name: "id", Type: "int64", IsNullable: false},
-					{Name: "patrick", Type: "string", IsNullable: false},
+					{Name: "id", Type: "int64", Nullable: false},
+					{Name: "patrick", Type: "string", Nullable: false},
 				},
 				PKey: &bdb.PrimaryKey{
 					Name:    "pkey_id",

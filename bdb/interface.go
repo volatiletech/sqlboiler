@@ -99,6 +99,6 @@ func setForeignKeyNullability(t *Table) {
 			panic("could not find foreign key column in table")
 		}
 
-		t.FKeys[i].Nullable = t.Columns[found].IsNullable
+		t.FKeys[i].Nullable = t.Columns[found].Nullable
 	}
 }

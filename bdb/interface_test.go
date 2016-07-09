@@ -14,7 +14,7 @@ func (t testInterface) TableNames() ([]string, error) {
 func (t testInterface) Columns(tableName string) ([]Column, error) {
 	return []Column{
 		Column{Name: "col1", Type: "character varying"},
-		Column{Name: "col2", Type: "character varying", IsNullable: true},
+		Column{Name: "col2", Type: "character varying", Nullable: true},
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func TestTables(t *testing.T) {
 
 	expectCols := []Column{
 		Column{Name: "col1", Type: "string"},
-		Column{Name: "col2", Type: "string", IsNullable: true},
+		Column{Name: "col2", Type: "string", Nullable: true},
 	}
 
 	if !reflect.DeepEqual(tables[0].Columns, expectCols) {
@@ -140,7 +140,7 @@ func TestSetForeignKeyNullability(t *testing.T) {
 	table := &Table{
 		Columns: []Column{
 			Column{Name: "col1", Type: "string"},
-			Column{Name: "col2", Type: "string", IsNullable: true},
+			Column{Name: "col2", Type: "string", Nullable: true},
 		},
 		FKeys: []ForeignKey{
 			{

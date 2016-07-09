@@ -101,7 +101,7 @@ func AutoIncPrimaryKey(cols []Column, pkey *PrimaryKey) *Column {
 				continue
 			}
 
-			if !rgxAutoIncColumn.MatchString(c.Default) || c.IsNullable ||
+			if !rgxAutoIncColumn.MatchString(c.Default) || c.Nullable ||
 				!(strings.HasPrefix(c.Type, "int") || strings.HasPrefix(c.Type, "uint")) {
 				continue
 			}

@@ -8,10 +8,10 @@ import (
 // Column holds information about a database column.
 // Types are Go types, converted by TranslateColumnType.
 type Column struct {
-	Name       string
-	Type       string
-	Default    string
-	IsNullable bool
+	Name     string
+	Type     string
+	Default  string
+	Nullable bool
 }
 
 // ColumnNames of the columns.

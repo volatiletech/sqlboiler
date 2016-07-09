@@ -92,9 +92,9 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		var colName, colType, colDefault, isNullable string
+		var colName, colType, colDefault, Nullable string
 		var defaultPtr *string
-		if err := rows.Scan(&colName, &colType, &defaultPtr, &isNullable); err != nil {
+		if err := rows.Scan(&colName, &colType, &defaultPtr, &Nullable); err != nil {
 			return nil, fmt.Errorf("unable to scan for table %s: %s", tableName, err)
 		}
 
@@ -108,7 +108,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 			Name:       colName,
 			Type:       colType,
 			Default:    colDefault,
-			IsNullable: isNullable == "YES",
+			Nullable: Nullable == "YES",
 		}
 		columns = append(columns, column)
 	}
@@ -210,7 +210,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
-	if c.IsNullable {
+	if c.Nullable {
 		switch c.Type {
 		case "bigint", "bigserial":
 			c.Type = "null.Int64"

@@ -14,7 +14,7 @@ func (t testInterface) TableNames() ([]string, error) {
 func (t testInterface) Columns(tableName string) ([]Column, error) {
 	return []Column{
 		Column{Name: "col1", Type: "character varying"},
-		Column{Name: "col2", Type: "character varying"},
+		Column{Name: "col2", Type: "character varying", IsNullable: true},
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func TestTables(t *testing.T) {
 
 	expectCols := []Column{
 		Column{Name: "col1", Type: "string"},
-		Column{Name: "col2", Type: "string"},
+		Column{Name: "col2", Type: "string", IsNullable: true},
 	}
 
 	if !reflect.DeepEqual(tables[0].Columns, expectCols) {
@@ -88,6 +88,7 @@ func TestTables(t *testing.T) {
 			Column:        "col2",
 			ForeignTable:  "table3",
 			ForeignColumn: "col3",
+			Nullable:      true,
 		},
 	}
 
@@ -130,5 +131,33 @@ func TestSetIsJoinTable(t *testing.T) {
 		if is := table.IsJoinTable; is != test.Should {
 			t.Errorf("%d) want: %t, got: %t\nTest: %#v", i, test.Should, is, test)
 		}
+	}
+}
+
+func TestSetForeignKeyNullability(t *testing.T) {
+	t.Parallel()
+
+	table := &Table{
+		Columns: []Column{
+			Column{Name: "col1", Type: "string"},
+			Column{Name: "col2", Type: "string", IsNullable: true},
+		},
+		FKeys: []ForeignKey{
+			{
+				Column: "col1",
+			},
+			{
+				Column: "col2",
+			},
+		},
+	}
+
+	setForeignKeyNullability(table)
+
+	if table.FKeys[0].Nullable {
+		t.Error("should not be nullable")
+	}
+	if !table.FKeys[1].Nullable {
+		t.Error("should be nullable")
 	}
 }

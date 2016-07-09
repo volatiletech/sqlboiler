@@ -52,6 +52,7 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 		}
 
 		setIsJoinTable(&t)
+		setForeignKeyNullability(&t)
 
 		tables = append(tables, t)
 	}
@@ -81,4 +82,23 @@ func setIsJoinTable(t *Table) {
 	}
 
 	t.IsJoinTable = true
+}
+
+func setForeignKeyNullability(t *Table) {
+	for i, fkey := range t.FKeys {
+
+		found := -1
+		for j, col := range t.Columns {
+			if col.Name == fkey.Column {
+				found = j
+				break
+			}
+		}
+
+		if found < 0 {
+			panic("could not find foreign key column in table")
+		}
+
+		t.FKeys[i].Nullable = t.Columns[found].IsNullable
+	}
 }

@@ -53,6 +53,8 @@ func TestFilterColumnsByDefault(t *testing.T) {
 }
 
 func TestDefaultValues(t *testing.T) {
+	t.Parallel()
+
 	c := Column{}
 
 	c.Default = `\x12345678`

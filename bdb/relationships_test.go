@@ -1,10 +1,6 @@
 package bdb
 
-import (
-	"testing"
-
-	"github.com/davecgh/go-spew/spew"
-)
+import "testing"
 
 func TestToManyRelationships(t *testing.T) {
 	t.Parallel()
@@ -35,7 +31,6 @@ func TestToManyRelationships(t *testing.T) {
 	}
 
 	relationships := ToManyRelationships("users", tables)
-	spew.Dump(relationships)
 	if len(relationships) != 4 {
 		t.Error("wrong # of relationships:", len(relationships))
 	}

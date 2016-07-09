@@ -25,8 +25,8 @@ type Transactor interface {
 	Executor
 }
 
-// Creator starts transactions.
-type Creator interface {
+// Beginner begins transactions.
+type Beginner interface {
 	Begin() (*sql.Tx, error)
 }
 
@@ -41,9 +41,9 @@ var DebugWriter = os.Stdout
 
 // Begin a transaction
 func Begin() (Transactor, error) {
-	creator, ok := currentDB.(Creator)
+	creator, ok := currentDB.(Beginner)
 	if !ok {
-		panic("Your database does not support transactions.")
+		panic("database does not support transactions")
 	}
 
 	return creator.Begin()

@@ -4,7 +4,7 @@
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
-# Config
+#### Config
 
 config.toml
 
@@ -17,7 +17,7 @@ config.toml
   dbname="dbname"
 ````
 
-# How
+#### How
 
 SQLBoiler connects to your database (defined in your config.toml file) to ascertain the structure of your tables, and builds your Go ORM code using the templates defined in the ````/templates```` folder.
 

@@ -16,12 +16,23 @@
 
       {{- if $isForeignKeySimplyTableName -}}
 // {{$foreignPluralNoun}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}}.
-func ({{$receiver}} *{{$localTable}}) {{$foreignPluralNoun}}(
+func ({{$receiver}} *{{$localTable}}) {{$foreignPluralNoun}}(selectCols ...string) ({{$foreignSlice}}, error) {
+  return {{$receiver}}.{{$foreignPluralNoun}}X(boil.GetDB(), selectCols...)
+}
+
+// {{$foreignPluralNoun}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}} with an executor.
+func ({{$receiver}} *{{$localTable}}) {{$foreignPluralNoun}}X(
 
       {{- else -}}
         {{- $fnName := .ForeignColumn | remove "_id" | titleCase | printf "%[2]s%[1]s" $foreignPluralNoun -}}
+
 // {{$fnName}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}} via {{.ForeignColumn}} column.
-func ({{$receiver}} *{{$localTable}}) {{$fnName}}(
+func ({{$receiver}} *{{$localTable}}) {{$fnName}}(selectCols ...string) ({{$foreignSlice}}, error) {
+  return {{$receiver}}.{{$fnName}}X(boil.GetDB(), selectCols...)
+}
+
+// {{$fnName}} retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}} via {{.ForeignColumn}} column.
+func ({{$receiver}} *{{$localTable}}) {{$fnName}}X(
 
       {{- end -}}
 exec boil.Executor, selectCols ...string) ({{$foreignSlice}}, error) {

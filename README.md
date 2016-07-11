@@ -6,7 +6,7 @@ SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 # Config
 
-````config.toml````:
+config.toml
 
 ````
 [postgres]

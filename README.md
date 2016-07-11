@@ -1,14 +1,12 @@
-<img src="http://i.imgur.com/R5g99sO.png"/>
-
 # SQLBoiler
 
 [![GoDoc](https://godoc.org/github.com/pobri19/sqlboiler?status.svg)](https://godoc.org/github.com/pobri19/sqlboiler)
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
-# Config?
+# Config
 
-To use SQLBoiler you need to create a ````config.toml```` in SQLBoiler's root directory. The file format looks like the following:
+````config.toml````:
 
 ````
 [postgres]
@@ -19,7 +17,7 @@ To use SQLBoiler you need to create a ````config.toml```` in SQLBoiler's root di
   dbname="dbname"
 ````
 
-# How?
+# How
 
 SQLBoiler connects to your database (defined in your config.toml file) to ascertain the structure of your tables, and builds your Go ORM code using the templates defined in the ````/templates```` folder.
 
@@ -29,8 +27,6 @@ Before you use SQLBoiler make sure you create a ````config.toml```` configuratio
 
 
 ````
-Complete documentation is available at http://github.com/pobri19/sqlboiler
-
 Usage:
   sqlboiler [flags]
 

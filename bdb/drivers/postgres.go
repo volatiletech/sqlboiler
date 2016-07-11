@@ -20,10 +20,10 @@ type PostgresDriver struct {
 // returns a pointer to a PostgresDriver object. Note that it is required to
 // call PostgresDriver.Open() and PostgresDriver.Close() to open and close
 // the database connection once an object has been obtained.
-func NewPostgresDriver(user, pass, dbname, host string, port int) *PostgresDriver {
+func NewPostgresDriver(user, pass, dbname, host string, port int, sslmode string) *PostgresDriver {
 	driver := PostgresDriver{
-		connStr: fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d",
-			user, pass, dbname, host, port),
+		connStr: fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=%s",
+			user, pass, dbname, host, port, sslmode),
 	}
 
 	return &driver

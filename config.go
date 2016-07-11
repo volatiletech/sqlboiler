@@ -12,9 +12,10 @@ type Config struct {
 
 // PostgresConfig configures a postgres database
 type PostgresConfig struct {
-	User   string `toml:"user"`
-	Pass   string `toml:"pass"`
-	Host   string `toml:"host"`
-	Port   int    `toml:"port"`
-	DBName string `toml:"dbname"`
+	User    string `toml:"user"`
+	Pass    string `toml:"pass"`
+	Host    string `toml:"host"`
+	Port    int    `toml:"port"`
+	DBName  string `toml:"dbname"`
+	SSLMode string `toml:"sslmode"`
 }

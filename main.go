@@ -63,6 +63,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 
+	viper.SetDefault("postgres.ssl_mode", "required")
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -110,11 +111,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	if viper.IsSet("postgres.dbname") {
 		cmdConfig.Postgres = PostgresConfig{
-			User:   viper.GetString("postgres.user"),
-			Pass:   viper.GetString("postgres.pass"),
-			Host:   viper.GetString("postgres.host"),
-			Port:   viper.GetInt("postgres.port"),
-			DBName: viper.GetString("postgres.dbname"),
+			User:    viper.GetString("postgres.user"),
+			Pass:    viper.GetString("postgres.pass"),
+			Host:    viper.GetString("postgres.host"),
+			Port:    viper.GetInt("postgres.port"),
+			DBName:  viper.GetString("postgres.dbname"),
+			SSLMode: viper.GetString("postgres.sslmode"),
 		}
 
 		err = vala.BeginValidation().Validate(
@@ -123,6 +125,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			vala.StringNotEmpty(cmdConfig.Postgres.Host, "postgres.host"),
 			vala.Not(vala.Equals(cmdConfig.Postgres.Port, 0, "postgres.port")),
 			vala.StringNotEmpty(cmdConfig.Postgres.DBName, "postgres.dbname"),
+			vala.StringNotEmpty(cmdConfig.Postgres.SSLMode, "postgres.sslmode"),
 		).Check()
 
 		if err != nil {

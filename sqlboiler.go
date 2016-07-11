@@ -177,6 +177,7 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.Postgres.DBName,
 			s.Config.Postgres.Host,
 			s.Config.Postgres.Port,
+			s.Config.Postgres.SSLMode,
 		)
 	}
 

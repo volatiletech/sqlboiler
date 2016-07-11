@@ -105,9 +105,9 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 		}
 
 		column := bdb.Column{
-			Name:       colName,
-			Type:       colType,
-			Default:    colDefault,
+			Name:     colName,
+			Type:     colType,
+			Default:  colDefault,
 			Nullable: Nullable == "YES",
 		}
 		columns = append(columns, column)

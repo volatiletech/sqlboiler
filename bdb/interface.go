@@ -52,11 +52,15 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 		}
 
 		setIsJoinTable(&t)
-		setForeignKeyNullability(&t)
 
 		tables = append(tables, t)
 	}
 
+	// Relationships have a dependency on foreign key nullability.
+	for i := range tables {
+		tbl := &tables[i]
+		setForeignKeyNullability(tbl, tables)
+	}
 	for i := range tables {
 		tbl := &tables[i]
 		setRelationships(tbl, tables)
@@ -89,22 +93,14 @@ func setIsJoinTable(t *Table) {
 	t.IsJoinTable = true
 }
 
-func setForeignKeyNullability(t *Table) {
+func setForeignKeyNullability(t *Table, tables []Table) {
 	for i, fkey := range t.FKeys {
+		localColumn := t.GetColumn(fkey.Column)
+		foreignTable := GetTable(tables, fkey.ForeignTable)
+		foreignColumn := foreignTable.GetColumn(fkey.ForeignColumn)
 
-		found := -1
-		for j, col := range t.Columns {
-			if col.Name == fkey.Column {
-				found = j
-				break
-			}
-		}
-
-		if found < 0 {
-			panic("could not find foreign key column in table")
-		}
-
-		t.FKeys[i].Nullable = t.Columns[found].Nullable
+		t.FKeys[i].Nullable = localColumn.Nullable
+		t.FKeys[i].ForeignColumnNullable = foreignColumn.Nullable
 	}
 }
 

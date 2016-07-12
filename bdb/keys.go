@@ -20,8 +20,9 @@ type ForeignKey struct {
 	Column   string
 	Nullable bool
 
-	ForeignTable  string
-	ForeignColumn string
+	ForeignTable          string
+	ForeignColumn         string
+	ForeignColumnNullable bool
 }
 
 // SQLColumnDef formats a column name and type like an SQL column definition.

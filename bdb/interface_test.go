@@ -128,27 +128,42 @@ func TestSetIsJoinTable(t *testing.T) {
 func TestSetForeignKeyNullability(t *testing.T) {
 	t.Parallel()
 
-	table := &Table{
-		Columns: []Column{
-			Column{Name: "col1", Type: "string"},
-			Column{Name: "col2", Type: "string", Nullable: true},
-		},
-		FKeys: []ForeignKey{
-			{
-				Column: "col1",
+	tables := []Table{
+		Table{
+			Name: "one",
+			Columns: []Column{
+				Column{Name: "id1", Type: "string", Nullable: false},
+				Column{Name: "id2", Type: "string", Nullable: true},
 			},
-			{
-				Column: "col2",
+		},
+		Table{
+			Name: "other",
+			Columns: []Column{
+				Column{Name: "one_id_1", Type: "string", Nullable: false},
+				Column{Name: "one_id_2", Type: "string", Nullable: true},
+			},
+			FKeys: []ForeignKey{
+				{Column: "one_id_1", ForeignTable: "one", ForeignColumn: "id1"},
+				{Column: "one_id_2", ForeignTable: "one", ForeignColumn: "id2"},
 			},
 		},
 	}
 
-	setForeignKeyNullability(table)
+	setForeignKeyNullability(&tables[0], tables)
+	setForeignKeyNullability(&tables[1], tables)
 
-	if table.FKeys[0].Nullable {
+	first := tables[1].FKeys[0]
+	second := tables[1].FKeys[1]
+	if first.Nullable {
 		t.Error("should not be nullable")
 	}
-	if !table.FKeys[1].Nullable {
+	if first.ForeignColumnNullable {
+		t.Error("should be nullable")
+	}
+	if !second.Nullable {
+		t.Error("should be nullable")
+	}
+	if !second.ForeignColumnNullable {
 		t.Error("should be nullable")
 	}
 }

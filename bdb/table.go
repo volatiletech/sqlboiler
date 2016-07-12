@@ -1,5 +1,7 @@
 package bdb
 
+import "fmt"
+
 // Table metadata from the database schema.
 type Table struct {
 	Name    string
@@ -11,7 +13,18 @@ type Table struct {
 	IsJoinTable bool
 }
 
-// GetColumn by name. Panics if not found (for use in templates).
+// GetTable by name. Panics if not found (for use in templates mostly).
+func GetTable(tables []Table, name string) (tbl Table) {
+	for _, t := range tables {
+		if t.Name == name {
+			return t
+		}
+	}
+
+	panic(fmt.Sprintf("could not find table name: %s", name))
+}
+
+// GetColumn by name. Panics if not found (for use in templates mostly).
 func (t Table) GetColumn(name string) (col Column) {
 	for _, c := range t.Columns {
 		if c.Name == name {
@@ -19,5 +32,5 @@ func (t Table) GetColumn(name string) (col Column) {
 		}
 	}
 
-	panic("hello")
+	panic(fmt.Sprintf("could not find column name: %s", name))
 }

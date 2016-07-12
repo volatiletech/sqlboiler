@@ -11,6 +11,8 @@ type Table struct {
 	FKeys []ForeignKey
 
 	IsJoinTable bool
+
+	ToManyRelationships []ToManyRelationship
 }
 
 // GetTable by name. Panics if not found (for use in templates mostly).

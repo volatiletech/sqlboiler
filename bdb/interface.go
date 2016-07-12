@@ -57,6 +57,11 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 		tables = append(tables, t)
 	}
 
+	for i := range tables {
+		tbl := &tables[i]
+		setRelationships(tbl, tables)
+	}
+
 	return tables, nil
 }
 
@@ -101,4 +106,8 @@ func setForeignKeyNullability(t *Table) {
 
 		t.FKeys[i].Nullable = t.Columns[found].Nullable
 	}
+}
+
+func setRelationships(t *Table, tables []Table) {
+	t.ToManyRelationships = toManyRelationships(*t, tables)
 }

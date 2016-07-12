@@ -10,3 +10,14 @@ type Table struct {
 
 	IsJoinTable bool
 }
+
+// GetColumn by name. Panics if not found (for use in templates).
+func (t Table) GetColumn(name string) (col Column) {
+	for _, c := range t.Columns {
+		if c.Name == name {
+			return c
+		}
+	}
+
+	panic("hello")
+}

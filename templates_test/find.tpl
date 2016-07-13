@@ -9,7 +9,7 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
   {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
@@ -31,6 +31,7 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
   if o[0].{{titleCase $value}} != f.{{titleCase $value}} {
     t.Errorf("Expected primary key values to match, {{titleCase $value}} did not match")
   }
+  {{end}}
 
   colsWithoutPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
   fRef := reflect.ValueOf(f).Elem()
@@ -40,5 +41,4 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
       t.Errorf("Expected all other columns to be zero value, but column %s was %#v", v, val.Interface())
     }
   }
-  {{end}}
 }

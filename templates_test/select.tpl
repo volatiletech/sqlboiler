@@ -4,5 +4,5 @@
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}Select(t *testing.T) {
-  t.Errorf("test select not implemented")
+  t.Skip("Test select not implemented")
 }

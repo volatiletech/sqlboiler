@@ -3,12 +3,36 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
+
+func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, t *testing.T) {
+  {{range $key, $value := .Table.Columns}}
+  {{if eq $value.Type "null.Time"}}
+  if o.{{titleCase $value.Name}}.Time.Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.Format("02/01/2006") {
+    t.Errorf("Expected NullTime {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006"))
+  }
+  {{else if eq $value.Type "time.Time"}}
+  if o.{{titleCase $value.Name}}.Format("02/01/2006") != j.{{titleCase $value.Name}}.Format("02/01/2006") {
+    t.Errorf("Expected Time {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006"))
+  }
+  {{else if eq $value.Type "[]byte"}}
+  if !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}) {
+    t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
+  }
+  {{else}}
+  if j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}} {
+    t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
+  }
+  {{end}}
+  {{end}}
+}
+
 func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
   var err error
   var o {{$tableNameSingular}}
   o = {{$tableNameSingular}}{}
 
-  if err = boil.RandomizeStruct(&o); err != nil {
+  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes); err != nil {
     t.Errorf("Could not randomize struct: %s", err)
   }
 
@@ -29,7 +53,7 @@ func Test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
   var err error
   o := make({{$varNameSingular}}Slice, 3)
 
-  if err = boil.RandomizeSlice(&o); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
     t.Errorf("Could not randomize slice: %s", err)
   }
 

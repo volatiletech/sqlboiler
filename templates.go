@@ -130,6 +130,9 @@ var templateFunctions = template.FuncMap{
 	"hasElement":        strmangle.HasElement,
 	"prefixStringSlice": strmangle.PrefixStringSlice,
 
+	// String Map ops
+	"makeStringMap": strmangle.MakeStringMap,
+
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
 
@@ -143,6 +146,7 @@ var templateFunctions = template.FuncMap{
 	"sqlColDefinitions":            bdb.SQLColDefinitions,
 	"sqlColDefStrings":             bdb.SQLColDefStrings,
 	"columnNames":                  bdb.ColumnNames,
+	"columnDBTypes":                bdb.ColumnDBTypes,
 	"toManyRelationships":          bdb.ToManyRelationships,
 	"zeroValue":                    bdb.ZeroValue,
 	"defaultValues":                bdb.DefaultValues,

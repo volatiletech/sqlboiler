@@ -3,28 +3,6 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, t *testing.T) {
-  {{range $key, $value := .Table.Columns}}
-  {{if eq $value.Type "null.Time"}}
-  if o.{{titleCase $value.Name}}.Time.Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.Format("02/01/2006") {
-    t.Errorf("Expected NullTime {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006"))
-  }
-  {{else if eq $value.Type "time.Time"}}
-  if o.{{titleCase $value.Name}}.Format("02/01/2006") != j.{{titleCase $value.Name}}.Format("02/01/2006") {
-    t.Errorf("Expected Time {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006"))
-  }
-  {{else if eq $value.Type "[]byte"}}
-  if !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}) {
-    t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
-  }
-  {{else}}
-  if j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}} {
-    t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
-  }
-  {{end}}
-  {{end}}
-}
-
 func Test{{$tableNamePlural}}(t *testing.T) {
   var err error
 
@@ -32,11 +10,11 @@ func Test{{$tableNamePlural}}(t *testing.T) {
   {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 2)
-  if err = boil.RandomizeSlice(&o); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
-  // insert two random columns to test DeleteAll
+  // insert two random objects to test DeleteAll
   for i := 0; i < len(o); i++ {
     err = o[i].Insert()
     if err != nil {
@@ -59,7 +37,7 @@ func Test{{$tableNamePlural}}(t *testing.T) {
   }
 
   o = make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 

@@ -124,6 +124,29 @@ func TestCamelCase(t *testing.T) {
 	}
 }
 
+func TestMakeStringMap(t *testing.T) {
+	t.Parallel()
+
+	var m map[string]string
+	r := MakeStringMap(m)
+
+	if r != "" {
+		t.Errorf("Expected empty result, got: %s", r)
+	}
+
+	m = map[string]string{
+		"TestOne": "interval",
+		"TestTwo": "integer",
+	}
+
+	r = MakeStringMap(m)
+	e := `"TestOne": "interval", "TestTwo": "integer"`
+
+	if r != e {
+		t.Errorf("Expected %s, got %s", e, r)
+	}
+}
+
 func TestStringMap(t *testing.T) {
 	t.Parallel()
 

@@ -98,7 +98,7 @@ func DBConnect(user, pass, dbname, host string, port int, sslmode string) (*sql.
 	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=%s",
 		user, pass, dbname, host, port, sslmode)
 
-		return sql.Open("postgres", connStr)
+	return sql.Open("postgres", connStr)
 }
 
 // setup dumps the database schema and imports it into a temporary randomly
@@ -122,6 +122,12 @@ func setup() error {
 	testCfg.Postgres.Pass = viper.GetString("postgres.pass")
 	testCfg.Postgres.DBName = getDBNameHash(viper.GetString("postgres.dbname"))
 	testCfg.Postgres.SSLMode = viper.GetString("postgres.sslmode")
+
+	// Set the default SSLMode value
+	if testCfg.Postgres.SSLMode == "" {
+		viper.Set("postgres.sslmode", "require")
+		testCfg.Postgres.SSLMode = viper.GetString("postgres.sslmode")
+	}
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(testCfg.Postgres.User, "postgres.user"),
@@ -227,7 +233,6 @@ func setup() error {
 		testCfg.Postgres.DBName,
 		testCfg.Postgres.User,
 		testCfg.Postgres.Pass,
-		testCfg.Postgres.SSLMode,
 	))
 
 	testPassFilePath := passDir + "/testpwfile"

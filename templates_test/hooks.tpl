@@ -23,5 +23,5 @@ func Test{{$tableNamePlural}}Hooks(t *testing.T) {
   // var err error
 
   {{$varNamePlural}}DeleteAllRows(t)
-  t.Errorf("Hook tests not implemented")
+  t.Skip("Hook tests not implemented")
 }

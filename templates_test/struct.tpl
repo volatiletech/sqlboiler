@@ -1,8 +1,0 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $dbName := singular .Table.Name -}}
-{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
-{{- $varNamePlural := .Table.Name | plural | camelCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Struct(t *testing.T) {
-t.Errorf("test struct not implemented")
-}

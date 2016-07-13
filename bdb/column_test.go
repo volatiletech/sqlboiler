@@ -20,6 +20,21 @@ func TestColumnNames(t *testing.T) {
 	}
 }
 
+func TestColumnDBTypes(t *testing.T) {
+	cols := []Column{
+		Column{Name: "test_one", DBType: "integer"},
+		Column{Name: "test_two", DBType: "interval"},
+	}
+
+	res := ColumnDBTypes(cols)
+	if res["TestOne"] != "integer" {
+		t.Errorf(`Expected res["TestOne"]="integer", got: %s`, res["TestOne"])
+	}
+	if res["TestTwo"] != "interval" {
+		t.Errorf(`Expected res["TestOne"]="interval", got: %s`, res["TestOne"])
+	}
+}
+
 func TestFilterColumnsByDefault(t *testing.T) {
 	t.Parallel()
 

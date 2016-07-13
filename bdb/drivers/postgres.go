@@ -106,7 +106,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 
 		column := bdb.Column{
 			Name:     colName,
-			Type:     colType,
+			DBType:   colType,
 			Default:  colDefault,
 			Nullable: Nullable == "YES",
 		}
@@ -211,7 +211,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 // as a Column object.
 func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	if c.Nullable {
-		switch c.Type {
+		switch c.DBType {
 		case "bigint", "bigserial":
 			c.Type = "null.Int64"
 		case "integer", "serial":
@@ -222,19 +222,19 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float64"
 		case "real":
 			c.Type = "null.Float32"
-		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
 		case "bytea":
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "null.Bool"
-		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":
+		case "date", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "null.Time"
 		default:
 			c.Type = "null.String"
 		}
 	} else {
-		switch c.Type {
+		switch c.DBType {
 		case "bigint", "bigserial":
 			c.Type = "int64"
 		case "integer", "serial":
@@ -245,13 +245,13 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float64"
 		case "real":
 			c.Type = "float32"
-		case "bit", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
 			c.Type = "string"
 		case "bytea":
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "bool"
-		case "date", "interval", "time", "timestamp without time zone", "timestamp with time zone":
+		case "date", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "time.Time"
 		default:
 			c.Type = "string"

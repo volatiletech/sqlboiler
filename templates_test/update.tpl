@@ -4,5 +4,5 @@
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}Update(t *testing.T) {
-  t.Errorf("test update not implemented")
+  t.Skip("test update not implemented")
 }

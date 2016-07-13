@@ -98,6 +98,17 @@ func CamelCase(name string) string {
 	return strings.Join(splits, "")
 }
 
+// MakeStringMap converts a map[string]string into the format:
+// "key": "value", "key": "value"
+func MakeStringMap(types map[string]string) string {
+	var typArr []string
+	for k, v := range types {
+		typArr = append(typArr, fmt.Sprintf(`"%s": "%s"`, k, v))
+	}
+
+	return strings.Join(typArr, ", ")
+}
+
 // StringMap maps a function over a slice of strings.
 func StringMap(modifier func(string) string, strs []string) []string {
 	ret := make([]string, len(strs))

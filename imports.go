@@ -170,6 +170,7 @@ var defaultTestTemplateImports = imports{
 		`"time"`,
 	},
 	thirdParty: importList{
+		`"gopkg.in/nullbio/null.v4"`,
 		`"github.com/nullbio/sqlboiler/boil"`,
 		`"github.com/nullbio/sqlboiler/boil/qm"`,
 	},

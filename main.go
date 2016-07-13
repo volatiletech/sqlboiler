@@ -119,6 +119,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 			SSLMode: viper.GetString("postgres.sslmode"),
 		}
 
+		// Set the default SSLMode value
+		if cmdConfig.Postgres.SSLMode == "" {
+			viper.Set("postgres.sslmode", "require")
+			cmdConfig.Postgres.SSLMode = viper.GetString("postgres.sslmode")
+		}
+
 		err = vala.BeginValidation().Validate(
 			vala.StringNotEmpty(cmdConfig.Postgres.User, "postgres.user"),
 			vala.StringNotEmpty(cmdConfig.Postgres.Pass, "postgres.pass"),

@@ -1,8 +1,11 @@
 package bdb
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/nullbio/sqlboiler/strmangle"
 )
 
 // Column holds information about a database column.
@@ -10,6 +13,7 @@ import (
 type Column struct {
 	Name     string
 	Type     string
+	DBType   string
 	Default  string
 	Nullable bool
 }
@@ -22,6 +26,17 @@ func ColumnNames(cols []Column) []string {
 	}
 
 	return names
+}
+
+// ColumnDBTypes of the columns.
+func ColumnDBTypes(cols []Column) map[string]string {
+	types := map[string]string{}
+
+	for _, c := range cols {
+		types[strmangle.TitleCase(c.Name)] = c.DBType
+	}
+
+	return types
 }
 
 // FilterColumnsByDefault generates the list of columns that have default values
@@ -71,7 +86,9 @@ var (
 	rgxByteaDefaultValue = regexp.MustCompile(`(?i)\\x([0-9A-F]*)`)
 )
 
-// DefaultValues returns the Go converted values of the default value columns
+// DefaultValues returns the Go converted values of the default value columns.
+// For the time columns it will return time.Now() since we cannot extract
+// the true time from the default value string.
 func DefaultValues(columns []Column) []string {
 	var dVals []string
 
@@ -89,17 +106,34 @@ func DefaultValues(columns []Column) []string {
 		switch c.Type {
 		case "null.Uint", "null.Uint8", "null.Uint16", "null.Uint32", "null.Uint64",
 			"null.Int", "null.Int8", "null.Int16", "null.Int32", "null.Int64",
-			"uint", "uint8", "uint16", "uint32", "uint64",
-			"int", "int8", "int16", "int32", "int64",
-			"null.Float32", "null.Float64", "float32", "float64":
-			dVals = append(dVals, dVal)
-		case "null.Bool", "bool":
+			"null.Float32", "null.Float64":
+			dVals = append(dVals,
+				fmt.Sprintf(`null.New%s(%s, true)`,
+					strings.TrimPrefix(c.Type, "null."),
+					dVal),
+			)
+		case "uint", "uint8", "uint16", "uint32", "uint64",
+			"int", "int8", "int16", "int32", "int64", "float32", "float64":
+			dVals = append(dVals, fmt.Sprintf(`%s(%s)`, c.Type, dVal))
+		case "null.Bool":
+			m = rgxBoolDefaultValue.FindStringSubmatch(dVal)
+			if len(m) == 0 {
+				dVals = append(dVals, `null.NewBool(false, true)`)
+			}
+			dVals = append(dVals, fmt.Sprintf(`null.NewBool(%s, true)`, strings.ToLower(dVal)))
+		case "bool":
 			m = rgxBoolDefaultValue.FindStringSubmatch(dVal)
 			if len(m) == 0 {
 				dVals = append(dVals, "false")
 			}
 			dVals = append(dVals, strings.ToLower(m[0]))
-		case "null.Time", "time.Time", "null.String", "string":
+		case "null.Time":
+			dVals = append(dVals, fmt.Sprintf(`null.NewTime(time.Now(), true)`))
+		case "time.Time":
+			dVals = append(dVals, `time.Now()`)
+		case "null.String":
+			dVals = append(dVals, fmt.Sprintf(`null.NewString("%s", true)`, dVal))
+		case "string":
 			dVals = append(dVals, `"`+dVal+`"`)
 		case "[]byte":
 			m := rgxByteaDefaultValue.FindStringSubmatch(dVal)

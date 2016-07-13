@@ -136,7 +136,14 @@ func TestTemplates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to create tempdir: %s", err)
 	}
-	defer os.RemoveAll(state.Config.OutFolder)
+	defer func() {
+		if t.Failed() {
+			t.Log("template test output:", state.Config.OutFolder)
+			return
+		}
+
+		os.RemoveAll(state.Config.OutFolder)
+	}()
 
 	if err = state.Run(true); err != nil {
 		t.Errorf("Unable to run SQLBoilerRun: %s", err)

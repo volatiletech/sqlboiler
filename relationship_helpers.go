@@ -53,7 +53,7 @@ func createTextsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.To
 	if colName := strings.TrimSuffix(rel.ForeignColumn, "_id"); r.LocalTable.NameSingular == colName {
 		r.Function.Name = r.ForeignTable.NamePluralGo
 	} else {
-		r.Function.Name = r.ForeignTable.NamePluralGo + strmangle.TitleCase(colName)
+		r.Function.Name = strmangle.TitleCase(colName) + r.ForeignTable.NamePluralGo
 	}
 
 	if rel.Nullable {

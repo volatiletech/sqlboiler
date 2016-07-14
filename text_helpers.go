@@ -32,9 +32,9 @@ type RelationshipToManyTexts struct {
 	}
 }
 
-// createTextsFromRelationship creates a struct that does a lot of the text
+// textsFromRelationship creates a struct that does a lot of the text
 // transformation in advance for a given relationship.
-func createTextsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) RelationshipToManyTexts {
+func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) RelationshipToManyTexts {
 	r := RelationshipToManyTexts{}
 	r.LocalTable.NameSingular = strmangle.Singular(table.Name)
 	r.LocalTable.NameGo = strmangle.TitleCase(r.LocalTable.NameSingular)
@@ -50,7 +50,7 @@ func createTextsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.To
 	// Check to see if the foreign key name is the same as the local table name.
 	// Simple case: yes - we can name the function the same as the plural table name
 	// Not simple case: We have to name the function based off the foreign key and
-	if colName := strings.TrimSuffix(rel.ForeignColumn, "_id"); r.LocalTable.NameSingular == colName {
+	if colName := strings.TrimSuffix(rel.ForeignColumn, "_id"); rel.ToJoinTable || r.LocalTable.NameSingular == colName {
 		r.Function.Name = r.ForeignTable.NamePluralGo
 	} else {
 		r.Function.Name = strmangle.TitleCase(colName) + r.ForeignTable.NamePluralGo
@@ -63,16 +63,12 @@ func createTextsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.To
 		r.Function.LocalAssignment = strmangle.TitleCase(rel.Column)
 	}
 
-	if !rel.ToJoinTable {
-		if rel.ForeignColumnNullable {
-			foreignTable := bdb.GetTable(tables, rel.ForeignTable)
-			col := foreignTable.GetColumn(rel.ForeignColumn)
-			r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.ForeignColumn), strings.TrimPrefix(col.Type, "null."))
-		} else {
-			r.Function.ForeignAssignment = strmangle.TitleCase(rel.ForeignColumn)
-		}
-
-		return r
+	if rel.ForeignColumnNullable {
+		foreignTable := bdb.GetTable(tables, rel.ForeignTable)
+		col := foreignTable.GetColumn(rel.ForeignColumn)
+		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.ForeignColumn), strings.TrimPrefix(col.Type, "null."))
+	} else {
+		r.Function.ForeignAssignment = strmangle.TitleCase(rel.ForeignColumn)
 	}
 
 	/*if rel.ForeignColumnNullable {

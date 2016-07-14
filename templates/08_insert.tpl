@@ -11,7 +11,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }
 
-  wl, returnColumns := o.generateInsertColumns(whitelist)
+  wl, returnColumns := o.generateInsertColumns(whitelist...)
 
   var err error
   if err := o.doBeforeCreateHooks(); err != nil {
@@ -75,7 +75,7 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
 }
 
 // generateInsertColumns generates the whitelist columns and return columns for an insert statement
-func (o *{{$tableNameSingular}}) generateInsertColumns(whitelist []string) ([]string, []string) {
+func (o *{{$tableNameSingular}}) generateInsertColumns(whitelist ...string) ([]string, []string) {
   var wl []string
 
   wl = append(wl, whitelist...)

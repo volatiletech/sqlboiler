@@ -26,7 +26,7 @@ func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   }
 
   o := make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
@@ -58,7 +58,7 @@ func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
 
   // insert random columns to test DeleteAll
   o := make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
@@ -88,7 +88,7 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
 
   // insert random columns to test Delete
   o := make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 

@@ -114,7 +114,7 @@ func IsValueMatch(obj interface{}, columns []string, values []interface{}) []err
 // RandomizeSlice takes a pointer to a slice of pointers to objects
 // and fills the pointed to objects with random data.
 // It will ignore the fields in the blacklist.
-func RandomizeSlice(obj interface{}, colTypes map[string]string, blacklist ...string) error {
+func RandomizeSlice(obj interface{}, colTypes map[string]string, includeInvalid bool, blacklist ...string) error {
 	ptrSlice := reflect.ValueOf(obj)
 	typ := ptrSlice.Type()
 	ptrSlice = ptrSlice.Elem()
@@ -140,7 +140,7 @@ func RandomizeSlice(obj interface{}, colTypes map[string]string, blacklist ...st
 	for i := 0; i < ptrSlice.Len(); i++ {
 		o := ptrSlice.Index(i)
 		o.Set(reflect.New(structTyp))
-		if err := RandomizeStruct(o.Interface(), colTypes, blacklist...); err != nil {
+		if err := RandomizeStruct(o.Interface(), colTypes, includeInvalid, blacklist...); err != nil {
 			return err
 		}
 	}
@@ -150,7 +150,7 @@ func RandomizeSlice(obj interface{}, colTypes map[string]string, blacklist ...st
 
 // RandomizeStruct takes an object and fills it with random data.
 // It will ignore the fields in the blacklist.
-func RandomizeStruct(str interface{}, colTypes map[string]string, blacklist ...string) error {
+func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid bool, blacklist ...string) error {
 	// Don't modify blacklist
 	copyBlacklist := make([]string, len(blacklist))
 	copy(copyBlacklist, blacklist)
@@ -188,7 +188,7 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, blacklist ...s
 		}
 
 		fieldDBType := colTypes[typ.Field(i).Name]
-		if err := randomizeField(fieldVal, fieldDBType); err != nil {
+		if err := randomizeField(fieldVal, fieldDBType, includeInvalid); err != nil {
 			return err
 		}
 	}
@@ -214,14 +214,19 @@ func randDate(sd int) time.Time {
 	return t
 }
 
-func randomizeField(field reflect.Value, fieldType string) error {
+func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) error {
 	kind := field.Kind()
 	typ := field.Type()
 
 	var newVal interface{}
 
 	if kind == reflect.Struct {
-		b := rand.Intn(2) == 1
+		var b bool
+		if includeInvalid {
+			b = rand.Intn(2) == 1
+		} else {
+			b = true
+		}
 		switch typ {
 		case typeNullBool:
 			if b {
@@ -347,11 +352,13 @@ func randomizeField(field reflect.Value, fieldType string) error {
 		case reflect.Uint64:
 			newVal = uint64(sd.nextInt())
 		case reflect.Bool:
-			if sd.nextInt()%2 == 0 {
-				newVal = true
+			var b bool
+			if includeInvalid {
+				b = sd.nextInt()%2 == 0
 			} else {
-				newVal = false
+				b = true
 			}
+			newVal = b
 		case reflect.String:
 			if fieldType == "interval" {
 				newVal = strconv.Itoa((sd.nextInt()%26)+2) + " days"

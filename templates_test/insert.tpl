@@ -19,7 +19,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
@@ -43,34 +43,33 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
-  {{with .Table.Columns | filterColumnsByAutoIncrement true | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}
-  // Ensure the auto increment columns are returned in the object
-  if errs = boil.IsZeroValue(item, false, {{.}}); errs != nil {
-    for _, e := range errs {
-      t.Errorf("Expected auto-increment columns to be greater than 0, err: %s\n", e)
+  for _, c := range {{$varNameSingular}}AutoIncrementColumns {
+    // Ensure the auto increment columns are returned in the object.
+    if errs = boil.IsZeroValue(item, false, c); errs != nil {
+      for _, e := range errs {
+        t.Errorf("Expected auto-increment columns to be greater than 0, err: %s\n", e)
+      }
     }
   }
-  {{end}}
 
-  {{with .Table.Columns | filterColumnsBySimpleDefault}}
-  simpleDefaults := []string{{"{"}}{{. | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
-  defaultValues := []interface{}{{"{"}}{{. | defaultValues | join ", "}}{{"}"}}
+  defaultValues := []interface{}{{"{"}}{{.Table.Columns | filterColumnsBySimpleDefault | defaultValues | join ", "}}{{"}"}}
 
-  if len(simpleDefaults) != len(defaultValues) {
-    t.Fatalf("Mismatch between slice lengths: %d, %d", len(simpleDefaults), len(defaultValues))
-  }
+  // Ensure the simple default column values are returned correctly.
+  if len({{$varNameSingular}}ColumnsWithSimpleDefault) > 0 && len(defaultValues) > 0 {
+    if len({{$varNameSingular}}ColumnsWithSimpleDefault) != len(defaultValues) {
+      t.Fatalf("Mismatch between slice lengths: %d, %d", len({{$varNameSingular}}ColumnsWithSimpleDefault), len(defaultValues))
+    }
 
-  if errs = boil.IsValueMatch(item, simpleDefaults, defaultValues); errs != nil {
-    for _, e := range errs {
-      t.Errorf("Expected default value to match column value, err: %s\n", e);
+    if errs = boil.IsValueMatch(item, {{$varNameSingular}}ColumnsWithSimpleDefault, defaultValues); errs != nil {
+      for _, e := range errs {
+        t.Errorf("Expected default value to match column value, err: %s\n", e);
+      }
     }
   }
-  {{end}}
 
-  {{with .Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false}}
+  regularCols := []string{{"{"}}{{.Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
+
   // Ensure the non-defaultvalue columns and non-autoincrement columns are stored correctly as zero or null values.
-  regularCols := []string{{"{"}}{{. | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
-
   for _, c := range regularCols {
     rv := reflect.Indirect(reflect.ValueOf(item))
     field := rv.FieldByName(strmangle.TitleCase(c))
@@ -82,5 +81,28 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
       t.Errorf("Expected column %s to be zero value, got: %v, wanted: %v", c, fv, zv)
     }
   }
-  {{end}}
+
+  item = &{{$tableNameSingular}}{}
+
+  wl, rc := item.generateInsertColumns()
+  if !reflect.DeepEqual(rc, {{$varNameSingular}}ColumnsWithDefault) {
+    t.Errorf("Expected return columns to contain all columns with default values:\n\nGot: %v\nWanted: %v", rc, {{$varNameSingular}}ColumnsWithDefault)
+  }
+
+  if !reflect.DeepEqual(wl, {{$varNameSingular}}ColumnsWithoutDefault) {
+    t.Errorf("Expected whitelist to contain all columns without default values:\n\nGot: %v\nWanted: %v", wl, {{$varNameSingular}}ColumnsWithoutDefault)
+  }
+
+  if err = boil.RandomizeStruct(item, {{$varNameSingular}}DBTypes, false); err != nil {
+    t.Errorf("Unable to randomize item: %s", err)
+  }
+
+  wl, rc = item.generateInsertColumns()
+  if len(rc) > 0 {
+    t.Errorf("Expected return columns to contain no columns:\n\nGot: %v", rc)
+  }
+
+  if !reflect.DeepEqual(wl, {{$varNameSingular}}Columns) {
+    t.Errorf("Expected whitelist to contain all columns values:\n\nGot: %v\nWanted: %v", wl, {{$varNameSingular}}Columns)
+  }
 }

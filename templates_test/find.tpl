@@ -9,7 +9,7 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
   {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes); err != nil {
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 

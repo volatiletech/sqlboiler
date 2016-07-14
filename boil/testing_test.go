@@ -155,7 +155,7 @@ func TestRandomizeStruct(t *testing.T) {
 		"NullInterval": "interval",
 	}
 
-	err := RandomizeStruct(&testStruct, fieldTypes, "Ignore")
+	err := RandomizeStruct(&testStruct, fieldTypes, true, "Ignore")
 	if err != nil {
 		t.Fatal(err)
 	}

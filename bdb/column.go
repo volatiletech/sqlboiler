@@ -155,26 +155,3 @@ func DefaultValues(columns []Column) []string {
 
 	return dVals
 }
-
-// ZeroValue returns the zero value string of the column type
-func ZeroValue(column Column) string {
-	switch column.Type {
-	case "null.Uint", "null.Uint8", "null.Uint16", "null.Uint32", "null.Uint64",
-		"null.Int", "null.Int8", "null.Int16", "null.Int32", "null.Int64",
-		"uint", "uint8", "uint16", "uint32", "uint64",
-		"int", "int8", "int16", "int32", "int64":
-		return `0`
-	case "null.Float32", "null.Float64", "float32", "float64":
-		return `0.0`
-	case "null.String", "string":
-		return `""`
-	case "null.Bool", "bool":
-		return `false`
-	case "null.Time", "time.Time":
-		return `time.Time{}`
-	case "[]byte":
-		return `[]byte(nil)`
-	default:
-		return ""
-	}
-}

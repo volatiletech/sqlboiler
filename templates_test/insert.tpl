@@ -15,7 +15,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
 
   nullTime := null.NewTime(time.Time{}, true)
   _ = nullTime
-  
+
   {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 3)
@@ -35,15 +35,6 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     j[i], err = {{$tableNameSingular}}Find({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
     {{$varNameSingular}}CompareVals(o[i], j[i], t)
   }
-
-  /**
-   * Edge case test for:
-   * No includes specified, all zero values.
-   *
-   * Expected result:
-   * Columns with default values set to their default values.
-   * Columns without default values set to their zero value.
-   */
 
   {{$varNamePlural}}DeleteAllRows(t)
 
@@ -78,32 +69,18 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
 
   {{with .Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false}}
   // Ensure the non-defaultvalue columns and non-autoincrement columns are stored correctly as zero or null values.
-    {{range .}}
-      {{- $tc := titleCase .Name -}}
-      {{- $zv := zeroValue . -}}
-      {{$ty := trimPrefix "null." .Type}}
-      {{if and (ne $ty "[]byte") .Nullable}}
-  if item.{{$tc}}.Valid == true {
-    t.Errorf("Expected the nullable column {{$tc}} of {{$tableNameSingular}} to be invalid (null).")
+  regularCols := []string{{"{"}}{{. | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
+
+  for _, c := range regularCols {
+    rv := reflect.Indirect(reflect.ValueOf(item))
+    field := rv.FieldByName(strmangle.TitleCase(c))
+
+    zv := reflect.Zero(field.Type()).Interface()
+    fv := field.Interface()
+
+    if !reflect.DeepEqual(zv, fv) {
+      t.Errorf("Expected column %s to be zero value, got: %v, wanted: %v", c, fv, zv)
+    }
   }
-        {{if eq .Type "null.Time"}}
-  if item.{{$tc}}.{{$ty}}.String() != emptyTime {
-        {{else}}
-  if item.{{$tc}}.{{$ty}} != {{$zv}} {
-        {{- end -}}
-    t.Errorf("Expected the nullable column {{$tc}} of {{$tableNameSingular}} to be a zero-value (null):\n%#v\n%v\n\n", item.{{$tc}}.{{$ty}}, {{$zv}})
-  }
-      {{else}}
-        {{if eq .Type "[]byte"}}
-  if string(item.{{$tc}}) != string({{$zv}}) {
-        {{else if eq .Type "time.Time"}}
-  if item.{{$tc}}.String() != emptyTime {
-        {{else}}
-  if item.{{$tc}} != {{$zv}} {
-        {{- end -}}
-    t.Errorf("Expected the column {{$tc}} of {{$tableNameSingular}} to be a zero-value (null):\n%#v\n%v\n\n", item.{{$tc}}, {{$zv}})
-  }
-      {{- end}}
-    {{end}}
   {{end}}
 }

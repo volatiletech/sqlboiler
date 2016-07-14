@@ -173,6 +173,7 @@ var defaultTestTemplateImports = imports{
 		`"gopkg.in/nullbio/null.v4"`,
 		`"github.com/nullbio/sqlboiler/boil"`,
 		`"github.com/nullbio/sqlboiler/boil/qm"`,
+		`"github.com/nullbio/sqlboiler/strmangle"`,
 	},
 }
 

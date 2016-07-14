@@ -18,8 +18,8 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
     t.Fatal(err)
   }
 
-  boil.RandomizeStruct(&b)
-  boil.RandomizeStruct(&c)
+  boil.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true)
+  boil.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true)
   b.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
   c.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
   if err := b.InsertX(tx); err != nil {

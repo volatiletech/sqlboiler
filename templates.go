@@ -105,12 +105,12 @@ var templateStringMappers = map[string]func(string) string{
 // add a function pointer here.
 var templateFunctions = template.FuncMap{
 	// String ops
-	"substring":  strmangle.Substring,
 	"trimPrefix": func(pre, str string) string { return strings.TrimPrefix(str, pre) },
 	"remove":     func(rem, str string) string { return strings.Replace(str, rem, "", -1) },
 	"replace":    func(rep, with, str string) string { return strings.Replace(str, rep, with, -1) },
 	"prefix":     func(add, str string) string { return fmt.Sprintf("%s%s", add, str) },
 	"quoteWrap":  func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"substring":  strmangle.Substring,
 	"id":         strmangle.Identifier,
 
 	// Pluralization
@@ -135,6 +135,9 @@ var templateFunctions = template.FuncMap{
 
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
+
+	// Text helpers
+	"textsFromRelationship": textsFromRelationship,
 
 	// dbdrivers ops
 	"driverUsesLastInsertID":       strmangle.DriverUsesLastInsertID,

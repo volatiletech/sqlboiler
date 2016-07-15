@@ -150,6 +150,7 @@ var templateFunctions = template.FuncMap{
 	"sqlColDefinitions":            bdb.SQLColDefinitions,
 	"sqlColDefStrings":             bdb.SQLColDefStrings,
 	"columnNames":                  bdb.ColumnNames,
+	"columnTypes":                  bdb.ColumnTypes,
 	"columnDBTypes":                bdb.ColumnDBTypes,
 	"toManyRelationships":          bdb.ToManyRelationships,
 	"defaultValues":                bdb.DefaultValues,

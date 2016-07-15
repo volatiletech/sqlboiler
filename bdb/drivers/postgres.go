@@ -81,9 +81,15 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 	var columns []bdb.Column
 
 	rows, err := p.dbConn.Query(`
-	select column_name, data_type, column_default, is_nullable
-	from information_schema.columns
-	where table_name=$1 and table_schema = 'public'
+		select column_name, data_type, column_default, is_nullable,
+			(
+				select cast(count(*) as bit) as is_unique
+				from information_schema.constraint_column_usage as ccu
+		    inner join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name
+		    where ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
+			) as is_unique
+		from information_schema.columns as c
+		where table_name=$1 and table_schema = 'public';
 	`, tableName)
 
 	if err != nil {
@@ -92,9 +98,10 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		var colName, colType, colDefault, Nullable string
+		var colName, colType, colDefault, nullable string
+		var unique bool
 		var defaultPtr *string
-		if err := rows.Scan(&colName, &colType, &defaultPtr, &Nullable); err != nil {
+		if err := rows.Scan(&colName, &colType, &defaultPtr, &nullable, &unique); err != nil {
 			return nil, fmt.Errorf("unable to scan for table %s: %s", tableName, err)
 		}
 
@@ -108,7 +115,8 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 			Name:     colName,
 			DBType:   colType,
 			Default:  colDefault,
-			Nullable: Nullable == "YES",
+			Nullable: nullable == "YES",
+			Unique:   unique,
 		}
 		columns = append(columns, column)
 	}

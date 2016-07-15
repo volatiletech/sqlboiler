@@ -125,22 +125,22 @@ func TestSetIsJoinTable(t *testing.T) {
 	}
 }
 
-func TestSetForeignKeyNullability(t *testing.T) {
+func TestSetForeignKeyConstraints(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
 		Table{
 			Name: "one",
 			Columns: []Column{
-				Column{Name: "id1", Type: "string", Nullable: false},
-				Column{Name: "id2", Type: "string", Nullable: true},
+				Column{Name: "id1", Type: "string", Nullable: false, Unique: false},
+				Column{Name: "id2", Type: "string", Nullable: true, Unique: true},
 			},
 		},
 		Table{
 			Name: "other",
 			Columns: []Column{
-				Column{Name: "one_id_1", Type: "string", Nullable: false},
-				Column{Name: "one_id_2", Type: "string", Nullable: true},
+				Column{Name: "one_id_1", Type: "string", Nullable: false, Unique: false},
+				Column{Name: "one_id_2", Type: "string", Nullable: true, Unique: true},
 			},
 			FKeys: []ForeignKey{
 				{Column: "one_id_1", ForeignTable: "one", ForeignColumn: "id1"},
@@ -149,22 +149,34 @@ func TestSetForeignKeyNullability(t *testing.T) {
 		},
 	}
 
-	setForeignKeyNullability(&tables[0], tables)
-	setForeignKeyNullability(&tables[1], tables)
+	setForeignKeyConstraints(&tables[0], tables)
+	setForeignKeyConstraints(&tables[1], tables)
 
 	first := tables[1].FKeys[0]
 	second := tables[1].FKeys[1]
 	if first.Nullable {
 		t.Error("should not be nullable")
 	}
+	if first.Unique {
+		t.Error("should not be unique")
+	}
 	if first.ForeignColumnNullable {
 		t.Error("should be nullable")
+	}
+	if first.ForeignColumnUnique {
+		t.Error("should be unique")
 	}
 	if !second.Nullable {
 		t.Error("should be nullable")
 	}
+	if !second.Unique {
+		t.Error("should be unique")
+	}
 	if !second.ForeignColumnNullable {
 		t.Error("should be nullable")
+	}
+	if !second.ForeignColumnUnique {
+		t.Error("should be unique")
 	}
 }
 

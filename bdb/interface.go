@@ -59,7 +59,7 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 	// Relationships have a dependency on foreign key nullability.
 	for i := range tables {
 		tbl := &tables[i]
-		setForeignKeyNullability(tbl, tables)
+		setForeignKeyConstraints(tbl, tables)
 	}
 	for i := range tables {
 		tbl := &tables[i]
@@ -93,14 +93,16 @@ func setIsJoinTable(t *Table) {
 	t.IsJoinTable = true
 }
 
-func setForeignKeyNullability(t *Table, tables []Table) {
+func setForeignKeyConstraints(t *Table, tables []Table) {
 	for i, fkey := range t.FKeys {
 		localColumn := t.GetColumn(fkey.Column)
 		foreignTable := GetTable(tables, fkey.ForeignTable)
 		foreignColumn := foreignTable.GetColumn(fkey.ForeignColumn)
 
 		t.FKeys[i].Nullable = localColumn.Nullable
+		t.FKeys[i].Unique = localColumn.Unique
 		t.FKeys[i].ForeignColumnNullable = foreignColumn.Nullable
+		t.FKeys[i].ForeignColumnUnique = foreignColumn.Unique
 	}
 }
 

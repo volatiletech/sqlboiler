@@ -16,6 +16,7 @@ type Column struct {
 	DBType   string
 	Default  string
 	Nullable bool
+	Unique   bool
 }
 
 // ColumnNames of the columns.

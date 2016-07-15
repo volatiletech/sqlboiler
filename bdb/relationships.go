@@ -6,17 +6,23 @@ package bdb
 type ToManyRelationship struct {
 	Column   string
 	Nullable bool
+	Unique   bool
 
 	ForeignTable          string
 	ForeignColumn         string
 	ForeignColumnNullable bool
+	ForeignColumnUnique   bool
 
-	ToJoinTable               bool
-	JoinTable                 string
-	JoinLocalColumn           string
-	JoinLocalColumnNullable   bool
+	ToJoinTable bool
+	JoinTable   string
+
+	JoinLocalColumn         string
+	JoinLocalColumnNullable bool
+	JoinLocalColumnUnique   bool
+
 	JoinForeignColumn         string
 	JoinForeignColumnNullable bool
+	JoinForeignColumnUnique   bool
 }
 
 // ToManyRelationships relationship lookups
@@ -53,9 +59,11 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 		return ToManyRelationship{
 			Column:                foreignKey.ForeignColumn,
 			Nullable:              col.Nullable,
+			Unique:                col.Unique,
 			ForeignTable:          foreignTable.Name,
 			ForeignColumn:         foreignKey.Column,
 			ForeignColumnNullable: foreignKey.Nullable,
+			ForeignColumnUnique:   foreignKey.Unique,
 			ToJoinTable:           false,
 		}
 	}
@@ -64,6 +72,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 	relationship := ToManyRelationship{
 		Column:      foreignKey.ForeignColumn,
 		Nullable:    col.Nullable,
+		Unique:      col.Unique,
 		ToJoinTable: true,
 		JoinTable:   foreignTable.Name,
 	}
@@ -72,15 +81,18 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 		if fk.ForeignTable != localTable.Name {
 			relationship.JoinForeignColumn = fk.Column
 			relationship.JoinForeignColumnNullable = fk.Nullable
+			relationship.JoinForeignColumnUnique = fk.Unique
 
 			foreignTable := GetTable(tables, fk.ForeignTable)
 			foreignCol := foreignTable.GetColumn(fk.ForeignColumn)
 			relationship.ForeignTable = fk.ForeignTable
 			relationship.ForeignColumn = fk.ForeignColumn
 			relationship.ForeignColumnNullable = foreignCol.Nullable
+			relationship.ForeignColumnUnique = foreignCol.Unique
 		} else {
 			relationship.JoinLocalColumn = fk.Column
 			relationship.JoinLocalColumnNullable = fk.Nullable
+			relationship.JoinLocalColumnUnique = fk.Unique
 		}
 	}
 

@@ -1,6 +1,9 @@
 package bdb
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestToManyRelationships(t *testing.T) {
 	t.Parallel()
@@ -46,103 +49,75 @@ func TestToManyRelationships(t *testing.T) {
 	}
 
 	relationships := ToManyRelationships("users", tables)
+
+	expected := []ToManyRelationship{
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: false,
+			Unique:   false,
+
+			ForeignTable:          "videos",
+			ForeignColumn:         "user_id",
+			ForeignColumnNullable: false,
+			ForeignColumnUnique:   false,
+
+			ToJoinTable: false,
+		},
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: false,
+			Unique:   false,
+
+			ForeignTable:          "notifications",
+			ForeignColumn:         "user_id",
+			ForeignColumnNullable: false,
+			ForeignColumnUnique:   false,
+
+			ToJoinTable: false,
+		},
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: false,
+			Unique:   false,
+
+			ForeignTable:          "notifications",
+			ForeignColumn:         "source_id",
+			ForeignColumnNullable: false,
+			ForeignColumnUnique:   false,
+
+			ToJoinTable: false,
+		},
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: false,
+			Unique:   false,
+
+			ForeignTable:          "videos",
+			ForeignColumn:         "id",
+			ForeignColumnNullable: false,
+			ForeignColumnUnique:   false,
+
+			ToJoinTable: true,
+			JoinTable:   "users_video_tags",
+
+			JoinLocalColumn:         "user_id",
+			JoinLocalColumnNullable: false,
+			JoinLocalColumnUnique:   false,
+
+			JoinForeignColumn:         "video_id",
+			JoinForeignColumnNullable: false,
+			JoinForeignColumnUnique:   false,
+		},
+	}
+
 	if len(relationships) != 4 {
 		t.Error("wrong # of relationships:", len(relationships))
 	}
 
-	r := relationships[0]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if r.Nullable {
-		t.Error("should not be nullable")
-	}
-	if r.ForeignTable != "videos" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.ForeignColumn != "user_id" {
-		t.Error("wrong foreign column:", r.ForeignColumn)
-	}
-	if r.ForeignColumnNullable {
-		t.Error("should not be nullable")
-	}
-	if r.ToJoinTable {
-		t.Error("not a join table")
-	}
-
-	r = relationships[1]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if r.Nullable {
-		t.Error("should not be nullable")
-	}
-	if r.ForeignTable != "notifications" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.ForeignColumn != "user_id" {
-		t.Error("wrong foreign column:", r.ForeignColumn)
-	}
-	if r.ForeignColumnNullable {
-		t.Error("should not be nullable")
-	}
-	if r.ToJoinTable {
-		t.Error("not a join table")
-	}
-
-	r = relationships[2]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if r.Nullable {
-		t.Error("should not be nullable")
-	}
-	if r.ForeignTable != "notifications" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.ForeignColumn != "source_id" {
-		t.Error("wrong foreign column:", r.ForeignColumn)
-	}
-	if r.ForeignColumnNullable {
-		t.Error("should not be nullable")
-	}
-	if r.ToJoinTable {
-		t.Error("not a join table")
-	}
-
-	r = relationships[3]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if r.Nullable {
-		t.Error("should not be nullable")
-	}
-	if r.ForeignColumn != "id" {
-		t.Error("wrong foreign column:", r.Column)
-	}
-	if r.ForeignColumnNullable {
-		t.Error("should not be nullable")
-	}
-	if r.ForeignTable != "videos" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.JoinTable != "users_video_tags" {
-		t.Error("wrong join table:", r.ForeignTable)
-	}
-	if r.JoinLocalColumn != "user_id" {
-		t.Error("wrong local join column:", r.JoinLocalColumn)
-	}
-	if r.JoinLocalColumnNullable {
-		t.Error("should not be nullable")
-	}
-	if r.JoinForeignColumn != "video_id" {
-		t.Error("wrong foreign join column:", r.JoinForeignColumn)
-	}
-	if r.JoinForeignColumnNullable {
-		t.Error("should not be nullable")
-	}
-	if !r.ToJoinTable {
-		t.Error("expected a join table")
+	for i, v := range relationships {
+		if !reflect.DeepEqual(v, expected[i]) {
+			t.Errorf("[%d] Mismatch between relationships:\n\n%#v\n\n%#v\n\n", i, v, expected[i])
+		}
 	}
 }
 
@@ -150,41 +125,41 @@ func TestToManyRelationshipsNull(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		Table{Name: "users", Columns: []Column{{Name: "id", Nullable: true}}},
-		Table{Name: "contests", Columns: []Column{{Name: "id", Nullable: true}}},
+		Table{Name: "users", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
+		Table{Name: "contests", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
 		Table{
 			Name: "videos",
 			Columns: []Column{
-				{Name: "id", Nullable: true},
-				{Name: "user_id", Nullable: true},
-				{Name: "contest_id", Nullable: true},
+				{Name: "id", Nullable: true, Unique: true},
+				{Name: "user_id", Nullable: true, Unique: true},
+				{Name: "contest_id", Nullable: true, Unique: true},
 			},
 			FKeys: []ForeignKey{
-				{Name: "videos_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true},
-				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id", Nullable: true},
+				{Name: "videos_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id", Nullable: true, Unique: true},
 			},
 		},
 		Table{
 			Name: "notifications",
 			Columns: []Column{
-				{Name: "user_id", Nullable: true},
-				{Name: "source_id", Nullable: true},
+				{Name: "user_id", Nullable: true, Unique: true},
+				{Name: "source_id", Nullable: true, Unique: true},
 			},
 			FKeys: []ForeignKey{
-				{Name: "notifications_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true},
-				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true},
+				{Name: "notifications_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
 			},
 		},
 		Table{
 			Name:        "users_video_tags",
 			IsJoinTable: true,
 			Columns: []Column{
-				{Name: "user_id", Nullable: true},
-				{Name: "video_id", Nullable: true},
+				{Name: "user_id", Nullable: true, Unique: true},
+				{Name: "video_id", Nullable: true, Unique: true},
 			},
 			FKeys: []ForeignKey{
-				{Name: "user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true},
-				{Name: "video_id_fk", Column: "video_id", ForeignTable: "videos", ForeignColumn: "id", Nullable: true},
+				{Name: "user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "video_id_fk", Column: "video_id", ForeignTable: "videos", ForeignColumn: "id", Nullable: true, Unique: true},
 			},
 		},
 	}
@@ -194,98 +169,69 @@ func TestToManyRelationshipsNull(t *testing.T) {
 		t.Error("wrong # of relationships:", len(relationships))
 	}
 
-	r := relationships[0]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if !r.Nullable {
-		t.Error("should be nullable")
-	}
-	if r.ForeignTable != "videos" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.ForeignColumn != "user_id" {
-		t.Error("wrong foreign column:", r.ForeignColumn)
-	}
-	if !r.ForeignColumnNullable {
-		t.Error("should be nullable")
-	}
-	if r.ToJoinTable {
-		t.Error("not a join table")
+	expected := []ToManyRelationship{
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: true,
+			Unique:   true,
+
+			ForeignTable:          "videos",
+			ForeignColumn:         "user_id",
+			ForeignColumnNullable: true,
+			ForeignColumnUnique:   true,
+
+			ToJoinTable: false,
+		},
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: true,
+			Unique:   true,
+
+			ForeignTable:          "notifications",
+			ForeignColumn:         "user_id",
+			ForeignColumnNullable: true,
+			ForeignColumnUnique:   true,
+
+			ToJoinTable: false,
+		},
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: true,
+			Unique:   true,
+
+			ForeignTable:          "notifications",
+			ForeignColumn:         "source_id",
+			ForeignColumnNullable: true,
+			ForeignColumnUnique:   true,
+
+			ToJoinTable: false,
+		},
+		ToManyRelationship{
+			Column:   "id",
+			Nullable: true,
+			Unique:   true,
+
+			ForeignTable:          "videos",
+			ForeignColumn:         "id",
+			ForeignColumnNullable: true,
+			ForeignColumnUnique:   true,
+
+			ToJoinTable: true,
+			JoinTable:   "users_video_tags",
+
+			JoinLocalColumn:         "user_id",
+			JoinLocalColumnNullable: true,
+			JoinLocalColumnUnique:   true,
+
+			JoinForeignColumn:         "video_id",
+			JoinForeignColumnNullable: true,
+			JoinForeignColumnUnique:   true,
+		},
 	}
 
-	r = relationships[1]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if !r.Nullable {
-		t.Error("should be nullable")
-	}
-	if r.ForeignTable != "notifications" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.ForeignColumn != "user_id" {
-		t.Error("wrong foreign column:", r.ForeignColumn)
-	}
-	if !r.ForeignColumnNullable {
-		t.Error("should be nullable")
-	}
-	if r.ToJoinTable {
-		t.Error("not a join table")
-	}
-
-	r = relationships[2]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if !r.Nullable {
-		t.Error("should be nullable")
-	}
-	if r.ForeignTable != "notifications" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.ForeignColumn != "source_id" {
-		t.Error("wrong foreign column:", r.ForeignColumn)
-	}
-	if !r.ForeignColumnNullable {
-		t.Error("should be nullable")
-	}
-	if r.ToJoinTable {
-		t.Error("not a join table")
-	}
-
-	r = relationships[3]
-	if r.Column != "id" {
-		t.Error("wrong local column:", r.Column)
-	}
-	if !r.Nullable {
-		t.Error("should be nullable")
-	}
-	if r.ForeignColumn != "id" {
-		t.Error("wrong foreign column:", r.Column)
-	}
-	if !r.ForeignColumnNullable {
-		t.Error("should be nullable")
-	}
-	if r.ForeignTable != "videos" {
-		t.Error("wrong foreign table:", r.ForeignTable)
-	}
-	if r.JoinTable != "users_video_tags" {
-		t.Error("wrong join table:", r.ForeignTable)
-	}
-	if r.JoinLocalColumn != "user_id" {
-		t.Error("wrong local join column:", r.JoinLocalColumn)
-	}
-	if !r.JoinLocalColumnNullable {
-		t.Error("should be nullable")
-	}
-	if r.JoinForeignColumn != "video_id" {
-		t.Error("wrong foreign join column:", r.JoinForeignColumn)
-	}
-	if !r.JoinForeignColumnNullable {
-		t.Error("should be nullable")
-	}
-	if !r.ToJoinTable {
-		t.Error("expected a join table")
+	for i, v := range relationships {
+		if !reflect.DeepEqual(v, expected[i]) {
+			t.Errorf("[%d] Mismatch between relationships null:\n\n%#v\n\n%#v\n\n", i, v, expected[i])
+		}
 	}
 }

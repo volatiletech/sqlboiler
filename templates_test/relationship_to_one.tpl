@@ -12,12 +12,18 @@ func Test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.Loca
 
   var foreign {{$rel.ForeignTable.NameGo}}
   var local {{$rel.LocalTable.NameGo}}
+  {{if .Nullable -}}
+  local.{{.Column | titleCase}}.Valid = true
+  {{end}}
+  {{- if .ForeignColumnNullable -}}
+  foreign.{{.ForeignColumn | titleCase}}.Valid = true
+  {{end}}
 
   if err := foreign.InsertX(tx); err != nil {
     t.Fatal(err)
   }
 
-  local.{{$rel.Function.LocalAssignment}} = foreign.{{$rel.Function.ForeignAssignment}} 
+  local.{{$rel.Function.LocalAssignment}} = foreign.{{$rel.Function.ForeignAssignment}}
   if err := local.InsertX(tx); err != nil {
     t.Fatal(err)
   }

@@ -8,6 +8,90 @@ import (
 	"github.com/nullbio/sqlboiler/strmangle"
 )
 
+// RelationshipToOneTexts contains text that will be used by templates.
+type RelationshipToOneTexts struct {
+	LocalTable struct {
+		NameGo       string
+		ColumnNameGo string
+	}
+
+	ForeignTable struct {
+		NameGo       string
+		ColumnNameGo string
+	}
+
+	Function struct {
+		Varname  string
+		Receiver string
+
+		LocalAssignment   string
+		ForeignAssignment string
+	}
+}
+
+func textsFromForeignKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) RelationshipToOneTexts {
+	r := RelationshipToOneTexts{}
+
+	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(strings.Replace(table.Name, "_id", "", -1)))
+	r.LocalTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(strings.Replace(fkey.Column, "_id", "", -1)))
+
+	r.ForeignTable.NameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignTable))
+	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(strings.Replace(fkey.ForeignColumn, "_id", "", -1)))
+
+	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
+	r.Function.Receiver = strings.ToLower(table.Name[:1])
+
+	if fkey.Nullable {
+		col := table.GetColumn(fkey.Column)
+		r.Function.LocalAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(fkey.Column), strings.TrimPrefix(col.Type, "null."))
+	} else {
+		r.Function.LocalAssignment = strmangle.TitleCase(fkey.Column)
+	}
+
+	if fkey.ForeignColumnNullable {
+		foreignTable := bdb.GetTable(tables, fkey.ForeignTable)
+		col := foreignTable.GetColumn(fkey.ForeignColumn)
+		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(fkey.ForeignColumn), strings.TrimPrefix(col.Type, "null."))
+	} else {
+		r.Function.ForeignAssignment = strmangle.TitleCase(fkey.ForeignColumn)
+	}
+
+	return r
+}
+
+/*
+  {{- $localTable := .Table.Name | singular | titleCase -}}
+    {{- $localColumn := .Column | remove "_id" | singular | titleCase -}}
+    {{- $foreignColumn := .ForeignColumn | remove "_id" | singular | titleCase -}}
+    {{- $foreignTable := .ForeignTable | singular | titleCase -}}
+    {{- $varname := .ForeignTable | singular | camelCase -}}
+func {{$localTable}}ToOne{{$foreignTable}}_{{$localColumn}}(t *testing.T) {
+  tx, err := boil.Begin()
+  if err != nil {
+    t.Fatal(err)
+  }
+  defer tx.Rollback()
+
+  local := &{{$localTable}}{}
+  foreign := &{{$foreignTable}}{}
+
+  if err := local.InsertX(tx); err != nil {
+    t.Fatal(err)
+  }
+
+  {{if and .Nullable .ForeignColumnNullable -}}
+  foreign.{{.ForeignColumn | titleCase}} = local.{{.Column | titleCase}}
+  {{- else if .Nullable -}}
+  foreign.{{.ForeignColumn | titleCase}} = local.{{.Column | titleCase}}
+  {{- else if .ForeignColumnNullable -}}
+  {{- end}}
+  if err := foreign.InsertX(tx); err != nil {
+    t.Fatal(err)
+  }
+
+  checkForeign, err := local.{{$localColumn}}()
+*/
+
 // RelationshipToManyTexts contains text that will be used by templates.
 type RelationshipToManyTexts struct {
 	LocalTable struct {

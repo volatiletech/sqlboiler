@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -57,7 +56,6 @@ func (fakeDB) TranslateColumnType(c bdb.Column) bdb.Column {
 	return c
 }
 func (fakeDB) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
-	fmt.Println(tableName)
 	return map[string]*bdb.PrimaryKey{
 		"users_videos_tags": &bdb.PrimaryKey{
 			Name:    "user_video_id_pkey",
@@ -68,7 +66,7 @@ func (fakeDB) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
 func (fakeDB) Open() error { return nil }
 func (fakeDB) Close()      {}
 
-func TesttextsFromRelationship(t *testing.T) {
+func TestTextsFromForeignKey(t *testing.T) {
 	t.Parallel()
 
 	tables, err := bdb.Tables(fakeDB(0))
@@ -76,7 +74,35 @@ func TesttextsFromRelationship(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	spew.Dump(tables)
+	videos := bdb.GetTable(tables, "videos")
+	texts := textsFromForeignKey(tables, videos, videos.FKeys[0])
+	expect := RelationshipToOneTexts{}
+
+	expect.LocalTable.NameGo = "Video"
+	expect.LocalTable.ColumnNameGo = "User"
+
+	expect.ForeignTable.NameGo = "User"
+	expect.ForeignTable.ColumnNameGo = "ID"
+
+	expect.Function.Varname = "user"
+	expect.Function.Receiver = "v"
+
+	expect.Function.LocalAssignment = "UserID.Int32"
+	expect.Function.ForeignAssignment = "ID"
+
+	if !reflect.DeepEqual(expect, texts) {
+		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
+	}
+}
+
+func TestTextsFromRelationship(t *testing.T) {
+	t.Parallel()
+
+	tables, err := bdb.Tables(fakeDB(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	users := bdb.GetTable(tables, "users")
 	texts := textsFromRelationship(tables, users, users.ToManyRelationships[0])
 	expect := RelationshipToManyTexts{}

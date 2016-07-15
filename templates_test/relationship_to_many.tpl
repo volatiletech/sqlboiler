@@ -16,19 +16,35 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
     t.Fatal(err)
   }
 
-  boil.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true)
-  boil.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true)
+  boil.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true, "{{.ForeignColumn}}")
+  boil.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true, "{{.ForeignColumn}}")
+  {{if not .ToJoinTable -}}
   b.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
   c.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
-  if err := b.InsertX(tx); err != nil {
+  {{end -}}
+  if err = b.InsertX(tx); err != nil {
     t.Fatal(err)
   }
-  if err := c.InsertX(tx); err != nil {
+  if err = c.InsertX(tx); err != nil {
     t.Fatal(err)
   }
 
+  {{if .ToJoinTable -}}
+  _, err = tx.Exec(`insert into {{.JoinTable}} ({{.JoinLocalColumn}}, {{.JoinForeignColumn}}) values ($1, $2)`, a.{{.Column | titleCase}}, b.{{.ForeignColumn | titleCase}})
+  if err != nil {
+    t.Fatal(err)
+  }
+  _, err = tx.Exec(`insert into {{.JoinTable}} ({{.JoinLocalColumn}}, {{.JoinForeignColumn}}) values ($1, $2)`, a.{{.Column | titleCase}}, c.{{.ForeignColumn | titleCase}})
+  if err != nil {
+    t.Fatal(err)
+  }
+  {{end}}
+
   {{$varname := $rel.ForeignTable.NamePluralGo | toLower -}}
   {{$varname}}, err := a.{{$rel.Function.Name}}X(tx)
+  if err != nil {
+    t.Fatal(err)
+  }
 
   bFound, cFound := false, false
   for _, v := range {{$varname}} {

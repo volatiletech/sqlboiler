@@ -15,11 +15,9 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}X(exec boil.Executor, selectCols ...string) ({{$rel.ForeignTable.Slice}}, error) {
   var ret {{$rel.ForeignTable.Slice}}
 
-  var selectColumns string
-  if len(selectCols) > 0 {
+  selectColumns := `*`
+  if len(selectCols) != 0 {
     selectColumns = `"{{id 0}}".` + strings.Join(selectCols, `","{{id 0}}"."`)
-  } else {
-    selectColumns = "*"
   }
     {{if .ToJoinTable -}}
   query := fmt.Sprintf(`select %s from {{.ForeignTable}} "{{id 0}}" inner join {{.JoinTable}} as "{{id 1}}" on "{{id 1}}"."{{.JoinForeignColumn}}" = "{{id 0}}"."{{.ForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}"=$1`, selectColumns)

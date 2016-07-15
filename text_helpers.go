@@ -59,39 +59,6 @@ func textsFromForeignKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKe
 	return r
 }
 
-/*
-  {{- $localTable := .Table.Name | singular | titleCase -}}
-    {{- $localColumn := .Column | remove "_id" | singular | titleCase -}}
-    {{- $foreignColumn := .ForeignColumn | remove "_id" | singular | titleCase -}}
-    {{- $foreignTable := .ForeignTable | singular | titleCase -}}
-    {{- $varname := .ForeignTable | singular | camelCase -}}
-func {{$localTable}}ToOne{{$foreignTable}}_{{$localColumn}}(t *testing.T) {
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
-  defer tx.Rollback()
-
-  local := &{{$localTable}}{}
-  foreign := &{{$foreignTable}}{}
-
-  if err := local.InsertX(tx); err != nil {
-    t.Fatal(err)
-  }
-
-  {{if and .Nullable .ForeignColumnNullable -}}
-  foreign.{{.ForeignColumn | titleCase}} = local.{{.Column | titleCase}}
-  {{- else if .Nullable -}}
-  foreign.{{.ForeignColumn | titleCase}} = local.{{.Column | titleCase}}
-  {{- else if .ForeignColumnNullable -}}
-  {{- end}}
-  if err := foreign.InsertX(tx); err != nil {
-    t.Fatal(err)
-  }
-
-  checkForeign, err := local.{{$localColumn}}()
-*/
-
 // RelationshipToManyTexts contains text that will be used by templates.
 type RelationshipToManyTexts struct {
 	LocalTable struct {

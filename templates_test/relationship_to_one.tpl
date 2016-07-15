@@ -4,10 +4,7 @@
   {{- range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.Tables $dot.Table . -}}
 func Test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.LocalTable.ColumnNameGo}}(t *testing.T) {
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
+  tx := MustTx(boil.Begin())
   defer tx.Rollback()
 
   var foreign {{$rel.ForeignTable.NameGo}}

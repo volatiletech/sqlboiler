@@ -5,10 +5,8 @@
   {{- range toManyRelationships .Table.Name .Tables -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
 func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
+  var err error
+  tx := MustTx(boil.Begin())
   defer tx.Rollback()
 
   var a {{$rel.LocalTable.NameGo}}

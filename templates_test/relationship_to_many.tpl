@@ -18,10 +18,17 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 
   boil.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true, "{{.ForeignColumn}}")
   boil.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, true, "{{.ForeignColumn}}")
+  {{if .Nullable -}}
+  a.{{.Column | titleCase}}.Valid = true
+  {{- end}}
+  {{- if .ForeignColumnNullable -}}
+  b.{{.ForeignColumn | titleCase}}.Valid = true
+  c.{{.ForeignColumn | titleCase}}.Valid = true
+  {{- end}}
   {{if not .ToJoinTable -}}
   b.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
   c.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
-  {{end -}}
+  {{- end}}
   if err = b.InsertX(tx); err != nil {
     t.Fatal(err)
   }

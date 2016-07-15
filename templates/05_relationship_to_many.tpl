@@ -15,7 +15,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}X(exec boil.Executor, selectCols ...string) ({{$rel.ForeignTable.Slice}}, error) {
   var ret {{$rel.ForeignTable.Slice}}
 
-  selectColumns := `*`
+  selectColumns := `"{{id 0}}".*`
   if len(selectCols) != 0 {
     selectColumns = `"{{id 0}}".` + strings.Join(selectCols, `","{{id 0}}"."`)
   }

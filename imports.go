@@ -209,6 +209,7 @@ var defaultTestMainImports = map[string]imports{
 			`"testing"`,
 			`"os"`,
 			`"os/exec"`,
+			`"flag"`,
 			`"fmt"`,
 			`"io/ioutil"`,
 			`"bytes"`,

@@ -11,11 +11,13 @@ type Config struct {
 	Postgres PostgresCfg `toml:"postgres"`
 }
 
+var flagDebugMode = flag.Bool("test.sqldebug", false, "Turns on debug mode for SQL statements")
+
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 
 	// Set DebugMode so we can see generated sql statements
-	boil.DebugMode = false
+	boil.DebugMode = *flagDebugMode
 
 	var err error
 	if err = setup(); err != nil {

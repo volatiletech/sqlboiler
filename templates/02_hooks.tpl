@@ -8,7 +8,7 @@ var {{$varNameSingular}}AfterUpdateHooks []{{$tableNameSingular}}Hook
 // doBeforeCreateHooks executes all "before create" hooks.
 func (o *{{$tableNameSingular}}) doBeforeCreateHooks() (err error) {
   for _, hook := range {{$varNameSingular}}BeforeCreateHooks {
-    if err := hook(o); err == nil {
+    if err := hook(o); err != nil {
       return err
     }
   }
@@ -19,7 +19,7 @@ func (o *{{$tableNameSingular}}) doBeforeCreateHooks() (err error) {
 // doBeforeUpdateHooks executes all "before Update" hooks.
 func (o *{{$tableNameSingular}}) doBeforeUpdateHooks() (err error) {
   for _, hook := range {{$varNameSingular}}BeforeUpdateHooks {
-    if err := hook(o); err == nil {
+    if err := hook(o); err != nil {
       return err
     }
   }
@@ -30,7 +30,7 @@ func (o *{{$tableNameSingular}}) doBeforeUpdateHooks() (err error) {
 // doAfterCreateHooks executes all "after create" hooks.
 func (o *{{$tableNameSingular}}) doAfterCreateHooks() (err error) {
   for _, hook := range {{$varNameSingular}}AfterCreateHooks {
-    if err := hook(o); err == nil {
+    if err := hook(o); err != nil {
       return err
     }
   }
@@ -41,7 +41,7 @@ func (o *{{$tableNameSingular}}) doAfterCreateHooks() (err error) {
 // doAfterUpdateHooks executes all "after Update" hooks.
 func (o *{{$tableNameSingular}}) doAfterUpdateHooks() (err error) {
   for _, hook := range {{$varNameSingular}}AfterUpdateHooks {
-    if err := hook(o); err == nil {
+    if err := hook(o); err != nil {
       return err
     }
   }
@@ -49,7 +49,7 @@ func (o *{{$tableNameSingular}}) doAfterUpdateHooks() (err error) {
   return nil
 }
 
-func (o *{{$tableNameSingular}}) {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
+func {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
   switch hookPoint {
     case boil.HookBeforeCreate:
       {{$varNameSingular}}BeforeCreateHooks = append({{$varNameSingular}}BeforeCreateHooks, {{$varNameSingular}}Hook)

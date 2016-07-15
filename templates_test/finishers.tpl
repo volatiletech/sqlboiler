@@ -6,8 +6,6 @@
 func Test{{$tableNamePlural}}Bind(t *testing.T) {
   var err error
 
-  {{$varNamePlural}}DeleteAllRows(t)
-
   o := {{$tableNameSingular}}{}
   if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
@@ -55,12 +53,12 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
   for i := 0; i < len(y); i++ {
     {{$varNameSingular}}CompareVals(y[i], k[i], t)
   }
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }
 
 func Test{{$tableNamePlural}}One(t *testing.T) {
   var err error
-
-  {{$varNamePlural}}DeleteAllRows(t)
 
   o := {{$tableNameSingular}}{}
   if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
@@ -77,12 +75,12 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
   }
 
   {{$varNameSingular}}CompareVals(&o, j, t)
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }
 
 func Test{{$tableNamePlural}}All(t *testing.T) {
   var err error
-
-  {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
@@ -109,12 +107,12 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
   for i := 0; i < len(o); i++ {
     {{$varNameSingular}}CompareVals(o[i], j[i], t)
   }
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }
 
 func Test{{$tableNamePlural}}Count(t *testing.T) {
   var err error
-
-  {{$varNamePlural}}DeleteAllRows(t)
 
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
@@ -137,4 +135,6 @@ func Test{{$tableNamePlural}}Count(t *testing.T) {
   if c != 3 {
     t.Errorf("Expected 3 results from count {{$tableNameSingular}}, got %d", c)
   }
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }

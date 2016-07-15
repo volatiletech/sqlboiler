@@ -16,8 +16,6 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   nullTime := null.NewTime(time.Time{}, true)
   _ = nullTime
 
-  {{$varNamePlural}}DeleteAllRows(t)
-
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
@@ -105,4 +103,6 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   if !reflect.DeepEqual(wl, {{$varNameSingular}}Columns) {
     t.Errorf("Expected whitelist to contain all columns values:\n\nGot: %v\nWanted: %v", wl, {{$varNameSingular}}Columns)
   }
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }

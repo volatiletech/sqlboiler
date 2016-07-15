@@ -1,5 +1,12 @@
 var dbNameRand *rand.Rand
 
+func MustTx(transactor boil.Transactor, err error) boil.Transactor {
+	if err != nil {
+		panic(fmt.Sprintf("Cannot create a transactor: %s", err))
+	}
+	return transactor
+}
+
 func initDBNameRand(input string) {
 	sum := md5.Sum([]byte(input))
 

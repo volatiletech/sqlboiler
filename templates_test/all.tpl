@@ -6,9 +6,6 @@
 func Test{{$tableNamePlural}}(t *testing.T) {
   var err error
 
-  // Start from a clean slate
-  {{$varNamePlural}}DeleteAllRows(t)
-
   o := make({{$varNameSingular}}Slice, 2)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
@@ -63,4 +60,6 @@ func Test{{$tableNamePlural}}(t *testing.T) {
   if len(res) != 3 {
     t.Errorf("Expected 3 {{$tableNameSingular}} rows, got %d", len(res))
   }
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }

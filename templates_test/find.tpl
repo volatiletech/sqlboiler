@@ -6,8 +6,6 @@
 func Test{{$tableNamePlural}}Find(t *testing.T) {
   var err error
 
-  {{$varNamePlural}}DeleteAllRows(t)
-
   o := make({{$varNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
@@ -41,4 +39,6 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
       t.Errorf("Expected all other columns to be zero value, but column %s was %#v", v, val.Interface())
     }
   }
+
+  {{$varNamePlural}}DeleteAllRows(t)
 }

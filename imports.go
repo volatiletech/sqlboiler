@@ -197,7 +197,9 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"math/rand"`,
 			`"bytes"`,
 		},
-		thirdParty: importList{},
+		thirdParty: importList{
+			`"github.com/nullbio/sqlboiler/boil"`,
+		},
 	},
 }
 

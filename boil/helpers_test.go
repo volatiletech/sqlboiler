@@ -90,6 +90,49 @@ func TestSetIntersect(t *testing.T) {
 	}
 }
 
+func TestSetMerge(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		A []string
+		B []string
+		C []string
+	}{
+		{
+			[]string{"thing1", "thing2", "thing3"},
+			[]string{"thing1", "thing3", "thing4"},
+			[]string{"thing1", "thing2", "thing3", "thing4"},
+		},
+		{
+			[]string{},
+			[]string{"thing1", "thing2"},
+			[]string{"thing1", "thing2"},
+		},
+		{
+			[]string{"thing1", "thing2"},
+			[]string{},
+			[]string{"thing1", "thing2"},
+		},
+		{
+			[]string{"thing1", "thing2", "thing3"},
+			[]string{"thing1", "thing2", "thing3"},
+			[]string{"thing1", "thing2", "thing3"},
+		},
+		{
+			[]string{"thing1", "thing2"},
+			[]string{"thing3", "thing4"},
+			[]string{"thing1", "thing2", "thing3", "thing4"},
+		},
+	}
+
+	for i, test := range tests {
+		m := SetMerge(test.A, test.B)
+		if !reflect.DeepEqual(test.C, m) {
+			t.Errorf("[%d] mismatch:\nWant: %#v\nGot: %#v", i, test.C, m)
+		}
+	}
+}
+
 func TestNonZeroDefaultSet(t *testing.T) {
 	t.Parallel()
 

@@ -51,6 +51,26 @@ func SetIntersect(a []string, b []string) []string {
 	return c
 }
 
+// SetMerge will return a merged slice without duplicates
+func SetMerge(a []string, b []string) []string {
+	var x, merged []string
+
+	x = append(x, a...)
+	x = append(x, b...)
+
+	check := map[string]bool{}
+	for _, v := range x {
+		if check[v] == true {
+			continue
+		}
+
+		merged = append(merged, v)
+		check[v] = true
+	}
+
+	return merged
+}
+
 // NonZeroDefaultSet returns the fields included in the
 // defaults slice that are non zero values
 func NonZeroDefaultSet(defaults []string, obj interface{}) []string {
@@ -104,7 +124,7 @@ func GenerateParamFlags(colCount int, startAt int) string {
 }
 
 // WherePrimaryKeyIn generates a "in" string for where queries
-// For example: (col1, col2) IN (($1, $2), ($3, $4))
+// For example: ("col1","col2") IN (($1,$2), ($3,$4))
 func WherePrimaryKeyIn(numRows int, keyNames ...string) string {
 	in := &bytes.Buffer{}
 
@@ -147,7 +167,7 @@ func WherePrimaryKeyIn(numRows int, keyNames ...string) string {
 }
 
 // SelectNames returns the column names for a select statement
-// Eg: col1, col2, col3
+// Eg: "col1", "col2", "col3"
 func SelectNames(results interface{}) string {
 	var names []string
 
@@ -164,14 +184,14 @@ func SelectNames(results interface{}) string {
 			name = goVarToSQLName(field.Name)
 		}
 
-		names = append(names, name)
+		names = append(names, fmt.Sprintf(`"%s"`, name))
 	}
 
 	return strings.Join(names, ", ")
 }
 
 // WhereClause returns the where clause for an sql statement
-// eg: col1=$1 AND col2=$2 AND col3=$3
+// eg: "col1"=$1 AND "col2"=$2 AND "col3"=$3
 func WhereClause(columns []string) string {
 	names := make([]string, 0, len(columns))
 
@@ -180,14 +200,14 @@ func WhereClause(columns []string) string {
 	}
 
 	for i, c := range names {
-		names[i] = fmt.Sprintf("%s=$%d", c, i+1)
+		names[i] = fmt.Sprintf(`"%s"=$%d`, c, i+1)
 	}
 
 	return strings.Join(names, " AND ")
 }
 
 // Update returns the column list for an update statement SET clause
-// eg: col1=$1,col2=$2,col3=$3
+// eg: "col1"=$1, "col2"=$2, "col3"=$3
 func Update(columns map[string]interface{}) string {
 	names := make([]string, 0, len(columns))
 
@@ -198,23 +218,23 @@ func Update(columns map[string]interface{}) string {
 	sort.Strings(names)
 
 	for i, c := range names {
-		names[i] = fmt.Sprintf("%s=$%d", c, i+1)
+		names[i] = fmt.Sprintf(`"%s"=$%d`, c, i+1)
 	}
 
-	return strings.Join(names, ",")
+	return strings.Join(names, ", ")
 }
 
 // SetParamNames takes a slice of columns and returns a comma seperated
 // list of parameter names for a template statement SET clause.
-// eg: col1=$1,col2=$2,col3=$3
+// eg: "col1"=$1, "col2"=$2, "col3"=$3
 func SetParamNames(columns []string) string {
 	names := make([]string, 0, len(columns))
 	counter := 0
 	for _, c := range columns {
 		counter++
-		names = append(names, fmt.Sprintf("%s=$%d", c, counter))
+		names = append(names, fmt.Sprintf(`"%s"=$%d`, c, counter))
 	}
-	return strings.Join(names, ",")
+	return strings.Join(names, ", ")
 }
 
 // WherePrimaryKey returns the where clause using start as the $ flag index
@@ -222,7 +242,7 @@ func SetParamNames(columns []string) string {
 func WherePrimaryKey(start int, pkeys ...string) string {
 	var output string
 	for i, c := range pkeys {
-		output = fmt.Sprintf("%s%s=$%d", output, c, start)
+		output = fmt.Sprintf(`%s"%s"=$%d`, output, c, start)
 		start++
 
 		if i < len(pkeys)-1 {

@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 
 	// Set DebugMode so we can see generated sql statements
 	boil.DebugMode = *flagDebugMode
-
+	
 	var err error
 	if err = setup(); err != nil {
 		fmt.Println("Unable to execute setup:", err)

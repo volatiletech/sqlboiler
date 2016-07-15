@@ -180,10 +180,15 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 		fieldVal := value.Field(i)
 		fieldTyp := typ.Field(i)
 
-		found := sort.Search(len(blacklist), func(i int) bool {
-			return blacklist[i] == fieldTyp.Name
-		})
-		if found != len(blacklist) {
+		var found bool
+		for _, v := range blacklist {
+			if strmangle.TitleCase(v) == fieldTyp.Name {
+				found = true
+				break
+			}
+		}
+
+		if found {
 			continue
 		}
 

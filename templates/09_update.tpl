@@ -3,12 +3,10 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
-// Update a single {{$tableNameSingular}} record. It takes a whitelist of
-// column_name's that should be updated. The primary key will be used to find
-// the record to update.
-// WARNING: Update does NOT ignore nil members - only the whitelist can be used
-// to control the set of columns that will be saved.
-func (o *{{$tableNameSingular}}) Update(whitelist ... string) error {
+// Update a single {{$tableNameSingular}} record.
+// Update takes a whitelist of column names that should be updated.
+// The primary key will be used to find the record to update.
+func (o *{{$tableNameSingular}}) Update(whitelist ...string) error {
   return o.UpdateX(boil.GetDB(), whitelist...)
 }
 
@@ -28,28 +26,24 @@ func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{$pkArgs}}, whit
     return err
   }
 
-  if len(whitelist) == 0 {
-    cols := {{$varNameSingular}}ColumnsWithoutDefault
-    cols = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), cols...)
-    // Subtract primary keys and autoincrement columns
-    cols = boil.SetComplement(cols, {{$varNameSingular}}PrimaryKeyColumns)
-    cols = boil.SetComplement(cols, {{$varNameSingular}}AutoIncrementColumns)
-
-    whitelist = make([]string, len(cols))
-    copy(whitelist, cols)
-  }
-
   var err error
   var query string
-  if len(whitelist) != 0 {
-    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(whitelist), boil.WherePrimaryKey(len(whitelist)+1, {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}))
-    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...), {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  var values []interface{}
+
+  wl := o.generateUpdateColumns(whitelist...)
+
+  if len(wl) != 0 {
+    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(wl), boil.WherePrimaryKey(len(wl)+1, {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}))
+    values = boil.GetStructValues(o, wl...)
+    values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+    _, err = exec.Exec(query, values...)
   } else {
-    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build a whitelist for row: %s", err)
+    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
   }
 
   if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, values)
   }
 
   if err != nil {
@@ -72,4 +66,23 @@ func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
   }
 
   return nil
+}
+
+// generateUpdateColumns generates the whitelist columns for an update statement
+func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []string {
+  if len(whitelist) != 0 {
+    return whitelist
+  }
+
+  var wl []string
+  cols := {{$varNameSingular}}ColumnsWithoutDefault
+  cols = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), cols...)
+  // Subtract primary keys and autoincrement columns
+  cols = boil.SetComplement(cols, {{$varNameSingular}}PrimaryKeyColumns)
+  cols = boil.SetComplement(cols, {{$varNameSingular}}AutoIncrementColumns)
+
+  wl = make([]string, len(cols))
+  copy(wl, cols)
+
+  return wl
 }

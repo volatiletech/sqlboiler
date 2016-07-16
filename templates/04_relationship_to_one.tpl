@@ -8,6 +8,16 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.
   return {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}X(boil.GetDB(), selectCols...)
 }
 
+// {{$rel.LocalTable.ColumnNameGo}} pointed to by the foreign key. Panics on error.
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.ColumnNameGo}}P(selectCols ...string) *{{$rel.ForeignTable.NameGo}} {
+  o, err := {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}X(boil.GetDB(), selectCols...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
+
 // {{$rel.LocalTable.ColumnNameGo}} pointed to by the foreign key.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.ColumnNameGo}}X(exec boil.Executor, selectCols ...string) (*{{$rel.ForeignTable.NameGo}}, error) {
   {{$rel.Function.Varname}} := &{{$rel.ForeignTable.NameGo}}{}
@@ -26,5 +36,14 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.
   return {{$rel.Function.Varname}}, nil
 }
 
+// {{$rel.LocalTable.ColumnNameGo}} pointed to by the foreign key. Panics on error.
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.ColumnNameGo}}XP(exec boil.Executor, selectCols ...string) *{{$rel.ForeignTable.NameGo}} {
+  o, err := {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}X(exec, selectCol..)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
 {{end -}}
 {{- end -}}

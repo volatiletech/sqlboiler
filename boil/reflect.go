@@ -43,6 +43,15 @@ func (q *Query) Bind(obj interface{}) error {
 	return nil
 }
 
+// Bind executes the query and inserts the
+// result into the passed in object pointer.
+// It panics on error.
+func (q *Query) BindP(obj interface{}) {
+	if err := q.Bind(obj); err != nil {
+		panic(WrapErr(err))
+	}
+}
+
 // BindOne inserts the returned row columns into the
 // passed in object pointer
 func BindOne(row *sql.Row, selectCols []string, obj interface{}) error {

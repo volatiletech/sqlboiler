@@ -15,6 +15,16 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
   return o, nil
 }
 
+// OneP returns a single {{$varNameSingular}} record from the query, and panics on error.
+func (q {{$varNameSingular}}Query) OneP() (*{{$tableNameSingular}}) {
+  o, err := q.One()
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
+
 // All returns all {{$tableNameSingular}} records from the query.
 func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
   var o {{$varNameSingular}}Slice
@@ -33,6 +43,16 @@ func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
   return o, nil
 }
 
+// AllP returns all {{$tableNameSingular}} records from the query, and panics on error.
+func (q {{$varNameSingular}}Query) AllP() {{$varNameSingular}}Slice {
+    o, err := q.All()
+    if err != nil {
+      panic(boil.WrapErr(err))
+    }
+
+    return o
+}
+
 // Count returns the count of all {{$tableNameSingular}} records in the query.
 func (q {{$varNameSingular}}Query) Count() (int64, error) {
   var count int64
@@ -45,4 +65,14 @@ func (q {{$varNameSingular}}Query) Count() (int64, error) {
   }
 
   return count, nil
+}
+
+// CountP returns the count of all {{$tableNameSingular}} records in the query, and panics on error.
+func (q {{$varNameSingular}}Query) CountP() int64 {
+  c, err := q.Count()
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return c
 }

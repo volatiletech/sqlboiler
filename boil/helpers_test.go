@@ -304,7 +304,7 @@ func TestSelectNames(t *testing.T) {
 	}
 
 	result := SelectNames(o)
-	if result != `id, TestHello, head_size` {
+	if result != `"id", "TestHello", "head_size"` {
 		t.Error("Result was wrong, got:", result)
 	}
 }
@@ -320,7 +320,7 @@ func TestWhereClause(t *testing.T) {
 
 	result := WhereClause(columns)
 
-	if result != `id=$1 AND name=$2 AND date=$3` {
+	if result != `"id"=$1 AND "name"=$2 AND "date"=$3` {
 		t.Error("Result was wrong, got:", result)
 	}
 }

@@ -5,6 +5,13 @@ func (o *{{$tableNameSingular}}) Insert(whitelist ... string) error {
   return o.InsertX(boil.GetDB(), whitelist...)
 }
 
+// InsertP a single record, and panics on error.
+func (o *{{$tableNameSingular}}) InsertP(whitelist ... string) {
+  if err := o.InsertX(boil.GetDB(), whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
 // InsertX a single record using an executor.
 func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... string) error {
   if o == nil {
@@ -72,6 +79,13 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
   }
 
   return nil
+}
+
+// InsertXP a single record using an executor, and panics on error.
+func (o *{{$tableNameSingular}}) InsertXP(exec boil.Executor, whitelist ... string) {
+  if err := o.InsertX(exec, whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
 }
 
 // generateInsertColumns generates the whitelist columns and return columns for an insert statement

@@ -10,14 +10,39 @@ func (o *{{$tableNameSingular}}) Update(whitelist ...string) error {
   return o.UpdateX(boil.GetDB(), whitelist...)
 }
 
+// Update a single {{$tableNameSingular}} record.
+// UpdateP takes a whitelist of column names that should be updated.
+// The primary key will be used to find the record to update.
+// Panics on error.
+func (o *{{$tableNameSingular}}) UpdateP(whitelist ...string) {
+  if err := o.UpdateX(boil.GetDB(), whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
 // UpdateX uses an executor to update the {{$tableNameSingular}}.
 func (o *{{$tableNameSingular}}) UpdateX(exec boil.Executor, whitelist ... string) error {
   return o.UpdateAtX(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
 }
 
+// UpdateXP uses an executor to update the {{$tableNameSingular}}, and panics on error.
+func (o *{{$tableNameSingular}}) UpdateXP(exec boil.Executor, whitelist ... string) {
+  err := o.UpdateAtX(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
 // UpdateAt updates the {{$tableNameSingular}} using the primary key to find the row to update.
 func (o *{{$tableNameSingular}}) UpdateAt({{$pkArgs}}, whitelist ...string) error {
   return o.UpdateAtX(boil.GetDB(), {{$pkNames | join ", "}}, whitelist...)
+}
+
+// UpdateAtP updates the {{$tableNameSingular}} using the primary key to find the row to update. Panics on error.
+func (o *{{$tableNameSingular}}) UpdateAtP({{$pkArgs}}, whitelist ...string) {
+  if err := o.UpdateAtX(boil.GetDB(), {{$pkNames | join ", "}}, whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
 }
 
 // UpdateAtX uses an executor to update the {{$tableNameSingular}} using the primary key to find the row to update.
@@ -57,6 +82,15 @@ func (o *{{$tableNameSingular}}) UpdateAtX(exec boil.Executor, {{$pkArgs}}, whit
   return nil
 }
 
+// UpdateAtXP uses an executor to update the {{$tableNameSingular}} using the primary key to find the row to update.
+// Panics on error.
+func (o *{{$tableNameSingular}}) UpdateAtXP(exec boil.Executor, {{$pkArgs}}, whitelist ...string) {
+  if err := o.UpdateAtX(exec, {{$pkNames | join ", "}}, whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
+// UpdateAll updates all rows with matching column names.
 func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
   boil.SetUpdate(q.Query, cols)
 
@@ -66,6 +100,13 @@ func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
   }
 
   return nil
+}
+
+// UpdateAllP updates all rows with matching column names, and panics on error.
+func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
+  if err := q.UpdateAll(cols); err != nil {
+    panic(boil.WrapErr(err))
+  }
 }
 
 // generateUpdateColumns generates the whitelist columns for an update statement

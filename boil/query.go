@@ -128,68 +128,84 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	return q.executor.Query(qs, args...)
 }
 
+// SetCount on the query.
 func SetCount(q *Query) {
 	q.count = true
 }
 
+// SetDelete on the query.
 func SetDelete(q *Query) {
 	q.delete = true
 }
 
+// SetUpdate on the query.
 func SetUpdate(q *Query, cols map[string]interface{}) {
 	q.update = cols
 }
 
+// SetExecutor on the query.
 func SetExecutor(q *Query, exec Executor) {
 	q.executor = exec
 }
 
+// SetSelect on the query.
 func SetSelect(q *Query, columns ...string) {
 	q.selectCols = append(q.selectCols, columns...)
 }
 
+// Select returns the select columns in the query.
 func Select(q *Query) []string {
 	cols := make([]string, len(q.selectCols))
 	copy(cols, q.selectCols)
 	return cols
 }
 
+// SetTable on the query.
 func SetTable(q *Query, table string) {
 	q.table = table
 }
 
+// SetInnerJoin on the query.
 func SetInnerJoin(q *Query, on string, args ...interface{}) {
 	q.innerJoins = append(q.innerJoins, join{on: on, args: args})
 }
 
+// SetOuterJoin on the query.
 func SetOuterJoin(q *Query, on string, args ...interface{}) {
 	q.outerJoins = append(q.outerJoins, join{on: on, args: args})
 }
 
+// SetLeftOuterJoin on the query.
 func SetLeftOuterJoin(q *Query, on string, args ...interface{}) {
 	q.leftOuterJoins = append(q.leftOuterJoins, join{on: on, args: args})
 }
 
+// SetRightOuterJoin on the query.
 func SetRightOuterJoin(q *Query, on string, args ...interface{}) {
 	q.rightOuterJoins = append(q.rightOuterJoins, join{on: on, args: args})
 }
 
+// SetWhere on the query.
 func SetWhere(q *Query, clause string, args ...interface{}) {
 	q.where = append(q.where, where{clause: clause, args: args})
 }
 
+// SetGroupBy on the query.
 func SetGroupBy(q *Query, clause string) {
 	q.groupBy = append(q.groupBy, clause)
 }
 
+// SetOrderBy on the query.
 func SetOrderBy(q *Query, clause string) {
 	q.orderBy = append(q.orderBy, clause)
 }
 
+// SetHaving on the query.
 func SetHaving(q *Query, clause string) {
 	q.having = append(q.having, clause)
 }
 
+// SetLimit on the query.
 func SetLimit(q *Query, limit int) {
 	q.limit = limit
 }

@@ -9,6 +9,17 @@ func {{$tableNameSingular}}Find({{$pkArgs}}, selectCols ...string) (*{{$tableNam
   return {{$tableNameSingular}}FindX(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
 }
 
+// {{$tableNameSingular}}FindP retrieves a single record by ID, and panics on error.
+func {{$tableNameSingular}}FindP({{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
+  o, err := {{$tableNameSingular}}FindX(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
+
+// {{$tableNameSingular}}FindX retrieves a single record by ID with an executor.
 func {{$tableNameSingular}}FindX(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
 
@@ -27,4 +38,14 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{$pkArgs}}, selectCols ...
   }
 
   return {{$varNameSingular}}, nil
+}
+
+// {{$tableNameSingular}}FindXP retrieves a single record by ID with an executor, and panics on error.
+func {{$tableNameSingular}}FindXP(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
+  o, err := {{$tableNameSingular}}FindX(exec, {{$pkNames | join ", "}}, selectCols...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
 }

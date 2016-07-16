@@ -113,7 +113,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.NameSingular = "video"
 	expect.ForeignTable.NamePluralGo = "Videos"
 	expect.ForeignTable.NameHumanReadable = "videos"
-	expect.ForeignTable.Slice = "videoSlice"
+	expect.ForeignTable.Slice = "VideoSlice"
 
 	expect.Function.Name = "Videos"
 	expect.Function.Receiver = "u"
@@ -133,7 +133,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.NameSingular = "notification"
 	expect.ForeignTable.NamePluralGo = "Notifications"
 	expect.ForeignTable.NameHumanReadable = "notifications"
-	expect.ForeignTable.Slice = "notificationSlice"
+	expect.ForeignTable.Slice = "NotificationSlice"
 
 	expect.Function.Name = "Notifications"
 	expect.Function.Receiver = "u"
@@ -153,7 +153,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.NameSingular = "notification"
 	expect.ForeignTable.NamePluralGo = "Notifications"
 	expect.ForeignTable.NameHumanReadable = "notifications"
-	expect.ForeignTable.Slice = "notificationSlice"
+	expect.ForeignTable.Slice = "NotificationSlice"
 
 	expect.Function.Name = "SourceNotifications"
 	expect.Function.Receiver = "u"
@@ -173,7 +173,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.NameSingular = "video"
 	expect.ForeignTable.NamePluralGo = "Videos"
 	expect.ForeignTable.NameHumanReadable = "videos"
-	expect.ForeignTable.Slice = "videoSlice"
+	expect.ForeignTable.Slice = "VideoSlice"
 
 	expect.Function.Name = "Videos"
 	expect.Function.Receiver = "u"

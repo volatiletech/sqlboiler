@@ -2,7 +2,7 @@
 {{- else -}}
   {{- $dot := . }}
   {{- $table := .Table }}
-  {{- range toManyRelationships .Table.Name .Tables -}}
+  {{- range .Table.ToManyRelationships -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
 // {{$rel.Function.Name}} retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.

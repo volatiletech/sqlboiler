@@ -152,6 +152,5 @@ var templateFunctions = template.FuncMap{
 	"columnNames":                  bdb.ColumnNames,
 	"columnTypes":                  bdb.ColumnTypes,
 	"columnDBTypes":                bdb.ColumnDBTypes,
-	"toManyRelationships":          bdb.ToManyRelationships,
 	"defaultValues":                bdb.DefaultValues,
 }

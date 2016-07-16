@@ -11,7 +11,7 @@ var (
 )
 
 type (
-  {{$varNameSingular}}Slice []*{{$tableNameSingular}}
+  {{$tableNameSingular}}Slice []*{{$tableNameSingular}}
   {{$tableNameSingular}}Hook func(*{{$tableNameSingular}}) error
 
   {{$varNameSingular}}Query struct {

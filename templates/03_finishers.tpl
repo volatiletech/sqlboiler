@@ -26,8 +26,8 @@ func (q {{$varNameSingular}}Query) OneP() (*{{$tableNameSingular}}) {
 }
 
 // All returns all {{$tableNameSingular}} records from the query.
-func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
-  var o {{$varNameSingular}}Slice
+func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
+  var o {{$tableNameSingular}}Slice
 
   res, err := boil.ExecQueryAll(q.Query)
   if err != nil {
@@ -44,7 +44,7 @@ func (q {{$varNameSingular}}Query) All() ({{$varNameSingular}}Slice, error) {
 }
 
 // AllP returns all {{$tableNameSingular}} records from the query, and panics on error.
-func (q {{$varNameSingular}}Query) AllP() {{$varNameSingular}}Slice {
+func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
     o, err := q.All()
     if err != nil {
       panic(boil.WrapErr(err))

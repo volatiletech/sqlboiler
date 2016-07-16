@@ -93,7 +93,7 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 	r.ForeignTable.NameSingular = strmangle.Singular(rel.ForeignTable)
 	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(rel.ForeignTable))
 	r.ForeignTable.NameGo = strmangle.TitleCase(r.ForeignTable.NameSingular)
-	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.CamelCase(r.ForeignTable.NameSingular))
+	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(r.ForeignTable.NameSingular))
 	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
 
 	r.Function.Receiver = strings.ToLower(table.Name[:1])

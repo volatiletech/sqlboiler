@@ -6,7 +6,7 @@
 func Test{{$tableNamePlural}}(t *testing.T) {
   var err error
 
-  o := make({{$varNameSingular}}Slice, 2)
+  o := make({{$tableNameSingular}}Slice, 2)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
@@ -33,7 +33,7 @@ func Test{{$tableNamePlural}}(t *testing.T) {
     t.Errorf("Expected {{.Table.Name}} table to be empty, but got %d rows", c)
   }
 
-  o = make({{$varNameSingular}}Slice, 3)
+  o = make({{$tableNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }

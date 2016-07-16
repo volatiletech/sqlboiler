@@ -27,7 +27,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
   // insert 3 rows, attempt to bind into slice
   {{$varNamePlural}}DeleteAllRows(t)
 
-  y := make({{$varNameSingular}}Slice, 3)
+  y := make({{$tableNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&y, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
@@ -40,7 +40,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
     }
   }
 
-  k := {{$varNameSingular}}Slice{}
+  k := {{$tableNameSingular}}Slice{}
   err = {{$tableNamePlural}}().Bind(&k)
   if err != nil {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} slice of objects: %s", err)
@@ -82,7 +82,7 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
 func Test{{$tableNamePlural}}All(t *testing.T) {
   var err error
 
-  o := make({{$varNameSingular}}Slice, 3)
+  o := make({{$tableNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
@@ -114,7 +114,7 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
 func Test{{$tableNamePlural}}Count(t *testing.T) {
   var err error
 
-  o := make({{$varNameSingular}}Slice, 3)
+  o := make({{$tableNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }

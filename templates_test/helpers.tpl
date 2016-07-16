@@ -51,7 +51,7 @@ func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
 
 func Test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
   var err error
-  o := make({{$varNameSingular}}Slice, 3)
+  o := make({{$tableNameSingular}}Slice, 3)
 
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Could not randomize slice: %s", err)

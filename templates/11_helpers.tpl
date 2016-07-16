@@ -10,7 +10,7 @@ func (o {{$tableNameSingular}}) inPrimaryKeyArgs() []interface{} {
   return args
 }
 
-func (o {{$varNameSingular}}Slice) inPrimaryKeyArgs() []interface{} {
+func (o {{$tableNameSingular}}Slice) inPrimaryKeyArgs() []interface{} {
   var args []interface{}
 
   for i := 0; i < len(o); i++ {

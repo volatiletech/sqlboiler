@@ -77,7 +77,7 @@ func (o {{$varNameSingular}}Query) DeleteAllP() {
 }
 
 // DeleteAll deletes all rows in the slice.
-func (o {{$varNameSingular}}Slice) DeleteAll() error {
+func (o {{$tableNameSingular}}Slice) DeleteAll() error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
   }
@@ -85,14 +85,14 @@ func (o {{$varNameSingular}}Slice) DeleteAll() error {
 }
 
 // DeleteAll deletes all rows in the slice.
-func (o {{$varNameSingular}}Slice) DeleteAllP() {
+func (o {{$tableNameSingular}}Slice) DeleteAllP() {
   if err := o.DeleteAll(); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
 // DeleteAllX deletes all rows in the slice with an executor.
-func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
+func (o {{$tableNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
   }
@@ -122,7 +122,7 @@ func (o {{$varNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
 }
 
 // DeleteAllXP deletes all rows in the slice with an executor, and panics on error.
-func (o {{$varNameSingular}}Slice) DeleteAllXP(exec boil.Executor) {
+func (o {{$tableNameSingular}}Slice) DeleteAllXP(exec boil.Executor) {
   if err := o.DeleteAllX(exec); err != nil {
     panic(boil.WrapErr(err))
   }

@@ -16,7 +16,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   nullTime := null.NewTime(time.Time{}, true)
   _ = nullTime
 
-  o := make({{$varNameSingular}}Slice, 3)
+  o := make({{$tableNameSingular}}Slice, 3)
   if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
@@ -27,7 +27,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     }
   }
 
-  j := make({{$varNameSingular}}Slice, 3)
+  j := make({{$tableNameSingular}}Slice, 3)
   // Perform all Find queries and assign result objects to slice for comparison
   for i := 0; i < len(j); i++ {
     j[i], err = {{$tableNameSingular}}Find({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})

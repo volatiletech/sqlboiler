@@ -38,7 +38,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.
 
 // {{$rel.LocalTable.ColumnNameGo}} pointed to by the foreign key. Panics on error.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.LocalTable.ColumnNameGo}}XP(exec boil.Executor, selectCols ...string) *{{$rel.ForeignTable.NameGo}} {
-  o, err := {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}X(exec, selectCol..)
+  o, err := {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}X(exec, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }

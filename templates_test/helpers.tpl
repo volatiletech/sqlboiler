@@ -6,7 +6,7 @@
 var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 
 func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, t *testing.T) {
-  {{range $key, $value := .Table.Columns}}
+  {{- range $key, $value := .Table.Columns -}}
   {{if eq $value.Type "null.Time"}}
   if o.{{titleCase $value.Name}}.Time.Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.Format("02/01/2006") {
     t.Errorf("Expected NullTime {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006"))
@@ -24,7 +24,7 @@ func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameS
     t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
   }
   {{end}}
-  {{end}}
+  {{- end -}}
 }
 
 func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {

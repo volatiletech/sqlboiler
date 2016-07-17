@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	idAlphabet = []byte("abcdefghijklmnopqrstuvwxyz")
+	idAlphabet     = []byte("abcdefghijklmnopqrstuvwxyz")
+	uppercaseWords = []string{"id", "uid", "uuid", "guid", "ssn", "tz"}
 )
 
-// Identifier creates an identifier useful for a query
-// This is essentially a base conversion from Base 10 integers to Base 26
+// Identifier is a base conversion from Base 10 integers to Base 26
 // integers that are represented by an alphabet from a-z
 // See tests for example outputs.
 func Identifier(in int) string {
@@ -64,8 +64,16 @@ func TitleCase(name string) string {
 	splits := strings.Split(name, "_")
 
 	for i, split := range splits {
-		if split == "id" {
-			splits[i] = "ID"
+		found := false
+		for _, uc := range uppercaseWords {
+			if split == uc {
+				splits[i] = strings.ToUpper(uc)
+				found = true
+				break
+			}
+		}
+
+		if found {
 			continue
 		}
 
@@ -83,12 +91,22 @@ func CamelCase(name string) string {
 	splits := strings.Split(name, "_")
 
 	for i, split := range splits {
-		if split == "id" && i > 0 {
-			splits[i] = "ID"
+		if i == 0 {
 			continue
 		}
 
-		if i == 0 {
+		found := false
+		if i > 0 {
+			for _, uc := range uppercaseWords {
+				if split == uc {
+					splits[i] = strings.ToUpper(uc)
+					found = true
+					break
+				}
+			}
+		}
+
+		if found {
 			continue
 		}
 

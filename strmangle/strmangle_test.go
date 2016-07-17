@@ -96,6 +96,15 @@ func TestTitleCase(t *testing.T) {
 		{"hello_there", "HelloThere"},
 		{"", ""},
 		{"fun_id", "FunID"},
+		{"uid", "UID"},
+		{"guid", "GUID"},
+		{"uid", "UID"},
+		{"uuid", "UUID"},
+		{"ssn", "SSN"},
+		{"tz", "TZ"},
+		{"thing_guid", "ThingGUID"},
+		{"guid_thing", "GUIDThing"},
+		{"thing_guid_thing", "ThingGUIDThing"},
 	}
 
 	for i, test := range tests {
@@ -115,6 +124,15 @@ func TestCamelCase(t *testing.T) {
 		{"hello_there_sunny", "helloThereSunny"},
 		{"", ""},
 		{"fun_id_times", "funIDTimes"},
+		{"uid", "uid"},
+		{"guid", "guid"},
+		{"uid", "uid"},
+		{"uuid", "uuid"},
+		{"ssn", "ssn"},
+		{"tz", "tz"},
+		{"thing_guid", "thingGUID"},
+		{"guid_thing", "guidThing"},
+		{"thing_guid_thing", "thingGUIDThing"},
 	}
 
 	for i, test := range tests {
@@ -140,10 +158,12 @@ func TestMakeStringMap(t *testing.T) {
 	}
 
 	r = MakeStringMap(m)
-	e := `"TestOne": "interval", "TestTwo": "integer"`
 
-	if r != e {
-		t.Errorf("Expected %s, got %s", e, r)
+	e1 := `"TestOne": "interval", "TestTwo": "integer"`
+	e2 := `"TestTwo": "integer", "TestOne": "interval"`
+
+	if r != e1 && r != e2 {
+		t.Errorf("Got %s", r)
 	}
 }
 

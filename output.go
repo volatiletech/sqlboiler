@@ -73,7 +73,7 @@ type executeTemplateData struct {
 	state *State
 	data  *templateData
 
-	templates templateList
+	templates *templateList
 
 	importSet      imports
 	importNamedSet map[string]imports
@@ -94,14 +94,14 @@ func executeTemplates(e executeTemplateData) error {
 	imps.standard = e.importSet.standard
 	imps.thirdParty = e.importSet.thirdParty
 
-	for _, template := range e.templates {
+	for _, tplName := range e.templates.Templates() {
 		if e.combineImportsOnType {
 			imps = combineTypeImports(imps, importsBasedOnType, e.data.Table.Columns)
 		}
 
-		resp, err := executeTemplate(template, e.data)
+		resp, err := executeTemplate(e.templates.Template, tplName, e.data)
 		if err != nil {
-			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
+			return fmt.Errorf("Error generating template %s: %s", tplName, err)
 		}
 		out = append(out, resp)
 	}
@@ -122,13 +122,13 @@ func executeSingletonTemplates(e executeTemplateData) error {
 
 	rgxRemove := regexp.MustCompile(`[0-9]+_`)
 
-	for _, template := range e.templates {
-		resp, err := executeTemplate(template, e.data)
+	for _, tplName := range e.templates.Templates() {
+		resp, err := executeTemplate(e.templates.Template, tplName, e.data)
 		if err != nil {
-			return fmt.Errorf("Error generating template %s: %s", template.Name(), err)
+			return fmt.Errorf("Error generating template %s: %s", tplName, err)
 		}
 
-		fName := template.Name()
+		fName := tplName
 		ext := filepath.Ext(fName)
 		fName = rgxRemove.ReplaceAllString(fName[:len(fName)-len(ext)], "")
 
@@ -163,7 +163,7 @@ func generateTestMainOutput(state *State, data *templateData) error {
 	imps.standard = defaultTestMainImports[state.Config.DriverName].standard
 	imps.thirdParty = defaultTestMainImports[state.Config.DriverName].thirdParty
 
-	resp, err := executeTemplate(state.TestMainTemplate, data)
+	resp, err := executeTemplate(state.TestMainTemplate, state.TestMainTemplate.Name(), data)
 	if err != nil {
 		return err
 	}
@@ -213,9 +213,9 @@ var rgxSyntaxError = regexp.MustCompile(`(\d+):\d+: `)
 
 // executeTemplate takes a template and returns the output of the template
 // execution.
-func executeTemplate(t *template.Template, data *templateData) ([]byte, error) {
+func executeTemplate(t *template.Template, name string, data *templateData) ([]byte, error) {
 	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
+	if err := t.ExecuteTemplate(&buf, name, data); err != nil {
 		return nil, errors.Wrap(err, "failed to execute template")
 	}
 

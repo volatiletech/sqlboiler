@@ -22,23 +22,27 @@ type templateData struct {
 	StringFuncs map[string]func(string) string
 }
 
-type templateList []*template.Template
+type templateList struct {
+	*template.Template
+}
 
-func (t templateList) Len() int {
+type templateNameList []string
+
+func (t templateNameList) Len() int {
 	return len(t)
 }
 
-func (t templateList) Swap(k, j int) {
+func (t templateNameList) Swap(k, j int) {
 	t[k], t[j] = t[j], t[k]
 }
 
-func (t templateList) Less(k, j int) bool {
+func (t templateNameList) Less(k, j int) bool {
 	// Make sure "struct" goes to the front
-	if t[k].Name() == "struct.tpl" {
+	if t[k] == "struct.tpl" {
 		return true
 	}
 
-	res := strings.Compare(t[k].Name(), t[j].Name())
+	res := strings.Compare(t[k], t[j])
 	if res <= 0 {
 		return true
 	}
@@ -46,8 +50,28 @@ func (t templateList) Less(k, j int) bool {
 	return false
 }
 
+// Templates returns the name of all the templates defined in the template list
+func (t templateList) Templates() []string {
+	tplList := t.Template.Templates()
+
+	if len(tplList) == 0 {
+		return nil
+	}
+
+	ret := make([]string, 0, len(tplList))
+	for _, tpl := range tplList {
+		if name := tpl.Name(); strings.HasSuffix(name, ".tpl") {
+			ret = append(ret, name)
+		}
+	}
+
+	sort.Sort(templateNameList(ret))
+
+	return ret
+}
+
 // loadTemplates loads all of the template files in the specified directory.
-func loadTemplates(dir string) (templateList, error) {
+func loadTemplates(dir string) (*templateList, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -60,10 +84,7 @@ func loadTemplates(dir string) (templateList, error) {
 		return nil, err
 	}
 
-	templates := templateList(tpl.Templates())
-	sort.Sort(templates)
-
-	return templates, err
+	return &templateList{Template: tpl}, err
 }
 
 // loadTemplate loads a single template file.

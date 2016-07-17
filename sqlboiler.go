@@ -30,10 +30,10 @@ type State struct {
 	Driver bdb.Interface
 	Tables []bdb.Table
 
-	Templates              templateList
-	TestTemplates          templateList
-	SingletonTemplates     templateList
-	SingletonTestTemplates templateList
+	Templates              *templateList
+	TestTemplates          *templateList
+	SingletonTemplates     *templateList
+	SingletonTestTemplates *templateList
 
 	TestMainTemplate *template.Template
 }

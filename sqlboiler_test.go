@@ -96,7 +96,7 @@ func TestTemplates(t *testing.T) {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
-	if len(state.Templates) == 0 {
+	if len(state.Templates.Templates()) == 0 {
 		t.Errorf("Templates is empty.")
 	}
 
@@ -105,7 +105,7 @@ func TestTemplates(t *testing.T) {
 		t.Fatalf("Unable to initialize singleton templates: %s", err)
 	}
 
-	if len(state.SingletonTemplates) == 0 {
+	if len(state.SingletonTemplates.Templates()) == 0 {
 		t.Errorf("SingletonTemplates is empty.")
 	}
 
@@ -114,7 +114,7 @@ func TestTemplates(t *testing.T) {
 		t.Fatalf("Unable to initialize templates: %s", err)
 	}
 
-	if len(state.Templates) == 0 {
+	if len(state.Templates.Templates()) == 0 {
 		t.Errorf("Templates is empty.")
 	}
 
@@ -128,7 +128,7 @@ func TestTemplates(t *testing.T) {
 		t.Fatalf("Unable to initialize single test templates: %s", err)
 	}
 
-	if len(state.SingletonTestTemplates) == 0 {
+	if len(state.SingletonTestTemplates.Templates()) == 0 {
 		t.Errorf("SingleTestTemplates is empty.")
 	}
 

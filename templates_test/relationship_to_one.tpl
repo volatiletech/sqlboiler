@@ -1,39 +1,42 @@
-{{- if .Table.IsJoinTable -}}
-{{- else -}}
-  {{- $dot := . -}}
-  {{- range .Table.FKeys -}}
-    {{- $rel := textsFromForeignKey $dot.Tables $dot.Table . -}}
-func Test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.LocalTable.ColumnNameGo}}(t *testing.T) {
+{{- define "relationship_to_one_test_helper"}}
+func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
   tx := MustTx(boil.Begin())
   defer tx.Rollback()
 
-  var foreign {{$rel.ForeignTable.NameGo}}
-  var local {{$rel.LocalTable.NameGo}}
-  {{if .Nullable -}}
-  local.{{.Column | titleCase}}.Valid = true
+  var foreign {{.ForeignTable.NameGo}}
+  var local {{.LocalTable.NameGo}}
+  {{if .ForeignKey.Nullable -}}
+  local.{{.ForeignKey.Column | titleCase}}.Valid = true
   {{end}}
-  {{- if .ForeignColumnNullable -}}
-  foreign.{{.ForeignColumn | titleCase}}.Valid = true
+  {{- if .ForeignKey.ForeignColumnNullable -}}
+  foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
   {{end}}
 
   if err := foreign.InsertX(tx); err != nil {
     t.Fatal(err)
   }
 
-  local.{{$rel.Function.LocalAssignment}} = foreign.{{$rel.Function.ForeignAssignment}}
+  local.{{.Function.LocalAssignment}} = foreign.{{.Function.ForeignAssignment}}
   if err := local.InsertX(tx); err != nil {
     t.Fatal(err)
   }
 
-  checkForeign, err := local.{{$rel.LocalTable.ColumnNameGo}}X(tx)
+  checkForeign, err := local.{{.Function.Name}}X(tx)
   if err != nil {
     t.Fatal(err)
   }
 
-  if checkForeign.{{$rel.Function.ForeignAssignment}} != foreign.{{$rel.Function.ForeignAssignment}} {
-    t.Errorf("want: %v, got %v", foreign.{{$rel.Function.ForeignAssignment}}, checkForeign.{{$rel.Function.ForeignAssignment}})
+  if checkForeign.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {
+    t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, checkForeign.{{.Function.ForeignAssignment}})
   }
 }
 
+{{end -}}
+{{- if .Table.IsJoinTable -}}
+{{- else -}}
+  {{- $dot := . -}}
+  {{- range .Table.FKeys -}}
+    {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+{{- template "relationship_to_one_test_helper" $rel -}}
 {{end -}}
 {{- end -}}

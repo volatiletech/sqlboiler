@@ -10,6 +10,8 @@ import (
 
 // RelationshipToOneTexts contains text that will be used by templates.
 type RelationshipToOneTexts struct {
+	ForeignKey bdb.ForeignKey
+
 	LocalTable struct {
 		NameGo       string
 		ColumnNameGo string
@@ -17,10 +19,15 @@ type RelationshipToOneTexts struct {
 
 	ForeignTable struct {
 		NameGo       string
+		Name         string
 		ColumnNameGo string
+		ColumnName   string
 	}
 
 	Function struct {
+		PackageName string
+		Name        string
+
 		Varname  string
 		Receiver string
 
@@ -29,15 +36,21 @@ type RelationshipToOneTexts struct {
 	}
 }
 
-func textsFromForeignKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) RelationshipToOneTexts {
+func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) RelationshipToOneTexts {
 	r := RelationshipToOneTexts{}
 
-	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(strings.Replace(table.Name, "_id", "", -1)))
-	r.LocalTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(strings.Replace(fkey.Column, "_id", "", -1)))
+	r.ForeignKey = fkey
 
+	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
+	r.LocalTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.Column))
+
+	r.ForeignTable.Name = fkey.ForeignTable
 	r.ForeignTable.NameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignTable))
-	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(strings.Replace(fkey.ForeignColumn, "_id", "", -1)))
+	r.ForeignTable.ColumnName = fkey.ForeignColumn
+	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
 
+	r.Function.PackageName = packageName
+	r.Function.Name = strmangle.TitleCase(strmangle.Singular(strings.TrimSuffix(fkey.Column, "_id")))
 	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
 	r.Function.Receiver = strings.ToLower(table.Name[:1])
 

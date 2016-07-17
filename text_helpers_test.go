@@ -75,15 +75,21 @@ func TestTextsFromForeignKey(t *testing.T) {
 	}
 
 	videos := bdb.GetTable(tables, "videos")
-	texts := textsFromForeignKey(tables, videos, videos.FKeys[0])
+	texts := textsFromForeignKey("models", tables, videos, videos.FKeys[0])
 	expect := RelationshipToOneTexts{}
 
-	expect.LocalTable.NameGo = "Video"
-	expect.LocalTable.ColumnNameGo = "User"
+	expect.ForeignKey = videos.FKeys[0]
 
+	expect.LocalTable.NameGo = "Video"
+	expect.LocalTable.ColumnNameGo = "UserID"
+
+	expect.ForeignTable.Name = "users"
 	expect.ForeignTable.NameGo = "User"
+	expect.ForeignTable.ColumnName = "id"
 	expect.ForeignTable.ColumnNameGo = "ID"
 
+	expect.Function.PackageName = "models"
+	expect.Function.Name = "User"
 	expect.Function.Varname = "user"
 	expect.Function.Receiver = "v"
 

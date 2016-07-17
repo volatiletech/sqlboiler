@@ -2,7 +2,7 @@
 {{- else -}}
   {{- $dot := . }}
   {{- $table := .Table }}
-  {{- range toManyRelationships .Table.Name .Tables -}}
+  {{- range .Table.ToManyRelationships -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
 func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   var err error
@@ -75,5 +75,5 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   }
 }
 
-{{ end -}}{{- /* range */ -}}
+{{end -}}{{- /* range */ -}}
 {{- end -}}{{- /* outer if join table */ -}}

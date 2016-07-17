@@ -68,7 +68,7 @@ func main() {
 
 	if err := rootCmd.Execute(); err != nil {
 		if e, ok := err.(commandFailure); ok {
-			rootCmd.Help()
+			rootCmd.HelpFunc()
 			fmt.Printf("\n%s\n", string(e))
 			return
 		}

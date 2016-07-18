@@ -28,8 +28,9 @@ type RelationshipToOneTexts struct {
 		PackageName string
 		Name        string
 
-		Varname  string
-		Receiver string
+		Varname     string
+		Receiver    string
+		ReverseArgs bool
 
 		LocalAssignment   string
 		ForeignAssignment string
@@ -70,6 +71,25 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 	}
 
 	return r
+}
+
+func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table bdb.Table, toMany bdb.ToManyRelationship) RelationshipToOneTexts {
+	fkey := bdb.ForeignKey{
+		Name:     "none",
+		Column:   toMany.Column,
+		Nullable: toMany.Nullable,
+		Unique:   toMany.Unique,
+
+		ForeignTable:          toMany.ForeignTable,
+		ForeignColumn:         toMany.ForeignColumn,
+		ForeignColumnNullable: toMany.ForeignColumnNullable,
+		ForeignColumnUnique:   toMany.ForeignColumnUnique,
+	}
+
+	rel := textsFromForeignKey(packageName, tables, table, fkey)
+	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(toMany.ForeignTable))
+	rel.Function.ReverseArgs = true
+	return rel
 }
 
 // RelationshipToManyTexts contains text that will be used by templates.

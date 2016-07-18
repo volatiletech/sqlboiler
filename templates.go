@@ -158,8 +158,9 @@ var templateFunctions = template.FuncMap{
 	"whereClause": strmangle.WhereClause,
 
 	// Text helpers
-	"textsFromForeignKey":   textsFromForeignKey,
-	"textsFromRelationship": textsFromRelationship,
+	"textsFromForeignKey":           textsFromForeignKey,
+	"textsFromOneToOneRelationship": textsFromOneToOneRelationship,
+	"textsFromRelationship":         textsFromRelationship,
 
 	// dbdrivers ops
 	"driverUsesLastInsertID":       strmangle.DriverUsesLastInsertID,

@@ -3,6 +3,9 @@
   {{- $dot := . }}
   {{- $table := .Table }}
   {{- range .Table.ToManyRelationships -}}
+    {{- if .ForeignColumnUnique -}}
+{{- template "relationship_to_one_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
+    {{- else -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
 // {{$rel.Function.Name}} retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
@@ -14,6 +17,17 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}P(selectCols ...string) {{$rel.ForeignTable.Slice}} {
   o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}X(boil.GetDB(), selectCols...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
+
+// {{$rel.Function.Name}}XP panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
+{{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}XP(exec boil.Executor, selectCols ...string) {{$rel.ForeignTable.Slice}} {
+  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}X(exec, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
@@ -59,15 +73,6 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
   return ret, nil
 }
 
-// {{$rel.Function.Name}}XP panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
-{{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}XP(exec boil.Executor, selectCols ...string) {{$rel.ForeignTable.Slice}} {
-  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}X(exec, selectCols...)
-  if err != nil {
-    panic(boil.WrapErr(err))
-  }
-
-  return o
-}
-{{end -}}{{- /* range relationships */ -}}
+{{end -}}{{- /* if unique foreign key */ -}}
+{{- end -}}{{- /* range relationships */ -}}
 {{- end -}}{{- /* outer if join table */ -}}

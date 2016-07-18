@@ -12,6 +12,8 @@ func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
   {{end}}
 
+
+  {{if not .Function.ReverseArgs -}}
   if err := foreign.InsertX(tx); err != nil {
     t.Fatal(err)
   }
@@ -20,14 +22,24 @@ func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   if err := local.InsertX(tx); err != nil {
     t.Fatal(err)
   }
+  {{else -}}
+  if err := local.InsertX(tx); err != nil {
+    t.Fatal(err)
+  }
 
-  checkForeign, err := local.{{.Function.Name}}X(tx)
+  foreign.{{.Function.ForeignAssignment}} = local.{{.Function.LocalAssignment}}
+  if err := foreign.InsertX(tx); err != nil {
+    t.Fatal(err)
+  }
+  {{end -}}
+
+  check, err := local.{{.Function.Name}}X(tx)
   if err != nil {
     t.Fatal(err)
   }
 
-  if checkForeign.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {
-    t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, checkForeign.{{.Function.ForeignAssignment}})
+  if check.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {
+    t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, check.{{.Function.ForeignAssignment}})
   }
 }
 

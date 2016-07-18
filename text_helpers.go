@@ -135,29 +135,5 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 		r.Function.ForeignAssignment = strmangle.TitleCase(rel.ForeignColumn)
 	}
 
-	/*if rel.ForeignColumnNullable {
-		foreignTable := bdb.GetTable(tables, rel.ForeignTable)
-		col := foreignTable.GetColumn(rel.Column)
-		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.Column), strings.TrimPrefix("Null", col.Type))
-	} else {
-		r.Function.ForeignAssignment = strmangle.TitleCase(rel.ForeignColumn)
-	}*/
-	/*
-		      {{if not .JoinTable -}}
-		        {{- if .ForeignColumnNullable -}}
-		          {{- $ftable := getTable $dot.Tables .ForeignTable -}}
-		          {{- $fcol := getColumn $dot.Tables .ForeignColumn -}}
-		  b.{{.ForeignColumn | camelCase}}.{{replace $fcol.Type "Null" ""}}, c.{{.ForeignColumn | camelCase}}.{{replace $fcol.Type "Null" ""}} = a.{{.Column}}{{if .Nullable}}, a.{{.Column}}
-		  {{if .ForeignColumnNullable}}b.{{.ForeignColumn}}, c.{{.ForeignColumn}}{{else}}b.{{.ForeignColumn}}, c.{{.ForeignColumn}}{{end}} = a.ID, a.ID
-		        {{- end -}}
-		      {{- else -}}
-		  b.user_id, c.user_id = a.ID, a.ID
-		      {{- end -}}
-		      {{- end}}
-				// {{$fnName}}X retrieves all the {{$localTableSing}}'s {{$foreignTableHumanReadable}} with an executor.
-				{{- if not $isForeignKeySimplyTableName}} via {{.ForeignColumn}} column.{{- end}}
-				func ({{$receiver}} *{{$localTable}}) {{$fnName}}X(exec boil.Executor, selectCols ...string) ({{$foreignSlice}}, error) {
-				  var ret {{$foreignSlice}}
-	*/
 	return r
 }

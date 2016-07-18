@@ -13,7 +13,7 @@ func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   {{end}}
 
 
-  {{if not .Function.ReverseArgs -}}
+  {{if not .Function.ReverseInserts -}}
   if err := foreign.InsertX(tx); err != nil {
     t.Fatal(err)
   }

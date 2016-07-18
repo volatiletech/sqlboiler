@@ -28,9 +28,9 @@ type RelationshipToOneTexts struct {
 		PackageName string
 		Name        string
 
-		Varname     string
-		Receiver    string
-		ReverseArgs bool
+		Varname        string
+		Receiver       string
+		ReverseInserts bool
 
 		LocalAssignment   string
 		ForeignAssignment string
@@ -88,7 +88,7 @@ func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table
 
 	rel := textsFromForeignKey(packageName, tables, table, fkey)
 	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(toMany.ForeignTable))
-	rel.Function.ReverseArgs = true
+	rel.Function.ReverseInserts = true
 	return rel
 }
 

@@ -92,7 +92,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 	expect.Function.Name = "User"
 	expect.Function.Varname = "user"
 	expect.Function.Receiver = "v"
-	expect.Function.ReverseArgs = false
+	expect.Function.ReverseInserts = false
 
 	expect.Function.LocalAssignment = "UserID.Int32"
 	expect.Function.ForeignAssignment = "ID"
@@ -138,7 +138,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 	expect.Function.Name = "Video"
 	expect.Function.Varname = "video"
 	expect.Function.Receiver = "u"
-	expect.Function.ReverseArgs = true
+	expect.Function.ReverseInserts = true
 
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "UserID.Int32"

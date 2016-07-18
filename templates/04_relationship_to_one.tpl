@@ -48,7 +48,6 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}X(exec b
   {{- $dot := . -}}
   {{- range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-// TO_ONE
 {{- template "relationship_to_one_helper" $rel -}}
 {{end -}}
 {{- end -}}

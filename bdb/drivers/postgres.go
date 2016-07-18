@@ -86,7 +86,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 				select cast(count(*) as bit) as is_unique
 				from information_schema.constraint_column_usage as ccu
 		    inner join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name
-		    where ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
+		    where ccu.table_name = c.table_name and ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
 			) as is_unique
 		from information_schema.columns as c
 		where table_name=$1 and table_schema = 'public';

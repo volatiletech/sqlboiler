@@ -41,30 +41,30 @@ func Limit(limit int) QueryMod {
 }
 
 // InnerJoin on another table
-func InnerJoin(on string, args ...interface{}) QueryMod {
+func InnerJoin(stmt string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetInnerJoin(q, on, args...)
+		boil.SetInnerJoin(q, stmt, args...)
 	}
 }
 
 // OuterJoin on another table
-func OuterJoin(on string, args ...interface{}) QueryMod {
+func OuterJoin(stmt string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetOuterJoin(q, on, args...)
+		boil.SetOuterJoin(q, stmt, args...)
 	}
 }
 
 // LeftOuterJoin on another table
-func LeftOuterJoin(on string, args ...interface{}) QueryMod {
+func LeftOuterJoin(stmt string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetLeftOuterJoin(q, on, args...)
+		boil.SetLeftOuterJoin(q, stmt, args...)
 	}
 }
 
 // RightOuterJoin on another table
-func RightOuterJoin(on string, args ...interface{}) QueryMod {
+func RightOuterJoin(stmt string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetRightOuterJoin(q, on, args...)
+		boil.SetRightOuterJoin(q, stmt, args...)
 	}
 }
 

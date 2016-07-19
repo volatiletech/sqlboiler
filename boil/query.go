@@ -13,18 +13,25 @@ type where struct {
 	args        []interface{}
 }
 
+type plainSQL struct {
+	sql  string
+	args []interface{}
+}
+
 type join struct {
 	on   string
 	args []interface{}
 }
 
+// Query holds the state for the built up query
 type Query struct {
 	executor        Executor
+	plainSQL        plainSQL
 	delete          bool
 	update          map[string]interface{}
 	selectCols      []string
 	count           bool
-	table           string
+	from            string
 	innerJoins      []join
 	outerJoins      []join
 	leftOuterJoins  []join
@@ -41,6 +48,8 @@ func buildQuery(q *Query) (string, []interface{}) {
 	var args []interface{}
 
 	switch {
+	case len(q.plainSQL.sql) != 0:
+		return q.plainSQL.sql, q.plainSQL.args
 	case q.delete:
 		buf, args = buildDeleteQuery(q)
 	case len(q.update) > 0:
@@ -61,7 +70,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString("COUNT(")
 	}
 	if len(q.selectCols) > 0 {
-		buf.WriteString(strings.Join(q.selectCols, ","))
+		buf.WriteString(`"` + strings.Join(q.selectCols, `","`) + `"`)
 	} else {
 		buf.WriteByte('*')
 	}
@@ -71,7 +80,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	}
 
 	buf.WriteString(" FROM ")
-	fmt.Fprintf(buf, `"%s"`, q.table)
+	fmt.Fprintf(buf, `"%s"`, q.from)
 
 	where, args := whereClause(q)
 	buf.WriteString(where)
@@ -84,7 +93,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
 
 	buf.WriteString("DELETE FROM ")
-	fmt.Fprintf(buf, `"%s"`, q.table)
+	fmt.Fprintf(buf, `"%s"`, q.from)
 
 	where, args := whereClause(q)
 	buf.WriteString(where)
@@ -128,6 +137,11 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	return q.executor.Query(qs, args...)
 }
 
+// SetSQL on the query.
+func SetSQL(q *Query, sql string, args ...interface{}) {
+	q.plainSQL = plainSQL{sql: sql, args: args}
+}
+
 // SetCount on the query.
 func SetCount(q *Query) {
 	q.count = true
@@ -160,9 +174,9 @@ func Select(q *Query) []string {
 	return cols
 }
 
-// SetTable on the query.
-func SetTable(q *Query, table string) {
-	q.table = table
+// SetFrom on the query.
+func SetFrom(q *Query, from string) {
+	q.from = from
 }
 
 // SetInnerJoin on the query.
@@ -190,6 +204,11 @@ func SetWhere(q *Query, clause string, args ...interface{}) {
 	q.where = append(q.where, where{clause: clause, args: args})
 }
 
+// SetLastWhereAsOr sets the or seperator for the last element in the where slice
+func SetLastWhereAsOr(q *Query) {
+	q.where[len(q.where)-1].orSeperator = true
+}
+
 // SetGroupBy on the query.
 func SetGroupBy(q *Query, clause string) {
 	q.groupBy = append(q.groupBy, clause)
@@ -211,21 +230,24 @@ func SetLimit(q *Query, limit int) {
 }
 
 func whereClause(q *Query) (string, []interface{}) {
+	if len(q.where) == 0 {
+		return "", nil
+	}
+
 	buf := &bytes.Buffer{}
 	var args []interface{}
 
-	if len(q.where) > 0 {
-		buf.WriteString(" WHERE ")
-		for i := 0; i < len(q.where); i++ {
-			buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
-			args = append(args, q.where[i].args...)
-			if i != len(q.where)-1 {
-				if q.where[i].orSeperator {
-					buf.WriteString(" OR ")
-				} else {
-					buf.WriteString(" AND ")
-				}
-			}
+	buf.WriteString(" WHERE ")
+	for i := 0; i < len(q.where); i++ {
+		buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
+		args = append(args, q.where[i].args...)
+		if i >= len(q.where)-1 {
+			continue
+		}
+		if q.where[i].orSeperator {
+			buf.WriteString(" OR ")
+		} else {
+			buf.WriteString(" AND ")
 		}
 	}
 

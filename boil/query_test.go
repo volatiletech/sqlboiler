@@ -26,7 +26,7 @@ func TestBuildQuery(t *testing.T) {
 		q    *Query
 		args []interface{}
 	}{
-		{&Query{table: "t"}, []interface{}{}},
+		{&Query{from: "t"}, []interface{}{}},
 	}
 
 	for i, test := range tests {
@@ -57,6 +57,39 @@ func TestBuildQuery(t *testing.T) {
 	}
 }
 
+func TestSetLastWhereAsOr(t *testing.T) {
+	t.Parallel()
+	q := &Query{}
+
+	SetWhere(q, "")
+
+	if q.where[0].orSeperator {
+		t.Errorf("Do not want or seperator")
+	}
+
+	SetLastWhereAsOr(q)
+
+	if len(q.where) != 1 {
+		t.Errorf("Want len 1")
+	}
+	if !q.where[0].orSeperator {
+		t.Errorf("Want or seperator")
+	}
+
+	SetWhere(q, "")
+	SetLastWhereAsOr(q)
+
+	if len(q.where) != 2 {
+		t.Errorf("Want len 2")
+	}
+	if q.where[0].orSeperator != true {
+		t.Errorf("Expected true")
+	}
+	if q.where[1].orSeperator != true {
+		t.Errorf("Expected true")
+	}
+}
+
 func TestSetLimit(t *testing.T) {
 	t.Parallel()
 
@@ -66,6 +99,21 @@ func TestSetLimit(t *testing.T) {
 	expect := 10
 	if q.limit != expect {
 		t.Errorf("Expected %d, got %d", expect, q.limit)
+	}
+}
+
+func TestSetSQL(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetSQL(q, "select * from thing", 5, 3)
+
+	if len(q.plainSQL.args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.plainSQL.args))
+	}
+
+	if q.plainSQL.sql != "select * from thing" {
+		t.Errorf("Was not expected string, got %s", q.plainSQL.sql)
 	}
 }
 
@@ -133,11 +181,11 @@ func TestSetTable(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetTable(q, "videos a, orders b")
+	SetFrom(q, "videos a, orders b")
 
 	expect := "videos a, orders b"
-	if q.table != expect {
-		t.Errorf("Expected %s, got %s", expect, q.table)
+	if q.from != expect {
+		t.Errorf("Expected %s, got %s", expect, q.from)
 	}
 }
 

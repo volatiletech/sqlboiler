@@ -25,16 +25,16 @@ func (q *Query) Bind(obj interface{}) error {
 		row := ExecQueryOne(q)
 		err := BindOne(row, q.selectCols, obj)
 		if err != nil {
-			return fmt.Errorf("Failed to execute Bind query for %s: %s", q.table, err)
+			return fmt.Errorf("Failed to execute Bind query for %s: %s", q.from, err)
 		}
 	} else if kind == reflect.Slice {
 		rows, err := ExecQueryAll(q)
 		if err != nil {
-			return fmt.Errorf("Failed to execute Bind query for %s: %s", q.table, err)
+			return fmt.Errorf("Failed to execute Bind query for %s: %s", q.from, err)
 		}
 		err = BindAll(rows, q.selectCols, obj)
 		if err != nil {
-			return fmt.Errorf("Failed to Bind results to object provided for %s: %s", q.table, err)
+			return fmt.Errorf("Failed to Bind results to object provided for %s: %s", q.from, err)
 		}
 	} else {
 		return fmt.Errorf("Bind given a pointer to a non-slice or non-struct: %s", typ.String())
@@ -43,7 +43,7 @@ func (q *Query) Bind(obj interface{}) error {
 	return nil
 }
 
-// Bind executes the query and inserts the
+// BindP executes the query and inserts the
 // result into the passed in object pointer.
 // It panics on error.
 func (q *Query) BindP(obj interface{}) {

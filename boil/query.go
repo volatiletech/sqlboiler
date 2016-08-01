@@ -41,6 +41,7 @@ type Query struct {
 	orderBy         []string
 	having          []string
 	limit           int
+	offset          int
 }
 
 func buildQuery(q *Query) (string, []interface{}) {
@@ -84,6 +85,13 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	where, args := whereClause(q)
 	buf.WriteString(where)
+
+	if q.limit != 0 {
+		fmt.Fprintf(buf, " LIMIT %d", q.limit)
+	}
+	if q.offset != 0 {
+		fmt.Fprintf(buf, " OFFSET %d", q.offset)
+	}
 
 	buf.WriteByte(';')
 	return buf, args
@@ -227,6 +235,11 @@ func SetHaving(q *Query, clause string) {
 // SetLimit on the query.
 func SetLimit(q *Query, limit int) {
 	q.limit = limit
+}
+
+// SetOffset on the query.
+func SetOffset(q *Query, offset int) {
+	q.offset = offset
 }
 
 func whereClause(q *Query) (string, []interface{}) {

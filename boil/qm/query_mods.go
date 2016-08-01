@@ -40,6 +40,13 @@ func Limit(limit int) QueryMod {
 	}
 }
 
+// Offset into the results
+func Offset(offset int) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetOffset(q, offset)
+	}
+}
+
 // InnerJoin on another table
 func InnerJoin(stmt string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {

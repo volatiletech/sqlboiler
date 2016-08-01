@@ -14,7 +14,7 @@ import (
 )
 
 var writeGoldenFiles = flag.Bool(
-	"golden",
+	"test.golden",
 	false,
 	"Write golden files.",
 )
@@ -26,7 +26,8 @@ func TestBuildQuery(t *testing.T) {
 		q    *Query
 		args []interface{}
 	}{
-		{&Query{from: "t"}, []interface{}{}},
+		{&Query{from: "t"}, nil},
+		{&Query{from: "q", limit: 5, offset: 6}, nil},
 	}
 
 	for i, test := range tests {
@@ -99,6 +100,18 @@ func TestSetLimit(t *testing.T) {
 	expect := 10
 	if q.limit != expect {
 		t.Errorf("Expected %d, got %d", expect, q.limit)
+	}
+}
+
+func TestSetOffset(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetOffset(q, 10)
+
+	expect := 10
+	if q.offset != expect {
+		t.Errorf("Expected %d, got %d", expect, q.offset)
 	}
 }
 

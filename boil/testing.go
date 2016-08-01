@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/nullbio/sqlboiler/strmangle"
+	"github.com/satori/go.uuid"
 	"gopkg.in/nullbio/null.v4"
 )
 
@@ -241,9 +242,12 @@ func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) 
 			}
 		case typeNullString:
 			if b {
-				if fieldType == "interval" {
+				switch fieldType {
+				case "interval":
 					newVal = null.NewString(strconv.Itoa((sd.nextInt()%26)+2)+" days", b)
-				} else {
+				case "uuid":
+					newVal = null.NewString(uuid.NewV4().String(), b)
+				default:
 					newVal = null.NewString(randStr(1, sd.nextInt()), b)
 				}
 			} else {
@@ -365,9 +369,12 @@ func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) 
 			}
 			newVal = b
 		case reflect.String:
-			if fieldType == "interval" {
+			switch fieldType {
+			case "interval":
 				newVal = strconv.Itoa((sd.nextInt()%26)+2) + " days"
-			} else {
+			case "uuid":
+				newVal = uuid.NewV4().String()
+			default:
 				newVal = randStr(1, sd.nextInt())
 			}
 		case reflect.Slice:

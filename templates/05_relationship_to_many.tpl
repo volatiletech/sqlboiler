@@ -7,16 +7,16 @@
 {{- template "relationship_to_one_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
     {{- else -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-// {{$rel.Function.Name}} retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
+// {{$rel.Function.Name}}G retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}(selectCols ...string) ({{$rel.ForeignTable.Slice}}, error) {
-  return {{$rel.Function.Receiver}}.{{$rel.Function.Name}}X(boil.GetDB(), selectCols...)
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}G(selectCols ...string) ({{$rel.ForeignTable.Slice}}, error) {
+  return {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(boil.GetDB(), selectCols...)
 }
 
-// {{$rel.Function.Name}}P panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
+// {{$rel.Function.Name}}GP panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}P(selectCols ...string) {{$rel.ForeignTable.Slice}} {
-  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}X(boil.GetDB(), selectCols...)
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}GP(selectCols ...string) {{$rel.ForeignTable.Slice}} {
+  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(boil.GetDB(), selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
@@ -24,10 +24,10 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
   return o
 }
 
-// {{$rel.Function.Name}}XP panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
+// {{$rel.Function.Name}}P panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}XP(exec boil.Executor, selectCols ...string) {{$rel.ForeignTable.Slice}} {
-  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}X(exec, selectCols...)
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}P(exec boil.Executor, selectCols ...string) {{$rel.ForeignTable.Slice}} {
+  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(exec, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
@@ -35,9 +35,9 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
   return o
 }
 
-// {{$rel.Function.Name}}X retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
+// {{$rel.Function.Name}} retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}X(exec boil.Executor, selectCols ...string) ({{$rel.ForeignTable.Slice}}, error) {
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}(exec boil.Executor, selectCols ...string) ({{$rel.ForeignTable.Slice}}, error) {
   var ret {{$rel.ForeignTable.Slice}}
 
   selectColumns := `"{{id 0}}".*`

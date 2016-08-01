@@ -1,19 +1,19 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-// Insert a single record.
-func (o *{{$tableNameSingular}}) Insert(whitelist ... string) error {
-  return o.InsertX(boil.GetDB(), whitelist...)
+// InsertG a single record.
+func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
+  return o.Insert(boil.GetDB(), whitelist...)
 }
 
-// InsertP a single record, and panics on error.
-func (o *{{$tableNameSingular}}) InsertP(whitelist ... string) {
-  if err := o.InsertX(boil.GetDB(), whitelist...); err != nil {
+// InsertGP a single record, and panics on error.
+func (o *{{$tableNameSingular}}) InsertGP(whitelist ... string) {
+  if err := o.Insert(boil.GetDB(), whitelist...); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
-// InsertX a single record using an executor.
-func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... string) error {
+// Insert a single record using an executor.
+func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }
@@ -81,9 +81,9 @@ func (o *{{$tableNameSingular}}) InsertX(exec boil.Executor, whitelist ... strin
   return nil
 }
 
-// InsertXP a single record using an executor, and panics on error.
-func (o *{{$tableNameSingular}}) InsertXP(exec boil.Executor, whitelist ... string) {
-  if err := o.InsertX(exec, whitelist...); err != nil {
+// InsertP a single record using an executor, and panics on error.
+func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... string) {
+  if err := o.Insert(exec, whitelist...); err != nil {
     panic(boil.WrapErr(err))
   }
 }

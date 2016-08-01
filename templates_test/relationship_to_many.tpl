@@ -15,7 +15,7 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   var a {{$rel.LocalTable.NameGo}}
   var b, c {{$rel.ForeignTable.NameGo}}
 
-  if err := a.InsertX(tx); err != nil {
+  if err := a.Insert(tx); err != nil {
     t.Fatal(err)
   }
 
@@ -32,10 +32,10 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   b.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
   c.{{$rel.Function.ForeignAssignment}} = a.{{$rel.Function.LocalAssignment}}
   {{- end}}
-  if err = b.InsertX(tx); err != nil {
+  if err = b.Insert(tx); err != nil {
     t.Fatal(err)
   }
-  if err = c.InsertX(tx); err != nil {
+  if err = c.Insert(tx); err != nil {
     t.Fatal(err)
   }
 
@@ -51,7 +51,7 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   {{end}}
 
   {{$varname := $rel.ForeignTable.NamePluralGo | toLower -}}
-  {{$varname}}, err := a.{{$rel.Function.Name}}X(tx)
+  {{$varname}}, err := a.{{$rel.Function.Name}}(tx)
   if err != nil {
     t.Fatal(err)
   }

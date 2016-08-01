@@ -14,26 +14,26 @@ func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 
 
   {{if not .Function.ReverseInserts -}}
-  if err := foreign.InsertX(tx); err != nil {
+  if err := foreign.Insert(tx); err != nil {
     t.Fatal(err)
   }
 
   local.{{.Function.LocalAssignment}} = foreign.{{.Function.ForeignAssignment}}
-  if err := local.InsertX(tx); err != nil {
+  if err := local.Insert(tx); err != nil {
     t.Fatal(err)
   }
   {{else -}}
-  if err := local.InsertX(tx); err != nil {
+  if err := local.Insert(tx); err != nil {
     t.Fatal(err)
   }
 
   foreign.{{.Function.ForeignAssignment}} = local.{{.Function.LocalAssignment}}
-  if err := foreign.InsertX(tx); err != nil {
+  if err := foreign.Insert(tx); err != nil {
     t.Fatal(err)
   }
   {{end -}}
 
-  check, err := local.{{.Function.Name}}X(tx)
+  check, err := local.{{.Function.Name}}(tx)
   if err != nil {
     t.Fatal(err)
   }

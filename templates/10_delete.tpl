@@ -1,27 +1,27 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-// Delete deletes a single {{$tableNameSingular}} record.
-// Delete will match against the primary key column to find the record to delete.
-func (o *{{$tableNameSingular}}) Delete() error {
+// DeleteG deletes a single {{$tableNameSingular}} record.
+// DeleteG will match against the primary key column to find the record to delete.
+func (o *{{$tableNameSingular}}) DeleteG() error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
   }
 
-  return o.DeleteX(boil.GetDB())
+  return o.Delete(boil.GetDB())
 }
 
-// DeleteP deletes a single {{$tableNameSingular}} record.
-// DeleteP will match against the primary key column to find the record to delete.
+// DeleteGP deletes a single {{$tableNameSingular}} record.
+// DeleteGP will match against the primary key column to find the record to delete.
 // Panics on error.
-func (o *{{$tableNameSingular}}) DeleteP() {
-  if err := o.Delete(); err != nil {
+func (o *{{$tableNameSingular}}) DeleteGP() {
+  if err := o.DeleteG(); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
-// DeleteX deletes a single {{$tableNameSingular}} record with an executor.
-// DeleteX will match against the primary key column to find the record to delete.
-func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
+// Delete deletes a single {{$tableNameSingular}} record with an executor.
+// Delete will match against the primary key column to find the record to delete.
+func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
   }
@@ -29,11 +29,11 @@ func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
   var mods []qm.QueryMod
 
   mods = append(mods,
-    qm.Table("{{.Table.Name}}"),
+    qm.From("{{.Table.Name}}"),
     qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
   )
 
-  query := NewQueryX(exec, mods...)
+  query := NewQuery(exec, mods...)
   boil.SetDelete(query)
 
   _, err := boil.ExecQuery(query)
@@ -44,11 +44,11 @@ func (o *{{$tableNameSingular}}) DeleteX(exec boil.Executor) error {
   return nil
 }
 
-// DeleteXP deletes a single {{$tableNameSingular}} record with an executor.
-// DeleteXP will match against the primary key column to find the record to delete.
+// DeleteP deletes a single {{$tableNameSingular}} record with an executor.
+// DeleteP will match against the primary key column to find the record to delete.
 // Panics on error.
-func (o *{{$tableNameSingular}}) DeleteXP(exec boil.Executor) {
-  if err := o.DeleteX(exec); err != nil {
+func (o *{{$tableNameSingular}}) DeleteP(exec boil.Executor) {
+  if err := o.Delete(exec); err != nil {
     panic(boil.WrapErr(err))
   }
 }
@@ -76,23 +76,23 @@ func (o {{$varNameSingular}}Query) DeleteAllP() {
     }
 }
 
-// DeleteAll deletes all rows in the slice.
-func (o {{$tableNameSingular}}Slice) DeleteAll() error {
-  if o == nil {
-    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
-  }
-  return o.DeleteAllX(boil.GetDB())
-}
-
-// DeleteAll deletes all rows in the slice.
-func (o {{$tableNameSingular}}Slice) DeleteAllP() {
-  if err := o.DeleteAll(); err != nil {
+// DeleteAll deletes all rows in the slice, and panics on error.
+func (o {{$tableNameSingular}}Slice) DeleteAllGP() {
+  if err := o.DeleteAllG(); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
-// DeleteAllX deletes all rows in the slice with an executor.
-func (o {{$tableNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
+// DeleteAllG deletes all rows in the slice.
+func (o {{$tableNameSingular}}Slice) DeleteAllG() error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
+  }
+  return o.DeleteAll(boil.GetDB())
+}
+
+// DeleteAll deletes all rows in the slice with an executor.
+func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
   }
@@ -103,11 +103,11 @@ func (o {{$tableNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   in := boil.WherePrimaryKeyIn(len(o), {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}})
 
   mods = append(mods,
-    qm.Table("{{.Table.Name}}"),
+    qm.From("{{.Table.Name}}"),
     qm.Where(in, args...),
   )
 
-  query := NewQueryX(exec, mods...)
+  query := NewQuery(exec, mods...)
   boil.SetDelete(query)
 
   _, err := boil.ExecQuery(query)
@@ -121,9 +121,9 @@ func (o {{$tableNameSingular}}Slice) DeleteAllX(exec boil.Executor) error {
   return nil
 }
 
-// DeleteAllXP deletes all rows in the slice with an executor, and panics on error.
-func (o {{$tableNameSingular}}Slice) DeleteAllXP(exec boil.Executor) {
-  if err := o.DeleteAllX(exec); err != nil {
+// DeleteAllP deletes all rows in the slice with an executor, and panics on error.
+func (o {{$tableNameSingular}}Slice) DeleteAllP(exec boil.Executor) {
+  if err := o.DeleteAll(exec); err != nil {
     panic(boil.WrapErr(err))
   }
 }

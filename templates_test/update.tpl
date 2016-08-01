@@ -7,7 +7,7 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
   var err error
 
   item := {{$tableNameSingular}}{}
-  if err = item.Insert(); err != nil {
+  if err = item.InsertG(); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
@@ -17,12 +17,12 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
   }
 
   whitelist := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}AutoIncrementColumns)
-  if err = item.Update(whitelist...); err != nil {
+  if err = item.UpdateG(whitelist...); err != nil {
     t.Errorf("Unable to update {{$tableNameSingular}}: %s", err)
   }
 
   var j *{{$tableNameSingular}}
-  j, err = {{$tableNameSingular}}Find({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "item." | join ", "}})
+  j, err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "item." | join ", "}})
   if err != nil {
     t.Errorf("Unable to find {{$tableNameSingular}} row: %s", err)
   }

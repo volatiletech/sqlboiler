@@ -11,13 +11,13 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  if err = o.Insert(); err != nil {
+  if err = o.InsertG(); err != nil {
     t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o, err)
   }
 
   j := {{$tableNameSingular}}{}
 
-  err = {{$tableNamePlural}}(qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})).Bind(&j)
+  err = {{$tableNamePlural}}G(qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})).Bind(&j)
   if err != nil {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} single object: %s", err)
   }
@@ -34,14 +34,14 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
 
   // insert random columns to test DeleteAll
   for i := 0; i < len(y); i++ {
-    err = y[i].Insert()
+    err = y[i].InsertG()
     if err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", y[i], err)
     }
   }
 
   k := {{$tableNameSingular}}Slice{}
-  err = {{$tableNamePlural}}().Bind(&k)
+  err = {{$tableNamePlural}}G().Bind(&k)
   if err != nil {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} slice of objects: %s", err)
   }
@@ -65,11 +65,11 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  if err = o.Insert(); err != nil {
+  if err = o.InsertG(); err != nil {
     t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o, err)
   }
 
-  j, err := {{$tableNamePlural}}().One()
+  j, err := {{$tableNamePlural}}G().One()
   if err != nil {
     t.Errorf("Unable to fetch One {{$tableNameSingular}} result:\n#%v\nErr: %s", j, err)
   }
@@ -89,13 +89,13 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
 
   // insert random columns to test DeleteAll
   for i := 0; i < len(o); i++ {
-    err = o[i].Insert()
+    err = o[i].InsertG()
     if err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
   }
 
-  j, err := {{$tableNamePlural}}().All()
+  j, err := {{$tableNamePlural}}G().All()
   if err != nil {
     t.Errorf("Unable to fetch All {{$tableNameSingular}} results: %s", err)
   }
@@ -121,13 +121,13 @@ func Test{{$tableNamePlural}}Count(t *testing.T) {
 
   // insert random columns to test Count
   for i := 0; i < len(o); i++ {
-    err = o[i].Insert()
+    err = o[i].InsertG()
     if err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
   }
 
-  c, err := {{$tableNamePlural}}().Count()
+  c, err := {{$tableNamePlural}}G().Count()
   if err != nil {
     t.Errorf("Unable to count query {{$tableNameSingular}}: %s", err)
   }

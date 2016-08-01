@@ -26,11 +26,11 @@ func Test{{$tableNamePlural}}Select(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  if err = item.Insert(); err != nil {
+  if err = item.InsertG(); err != nil {
     t.Errorf("Unable to insert item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
-  err = {{$tableNamePlural}}(qm.Select({{$varNameSingular}}AutoIncrementColumns...), qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "item." | join ", "}})).Bind(x)
+  err = {{$tableNamePlural}}G(qm.Select({{$varNameSingular}}AutoIncrementColumns...), qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "item." | join ", "}})).Bind(x)
   if err != nil {
     t.Errorf("Unable to select insert results with bind: %s", err)
   }

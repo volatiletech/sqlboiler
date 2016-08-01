@@ -22,7 +22,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   }
 
   for i := 0; i < len(o); i++ {
-    if err = o[i].Insert(); err != nil {
+    if err = o[i].InsertG(); err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
   }
@@ -30,14 +30,14 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   j := make({{$tableNameSingular}}Slice, 3)
   // Perform all Find queries and assign result objects to slice for comparison
   for i := 0; i < len(j); i++ {
-    j[i], err = {{$tableNameSingular}}Find({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
+    j[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
     {{$varNameSingular}}CompareVals(o[i], j[i], t)
   }
 
   {{$varNamePlural}}DeleteAllRows(t)
 
   item := &{{$tableNameSingular}}{}
-  if err = item.Insert(); err != nil {
+  if err = item.InsertG(); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 

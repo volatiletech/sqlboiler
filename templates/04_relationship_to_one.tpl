@@ -1,31 +1,31 @@
 {{- define "relationship_to_one_helper"}}
+// {{.Function.Name}}G pointed to by the foreign key.
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}G(selectCols ...string) (*{{.ForeignTable.NameGo}}, error) {
+  return {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), selectCols...)
+}
+
+// {{.Function.Name}}GP pointed to by the foreign key. Panics on error.
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}GP(selectCols ...string) *{{.ForeignTable.NameGo}} {
+  o, err := {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), selectCols...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
+
+// {{.Function.Name}}P pointed to by the foreign key with exeuctor. Panics on error.
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}P(exec boil.Executor, selectCols ...string) *{{.ForeignTable.NameGo}} {
+  o, err := {{.Function.Receiver}}.{{.Function.Name}}(exec, selectCols...)
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return o
+}
+
 // {{.Function.Name}} pointed to by the foreign key.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(selectCols ...string) (*{{.ForeignTable.NameGo}}, error) {
-  return {{.Function.Receiver}}.{{.Function.Name}}X(boil.GetDB(), selectCols...)
-}
-
-// {{.Function.Name}}P pointed to by the foreign key. Panics on error.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}P(selectCols ...string) *{{.ForeignTable.NameGo}} {
-  o, err := {{.Function.Receiver}}.{{.Function.Name}}X(boil.GetDB(), selectCols...)
-  if err != nil {
-    panic(boil.WrapErr(err))
-  }
-
-  return o
-}
-
-// {{.Function.Name}}XP pointed to by the foreign key with exeuctor. Panics on error.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}XP(exec boil.Executor, selectCols ...string) *{{.ForeignTable.NameGo}} {
-  o, err := {{.Function.Receiver}}.{{.Function.Name}}X(exec, selectCols...)
-  if err != nil {
-    panic(boil.WrapErr(err))
-  }
-
-  return o
-}
-
-// {{.Function.Name}}X pointed to by the foreign key.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}X(exec boil.Executor, selectCols ...string) (*{{.ForeignTable.NameGo}}, error) {
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec boil.Executor, selectCols ...string) (*{{.ForeignTable.NameGo}}, error) {
   {{.Function.Varname}} := &{{.ForeignTable.NameGo}}{}
 
   selectColumns := `*`

@@ -28,6 +28,7 @@ func TestBuildQuery(t *testing.T) {
 	}{
 		{&Query{from: "t"}, nil},
 		{&Query{from: "q", limit: 5, offset: 6}, nil},
+		{&Query{from: "t", selectCols: []string{"count(*) as ab, thing as bd", "stuff"}}, nil},
 	}
 
 	for i, test := range tests {

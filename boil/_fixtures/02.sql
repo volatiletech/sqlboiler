@@ -1,1 +1,1 @@
-SELECT "count(*) as ab, thing as bd","stuff" FROM "t";
+SELECT * FROM "q" ORDER BY a ASC,b DESC;

@@ -86,6 +86,11 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	where, args := whereClause(q)
 	buf.WriteString(where)
 
+	if len(q.orderBy) != 0 {
+		buf.WriteString(" ORDER BY ")
+		buf.WriteString(strings.Join(q.orderBy, ","))
+	}
+
 	if q.limit != 0 {
 		fmt.Fprintf(buf, " LIMIT %d", q.limit)
 	}

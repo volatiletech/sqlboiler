@@ -28,6 +28,7 @@ func TestBuildQuery(t *testing.T) {
 	}{
 		{&Query{from: "t"}, nil},
 		{&Query{from: "q", limit: 5, offset: 6}, nil},
+		{&Query{from: "q", orderBy: []string{"a ASC", "b DESC"}}, nil},
 		{&Query{from: "t", selectCols: []string{"count(*) as ab, thing as bd", "stuff"}}, nil},
 	}
 

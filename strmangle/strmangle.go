@@ -17,6 +17,37 @@ var (
 	uppercaseWords = []string{"id", "uid", "uuid", "guid", "ssn", "tz"}
 )
 
+type state int
+type smartStack []state
+
+const (
+	stateNothing = iota
+	stateSubExpression
+	stateFunction
+	stateIdentifier
+)
+
+func (stack *smartStack) push(s state) {
+	*stack = append(*stack, s)
+}
+
+func (stack *smartStack) pop() state {
+	l := len(*stack)
+	if l == 0 {
+		return stateNothing
+	}
+
+	v := (*stack)[l-1]
+	*stack = (*stack)[:l-1]
+	return v
+}
+
+// SmartQuote intelligently quotes identifiers in sql statements
+func SmartQuote(s string) string {
+	// split on comma, treat as individual thing
+	return s
+}
+
 // Identifier is a base conversion from Base 10 integers to Base 26
 // integers that are represented by an alphabet from a-z
 // See tests for example outputs.

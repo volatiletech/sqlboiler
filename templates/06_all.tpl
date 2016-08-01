@@ -8,6 +8,6 @@ func {{$tableNamePlural}}(mods ...qm.QueryMod) {{$varNameSingular}}Query {
 
 // {{$tableNamePlural}}X retrieves all the records using an executor.
 func {{$tableNamePlural}}X(exec boil.Executor, mods ...qm.QueryMod) {{$varNameSingular}}Query {
-  mods = append(mods, qm.Table("{{.Table.Name}}"))
+  mods = append(mods, qm.From("{{.Table.Name}}"))
   return {{$varNameSingular}}Query{NewQueryX(exec, mods...)}
 }

@@ -25,7 +25,7 @@ func {{$tableNameSingular}}FindX(exec boil.Executor, {{$pkArgs}}, selectCols ...
 
   mods := []qm.QueryMod{
     qm.Select(selectCols...),
-    qm.Table("{{.Table.Name}}"),
+    qm.From("{{.Table.Name}}"),
     qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{$pkNames | join ", "}}),
   }
 

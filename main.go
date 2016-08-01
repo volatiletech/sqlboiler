@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -73,7 +74,7 @@ func main() {
 			return
 		}
 
-		fmt.Printf("\n%+v\n", err)
+		fmt.Printf("%+v\n", err)
 		os.Exit(1)
 	}
 }
@@ -91,8 +92,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return commandFailure("must provide a driver name")
 	}
 
+	driverName := args[0]
+
 	cmdConfig = &Config{
-		DriverName: args[0],
+		DriverName: driverName,
 		OutFolder:  viper.GetString("output"),
 		PkgName:    viper.GetString("pkgname"),
 	}
@@ -137,6 +140,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return commandFailure(err.Error())
 		}
+	} else if driverName == "postgres" {
+		return errors.New("postgres driver requires a postgres section in the config")
 	}
 
 	cmdState, err = New(cmdConfig)

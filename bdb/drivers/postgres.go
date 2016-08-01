@@ -3,6 +3,7 @@ package drivers
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
@@ -22,11 +23,35 @@ type PostgresDriver struct {
 // the database connection once an object has been obtained.
 func NewPostgresDriver(user, pass, dbname, host string, port int, sslmode string) *PostgresDriver {
 	driver := PostgresDriver{
-		connStr: fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%d sslmode=%s",
-			user, pass, dbname, host, port, sslmode),
+		connStr: BuildQueryString(user, pass, dbname, host, port, sslmode),
 	}
 
 	return &driver
+}
+
+// BuildQueryString for Postgres
+func BuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
+	parts := []string{}
+	if len(user) != 0 {
+		parts = append(parts, fmt.Sprintf("user=%s", user))
+	}
+	if len(pass) != 0 {
+		parts = append(parts, fmt.Sprintf("password=%s", pass))
+	}
+	if len(dbname) != 0 {
+		parts = append(parts, fmt.Sprintf("dbname=%s", dbname))
+	}
+	if len(host) != 0 {
+		parts = append(parts, fmt.Sprintf("host=%s", host))
+	}
+	if port != 0 {
+		parts = append(parts, fmt.Sprintf("port=%d", port))
+	}
+	if len(sslmode) != 0 {
+		parts = append(parts, fmt.Sprintf("sslmode=%s", sslmode))
+	}
+
+	return strings.Join(parts, " ")
 }
 
 // Open opens the database connection using the connection string

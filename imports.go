@@ -214,11 +214,13 @@ var defaultTestMainImports = map[string]imports{
 			`"io/ioutil"`,
 			`"bytes"`,
 			`"database/sql"`,
+			`"path/filepath"`,
 			`"time"`,
 			`"math/rand"`,
 		},
 		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
+			`"github.com/nullbio/sqlboiler/bdb/drivers"`,
 			`_ "github.com/lib/pq"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/kat-co/vala"`,

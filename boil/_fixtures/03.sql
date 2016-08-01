@@ -1,0 +1,1 @@
+SELECT "count(*) as ab, thing as bd","stuff" FROM "t";

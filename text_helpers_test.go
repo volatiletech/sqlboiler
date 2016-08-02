@@ -85,6 +85,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 
 	expect.ForeignTable.Name = "users"
 	expect.ForeignTable.NameGo = "User"
+	expect.ForeignTable.NamePluralGo = "Users"
 	expect.ForeignTable.ColumnName = "id"
 	expect.ForeignTable.ColumnNameGo = "ID"
 
@@ -131,6 +132,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 
 	expect.ForeignTable.Name = "videos"
 	expect.ForeignTable.NameGo = "Video"
+	expect.ForeignTable.NamePluralGo = "Videos"
 	expect.ForeignTable.ColumnName = "user_id"
 	expect.ForeignTable.ColumnNameGo = "UserID"
 

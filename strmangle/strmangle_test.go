@@ -5,60 +5,6 @@ import (
 	"testing"
 )
 
-func TestStack(t *testing.T) {
-	t.Parallel()
-
-	stack := smartStack{}
-
-	if stack.pop() != stateNothing {
-		t.Errorf("Expected state nothing for empty stack")
-	}
-
-	stack.push(stateFunction)
-	stack.push(stateSubExpression)
-	stack.push(stateNothing)
-
-	if len(stack) != 3 {
-		t.Errorf("Expected 3 state on stack, got %d", len(stack))
-	}
-
-	if r := stack.pop(); r != stateNothing {
-		t.Errorf("Expected stateNothing, got %v", r)
-	}
-	if len(stack) != 2 {
-		t.Errorf("Expected 2 state on stack, got %d", len(stack))
-	}
-
-	if r := stack.pop(); r != stateSubExpression {
-		t.Errorf("Expected stateSubExpression, got %v", r)
-	}
-	if len(stack) != 1 {
-		t.Errorf("Expected 1 state on stack, got %d", len(stack))
-	}
-
-	stack.push(stateSubExpression)
-	if len(stack) != 2 {
-		t.Errorf("Expected 2 state on stack, got %d", len(stack))
-	}
-
-	if r := stack.pop(); r != stateSubExpression {
-		t.Errorf("Expected stateSubExpression, got %v", r)
-	}
-	if len(stack) != 1 {
-		t.Errorf("Expected 1 state on stack, got %d", len(stack))
-	}
-
-	if r := stack.pop(); r != stateFunction {
-		t.Errorf("Expected stateFunction, got %v", r)
-	}
-	if len(stack) != 0 {
-		t.Errorf("Expected 0 state on stack, got %d", len(stack))
-	}
-	if stack.pop() != stateNothing {
-		t.Errorf("Expected state nothing for empty stack")
-	}
-}
-
 func TestSmartQuote(t *testing.T) {
 	t.Parallel()
 
@@ -66,15 +12,14 @@ func TestSmartQuote(t *testing.T) {
 		In  string
 		Out string
 	}{
-		{In: `count(*) as thing, thing as stuff`, Out: `count(*) as thing, "thing" as stuff`},
-		{In: `select (select 1) as thing, thing as stuff`, Out: `select (select 1) as thing, "thing" as stuff`},
-		{
-			In:  `select (select stuff as thing from thing where id=1 or name="thing") as stuff`,
-			Out: `select (select "stuff" as thing from thing where id=1 or name="thing") as stuff`,
-		},
 		{In: `thing`, Out: `"thing"`},
-		{In: `thing, stuff`, Out: `"thing", "stuff"`},
+		{In: `null`, Out: `null`},
+		{In: `"thing"`, Out: `"thing"`},
 		{In: `*`, Out: `*`},
+		{In: `thing.thing`, Out: `"thing"."thing"`},
+		{In: `"thing"."thing"`, Out: `"thing"."thing"`},
+		{In: `thing.thing.thing.thing`, Out: `"thing"."thing"."thing"."thing"`},
+		{In: `thing."thing".thing."thing"`, Out: `"thing"."thing"."thing"."thing"`},
 	}
 
 	for _, test := range tests {

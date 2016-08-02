@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+
+	"github.com/nullbio/sqlboiler/strmangle"
 )
 
 type where struct {
@@ -71,7 +73,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString("COUNT(")
 	}
 	if len(q.selectCols) > 0 {
-		buf.WriteString(`"` + strings.Join(q.selectCols, `","`) + `"`)
+		buf.WriteString(strings.Join(q.selectCols, `, `))
 	} else {
 		buf.WriteByte('*')
 	}
@@ -177,6 +179,10 @@ func SetExecutor(q *Query, exec Executor) {
 
 // SetSelect on the query.
 func SetSelect(q *Query, columns ...string) {
+	for i := 0; i < len(columns); i++ {
+		columns[i] = strmangle.IdentQuote(columns[i])
+	}
+
 	q.selectCols = append(q.selectCols, columns...)
 }
 

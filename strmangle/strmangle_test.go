@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSmartQuote(t *testing.T) {
+func TestIdentQuote(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -16,14 +16,16 @@ func TestSmartQuote(t *testing.T) {
 		{In: `null`, Out: `null`},
 		{In: `"thing"`, Out: `"thing"`},
 		{In: `*`, Out: `*`},
+		{In: ``, Out: ``},
 		{In: `thing.thing`, Out: `"thing"."thing"`},
 		{In: `"thing"."thing"`, Out: `"thing"."thing"`},
 		{In: `thing.thing.thing.thing`, Out: `"thing"."thing"."thing"."thing"`},
 		{In: `thing."thing".thing."thing"`, Out: `"thing"."thing"."thing"."thing"`},
+		{In: `count(*) as ab, thing as bd`, Out: `count(*) as ab, thing as bd`},
 	}
 
 	for _, test := range tests {
-		if got := SmartQuote(test.In); got != test.Out {
+		if got := IdentQuote(test.In); got != test.Out {
 			t.Errorf("want: %s, got: %s", test.Out, got)
 		}
 	}

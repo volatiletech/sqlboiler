@@ -19,8 +19,8 @@ var (
 	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*$`)
 )
 
-// SmartQuote intelligently quotes identifiers in sql statements
-func SmartQuote(s string) string {
+// IdentQuote attempts to quote simple identifiers in SQL tatements
+func IdentQuote(s string) string {
 	if s == "null" {
 		return s
 	}

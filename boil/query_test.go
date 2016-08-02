@@ -29,7 +29,7 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{from: "t"}, nil},
 		{&Query{from: "q", limit: 5, offset: 6}, nil},
 		{&Query{from: "q", orderBy: []string{"a ASC", "b DESC"}}, nil},
-		{&Query{from: "t", selectCols: []string{"count(*) as ab, thing as bd", "stuff"}}, nil},
+		{&Query{from: "t", selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
 	}
 
 	for i, test := range tests {
@@ -252,7 +252,7 @@ func TestSetSelect(t *testing.T) {
 		t.Errorf("Expected selectCols len 2, got %d", len(q.selectCols))
 	}
 
-	if q.selectCols[0] != "col1" && q.selectCols[1] != "col2" {
+	if q.selectCols[0] != `"col1"` && q.selectCols[1] != `"col2"` {
 		t.Errorf("select cols value mismatch: %#v", q.selectCols)
 	}
 }

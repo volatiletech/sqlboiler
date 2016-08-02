@@ -73,6 +73,11 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString("COUNT(")
 	}
 	if len(q.selectCols) > 0 {
+		cols := make([]string, len(q.selectCols))
+		copy(cols, q.selectCols)
+		for i := 0; i < len(cols); i++ {
+			cols[i] = strmangle.IdentQuote(cols[i])
+		}
 		buf.WriteString(strings.Join(q.selectCols, `, `))
 	} else {
 		buf.WriteByte('*')
@@ -179,11 +184,10 @@ func SetExecutor(q *Query, exec Executor) {
 
 // SetSelect on the query.
 func SetSelect(q *Query, columns ...string) {
-	for i := 0; i < len(columns); i++ {
-		columns[i] = strmangle.IdentQuote(columns[i])
-	}
+	cols := make([]string, len(columns))
+	copy(cols, columns)
 
-	q.selectCols = append(q.selectCols, columns...)
+	q.selectCols = append(q.selectCols, cols...)
 }
 
 // Select returns the select columns in the query.

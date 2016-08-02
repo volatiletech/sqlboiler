@@ -20,6 +20,7 @@ func {{$tableNameSingular}}FindGP({{$pkArgs}}, selectCols ...string) *{{$tableNa
 }
 
 // {{$tableNameSingular}}Find retrieves a single record by ID with an executor.
+// If selectCols is empty Find will return all columns.
 func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
 

@@ -131,6 +131,7 @@ func TestTitleCase(t *testing.T) {
 		{"thing_guid", "ThingGUID"},
 		{"guid_thing", "GUIDThing"},
 		{"thing_guid_thing", "ThingGUIDThing"},
+		{"id", "ID"},
 	}
 
 	for i, test := range tests {

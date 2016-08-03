@@ -191,7 +191,7 @@ func TestRandomizeStruct(t *testing.T) {
 	}
 }
 
-func TestRandomizeEnforcedStruct(t *testing.T) {
+func TestRandomizeValidatedStruct(t *testing.T) {
 	t.Parallel()
 
 	var testStruct = struct {
@@ -201,7 +201,7 @@ func TestRandomizeEnforcedStruct(t *testing.T) {
 		UUID2    string
 	}{}
 
-	enforcedCols := []string{
+	validatedCols := []string{
 		"uuid1",
 		"uuid2",
 	}
@@ -212,7 +212,7 @@ func TestRandomizeEnforcedStruct(t *testing.T) {
 		"UUID2":   "uuid",
 	}
 
-	err := RandomizeEnforcedStruct(&testStruct, enforcedCols, fieldTypes)
+	err := RandomizeValidatedStruct(&testStruct, validatedCols, fieldTypes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,6 +222,6 @@ func TestRandomizeEnforcedStruct(t *testing.T) {
 	}
 
 	if testStruct.UUID1 == "" || testStruct.UUID2 == "" {
-		t.Errorf("the enforced values should be set: %#v", testStruct)
+		t.Errorf("the validated values should be set: %#v", testStruct)
 	}
 }

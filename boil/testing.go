@@ -202,7 +202,7 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 	return nil
 }
 
-func RandomizeEnforcedStruct(obj interface{}, enforcedCols []string, colTypes map[string]string) error {
+func RandomizeValidatedStruct(obj interface{}, validatedCols []string, colTypes map[string]string) error {
 	// Check if it's pointer
 	value := reflect.ValueOf(obj)
 	kind := value.Kind()
@@ -224,7 +224,7 @@ func RandomizeEnforcedStruct(obj interface{}, enforcedCols []string, colTypes ma
 	for i := 0; i < nFields; i++ {
 		fieldVal := value.Field(i)
 		fieldTyp := typ.Field(i)
-		for _, v := range enforcedCols {
+		for _, v := range validatedCols {
 			if strmangle.TitleCase(v) == fieldTyp.Name {
 				if err := randomizeField(fieldVal, colTypes[fieldTyp.Name], false); err != nil {
 					return err

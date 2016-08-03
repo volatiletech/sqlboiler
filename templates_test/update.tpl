@@ -7,7 +7,7 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
   var err error
 
   item := {{$tableNameSingular}}{}
-  boil.RandomizeEnforcedStruct(&item, {{$varNameSingular}}ColumnsEnforced, {{$varNameSingular}}DBTypes)
+  boil.RandomizeValidatedStruct(&item, {{$varNameSingular}}ColumnsValidated, {{$varNameSingular}}DBTypes)
   if err = item.InsertG(); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }

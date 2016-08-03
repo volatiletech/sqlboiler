@@ -17,8 +17,8 @@ type PostgresDriver struct {
 	dbConn  *sql.DB
 }
 
-// enforcedTypes are types that cannot be zero values in the database.
-var enforcedTypes = []string{"uuid"}
+// validatedTypes are types that cannot be zero values in the database.
+var validatedTypes = []string{"uuid"}
 
 // NewPostgresDriver takes the database connection details as parameters and
 // returns a pointer to a PostgresDriver object. Note that it is required to
@@ -140,12 +140,12 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 		}
 
 		column := bdb.Column{
-			Name:     colName,
-			DBType:   colType,
-			Default:  colDefault,
-			Nullable: nullable == "YES",
-			Unique:   unique,
-			Enforced: isEnforced(colType),
+			Name:      colName,
+			DBType:    colType,
+			Default:   colDefault,
+			Nullable:  nullable == "YES",
+			Unique:    unique,
+			Validated: isValidated(colType),
 		}
 		columns = append(columns, column)
 	}
@@ -298,9 +298,9 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	return c
 }
 
-// isEnforced checks if the database type is in the enforcedTypes list.
-func isEnforced(typ string) bool {
-	for _, v := range enforcedTypes {
+// isValidated checks if the database type is in the validatedTypes list.
+func isValidated(typ string) bool {
+	for _, v := range validatedTypes {
 		if v == typ {
 			return true
 		}

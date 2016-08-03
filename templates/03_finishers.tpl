@@ -76,3 +76,28 @@ func (q {{$varNameSingular}}Query) CountP() int64 {
 
   return c
 }
+
+// Exists checks if the row exists in the table.
+func (q {{$varNameSingular}}Query) Exists() (bool, error) {
+  var count int64
+
+  boil.SetCount(q.Query)
+  boil.SetLimit(q.Query, 1)
+
+  err := boil.ExecQueryOne(q.Query).Scan(&count)
+  if err != nil {
+    return false, fmt.Errorf("{{.PkgName}}: failed to check if {{.Table.Name}} exists: %s", err)
+  }
+
+  return count > 0, nil
+}
+
+// Exists checks if the row exists in the table, and panics on error.
+func (q {{$varNameSingular}}Query) ExistsP() bool {
+  e, err := q.Exists()
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
+
+  return e
+}

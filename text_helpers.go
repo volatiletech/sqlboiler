@@ -48,7 +48,7 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 
 	r.ForeignTable.Name = fkey.ForeignTable
 	r.ForeignTable.NameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignTable))
-	r.ForeignTable.NamePluralGo = strmangle.TitleCase(fkey.ForeignTable)
+	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(fkey.ForeignTable))
 	r.ForeignTable.ColumnName = fkey.ForeignColumn
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
 

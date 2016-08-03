@@ -37,6 +37,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   {{$varNamePlural}}DeleteAllRows(t)
 
   item := &{{$tableNameSingular}}{}
+  boil.RandomizeEnforcedStruct(item, {{$varNameSingular}}ColumnsEnforced, {{$varNameSingular}}DBTypes)
   if err = item.InsertG(); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
@@ -66,6 +67,9 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   }
 
   regularCols := []string{{"{"}}{{.Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
+
+  // Remove the enforced columns, they can never be zero values
+  regularCols = boil.SetComplement(regularCols, {{$varNameSingular}}ColumnsEnforced)
 
   // Ensure the non-defaultvalue columns and non-autoincrement columns are stored correctly as zero or null values.
   for _, c := range regularCols {

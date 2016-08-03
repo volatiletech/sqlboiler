@@ -201,6 +201,10 @@ func TestRandomizeEnforcedStruct(t *testing.T) {
 		UUID2    string
 	}{}
 
+	enforcedCols := []string{
+		"uuid1",
+		"uuid2",
+	}
 	fieldTypes := map[string]string{
 		"Int":     "integer",
 		"NullInt": "integer",
@@ -208,7 +212,7 @@ func TestRandomizeEnforcedStruct(t *testing.T) {
 		"UUID2":   "uuid",
 	}
 
-	err := RandomizeEnforcedStruct(&testStruct, fieldTypes)
+	err := RandomizeEnforcedStruct(&testStruct, enforcedCols, fieldTypes)
 	if err != nil {
 		t.Fatal(err)
 	}

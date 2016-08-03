@@ -33,8 +33,6 @@ var (
 	typeTime        = reflect.TypeOf(time.Time{})
 
 	rgxValidTime = regexp.MustCompile(`[2-9]+`)
-
-	enforcedTypes = []string{"uuid"}
 )
 
 type seed int
@@ -204,13 +202,17 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 	return nil
 }
 
-func RandomizeEnforcedStruct(obj interface{}, colTypes map[string]string) error {
-	value := reflect.Indirect(reflect.ValueOf(obj))
-	if !value.IsValid() {
-		return fmt.Errorf("Invalid object provided: %T", obj)
+func RandomizeEnforcedStruct(obj interface{}, enforcedCols []string, colTypes map[string]string) error {
+	// Check if it's pointer
+	value := reflect.ValueOf(obj)
+	kind := value.Kind()
+	if kind != reflect.Ptr {
+		return fmt.Errorf("Outer element should be a pointer, given a non-pointer: %T", obj)
 	}
 
-	kind := value.Kind()
+	// Check if it's a struct
+	value = value.Elem()
+	kind = value.Kind()
 	if kind != reflect.Struct {
 		return fmt.Errorf("Inner element should be a struct, given a non-struct: %T", obj)
 	}
@@ -222,9 +224,9 @@ func RandomizeEnforcedStruct(obj interface{}, colTypes map[string]string) error 
 	for i := 0; i < nFields; i++ {
 		fieldVal := value.Field(i)
 		fieldTyp := typ.Field(i)
-		for _, v := range enforcedTypes {
-			if colTypes[fieldTyp.Name] == v {
-				if err := randomizeField(fieldVal, v, false); err != nil {
+		for _, v := range enforcedCols {
+			if strmangle.TitleCase(v) == fieldTyp.Name {
+				if err := randomizeField(fieldVal, colTypes[fieldTyp.Name], false); err != nil {
 					return err
 				}
 				break

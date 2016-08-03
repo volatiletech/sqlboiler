@@ -15,8 +15,15 @@ import (
 
 var (
 	idAlphabet     = []byte("abcdefghijklmnopqrstuvwxyz")
-	uppercaseWords = []string{"id", "uid", "uuid", "guid", "ssn", "tz"}
-	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*$`)
+	uppercaseWords = []*regexp.Regexp{
+		regexp.MustCompile(`^id[0-9]*$`),
+		regexp.MustCompile(`^uid[0-9]*$`),
+		regexp.MustCompile(`^uuid[0-9]*$`),
+		regexp.MustCompile(`^guid[0-9]*$`),
+		regexp.MustCompile(`^ssn[0-9]*$`),
+		regexp.MustCompile(`^tz[0-9]*$`),
+	}
+	smartQuoteRgx = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*$`)
 )
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
@@ -90,8 +97,8 @@ func TitleCase(name string) string {
 	for i, split := range splits {
 		found := false
 		for _, uc := range uppercaseWords {
-			if split == uc {
-				splits[i] = strings.ToUpper(uc)
+			if uc.MatchString(split) {
+				splits[i] = strings.ToUpper(split)
 				found = true
 				break
 			}
@@ -122,8 +129,8 @@ func CamelCase(name string) string {
 		found := false
 		if i > 0 {
 			for _, uc := range uppercaseWords {
-				if split == uc {
-					splits[i] = strings.ToUpper(uc)
+				if uc.MatchString(split) {
+					splits[i] = strings.ToUpper(split)
 					found = true
 					break
 				}

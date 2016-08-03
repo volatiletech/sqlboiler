@@ -17,6 +17,7 @@ type Column struct {
 	Default  string
 	Nullable bool
 	Unique   bool
+	Enforced bool
 }
 
 // ColumnNames of the columns.
@@ -64,12 +65,12 @@ func FilterColumnsByDefault(defaults bool, columns []Column) []Column {
 }
 
 // FilterColumnsBySimpleDefault generates a list of columns that have simple default values
-// A simple default value is one without a function call
+// A simple default value is one without a function call and a non-enforced type
 func FilterColumnsBySimpleDefault(columns []Column) []Column {
 	var cols []Column
 
 	for _, c := range columns {
-		if len(c.Default) != 0 && !strings.ContainsAny(c.Default, "()") {
+		if len(c.Default) != 0 && !strings.ContainsAny(c.Default, "()") && !c.Enforced {
 			cols = append(cols, c)
 		}
 	}
@@ -84,6 +85,19 @@ func FilterColumnsByAutoIncrement(autos bool, columns []Column) []Column {
 	for _, c := range columns {
 		if (autos && rgxAutoIncColumn.MatchString(c.Default)) ||
 			(!autos && !rgxAutoIncColumn.MatchString(c.Default)) {
+			cols = append(cols, c)
+		}
+	}
+
+	return cols
+}
+
+// FilterColumnsByEnforced generates the list of enforced columns
+func FilterColumnsByEnforced(columns []Column) []Column {
+	var cols []Column
+
+	for _, c := range columns {
+		if c.Enforced == true {
 			cols = append(cols, c)
 		}
 	}

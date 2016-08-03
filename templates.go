@@ -168,6 +168,7 @@ var templateFunctions = template.FuncMap{
 	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
 	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,
 	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,
+	"filterColumnsByEnforced":      bdb.FilterColumnsByEnforced,
 	"autoIncPrimaryKey":            bdb.AutoIncPrimaryKey,
 	"sqlColDefinitions":            bdb.SQLColDefinitions,
 	"sqlColDefStrings":             bdb.SQLColDefStrings,

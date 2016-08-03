@@ -252,7 +252,7 @@ func TestSetSelect(t *testing.T) {
 		t.Errorf("Expected selectCols len 2, got %d", len(q.selectCols))
 	}
 
-	if q.selectCols[0] != `"col1"` && q.selectCols[1] != `"col2"` {
+	if q.selectCols[0] != `col1` && q.selectCols[1] != `col2` {
 		t.Errorf("select cols value mismatch: %#v", q.selectCols)
 	}
 }

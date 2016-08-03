@@ -33,6 +33,8 @@ var (
 	typeTime        = reflect.TypeOf(time.Time{})
 
 	rgxValidTime = regexp.MustCompile(`[2-9]+`)
+
+	enforcedTypes = []string{"uuid"}
 )
 
 type seed int
@@ -193,9 +195,40 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 			continue
 		}
 
-		fieldDBType := colTypes[typ.Field(i).Name]
+		fieldDBType := colTypes[fieldTyp.Name]
 		if err := randomizeField(fieldVal, fieldDBType, includeInvalid); err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func RandomizeEnforcedStruct(obj interface{}, colTypes map[string]string) error {
+	value := reflect.Indirect(reflect.ValueOf(obj))
+	if !value.IsValid() {
+		return fmt.Errorf("Invalid object provided: %T", obj)
+	}
+
+	kind := value.Kind()
+	if kind != reflect.Struct {
+		return fmt.Errorf("Inner element should be a struct, given a non-struct: %T", obj)
+	}
+
+	typ := value.Type()
+	nFields := value.NumField()
+
+	// Iterate through fields
+	for i := 0; i < nFields; i++ {
+		fieldVal := value.Field(i)
+		fieldTyp := typ.Field(i)
+		for _, v := range enforcedTypes {
+			if colTypes[fieldTyp.Name] == v {
+				if err := randomizeField(fieldVal, v, false); err != nil {
+					return err
+				}
+				break
+			}
 		}
 	}
 

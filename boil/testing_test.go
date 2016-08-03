@@ -8,6 +8,8 @@ import (
 )
 
 func TestIsZeroValue(t *testing.T) {
+	t.Parallel()
+
 	o := struct {
 		A []byte
 		B time.Time
@@ -49,6 +51,8 @@ func TestIsZeroValue(t *testing.T) {
 }
 
 func TestIsValueMatch(t *testing.T) {
+	t.Parallel()
+
 	var errs []error
 	var values []interface{}
 
@@ -117,6 +121,8 @@ func TestIsValueMatch(t *testing.T) {
 }
 
 func TestRandomizeStruct(t *testing.T) {
+	t.Parallel()
+
 	var testStruct = struct {
 		Int       int
 		Int64     int64
@@ -182,5 +188,36 @@ func TestRandomizeStruct(t *testing.T) {
 		testStruct.NullInterval.Valid == false &&
 		testStruct.NullTime.Valid == false {
 		t.Errorf("the null values are not being randomized: %#v", testStruct)
+	}
+}
+
+func TestRandomizeEnforcedStruct(t *testing.T) {
+	t.Parallel()
+
+	var testStruct = struct {
+		Int1     int
+		NullInt1 null.Int
+		UUID1    string
+		UUID2    string
+	}{}
+
+	fieldTypes := map[string]string{
+		"Int":     "integer",
+		"NullInt": "integer",
+		"UUID1":   "uuid",
+		"UUID2":   "uuid",
+	}
+
+	err := RandomizeEnforcedStruct(&testStruct, fieldTypes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if testStruct.Int1 != 0 || testStruct.NullInt1.Int != 0 ||
+		testStruct.NullInt1.Valid != false {
+		t.Errorf("the regular values are being randomized when they should be zero vals: %#v", testStruct)
+	}
+
+	if testStruct.UUID1 == "" || testStruct.UUID2 == "" {
+		t.Errorf("the enforced values should be set: %#v", testStruct)
 	}
 }

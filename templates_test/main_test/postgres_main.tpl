@@ -17,6 +17,7 @@ func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 
 	// Set DebugMode so we can see generated sql statements
+	flag.Parse()
 	boil.DebugMode = *flagDebugMode
 
 	var err error

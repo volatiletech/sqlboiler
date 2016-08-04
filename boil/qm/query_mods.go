@@ -54,27 +54,6 @@ func InnerJoin(stmt string, args ...interface{}) QueryMod {
 	}
 }
 
-// OuterJoin on another table
-func OuterJoin(stmt string, args ...interface{}) QueryMod {
-	return func(q *boil.Query) {
-		boil.SetOuterJoin(q, stmt, args...)
-	}
-}
-
-// LeftOuterJoin on another table
-func LeftOuterJoin(stmt string, args ...interface{}) QueryMod {
-	return func(q *boil.Query) {
-		boil.SetLeftOuterJoin(q, stmt, args...)
-	}
-}
-
-// RightOuterJoin on another table
-func RightOuterJoin(stmt string, args ...interface{}) QueryMod {
-	return func(q *boil.Query) {
-		boil.SetRightOuterJoin(q, stmt, args...)
-	}
-}
-
 // Select specific columns opposed to all columns
 func Select(columns ...string) QueryMod {
 	return func(q *boil.Query) {

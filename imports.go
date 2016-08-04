@@ -150,11 +150,12 @@ var defaultTemplateImports = imports{
 	thirdParty: importList{
 		`"github.com/nullbio/sqlboiler/boil"`,
 		`"github.com/nullbio/sqlboiler/boil/qm"`,
+		`"github.com/nullbio/sqlboiler/strmangle"`,
 	},
 }
 
 var defaultSingletonTemplateImports = map[string]imports{
-	"helpers": imports{
+	"boil_helpers": imports{
 		standard: importList{},
 		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
@@ -178,7 +179,7 @@ var defaultTestTemplateImports = imports{
 }
 
 var defaultSingletonTestTemplateImports = map[string]imports{
-	"main_helper_funcs": imports{
+	"boil_main_helpers": imports{
 		standard: importList{
 			`"database/sql"`,
 			`"os"`,
@@ -188,7 +189,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"github.com/spf13/viper"`,
 		},
 	},
-	"helper_funcs": imports{
+	"boil_helpers": imports{
 		standard: importList{
 			`"crypto/md5"`,
 			`"fmt"`,

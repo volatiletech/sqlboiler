@@ -12,51 +12,36 @@ func (o *{{$tableNameSingular}}) UpsertGP(update bool, conflictColumns []string,
   }
 }
 
+// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
+// UpsertP panics on error.
+func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, update bool, conflictColumns []string, updateColumns []string,  whitelist ...string) {
+  if err := o.Upsert(exec, update, conflictColumns, updateColumns, whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, update bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
   }
 
-  wl, returnColumns := o.generateInsertColumns(whitelist...)
-
-  conflict := make([]string, len(conflictColumns))
-  update := make([]string, len(updateColumns))
-
-  copy(conflict, conflictColumns)
-  copy(update, updateColumns)
-
-  for i, v := range conflict {
-    conflict[i] = strmangle.IdentQuote(v)
-  }
-
-  for i, v := range update {
-    update[i] = strmangle.IdentQuote(v)
-  }
+  columns := o.generateUpsertColumns(conflictColumns, updateColumns, whitelist)
+  query := o.generateUpsertQuery(update, columns)
 
   var err error
   if err := o.doBeforeUpsertHooks(); err != nil {
     return err
   }
 
-  ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s) ON CONFLICT `, strings.Join(wl, `","`), boil.GenerateParamFlags(len(wl), 1))
-  if !update {
-    ins := ins + "DO NOTHING"
-  } else if len(conflict) != 0 {
-    ins := ins + fmt.Sprintf(`("%s") DO UPDATE SET %s`, strings.Join(conflict, `","`))
+  if len(columns.returning) != 0 {
+    err = exec.QueryRow(query, boil.GetStructValues(o, columns.whitelist...)...).Scan(boil.GetStructPointers(o, columns.returning...)...)
   } else {
-    ins := ins + fmt.Sprintf(`("%s") DO UPDATE SET %s`, strings.Join({{$varNameSingular}}PrimaryKeyColumns, `","`))
-  }
-
-  if len(returnColumns) != 0 {
-    ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
-    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
-  } else {
-    _, err = exec.Exec(ins, {{.Table.Columns | columnNames | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+    _, err = exec.Exec(query, {{.Table.Columns | columnNames | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
   }
 
   if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, ins, boil.GetStructValues(o, wl...))
+		fmt.Fprintln(boil.DebugWriter, query, boil.GetStructValues(o, columns.whitelist...))
   }
 
   if err != nil {
@@ -70,10 +55,70 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, update bool, conflic
   return nil
 }
 
-// UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
-// UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, update bool, conflictColumns []string, updateColumns []string,  whitelist ...string) {
-  if err := o.Upsert(exec, update, conflictColumns, updateColumns, whitelist...); err != nil {
-    panic(boil.WrapErr(err))
+// generateUpsertColumns builds an upsertData object, using generated values when necessary.
+func (o *{{$tableNameSingular}}) generateUpsertColumns(conflict []string, update []string, whitelist []string) upsertData {
+  var upsertCols upsertData
+
+  upsertCols.whitelist, upsertCols.returning = o.generateInsertColumns(whitelist...)
+
+  upsertCols.conflict = make([]string, len(conflict))
+  upsertCols.update = make([]string, len(update))
+
+  // generates the ON CONFLICT() columns if none are provided
+  upsertCols.conflict = o.generateConflictColumns(conflict...)
+
+  // generate the UPDATE SET columns if none are provided
+  upsertCols.update = o.generateUpdateColumns(update...)
+
+  return upsertCols
+}
+
+// generateConflictColumns returns the user provided columns.
+// If no columns are provided, it returns the primary key columns.
+func (o *{{$tableNameSingular}}) generateConflictColumns(columns ...string) []string {
+  if len(columns) != 0 {
+    return columns
   }
+
+  c := make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
+  copy(c, {{$varNameSingular}}PrimaryKeyColumns)
+
+  return c
+}
+
+// generateUpsertQuery builds a SQL statement string using the upsertData provided.
+func (o *{{$tableNameSingular}}) generateUpsertQuery(update bool, columns upsertData) string {
+  var set, query string
+
+  for i, v := range columns.conflict {
+    columns.conflict[i] = strmangle.IdentQuote(v)
+  }
+
+  var sets []string
+  // Generate the UPDATE SET clause
+  for _, v := range columns.update {
+    quoted := strmangle.IdentQuote(v)
+    sets = append(sets, fmt.Sprintf("%s = EXCLUDED.%s", quoted, quoted))
+  }
+  set = strings.Join(sets, ", ")
+
+  query = fmt.Sprintf(
+    `INSERT INTO {{.Table.Name}} ("%s") VALUES (%s) ON CONFLICT DO`,
+    strings.Join(columns.whitelist, `","`),
+    boil.GenerateParamFlags(len(columns.whitelist), 1),
+  )
+
+  if !update {
+    query = query + " NOTHING"
+  } else if len(columns.conflict) != 0 {
+    query = fmt.Sprintf(`%s("%s") UPDATE SET %s`, query, strings.Join(columns.conflict, `","`), set)
+  } else {
+    query = fmt.Sprintf(`%s("%s") UPDATE SET %s`, query, strings.Join({{$varNameSingular}}PrimaryKeyColumns, `","`), set)
+  }
+
+  if len(columns.returning) != 0 {
+    query = fmt.Sprintf(`%s RETURNING %s`, query, strings.Join(columns.returning, ","))
+  }
+
+  return query
 }

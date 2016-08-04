@@ -2,8 +2,10 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}BeforeCreateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
+var {{$varNameSingular}}BeforeUpsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterCreateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterUpdateHooks []{{$tableNameSingular}}Hook
+var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
 
 // doBeforeCreateHooks executes all "before create" hooks.
 func (o *{{$tableNameSingular}}) doBeforeCreateHooks() (err error) {

@@ -177,12 +177,14 @@ func SetExecutor(q *Query, exec Executor) {
 	q.executor = exec
 }
 
-// SetSelect on the query.
-func SetSelect(q *Query, columns ...string) {
-	cols := make([]string, len(columns))
-	copy(cols, columns)
+// AppendSelect on the query.
+func AppendSelect(q *Query, columns ...string) {
+	q.selectCols = append(q.selectCols, columns...)
+}
 
-	q.selectCols = append(q.selectCols, cols...)
+// SetSelect replaces the current select clause.
+func SetSelect(q *Query, columns ...string) {
+	q.selectCols = append([]string(nil), columns...)
 }
 
 // Select returns the select columns in the query.
@@ -192,34 +194,34 @@ func Select(q *Query) []string {
 	return cols
 }
 
-// SetFrom on the query.
-func SetFrom(q *Query, from ...string) {
+// AppendFrom on the query.
+func AppendFrom(q *Query, from ...string) {
 	q.from = append(q.from, from...)
+}
+
+// SetFrom replaces the current from statements.
+func SetFrom(q *Query, from ...string) {
+	q.from = append([]string(nil), from...)
+}
+
+// AppendInnerJoin on the query.
+func AppendInnerJoin(q *Query, on string, args ...interface{}) {
+	q.innerJoins = append(q.innerJoins, join{on: on, args: args})
 }
 
 // SetInnerJoin on the query.
 func SetInnerJoin(q *Query, on string, args ...interface{}) {
-	q.innerJoins = append(q.innerJoins, join{on: on, args: args})
+	q.innerJoins = append([]join(nil), join{on: on, args: args})
 }
 
-// SetOuterJoin on the query.
-func SetOuterJoin(q *Query, on string, args ...interface{}) {
-	q.outerJoins = append(q.outerJoins, join{on: on, args: args})
-}
-
-// SetLeftOuterJoin on the query.
-func SetLeftOuterJoin(q *Query, on string, args ...interface{}) {
-	q.leftOuterJoins = append(q.leftOuterJoins, join{on: on, args: args})
-}
-
-// SetRightOuterJoin on the query.
-func SetRightOuterJoin(q *Query, on string, args ...interface{}) {
-	q.rightOuterJoins = append(q.rightOuterJoins, join{on: on, args: args})
+// AppendWhere on the query.
+func AppendWhere(q *Query, clause string, args ...interface{}) {
+	q.where = append(q.where, where{clause: clause, args: args})
 }
 
 // SetWhere on the query.
 func SetWhere(q *Query, clause string, args ...interface{}) {
-	q.where = append(q.where, where{clause: clause, args: args})
+	q.where = append([]where(nil), where{clause: clause, args: args})
 }
 
 // SetLastWhereAsOr sets the or seperator for the last element in the where slice
@@ -227,19 +229,34 @@ func SetLastWhereAsOr(q *Query) {
 	q.where[len(q.where)-1].orSeperator = true
 }
 
+// ApplyGroupBy on the query.
+func ApplyGroupBy(q *Query, clause string) {
+	q.groupBy = append(q.groupBy, clause)
+}
+
 // SetGroupBy on the query.
 func SetGroupBy(q *Query, clause string) {
-	q.groupBy = append(q.groupBy, clause)
+	q.groupBy = append([]string(nil), clause)
+}
+
+// ApplyOrderBy on the query.
+func ApplyOrderBy(q *Query, clause string) {
+	q.orderBy = append(q.orderBy, clause)
 }
 
 // SetOrderBy on the query.
 func SetOrderBy(q *Query, clause string) {
-	q.orderBy = append(q.orderBy, clause)
+	q.orderBy = append([]string(nil), clause)
+}
+
+// ApplyHaving on the query.
+func ApplyHaving(q *Query, clause string) {
+	q.having = append(q.having, clause)
 }
 
 // SetHaving on the query.
 func SetHaving(q *Query, clause string) {
-	q.having = append(q.having, clause)
+	q.having = append([]string(nil), clause)
 }
 
 // SetLimit on the query.

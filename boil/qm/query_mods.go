@@ -50,7 +50,7 @@ func Offset(offset int) QueryMod {
 // InnerJoin on another table
 func InnerJoin(stmt string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetInnerJoin(q, stmt, args...)
+		boil.AppendInnerJoin(q, stmt, args...)
 	}
 }
 
@@ -78,41 +78,41 @@ func RightOuterJoin(stmt string, args ...interface{}) QueryMod {
 // Select specific columns opposed to all columns
 func Select(columns ...string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetSelect(q, columns...)
+		boil.AppendSelect(q, columns...)
 	}
 }
 
 // Where allows you to specify a where clause for your statement
 func Where(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetWhere(q, clause, args...)
+		boil.AppendWhere(q, clause, args...)
 	}
 }
 
 // GroupBy allows you to specify a group by clause for your statement
 func GroupBy(clause string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetGroupBy(q, clause)
+		boil.ApplyGroupBy(q, clause)
 	}
 }
 
 // OrderBy allows you to specify a order by clause for your statement
 func OrderBy(clause string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetOrderBy(q, clause)
+		boil.ApplyOrderBy(q, clause)
 	}
 }
 
 // Having allows you to specify a having clause for your statement
 func Having(clause string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetHaving(q, clause)
+		boil.ApplyHaving(q, clause)
 	}
 }
 
 // From allows to specify the table for your statement
 func From(from string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetFrom(q, from)
+		boil.AppendFrom(q, from)
 	}
 }

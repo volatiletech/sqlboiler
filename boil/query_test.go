@@ -65,7 +65,7 @@ func TestSetLastWhereAsOr(t *testing.T) {
 	t.Parallel()
 	q := &Query{}
 
-	SetWhere(q, "")
+	AppendWhere(q, "")
 
 	if q.where[0].orSeperator {
 		t.Errorf("Do not want or seperator")
@@ -80,7 +80,7 @@ func TestSetLastWhereAsOr(t *testing.T) {
 		t.Errorf("Want or seperator")
 	}
 
-	SetWhere(q, "")
+	AppendWhere(q, "")
 	SetLastWhereAsOr(q)
 
 	if len(q.where) != 2 {
@@ -133,17 +133,31 @@ func TestSetSQL(t *testing.T) {
 	}
 }
 
-func TestSetWhere(t *testing.T) {
+func TestWhere(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetWhere(q, "x > $1 AND y > $2", 5, 3)
+	expect := "x > $1 AND y > $2"
+	AppendWhere(q, expect, 5, 3)
+	AppendWhere(q, expect, 5, 3)
 
-	if len(q.where) != 1 {
-		t.Errorf("Expected %d where slices, got %d", 1, len(q.where))
+	if len(q.where) != 2 {
+		t.Errorf("%#v", q.where)
 	}
 
-	expect := "x > $1 AND y > $2"
+	if q.where[0].clause != expect || q.where[1].clause != expect {
+		t.Errorf("Expected %s, got %#v", expect, q.where)
+	}
+
+	if len(q.where[0].args) != 2 || len(q.where[0].args) != 2 {
+		t.Errorf("arg length wrong: %#v", q.where)
+	}
+
+	if q.where[0].args[0].(int) != 5 || q.where[0].args[1].(int) != 3 {
+		t.Errorf("args wrong: %#v", q.where)
+	}
+
+	SetWhere(q, expect, 5, 3)
 	if q.where[0].clause != expect {
 		t.Errorf("Expected %s, got %v", expect, q.where)
 	}
@@ -155,52 +169,80 @@ func TestSetWhere(t *testing.T) {
 	if q.where[0].args[0].(int) != 5 || q.where[0].args[1].(int) != 3 {
 		t.Errorf("Args not set correctly, expected 5 & 3, got: %#v", q.where[0].args)
 	}
+
+	if len(q.where) != 1 {
+		t.Errorf("%#v", q.where)
+	}
 }
 
-func TestSetGroupBy(t *testing.T) {
+func TestGroupBy(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetGroupBy(q, "col1, col2")
-
 	expect := "col1, col2"
+	ApplyGroupBy(q, expect)
+	ApplyGroupBy(q, expect)
+
+	if len(q.groupBy) != 2 && (q.groupBy[0] != expect || q.groupBy[1] != expect) {
+		t.Errorf("Expected %s, got %s %s", expect, q.groupBy[0], q.groupBy[1])
+	}
+
+	SetGroupBy(q, expect)
 	if len(q.groupBy) != 1 && q.groupBy[0] != expect {
 		t.Errorf("Expected %s, got %s", expect, q.groupBy[0])
 	}
 }
 
-func TestSetOrderBy(t *testing.T) {
+func TestOrderBy(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetOrderBy(q, "col1 desc, col2 asc")
-
 	expect := "col1 desc, col2 asc"
+	ApplyOrderBy(q, expect)
+	ApplyOrderBy(q, expect)
+
+	if len(q.orderBy) != 2 && (q.orderBy[0] != expect || q.orderBy[1] != expect) {
+		t.Errorf("Expected %s, got %s %s", expect, q.orderBy[0], q.orderBy[1])
+	}
+
+	SetOrderBy(q, "col1 desc, col2 asc")
 	if len(q.orderBy) != 1 && q.orderBy[0] != expect {
 		t.Errorf("Expected %s, got %s", expect, q.orderBy[0])
 	}
 }
 
-func TestSetHaving(t *testing.T) {
+func TestHaving(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetHaving(q, "count(orders.order_id) > 10")
-
 	expect := "count(orders.order_id) > 10"
+	ApplyHaving(q, expect)
+	ApplyHaving(q, expect)
+
+	if len(q.having) != 2 && (q.having[0] != expect || q.having[1] != expect) {
+		t.Errorf("Expected %s, got %s %s", expect, q.having[0], q.having[1])
+	}
+
+	SetHaving(q, expect)
 	if len(q.having) != 1 && q.having[0] != expect {
 		t.Errorf("Expected %s, got %s", expect, q.having[0])
 	}
 }
 
-func TestSetFrom(t *testing.T) {
+func TestFrom(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetFrom(q, "videos a", "orders b")
+	AppendFrom(q, "videos a", "orders b")
+	AppendFrom(q, "videos a", "orders b")
 
-	expect := []string{"videos a", "orders b"}
+	expect := []string{"videos a", "orders b", "videos a", "orders b"}
 	if !reflect.DeepEqual(q.from, expect) {
+		t.Errorf("Expected %s, got %s", expect, q.from)
+	}
+
+	SetFrom(q, "videos a", "orders b")
+	if !reflect.DeepEqual(q.from, expect[:2]) {
 		t.Errorf("Expected %s, got %s", expect, q.from)
 	}
 }
@@ -243,106 +285,65 @@ func TestSetExecutor(t *testing.T) {
 	}
 }
 
-func TestSetSelect(t *testing.T) {
+func TestSelect(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetSelect(q, "col1", "col2")
+	AppendSelect(q, "col1", "col2")
+	AppendSelect(q, "col1", "col2")
 
-	if len(q.selectCols) != 2 {
-		t.Errorf("Expected selectCols len 2, got %d", len(q.selectCols))
+	if len(q.selectCols) != 4 {
+		t.Errorf("Expected selectCols len 4, got %d", len(q.selectCols))
 	}
 
 	if q.selectCols[0] != `col1` && q.selectCols[1] != `col2` {
 		t.Errorf("select cols value mismatch: %#v", q.selectCols)
 	}
+	if q.selectCols[2] != `col1` && q.selectCols[3] != `col2` {
+		t.Errorf("select cols value mismatch: %#v", q.selectCols)
+	}
+
+	SetSelect(q, "col1", "col2")
+	if q.selectCols[0] != `col1` && q.selectCols[1] != `col2` {
+		t.Errorf("select cols value mismatch: %#v", q.selectCols)
+	}
 }
 
-func TestSetInnerJoin(t *testing.T) {
+func TestInnerJoin(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+	AppendInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+	AppendInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
 
-	if len(q.innerJoins) != 1 {
+	if len(q.innerJoins) != 2 {
 		t.Errorf("Expected len 1, got %d", len(q.innerJoins))
 	}
 
 	if q.innerJoins[0].on != "thing=$1 AND stuff=$2" {
 		t.Errorf("Got invalid innerJoin on string: %#v", q.innerJoins)
 	}
+	if q.innerJoins[1].on != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid innerJoin on string: %#v", q.innerJoins)
+	}
 
 	if len(q.innerJoins[0].args) != 2 {
 		t.Errorf("Expected len 2, got %d", len(q.innerJoins[0].args))
+	}
+	if len(q.innerJoins[1].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.innerJoins[1].args))
 	}
 
 	if q.innerJoins[0].args[0] != 2 && q.innerJoins[0].args[1] != 5 {
 		t.Errorf("Invalid args values, got %#v", q.innerJoins[0].args)
 	}
-}
 
-func TestSetOuterJoin(t *testing.T) {
-	t.Parallel()
-	q := &Query{}
-	SetOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
-
-	if len(q.outerJoins) != 1 {
-		t.Errorf("Expected len 1, got %d", len(q.outerJoins))
+	SetInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+	if len(q.innerJoins) != 1 {
+		t.Errorf("Expected len 1, got %d", len(q.innerJoins))
 	}
 
-	if q.outerJoins[0].on != "thing=$1 AND stuff=$2" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.outerJoins)
-	}
-
-	if len(q.outerJoins[0].args) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.outerJoins[0].args))
-	}
-
-	if q.outerJoins[0].args[0] != 2 && q.outerJoins[0].args[1] != 5 {
-		t.Errorf("Invalid args values, got %#v", q.outerJoins[0].args)
-	}
-}
-
-func TestSetLeftOuterJoin(t *testing.T) {
-	t.Parallel()
-	q := &Query{}
-	SetLeftOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
-
-	if len(q.leftOuterJoins) != 1 {
-		t.Errorf("Expected len 1, got %d", len(q.leftOuterJoins))
-	}
-
-	if q.leftOuterJoins[0].on != "thing=$1 AND stuff=$2" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.leftOuterJoins)
-	}
-
-	if len(q.leftOuterJoins[0].args) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.leftOuterJoins[0].args))
-	}
-
-	if q.leftOuterJoins[0].args[0] != 2 && q.leftOuterJoins[0].args[1] != 5 {
-		t.Errorf("Invalid args values, got %#v", q.leftOuterJoins[0].args)
-	}
-}
-
-func TestSetRightOuterJoin(t *testing.T) {
-	t.Parallel()
-	q := &Query{}
-	SetRightOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
-
-	if len(q.rightOuterJoins) != 1 {
-		t.Errorf("Expected len 1, got %d", len(q.rightOuterJoins))
-	}
-
-	if q.rightOuterJoins[0].on != "thing=$1 AND stuff=$2" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.rightOuterJoins)
-	}
-
-	if len(q.rightOuterJoins[0].args) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.rightOuterJoins[0].args))
-	}
-
-	if q.rightOuterJoins[0].args[0] != 2 && q.rightOuterJoins[0].args[1] != 5 {
-		t.Errorf("Invalid args values, got %#v", q.rightOuterJoins[0].args)
+	if q.innerJoins[0].on != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid innerJoin on string: %#v", q.innerJoins)
 	}
 }

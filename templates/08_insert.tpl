@@ -95,6 +95,15 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 }
 
 // generateInsertColumns generates the whitelist columns and return columns for an insert statement
+// the return columns are used to get values that are assigned within the database during the
+// insert to keep the struct in sync with what's in the db.
+// with a whitelist:
+// - the whitelist is used for the insert columns
+// - the return columns are the result of (columns with default values - the whitelist)
+// without a whitelist:
+// - start with columns without a default as these always need to be inserted
+// - add all columns that have a default in the database but that are non-zero in the struct
+// - the return columns are the result of (columns with default values - the previous set)
 func (o *{{$tableNameSingular}}) generateInsertColumns(whitelist ...string) ([]string, []string) {
   var wl []string
 

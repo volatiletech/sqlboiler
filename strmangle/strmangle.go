@@ -16,7 +16,7 @@ import (
 var (
 	idAlphabet     = []byte("abcdefghijklmnopqrstuvwxyz")
 	uppercaseWords = regexp.MustCompile(`^(?i)(id|uid|uuid|guid|ssn|tz)[0-9]*$`)
-	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*$`)
+	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
 )
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
@@ -31,7 +31,7 @@ func IdentQuote(s string) string {
 
 	splits := strings.Split(s, ".")
 	for i, split := range splits {
-		if strings.HasPrefix(split, `"`) || strings.HasSuffix(split, `"`) {
+		if strings.HasPrefix(split, `"`) || strings.HasSuffix(split, `"`) || split == "*" {
 			continue
 		}
 

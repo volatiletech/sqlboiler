@@ -22,6 +22,10 @@ func TestIdentQuote(t *testing.T) {
 		{In: `thing.thing.thing.thing`, Out: `"thing"."thing"."thing"."thing"`},
 		{In: `thing."thing".thing."thing"`, Out: `"thing"."thing"."thing"."thing"`},
 		{In: `count(*) as ab, thing as bd`, Out: `count(*) as ab, thing as bd`},
+		{In: `hello.*`, Out: `"hello".*`},
+		{In: `hello.there.*`, Out: `"hello"."there".*`},
+		{In: `"hello".there.*`, Out: `"hello"."there".*`},
+		{In: `hello."there".*`, Out: `"hello"."there".*`},
 	}
 
 	for _, test := range tests {

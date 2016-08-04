@@ -27,23 +27,20 @@ type join struct {
 
 // Query holds the state for the built up query
 type Query struct {
-	executor        Executor
-	plainSQL        plainSQL
-	delete          bool
-	update          map[string]interface{}
-	selectCols      []string
-	count           bool
-	from            []string
-	innerJoins      []join
-	outerJoins      []join
-	leftOuterJoins  []join
-	rightOuterJoins []join
-	where           []where
-	groupBy         []string
-	orderBy         []string
-	having          []string
-	limit           int
-	offset          int
+	executor   Executor
+	plainSQL   plainSQL
+	delete     bool
+	update     map[string]interface{}
+	selectCols []string
+	count      bool
+	from       []string
+	innerJoins []join
+	where      []where
+	groupBy    []string
+	orderBy    []string
+	having     []string
+	limit      int
+	offset     int
 }
 
 func buildQuery(q *Query) (string, []interface{}) {

@@ -52,6 +52,8 @@ func buildQuery(q *Query) (string, []interface{}) {
 		return q.plainSQL.sql, q.plainSQL.args
 	case q.delete:
 		buf, args = buildDeleteQuery(q)
+	case len(q.update) > 0:
+		buf, args = buildUpdateQuery(q)
 	default:
 		buf, args = buildSelectQuery(q)
 	}
@@ -113,6 +115,13 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, args
 }
 
+func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
+	buf := &bytes.Buffer{}
+
+	buf.WriteByte(';')
+	return buf, nil
+}
+
 // ExecQuery executes a query that does not need a row returned
 func ExecQuery(q *Query) (sql.Result, error) {
 	qs, args := buildQuery(q)
@@ -153,6 +162,11 @@ func SetCount(q *Query) {
 // SetDelete on the query.
 func SetDelete(q *Query) {
 	q.delete = true
+}
+
+// SetUpdate on the query.
+func SetUpdate(q *Query, cols map[string]interface{}) {
+	q.update = cols
 }
 
 // SetExecutor on the query.

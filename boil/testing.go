@@ -202,6 +202,7 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 	return nil
 }
 
+// RandomizeValidatedStruct takes an object fills its validated columns with random data.
 func RandomizeValidatedStruct(obj interface{}, validatedCols []string, colTypes map[string]string) error {
 	// Check if it's pointer
 	value := reflect.ValueOf(obj)

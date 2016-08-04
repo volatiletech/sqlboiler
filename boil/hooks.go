@@ -7,6 +7,8 @@ type HookPoint int
 const (
 	HookAfterCreate HookPoint = iota + 1
 	HookAfterUpdate
+	HookAfterUpsert
 	HookBeforeCreate
 	HookBeforeUpdate
+	HookBeforeUpsert
 )

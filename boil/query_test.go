@@ -258,21 +258,6 @@ func TestSetDelete(t *testing.T) {
 	}
 }
 
-func TestSetUpdate(t *testing.T) {
-	t.Parallel()
-
-	q := &Query{}
-	SetUpdate(q, map[string]interface{}{"col1": 1, "col2": 2})
-
-	if len(q.update) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.update))
-	}
-
-	if q.update["col1"] != 1 && q.update["col2"] != 2 {
-		t.Errorf("Value misatch: %#v", q.update)
-	}
-}
-
 func TestSetExecutor(t *testing.T) {
 	t.Parallel()
 

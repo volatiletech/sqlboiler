@@ -27,6 +27,17 @@ func (o *{{$tableNameSingular}}) doBeforeUpdateHooks() (err error) {
   return nil
 }
 
+// doBeforeUpsertHooks executes all "before Upsert" hooks.
+func (o *{{$tableNameSingular}}) doBeforeUpsertHooks() (err error) {
+  for _, hook := range {{$varNameSingular}}BeforeUpsertHooks {
+    if err := hook(o); err != nil {
+      return err
+    }
+  }
+
+  return nil
+}
+
 // doAfterCreateHooks executes all "after create" hooks.
 func (o *{{$tableNameSingular}}) doAfterCreateHooks() (err error) {
   for _, hook := range {{$varNameSingular}}AfterCreateHooks {
@@ -49,15 +60,30 @@ func (o *{{$tableNameSingular}}) doAfterUpdateHooks() (err error) {
   return nil
 }
 
+// doAfterUpsertHooks executes all "after Upsert" hooks.
+func (o *{{$tableNameSingular}}) doAfterUpsertHooks() (err error) {
+  for _, hook := range {{$varNameSingular}}AfterUpsertHooks {
+    if err := hook(o); err != nil {
+      return err
+    }
+  }
+
+  return nil
+}
+
 func {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
   switch hookPoint {
     case boil.HookBeforeCreate:
       {{$varNameSingular}}BeforeCreateHooks = append({{$varNameSingular}}BeforeCreateHooks, {{$varNameSingular}}Hook)
     case boil.HookBeforeUpdate:
       {{$varNameSingular}}BeforeUpdateHooks = append({{$varNameSingular}}BeforeUpdateHooks, {{$varNameSingular}}Hook)
+    case boil.HookBeforeUpsert:
+      {{$varNameSingular}}BeforeUpsertHooks = append({{$varNameSingular}}BeforeUpsertHooks, {{$varNameSingular}}Hook)
     case boil.HookAfterCreate:
       {{$varNameSingular}}AfterCreateHooks = append({{$varNameSingular}}AfterCreateHooks, {{$varNameSingular}}Hook)
     case boil.HookAfterUpdate:
       {{$varNameSingular}}AfterUpdateHooks = append({{$varNameSingular}}AfterUpdateHooks, {{$varNameSingular}}Hook)
+    case boil.HookAfterUpsert:
+      {{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
   }
 }

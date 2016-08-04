@@ -35,6 +35,18 @@ func TestIdentQuote(t *testing.T) {
 	}
 }
 
+func TestIdentQuoteSlice(t *testing.T) {
+	t.Parallel()
+
+	ret := IdentQuoteSlice([]string{`thing`, `null`})
+	if ret[0] != `"thing"` {
+		t.Error(ret[0])
+	}
+	if ret[1] != `null` {
+		t.Error(ret[1])
+	}
+}
+
 func TestIDGen(t *testing.T) {
 	t.Parallel()
 

@@ -21,7 +21,7 @@ var (
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
 func IdentQuote(s string) string {
-	if s == "null" {
+	if strings.ToLower(s) == "null" {
 		return s
 	}
 
@@ -39,6 +39,20 @@ func IdentQuote(s string) string {
 	}
 
 	return strings.Join(splits, ".")
+}
+
+// IdentQuoteSlice applies IdentQuote to a slice.
+func IdentQuoteSlice(s []string) []string {
+	if len(s) == 0 {
+		return s
+	}
+
+	strs := make([]string, len(s))
+	for i, str := range s {
+		strs[i] = IdentQuote(str)
+	}
+
+	return strs
 }
 
 // Identifier is a base conversion from Base 10 integers to Base 26

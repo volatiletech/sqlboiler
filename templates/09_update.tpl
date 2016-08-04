@@ -30,8 +30,7 @@ func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... strin
 // Update uses an executor to update the {{$tableNameSingular}}.
 // Whitelist behavior: If a whitelist is provided, only the columns given are updated.
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
-// - All columns without a default value are inferred (i.e. name, age)
-// - All columns with a default, but are non-zero are inferred (health = 75)
+// - All columns are inferred to start with
 // - All primary keys are subtracted from this set
 func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
   return o.UpdateAt(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
@@ -115,9 +114,8 @@ func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
 
 // generateUpdateColumns generates the whitelist columns for an update statement
 // if a whitelist is supplied, it's returned
-// if a whitelist is missing then we begin with all columns without a default value
-// then we add all columns with a default value that are non-zero
-// then we remove all the primary key columns
+// if a whitelist is missing then we begin with all columns
+// then we remove the primary key columns
 func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []string {
   if len(whitelist) != 0 {
     return whitelist

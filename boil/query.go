@@ -33,7 +33,7 @@ type Query struct {
 	update          map[string]interface{}
 	selectCols      []string
 	count           bool
-	from            string
+	from            []string
 	innerJoins      []join
 	outerJoins      []join
 	leftOuterJoins  []join
@@ -73,12 +73,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString("COUNT(")
 	}
 	if len(q.selectCols) > 0 {
-		cols := make([]string, len(q.selectCols))
-		copy(cols, q.selectCols)
-		for i := 0; i < len(cols); i++ {
-			cols[i] = strmangle.IdentQuote(cols[i])
-		}
-		buf.WriteString(strings.Join(q.selectCols, `, `))
+		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), `, `))
 	} else {
 		buf.WriteByte('*')
 	}
@@ -88,7 +83,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	}
 
 	buf.WriteString(" FROM ")
-	fmt.Fprintf(buf, `"%s"`, q.from)
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ","))
 
 	where, args := whereClause(q)
 	buf.WriteString(where)
@@ -198,8 +193,8 @@ func Select(q *Query) []string {
 }
 
 // SetFrom on the query.
-func SetFrom(q *Query, from string) {
-	q.from = from
+func SetFrom(q *Query, from ...string) {
+	q.from = append(q.from, from...)
 }
 
 // SetInnerJoin on the query.

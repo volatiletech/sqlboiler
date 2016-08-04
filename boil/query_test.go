@@ -26,10 +26,11 @@ func TestBuildQuery(t *testing.T) {
 		q    *Query
 		args []interface{}
 	}{
-		{&Query{from: "t"}, nil},
-		{&Query{from: "q", limit: 5, offset: 6}, nil},
-		{&Query{from: "q", orderBy: []string{"a ASC", "b DESC"}}, nil},
-		{&Query{from: "t", selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
+		{&Query{from: []string{"t"}}, nil},
+		{&Query{from: []string{"q"}, limit: 5, offset: 6}, nil},
+		{&Query{from: []string{"q"}, orderBy: []string{"a ASC", "b DESC"}}, nil},
+		{&Query{from: []string{"t"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
+		{&Query{from: []string{"a", "b"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
 	}
 
 	for i, test := range tests {
@@ -192,14 +193,14 @@ func TestSetHaving(t *testing.T) {
 	}
 }
 
-func TestSetTable(t *testing.T) {
+func TestSetFrom(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	SetFrom(q, "videos a, orders b")
+	SetFrom(q, "videos a", "orders b")
 
-	expect := "videos a, orders b"
-	if q.from != expect {
+	expect := []string{"videos a", "orders b"}
+	if !reflect.DeepEqual(q.from, expect) {
 		t.Errorf("Expected %s, got %s", expect, q.from)
 	}
 }

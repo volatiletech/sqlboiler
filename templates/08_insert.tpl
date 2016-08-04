@@ -1,18 +1,31 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-// InsertG a single record.
+// InsertG a single record. See Insert for whitelist behavior description.
 func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
   return o.Insert(boil.GetDB(), whitelist...)
 }
 
-// InsertGP a single record, and panics on error.
+// InsertGP a single record, and panics on error. See Insert for whitelist
+// behavior description.
 func (o *{{$tableNameSingular}}) InsertGP(whitelist ... string) {
   if err := o.Insert(boil.GetDB(), whitelist...); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
+// InsertP a single record using an executor, and panics on error. See Insert
+// for whitelist behavior description.
+func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... string) {
+  if err := o.Insert(exec, whitelist...); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
 // Insert a single record using an executor.
+// Whitelist behavior: If a whitelist is provided, only those columns supplied are inserted
+// No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
+// - All columns without a default value are inferred (i.e. name, age)
+// - All columns with a default, but non-zero are inferred (i.e. health = 75)
 func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
@@ -79,13 +92,6 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
 
   return nil
-}
-
-// InsertP a single record using an executor, and panics on error.
-func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... string) {
-  if err := o.Insert(exec, whitelist...); err != nil {
-    panic(boil.WrapErr(err))
-  }
 }
 
 // generateInsertColumns generates the whitelist columns and return columns for an insert statement

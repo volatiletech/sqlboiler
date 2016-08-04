@@ -3,34 +3,38 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
-// UpdateG a single {{$tableNameSingular}} record.
-// UpdateG takes a whitelist of column names that should be updated.
-// The primary key will be used to find the record to update.
+// UpdateG a single {{$tableNameSingular}} record. See Update for
+// whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) error {
   return o.Update(boil.GetDB(), whitelist...)
 }
 
 // UpdateGP a single {{$tableNameSingular}} record.
 // UpdateGP takes a whitelist of column names that should be updated.
-// The primary key will be used to find the record to update.
-// Panics on error.
+// Panics on error. See Update for whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {
   if err := o.Update(boil.GetDB(), whitelist...); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
-// Update uses an executor to update the {{$tableNameSingular}}.
-func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
-  return o.UpdateAt(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
-}
-
 // UpdateP uses an executor to update the {{$tableNameSingular}}, and panics on error.
+// See Update for whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... string) {
   err := o.UpdateAt(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
+}
+
+// Update uses an executor to update the {{$tableNameSingular}}.
+// Whitelist behavior: If a whitelist is provided, only the columns given are updated.
+// No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
+// - All columns without a default value are inferred (i.e. name, age)
+// - All columns with a default, but are non-zero are inferred (health = 75)
+// - All primary keys are subtracted from this set
+func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
+  return o.UpdateAt(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}, whitelist...)
 }
 
 // UpdateAtG updates the {{$tableNameSingular}} using the primary key to find the row to update.
@@ -110,6 +114,10 @@ func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
 }
 
 // generateUpdateColumns generates the whitelist columns for an update statement
+// if a whitelist is supplied, it's returned
+// if a whitelist is missing then we begin with all columns without a default value
+// then we add all columns with a default value that are non-zero
+// then we remove all the primary key columns
 func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []string {
   if len(whitelist) != 0 {
     return whitelist
@@ -120,7 +128,6 @@ func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []st
   cols = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), cols...)
   // Subtract primary keys and autoincrement columns
   cols = boil.SetComplement(cols, {{$varNameSingular}}PrimaryKeyColumns)
-  cols = boil.SetComplement(cols, {{$varNameSingular}}AutoIncrementColumns)
 
   wl = make([]string, len(cols))
   copy(wl, cols)

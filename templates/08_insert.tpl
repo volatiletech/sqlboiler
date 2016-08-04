@@ -105,12 +105,13 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 // - add all columns that have a default in the database but that are non-zero in the struct
 // - the return columns are the result of (columns with default values - the previous set)
 func (o *{{$tableNameSingular}}) generateInsertColumns(whitelist ...string) ([]string, []string) {
+  if len(whitelist) != 0 {
+    return whitelist, boil.SetComplement({{$varNameSingular}}ColumnsWithDefault, whitelist)
+  }
+
   var wl []string
 
-  wl = append(wl, whitelist...)
-  if len(whitelist) == 0 {
-    wl = append(wl, {{$varNameSingular}}ColumnsWithoutDefault...)
-  }
+  wl = append(wl, {{$varNameSingular}}ColumnsWithoutDefault...)
 
   wl = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), wl...)
   wl = boil.SortByKeys({{$varNameSingular}}Columns, wl)

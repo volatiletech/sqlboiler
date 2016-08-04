@@ -121,14 +121,5 @@ func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []st
     return whitelist
   }
 
-  var wl []string
-  cols := {{$varNameSingular}}ColumnsWithoutDefault
-  cols = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), cols...)
-  // Subtract primary keys and autoincrement columns
-  cols = boil.SetComplement(cols, {{$varNameSingular}}PrimaryKeyColumns)
-
-  wl = make([]string, len(cols))
-  copy(wl, cols)
-
-  return wl
+  return boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
 }

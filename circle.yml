@@ -1,0 +1,11 @@
+test:
+  pre:
+    - go get github.com/jstemmer/go-junit-report
+    - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
+    - createdb -U ubuntu sqlboiler
+    - psql -U ubuntu sqlboiler < ./testdata/test_schema.sql
+    - ./sqlboiler postgres
+  override:
+    - >
+      go test -v -race ./... |
+      go-junit-report >> $CIRCLE_TEST_REPORTS/junit.xml

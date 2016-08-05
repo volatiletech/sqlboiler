@@ -105,7 +105,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
 
 	buf.WriteString("DELETE FROM ")
-	fmt.Fprintf(buf, `"%s"`, q.from)
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ","))
 
 	where, args := whereClause(q)
 	buf.WriteString(where)

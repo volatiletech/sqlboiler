@@ -1,11 +1,9 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $dbName := singular .Table.Name -}}
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $parent := . -}}
 func Test{{$tableNamePlural}}Upsert(t *testing.T) {
-  //var err error
+  var err error
 
   o := {{$tableNameSingular}}{}
 
@@ -36,48 +34,65 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   }
 
   upsertCols := upsertData{
-    conflict: []string{},
-    update: []string{},
-    whitelist: []string{"thing"},
+    conflict: []string{"key1", `"key2"`},
+    update: []string{"aaa", `"bbb"`},
+    whitelist: []string{"thing", `"stuff"`},
     returning: []string{},
   }
 
   query := o.generateUpsertQuery(false, upsertCols)
-  expectedQuery := `INSERT INTO {{.Table.Name}} ("thing") VALUES ($1) ON CONFLICT DO NOTHING`
+  expectedQuery := `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1,$2) ON CONFLICT DO NOTHING`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
   }
 
-  /*
   query = o.generateUpsertQuery(true, upsertCols)
-  primKeys := strings.Join(strmangle.IdentQuote())
-  expectedQuery = `INSERT INTO {{.Table.Name}} ("thing") VALUES ($1) ON CONFLICT DO UPDATE()`
+  expectedQuery = `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1,$2) ON CONFLICT ("key1", "key2") DO UPDATE SET "aaa" = EXCLUDED."aaa", "bbb" = EXCLUDED."bbb"`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
   }
-  */
 
-  /*
-  create empty row
-  assign random values to it
+  upsertCols.returning = []string{"stuff"}
+  query = o.generateUpsertQuery(true, upsertCols)
+  expectedQuery = expectedQuery + ` RETURNING stuff`
 
-  attempt to insert it using upsert
-  make sure values come back appropriately
+  if query != expectedQuery {
+    t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
+  }
 
-  attempt to upsert row again, make sure comes back as prim key error
-  attempt upsert again, set update to false, ensure it ignores error
+  // Attempt the INSERT side of an UPSERT
+  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+  }
 
-  attempt to randomize everything except primary keys on duplicate row
-  attempt upsert again, set update to true, nil, nil
-  perform a find on the the row
-  check if the found row matches the upsert object to ensure returning cols worked appropriately and update worked appropriately
+  if err = o.UpsertG(false, nil, nil); err != nil {
+    t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
+  }
 
+  compare, err := {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  if err != nil {
+    t.Errorf("Unable to find {{$tableNameSingular}}: %s", err)
+  }
 
+  {{$varNameSingular}}CompareVals(&o, compare, t)
 
+  // Attempt the UPDATE side of an UPSERT
+  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+  }
 
-  */
+  if err = o.UpsertG(true, nil, nil); err != nil {
+    t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
+  }
+
+  compare, err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  if err != nil {
+    t.Errorf("Unable to find {{$tableNameSingular}}: %s", err)
+  }
+
+  {{$varNameSingular}}CompareVals(&o, compare, t)
 
   {{$varNamePlural}}DeleteAllRows(t)
 }

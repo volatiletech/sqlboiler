@@ -90,9 +90,8 @@ func (o *{{$tableNameSingular}}) generateConflictColumns(columns ...string) []st
 func (o *{{$tableNameSingular}}) generateUpsertQuery(update bool, columns upsertData) string {
   var set, query string
 
-  for i, v := range columns.conflict {
-    columns.conflict[i] = strmangle.IdentQuote(v)
-  }
+  columns.conflict = strmangle.IdentQuoteSlice(columns.conflict)
+  columns.whitelist = strmangle.IdentQuoteSlice(columns.whitelist)
 
   var sets []string
   // Generate the UPDATE SET clause
@@ -103,17 +102,15 @@ func (o *{{$tableNameSingular}}) generateUpsertQuery(update bool, columns upsert
   set = strings.Join(sets, ", ")
 
   query = fmt.Sprintf(
-    `INSERT INTO {{.Table.Name}} ("%s") VALUES (%s) ON CONFLICT DO`,
-    strings.Join(columns.whitelist, `","`),
+    `INSERT INTO {{.Table.Name}} (%s) VALUES (%s) ON CONFLICT`,
+    strings.Join(columns.whitelist, `, `),
     boil.GenerateParamFlags(len(columns.whitelist), 1),
   )
 
   if !update {
-    query = query + " NOTHING"
-  } else if len(columns.conflict) != 0 {
-    query = fmt.Sprintf(`%s("%s") UPDATE SET %s`, query, strings.Join(columns.conflict, `","`), set)
+    query = query + " DO NOTHING"
   } else {
-    query = fmt.Sprintf(`%s("%s") UPDATE SET %s`, query, strings.Join({{$varNameSingular}}PrimaryKeyColumns, `","`), set)
+    query = fmt.Sprintf(`%s (%s) DO UPDATE SET %s`, query, strings.Join(columns.conflict, `, `), set)
   }
 
   if len(columns.returning) != 0 {

@@ -6,22 +6,22 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}G(mods .
 
 // {{.Function.Name}}GP pointed to by the foreign key. Panics on error.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}GP(mods ...qm.QueryMod) *{{.ForeignTable.NameGo}} {
-  o, err := {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), mods...)
+  slice, err := {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), mods...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
 
-  return o
+  return slice
 }
 
 // {{.Function.Name}}P pointed to by the foreign key with exeuctor. Panics on error.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}P(exec boil.Executor, mods ...qm.QueryMod) *{{.ForeignTable.NameGo}} {
-  o, err := {{.Function.Receiver}}.{{.Function.Name}}(exec, mods...)
+  slice, err := {{.Function.Receiver}}.{{.Function.Name}}(exec, mods...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
 
-  return o
+  return slice
 }
 
 // {{.Function.Name}} pointed to by the foreign key.

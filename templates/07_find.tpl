@@ -11,12 +11,12 @@ func {{$tableNameSingular}}FindG({{$pkArgs}}, selectCols ...string) (*{{$tableNa
 
 // {{$tableNameSingular}}FindGP retrieves a single record by ID, and panics on error.
 func {{$tableNameSingular}}FindGP({{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-  o, err := {{$tableNameSingular}}Find(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
+  retobj, err := {{$tableNameSingular}}Find(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
 
-  return o
+  return retobj
 }
 
 // {{$tableNameSingular}}Find retrieves a single record by ID with an executor.
@@ -43,10 +43,10 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
 // {{$tableNameSingular}}FindP retrieves a single record by ID with an executor, and panics on error.
 func {{$tableNameSingular}}FindP(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-  o, err := {{$tableNameSingular}}Find(exec, {{$pkNames | join ", "}}, selectCols...)
+  retobj, err := {{$tableNameSingular}}Find(exec, {{$pkNames | join ", "}}, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
 
-  return o
+  return retobj
 }

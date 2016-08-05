@@ -16,23 +16,23 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 // {{$rel.Function.Name}}GP panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}GP(mods ...qm.QueryMod) {{$rel.ForeignTable.Slice}} {
-  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(boil.GetDB(), mods...)
+  slice, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(boil.GetDB(), mods...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
 
-  return o
+  return slice
 }
 
 // {{$rel.Function.Name}}P panics on error. Retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}P(exec boil.Executor, mods ...qm.QueryMod) {{$rel.ForeignTable.Slice}} {
-  o, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(exec, mods...)
+  slice, err := {{$rel.Function.Receiver}}.{{$rel.Function.Name}}(exec, mods...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
 
-  return o
+  return slice
 }
 
 // {{$rel.Function.Name}} retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor

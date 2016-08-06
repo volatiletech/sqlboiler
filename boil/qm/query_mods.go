@@ -95,3 +95,38 @@ func From(from string) QueryMod {
 		boil.AppendFrom(q, from)
 	}
 }
+
+// Count turns the query into a counting calculation
+func Count() QueryMod {
+	return func(q *boil.Query) {
+		boil.SetCount(q)
+	}
+}
+
+// Avg turns the query into an average calculation
+func Avg() QueryMod {
+	return func(q *boil.Query) {
+		boil.SetAvg(q)
+	}
+}
+
+// Min turns the query into a minimum calculation
+func Min() QueryMod {
+	return func(q *boil.Query) {
+		boil.SetMin(q)
+	}
+}
+
+// Max turns the query into a maximum calculation
+func Max() QueryMod {
+	return func(q *boil.Query) {
+		boil.SetMax(q)
+	}
+}
+
+// Sum turns the query into a sum calculation
+func Sum() QueryMod {
+	return func(q *boil.Query) {
+		boil.SetSum(q)
+	}
+}

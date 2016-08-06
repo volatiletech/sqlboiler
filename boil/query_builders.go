@@ -37,22 +37,22 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	buf.WriteString("SELECT ")
 
-	if q.count {
-		buf.WriteString("COUNT(")
+	// Wrap the select in the modifier function
+	hasModFunc := len(q.modFunction) != 0
+	if hasModFunc {
+		fmt.Fprintf(buf, "%s(", q.modFunction)
 	}
 
-	if len(q.innerJoins) > 0 && !q.count {
+	hasSelectCols := len(q.selectCols) != 0
+	if len(q.innerJoins) != 0 && hasSelectCols && !hasModFunc {
 		writeComplexSelect(q, buf)
+	} else if hasSelectCols {
+		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), `, `))
 	} else {
-		if len(q.selectCols) > 0 {
-			buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), `, `))
-		} else {
-			buf.WriteByte('*')
-		}
+		buf.WriteByte('*')
 	}
 
-	// close sql COUNT function
-	if q.count {
+	if hasModFunc {
 		buf.WriteString(")")
 	}
 
@@ -78,6 +78,12 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 func writeComplexSelect(q *Query, buf *bytes.Buffer) {
+	cols := make([]string, len(q.selectCols))
+	for _, col := range q.selectCols {
+		if !rgxIdentifier.Match {
+			cols
+		}
+	}
 }
 
 func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {

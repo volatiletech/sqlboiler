@@ -7,20 +7,20 @@ import (
 
 // Query holds the state for the built up query
 type Query struct {
-	executor   Executor
-	plainSQL   plainSQL
-	delete     bool
-	update     map[string]interface{}
-	selectCols []string
-	count      bool
-	from       []string
-	innerJoins []join
-	where      []where
-	groupBy    []string
-	orderBy    []string
-	having     []string
-	limit      int
-	offset     int
+	executor    Executor
+	plainSQL    plainSQL
+	delete      bool
+	update      map[string]interface{}
+	selectCols  []string
+	modFunction string
+	from        []string
+	innerJoins  []join
+	where       []where
+	groupBy     []string
+	orderBy     []string
+	having      []string
+	limit       int
+	offset      int
 }
 
 type where struct {
@@ -64,7 +64,27 @@ func SetSQL(q *Query, sql string, args ...interface{}) {
 
 // SetCount on the query.
 func SetCount(q *Query) {
-	q.count = true
+	q.modFunction = "COUNT"
+}
+
+// SetAvg on the query.
+func SetAvg(q *Query) {
+	q.modFunction = "AVG"
+}
+
+// SetMax on the query.
+func SetMax(q *Query) {
+	q.modFunction = "MAX"
+}
+
+// SetMin on the query.
+func SetMin(q *Query) {
+	q.modFunction = "MIN"
+}
+
+// SetSum on the query.
+func SetSum(q *Query) {
+	q.modFunction = "SUM"
 }
 
 // SetDelete on the query.

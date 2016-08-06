@@ -64,8 +64,10 @@ func main() {
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 
-	viper.SetDefault("postgres.sslmode", "required")
+	viper.SetDefault("postgres.sslmode", "require")
+	viper.SetDefault("postgres.port", "5432")
 	viper.BindPFlags(rootCmd.PersistentFlags())
+	viper.AutomaticEnv()
 
 	if err := rootCmd.Execute(); err != nil {
 		if e, ok := err.(commandFailure); ok {

@@ -15,8 +15,8 @@ func InitViper() error {
 	if err != nil {
 		wd = "../"
 	} else {
-    wd = wd + "/.."
-  }
+		wd = wd + "/.."
+	}
 
 	configPaths := []string{wd}
 	if len(configHome) > 0 {
@@ -29,10 +29,9 @@ func InitViper() error {
 		viper.AddConfigPath(p)
 	}
 
-	err = viper.ReadInConfig()
-  if err != nil {
-    return err
-  }
+	// Ignore errors here, fall back to defaults and validation to provide errs
+	_ = viper.ReadInConfig()
+	viper.AutomaticEnv()
 
-  return nil
+	return nil
 }

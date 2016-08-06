@@ -115,7 +115,8 @@ func setup() error {
 		return fmt.Errorf("Unable to load config file: %s", err)
 	}
 
-	viper.SetDefault("postgres.sslmode", "required")
+	viper.SetDefault("postgres.sslmode", "require")
+	viper.SetDefault("postgres.port", "5432")
 
 	// Create a randomized test configuration object.
 	testCfg.Postgres.Host = viper.GetString("postgres.host")

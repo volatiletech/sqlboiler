@@ -11,7 +11,8 @@ import (
 // Bind executes the query and inserts the
 // result into the passed in object pointer
 func (q *Query) Bind(obj interface{}) error {
-	typ := reflect.TypeOf(obj)
+	return nil
+	/*typ := reflect.TypeOf(obj)
 	kind := typ.Kind()
 
 	if kind != reflect.Ptr {
@@ -40,7 +41,7 @@ func (q *Query) Bind(obj interface{}) error {
 		return fmt.Errorf("Bind given a pointer to a non-slice or non-struct: %s", typ.String())
 	}
 
-	return nil
+	return nil*/
 }
 
 // BindP executes the query and inserts the

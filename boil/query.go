@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/nullbio/sqlboiler/strmangle"
@@ -289,4 +290,78 @@ func whereClause(q *Query) (string, []interface{}) {
 	}
 
 	return buf.String(), args
+}
+
+var (
+	rgxIdentifier      = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(?:\."?[_a-z][_a-z0-9]*"?)*$`)
+	rgxJoinIdentifiers = regexp.MustCompile(`^(?i)(?:join|inner|natural|outer|left|right)$`)
+)
+
+// identifierMapping creates a map of all identifiers to potential model names
+func identifierMapping(q *Query) map[string]string {
+	var ids map[string]string
+	setID := func(alias, name string) {
+		if ids == nil {
+			ids = make(map[string]string)
+		}
+		ids[alias] = name
+	}
+
+	for _, from := range q.from {
+		tokens := strings.Split(from, " ")
+		parseIdentifierClause(tokens, setID)
+	}
+
+	for _, join := range q.innerJoins {
+		tokens := strings.Split(join.on, " ")
+		discard := 0
+		for rgxJoinIdentifiers.MatchString(tokens[discard]) {
+			discard++
+		}
+		parseIdentifierClause(tokens[discard:], setID)
+	}
+
+	return ids
+}
+
+// parseBits takes a set of tokens and looks for something of the form:
+// a b
+// a as b
+// where 'a' and 'b' are valid SQL identifiers
+// It only evaluates the first 3 tokens (anything past that is superfluous)
+// It stops parsing when it finds "on" or an invalid identifier
+func parseIdentifierClause(tokens []string, setID func(string, string)) {
+	var name, alias string
+	sawIdent, sawAs := false, false
+
+	if len(tokens) > 3 {
+		tokens = tokens[:3]
+	}
+
+	for _, tok := range tokens {
+		if t := strings.ToLower(tok); sawIdent && t == "as" {
+			sawAs = true
+			continue
+		} else if sawIdent && t == "on" {
+			break
+		}
+
+		if !rgxIdentifier.MatchString(tok) {
+			break
+		}
+
+		if sawIdent || sawAs {
+			alias = strings.Trim(tok, `"`)
+			break
+		}
+
+		name = strings.Trim(tok, `"`)
+		sawIdent = true
+	}
+
+	if len(alias) > 0 {
+		setID(alias, name)
+	} else {
+		setID(name, name)
+	}
 }

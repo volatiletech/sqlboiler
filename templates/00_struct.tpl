@@ -3,6 +3,6 @@
 // {{$modelName}} is an object representing the database table.
 type {{$modelName}} struct {
   {{range $column := .Table.Columns -}}
-  {{titleCase $column.Name}} {{$column.Type}} `boil:"{{printf "%s.%s" $tableNameSingular $column.Name}}" json:"{{$column.Name}}"`
+  {{titleCase $column.Name}} {{$column.Type}} `boil:"{{printf "%s.%s" $tableNameSingular $column.Name}}" json:"{{$column.Name}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}"`
   {{end -}}
 }

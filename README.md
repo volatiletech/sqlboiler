@@ -1,7 +1,7 @@
 # SQLBoiler
 
 [![GoDoc](https://godoc.org/github.com/pobri19/sqlboiler?status.svg)](https://godoc.org/github.com/pobri19/sqlboiler)
-![CircleCI](https://circleci.com/gh/nullbio/sqlboiler.svg?style=shield&circle-token=:circle-token)
+[![CircleCI](https://circleci.com/gh/nullbio/sqlboiler.svg?style=svg)](https://circleci.com/gh/nullbio/sqlboiler)
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 

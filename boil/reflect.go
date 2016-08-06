@@ -122,27 +122,33 @@ func GetStructValues(obj interface{}, columns ...string) []interface{} {
 // GetStructPointers returns a slice of pointers to the matching columns in obj
 func GetStructPointers(obj interface{}, columns ...string) []interface{} {
 	val := reflect.ValueOf(obj).Elem()
-	var ret []interface{}
+
+	var ln int
+	var getField func(reflect.Value, int) reflect.Value
 
 	if len(columns) == 0 {
-		fieldsLen := val.NumField()
-		ret = make([]interface{}, fieldsLen)
-		for i := 0; i < fieldsLen; i++ {
-			ret[i] = val.Field(i).Addr().Interface()
+		ln = val.NumField()
+		getField = func(v reflect.Value, i int) reflect.Value {
+			return v.Field(i)
 		}
-		return ret
+	} else {
+		ln = len(columns)
+		getField = func(v reflect.Value, i int) reflect.Value {
+			return v.FieldByName(strmangle.TitleCase(columns[i]))
+		}
 	}
 
-	ret = make([]interface{}, len(columns))
+	ret := make([]interface{}, ln)
+	for i := 0; i < ln; i++ {
+		field := getField(val, i)
 
-	for i, c := range columns {
-		field := val.FieldByName(strmangle.TitleCase(c))
 		if !field.IsValid() {
-			panic(fmt.Sprintf("Could not find field on struct %T for field %s", obj, strmangle.TitleCase(c)))
+			// Although this breaks the abstraction of getField above - we know that v.Field(i) can't actually
+			// produce an Invalid value, so we make a hopefully safe assumption here.
+			panic(fmt.Sprintf("Could not find field on struct %T for field %s", obj, strmangle.TitleCase(columns[i])))
 		}
 
-		field = field.Addr()
-		ret[i] = field.Interface()
+		ret[i] = field.Addr().Interface()
 	}
 
 	return ret

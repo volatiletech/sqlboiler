@@ -26,13 +26,16 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}P(exec b
 
 // {{.Function.Name}} pointed to by the foreign key.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) (*{{.ForeignTable.NameGo}}, error) {
-  queryMods := make([]qm.QueryMod, 2, len(mods)+2)
-  queryMods[0] = qm.From("{{.ForeignTable.Name}}")
-  queryMods[1] = qm.Where("{{.ForeignTable.ColumnName}}=$1", {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}})
+  queryMods := []qm.QueryMod{
+    qm.Where("{{.ForeignTable.ColumnName}}=$1", {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}),
+  }
 
   queryMods = append(queryMods, mods...)
 
-  return {{.ForeignTable.NamePluralGo}}(exec, queryMods...).One()
+  query := {{.ForeignTable.NamePluralGo}}(exec, queryMods...)
+  boil.SetFrom(query.Query, "{{.ForeignTable.Name}}")
+
+  return query.One()
 }
 
 {{end -}}

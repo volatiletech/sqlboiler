@@ -1,0 +1,1 @@
+SELECT "a".* FROM happiness as a INNER JOIN rainbows r on a.id = r.happy_id;

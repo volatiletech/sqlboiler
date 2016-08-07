@@ -35,6 +35,10 @@ func TestBuildQuery(t *testing.T) {
 			from:       []string{"happiness as a"},
 			joins:      []join{{clause: "rainbows r on a.id = r.happy_id"}},
 		}, nil},
+		{&Query{
+			from:  []string{"happiness as a"},
+			joins: []join{{clause: "rainbows r on a.id = r.happy_id"}},
+		}, nil},
 	}
 
 	for i, test := range tests {
@@ -117,6 +121,73 @@ func TestIdentifierMapping(t *testing.T) {
 			if val != v {
 				t.Errorf("%d) want: %s = %s, got: %s", i, k, v, val)
 			}
+		}
+	}
+}
+
+func TestWriteStars(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		In  Query
+		Out []string
+	}{
+		{
+			In:  Query{from: []string{`a`}},
+			Out: []string{`"a".*`},
+		},
+		{
+			In:  Query{from: []string{`a as b`}},
+			Out: []string{`"b".*`},
+		},
+		{
+			In:  Query{from: []string{`a as b`, `c`}},
+			Out: []string{`"b".*`, `"c".*`},
+		},
+		{
+			In:  Query{from: []string{`a as b`, `c as d`}},
+			Out: []string{`"b".*`, `"d".*`},
+		},
+	}
+
+	for i, test := range tests {
+		selects := writeStars(&test.In)
+		if !reflect.DeepEqual(selects, test.Out) {
+			t.Errorf("writeStar test fail %d\nwant: %v\ngot:  %v", i, test.Out, selects)
+		}
+	}
+}
+
+func TestWriteAsStatements(t *testing.T) {
+	t.Parallel()
+
+	query := Query{
+		selectCols: []string{
+			`a`,
+			`a.fun`,
+			`"b"."fun"`,
+			`"b".fun`,
+			`b."fun"`,
+			`a.clown.run`,
+			`COUNT(a)`,
+		},
+	}
+
+	expect := []string{
+		`"a"`,
+		`"a"."fun" as "a.fun"`,
+		`"b"."fun" as "b.fun"`,
+		`"b"."fun" as "b.fun"`,
+		`"b"."fun" as "b.fun"`,
+		`"a"."clown"."run" as "a.clown.run"`,
+		`COUNT(a)`,
+	}
+
+	gots := writeAsStatements(&query)
+
+	for i, got := range gots {
+		if expect[i] != got {
+			t.Errorf(`%d) want: %s, got: %s`, i, expect[i], got)
 		}
 	}
 }

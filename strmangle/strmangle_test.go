@@ -185,6 +185,35 @@ func TestCamelCase(t *testing.T) {
 	}
 }
 
+func TestSnakeCase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		In  string
+		Out string
+	}{
+		{"ID", "id"},
+		{"ID9", "id9"},
+		{"Thing", "thing"},
+		{"Thing92", "thing92"},
+		{"ThingGUID", "thing_guid"},
+		{"ThingGUIDTwo", "thing_guid_two"},
+		{"ThingStuff", "thing_stuff"},
+		{"ThingStuff1GUID", "thing_stuff1_guid"},
+		{"ThingStuff12GUID", "thing_stuff12_guid"},
+		{"ThingStuff123GUID", "thing_stuff123_guid"},
+		{"GUIDThingStuffID123", "guid_thing_stuff_id123"},
+		{"GUIDThingStuffID12", "guid_thing_stuff_id12"},
+		{"GUIDThingStuffID1", "guid_thing_stuff_id1"},
+	}
+
+	for i, test := range tests {
+		if out := SnakeCase(test.In); out != test.Out {
+			t.Errorf("%d) Want: %q, got %q", i, test.Out, out)
+		}
+	}
+}
+
 func TestMakeStringMap(t *testing.T) {
 	t.Parallel()
 

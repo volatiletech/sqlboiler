@@ -119,6 +119,7 @@ var templateStringMappers = map[string]func(string) string{
 	"toUpper":   strings.ToUpper,
 	"titleCase": strmangle.TitleCase,
 	"camelCase": strmangle.CamelCase,
+	"snakeCase": strmangle.SnakeCase,
 }
 
 // templateFunctions is a map of all the functions that get passed into the
@@ -168,7 +169,7 @@ var templateFunctions = template.FuncMap{
 	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
 	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,
 	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,
-	"filterColumnsByValidated":      bdb.FilterColumnsByValidated,
+	"filterColumnsByValidated":     bdb.FilterColumnsByValidated,
 	"autoIncPrimaryKey":            bdb.AutoIncPrimaryKey,
 	"sqlColDefinitions":            bdb.SQLColDefinitions,
 	"sqlColDefStrings":             bdb.SQLColDefStrings,

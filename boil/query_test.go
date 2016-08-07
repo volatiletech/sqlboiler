@@ -1,65 +1,10 @@
 package boil
 
 import (
-	"bytes"
 	"database/sql"
-	"flag"
-	"fmt"
-	"io/ioutil"
-	"path/filepath"
 	"reflect"
 	"testing"
-
-	"github.com/davecgh/go-spew/spew"
 )
-
-var writeGoldenFiles = flag.Bool(
-	"test.golden",
-	false,
-	"Write golden files.",
-)
-
-func TestBuildQuery(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		q    *Query
-		args []interface{}
-	}{
-		{&Query{from: []string{"t"}}, nil},
-		{&Query{from: []string{"q"}, limit: 5, offset: 6}, nil},
-		{&Query{from: []string{"q"}, orderBy: []string{"a ASC", "b DESC"}}, nil},
-		{&Query{from: []string{"t"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
-		{&Query{from: []string{"a", "b"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
-	}
-
-	for i, test := range tests {
-		filename := filepath.Join("_fixtures", fmt.Sprintf("%02d.sql", i))
-		out, args := buildQuery(test.q)
-
-		if *writeGoldenFiles {
-			err := ioutil.WriteFile(filename, []byte(out), 0664)
-			if err != nil {
-				t.Fatalf("Failed to write golden file %s: %s\n", filename, err)
-			}
-			t.Logf("wrote golden file: %s\n", filename)
-			continue
-		}
-
-		byt, err := ioutil.ReadFile(filename)
-		if err != nil {
-			t.Fatalf("Failed to read golden file %q: %v", filename, err)
-		}
-
-		if string(bytes.TrimSpace(byt)) != out {
-			t.Errorf("[%02d] Test failed:\nWant:\n%s\nGot:\n%s", i, byt, out)
-		}
-
-		if !reflect.DeepEqual(args, test.args) {
-			t.Errorf("[%02d] Test failed:\nWant:\n%s\nGot:\n%s", i, spew.Sdump(test.args), spew.Sdump(args))
-		}
-	}
-}
 
 func TestSetLastWhereAsOr(t *testing.T) {
 	t.Parallel()
@@ -301,34 +246,34 @@ func TestInnerJoin(t *testing.T) {
 	AppendInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
 	AppendInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
 
-	if len(q.innerJoins) != 2 {
-		t.Errorf("Expected len 1, got %d", len(q.innerJoins))
+	if len(q.joins) != 2 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
 	}
 
-	if q.innerJoins[0].on != "thing=$1 AND stuff=$2" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.innerJoins)
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid innerJoin on string: %#v", q.joins)
 	}
-	if q.innerJoins[1].on != "thing=$1 AND stuff=$2" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.innerJoins)
-	}
-
-	if len(q.innerJoins[0].args) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.innerJoins[0].args))
-	}
-	if len(q.innerJoins[1].args) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.innerJoins[1].args))
+	if q.joins[1].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid innerJoin on string: %#v", q.joins)
 	}
 
-	if q.innerJoins[0].args[0] != 2 && q.innerJoins[0].args[1] != 5 {
-		t.Errorf("Invalid args values, got %#v", q.innerJoins[0].args)
+	if len(q.joins[0].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[0].args))
+	}
+	if len(q.joins[1].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[1].args))
+	}
+
+	if q.joins[0].args[0] != 2 && q.joins[0].args[1] != 5 {
+		t.Errorf("Invalid args values, got %#v", q.joins[0].args)
 	}
 
 	SetInnerJoin(q, "thing=$1 AND stuff=$2", 2, 5)
-	if len(q.innerJoins) != 1 {
-		t.Errorf("Expected len 1, got %d", len(q.innerJoins))
+	if len(q.joins) != 1 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
 	}
 
-	if q.innerJoins[0].on != "thing=$1 AND stuff=$2" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.innerJoins)
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid innerJoin on string: %#v", q.joins)
 	}
 }

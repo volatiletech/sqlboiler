@@ -48,9 +48,9 @@ func Offset(offset int) QueryMod {
 }
 
 // InnerJoin on another table
-func InnerJoin(stmt string, args ...interface{}) QueryMod {
+func InnerJoin(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.AppendInnerJoin(q, stmt, args...)
+		boil.AppendInnerJoin(q, boil.JoinInner, clause, args...)
 	}
 }
 

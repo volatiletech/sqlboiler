@@ -5,6 +5,17 @@ import (
 	"fmt"
 )
 
+// joinKind is the type of join
+type joinKind int
+
+// Join type constants
+const (
+	JoinInner joinKind = iota
+	JoinOuterLeft
+	JoinOuterRight
+	JoinNatural
+)
+
 // Query holds the state for the built up query
 type Query struct {
 	executor    Executor
@@ -14,7 +25,7 @@ type Query struct {
 	selectCols  []string
 	modFunction string
 	from        []string
-	innerJoins  []join
+	joins       []join
 	where       []where
 	groupBy     []string
 	orderBy     []string
@@ -35,8 +46,9 @@ type plainSQL struct {
 }
 
 type join struct {
-	on   string
-	args []interface{}
+	kind   joinKind
+	clause string
+	args   []interface{}
 }
 
 // ExecStatement executes a query that does not need a row returned
@@ -130,13 +142,13 @@ func SetFrom(q *Query, from ...string) {
 }
 
 // AppendInnerJoin on the query.
-func AppendInnerJoin(q *Query, on string, args ...interface{}) {
-	q.innerJoins = append(q.innerJoins, join{on: on, args: args})
+func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
 }
 
 // SetInnerJoin on the query.
-func SetInnerJoin(q *Query, on string, args ...interface{}) {
-	q.innerJoins = append([]join(nil), join{on: on, args: args})
+func SetInnerJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append([]join(nil), join{clause: clause, kind: JoinInner, args: args})
 }
 
 // AppendWhere on the query.

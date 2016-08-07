@@ -1,6 +1,69 @@
 package boil
 
-import "testing"
+import (
+	"bytes"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"reflect"
+	"testing"
+
+	"github.com/davecgh/go-spew/spew"
+)
+
+var writeGoldenFiles = flag.Bool(
+	"test.golden",
+	false,
+	"Write golden files.",
+)
+
+func TestBuildQuery(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		q    *Query
+		args []interface{}
+	}{
+		{&Query{from: []string{"t"}}, nil},
+		{&Query{from: []string{"q"}, limit: 5, offset: 6}, nil},
+		{&Query{from: []string{"q"}, orderBy: []string{"a ASC", "b DESC"}}, nil},
+		{&Query{from: []string{"t"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
+		{&Query{from: []string{"a", "b"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
+		{&Query{
+			selectCols: []string{"a.happy", "r.fun", "q"},
+			from:       []string{"happiness as a"},
+			joins:      []join{{clause: "rainbows r on a.id = r.happy_id"}},
+		}, nil},
+	}
+
+	for i, test := range tests {
+		filename := filepath.Join("_fixtures", fmt.Sprintf("%02d.sql", i))
+		out, args := buildQuery(test.q)
+
+		if *writeGoldenFiles {
+			err := ioutil.WriteFile(filename, []byte(out), 0664)
+			if err != nil {
+				t.Fatalf("Failed to write golden file %s: %s\n", filename, err)
+			}
+			t.Logf("wrote golden file: %s\n", filename)
+			continue
+		}
+
+		byt, err := ioutil.ReadFile(filename)
+		if err != nil {
+			t.Fatalf("Failed to read golden file %q: %v", filename, err)
+		}
+
+		if string(bytes.TrimSpace(byt)) != out {
+			t.Errorf("[%02d] Test failed:\nWant:\n%s\nGot:\n%s", i, byt, out)
+		}
+
+		if !reflect.DeepEqual(args, test.args) {
+			t.Errorf("[%02d] Test failed:\nWant:\n%s\nGot:\n%s", i, spew.Sdump(test.args), spew.Sdump(args))
+		}
+	}
+}
 
 func TestIdentifierMapping(t *testing.T) {
 	t.Parallel()
@@ -26,19 +89,19 @@ func TestIdentifierMapping(t *testing.T) {
 			Out: map[string]string{"b": "a", "d": "c"},
 		},
 		{
-			In:  Query{innerJoins: []join{{on: `inner join a on stuff = there`}}},
+			In:  Query{joins: []join{{kind: JoinInner, clause: `a on stuff = there`}}},
 			Out: map[string]string{"a": "a"},
 		},
 		{
-			In:  Query{innerJoins: []join{{on: `outer join "a" on stuff = there`}}},
+			In:  Query{joins: []join{{kind: JoinNatural, clause: `"a" on stuff = there`}}},
 			Out: map[string]string{"a": "a"},
 		},
 		{
-			In:  Query{innerJoins: []join{{on: `natural join a as b on stuff = there`}}},
+			In:  Query{joins: []join{{kind: JoinNatural, clause: `a as b on stuff = there`}}},
 			Out: map[string]string{"b": "a"},
 		},
 		{
-			In:  Query{innerJoins: []join{{on: `right outer join "a" as "b" on stuff = there`}}},
+			In:  Query{joins: []join{{kind: JoinOuterRight, clause: `"a" as "b" on stuff = there`}}},
 			Out: map[string]string{"b": "a"},
 		},
 	}

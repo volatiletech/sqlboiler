@@ -1,1 +1,1 @@
-SELECT count(*) as ab, thing as bd, "stuff" FROM "a","b";
+SELECT count(*) as ab, thing as bd,"stuff" FROM "a","b";

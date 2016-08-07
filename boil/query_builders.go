@@ -44,10 +44,16 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	}
 
 	hasSelectCols := len(q.selectCols) != 0
-	if len(q.innerJoins) != 0 && hasSelectCols && !hasModFunc {
-		writeComplexSelect(q, buf)
+	hasJoins := len(q.joins) != 0
+	if hasJoins && !hasModFunc {
+		selectColsWithAs := writeAsStatements(q)
+		// Don't identQuoteSlice - writeAsStatements does this
+		buf.WriteString(strings.Join(selectColsWithAs, `,`))
 	} else if hasSelectCols {
-		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), `, `))
+		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), `,`))
+	} else if hasJoins {
+		selectColsWithStars := writeStars(q)
+		buf.WriteString(strings.Join(selectColsWithStars, `,`))
 	} else {
 		buf.WriteByte('*')
 	}
@@ -56,14 +62,21 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString(")")
 	}
 
-	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), ","))
+	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), `,`))
+
+	for _, j := range q.joins {
+		if j.kind != JoinInner {
+			panic("only inner joins are supported")
+		}
+		fmt.Fprintf(buf, " INNER JOIN %s", j.clause)
+	}
 
 	where, args := whereClause(q)
 	buf.WriteString(where)
 
 	if len(q.orderBy) != 0 {
 		buf.WriteString(" ORDER BY ")
-		buf.WriteString(strings.Join(q.orderBy, ","))
+		buf.WriteString(strings.Join(q.orderBy, `,`))
 	}
 
 	if q.limit != 0 {
@@ -147,13 +160,9 @@ func identifierMapping(q *Query) map[string]string {
 		parseIdentifierClause(tokens, setID)
 	}
 
-	for _, join := range q.innerJoins {
-		tokens := strings.Split(join.on, " ")
-		discard := 0
-		for rgxJoinIdentifiers.MatchString(tokens[discard]) {
-			discard++
-		}
-		parseIdentifierClause(tokens[discard:], setID)
+	for _, join := range q.joins {
+		tokens := strings.Split(join.clause, " ")
+		parseIdentifierClause(tokens, setID)
 	}
 
 	return ids

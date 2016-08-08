@@ -7,7 +7,7 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
   var exists bool
 
   row := exec.QueryRow(
-    `select exists(select 1 from "{{.Table.Name}}" where {{whereClause .Table.PKey.Columns 1}} limit 1)`,
+    `select exists(select 1 from "{{.Table.Name}}" where {{whereClause 1 .Table.PKey.Columns}} limit 1)`,
     {{$pkNames | join ", "}},
   )
 

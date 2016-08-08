@@ -49,7 +49,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
     lastId, err := result.lastInsertId()
     if err != nil || lastId == 0 {
-      sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), boil.WhereClause(wl))
+      sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, wl))
       rows, err := exec.Query(sel, boil.GetStructValues(o, wl...)...)
       if err != nil {
         return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)

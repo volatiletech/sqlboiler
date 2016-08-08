@@ -113,7 +113,7 @@ func (o *{{$tableNameSingular}}) generateInsertColumns(whitelist ...string) ([]s
 
   wl = append(wl, {{$varNameSingular}}ColumnsWithoutDefault...)
 
-  wl = append(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), wl...)
+  wl = boil.SetMerge(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), wl)
   wl = boil.SortByKeys({{$varNameSingular}}Columns, wl)
 
   // Only return the columns with default values that are not in the insert whitelist

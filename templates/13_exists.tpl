@@ -4,24 +4,19 @@
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
 // {{$tableNameSingular}}Exists checks if the {{$tableNameSingular}} row exists.
 func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error) {
-  var count int64
+  var exists bool
 
-  mods := []qm.QueryMod{
-    qm.From("{{.Table.Name}}"),
-    qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{$pkNames | join ", "}}),
-    qm.Limit(1),
-  }
+  row := exec.QueryRow(
+    `select exists(select 1 from "{{.Table.Name}}" where {{whereClause .Table.PKey.Columns (len $pkNames)}} limit 1)`,
+    {{$pkNames | join ", "}},
+  )
 
-  q := NewQuery(exec, mods...)
-
-  boil.SetCount(q)
-
-  err := boil.ExecQueryOne(q).Scan(&count)
+  err := row.Scan(&exists)
   if err != nil {
     return false, fmt.Errorf("{{.PkgName}}: unable to check if {{.Table.Name}} exists: %v", err)
   }
 
-  return count > 0, nil
+  return exists, nil
 }
 
 // {{$tableNameSingular}}ExistsG checks if the {{$tableNameSingular}} row exists.

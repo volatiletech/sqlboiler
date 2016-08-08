@@ -32,8 +32,7 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
   q := NewQuery(exec, mods...)
 
-  err := boil.ExecQueryOne(q).Scan(boil.GetStructPointers({{$varNameSingular}}, selectCols...)...)
-
+  err := q.Bind({{$varNameSingular}})
   if err != nil {
     return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table.Name}}: %v", err)
   }

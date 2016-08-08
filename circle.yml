@@ -1,11 +1,20 @@
 test:
   pre:
     - go get github.com/jstemmer/go-junit-report
+    - go get github.com/mattn/goveralls
     - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
     - createdb -U ubuntu sqlboiler
     - psql -U ubuntu sqlboiler < ./testdata/test_schema.sql
     - ./sqlboiler postgres
   override:
     - go test -v -race ./... > $CIRCLE_ARTIFACTS/gotest.txt
+    - >
+      echo "mode: set" > $CIRCLE_ARTIFACTS/coverage.txt &&
+      for i in $(go list ./...); do
+      rm -f coverage.tmp;
+      go test -v -coverprofile coverage.tmp $i;
+      tail -n +2 coverage.tmp >> $CIRCLE_ARTIFACTS/coverage.txt;
+      done
   post:
     - cat $CIRCLE_ARTIFACTS/gotest.txt | go-junit-report > $CIRCLE_TEST_REPORTS/junit.xml
+    - goveralls -coverprofile=$CIRCLE_ARTIFACTS/coverage.txt -service=circle-ci -repotoken=$COVERALLS_TOKEN

@@ -5,6 +5,7 @@
 package strmangle
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"regexp"
@@ -208,14 +209,38 @@ func PrefixStringSlice(str string, strs []string) []string {
 
 // GenerateParamFlags generates the SQL statement parameter flags
 // For example, $1,$2,$3 etc. It will start counting at startAt.
-func GenerateParamFlags(colCount int, startAt int) string {
-	cols := make([]string, 0, colCount)
+//
+// If GroupAt is greater than 1, instead of returning $1,$2,$3
+// it will return wrapped groups of param flags, for example:
+//
+//	GroupAt(1): $1,$2,$3,$4,$5,$6
+//	GroupAt(2): ($1,$2),($3,$4),($5,$6)
+//	GroupAt(3): ($1,$2,$3),($4,$5,$6),($7,$8,$9)
+func GenerateParamFlags(colCount int, startAt int, groupAt int) string {
+	var buf bytes.Buffer
 
-	for i := startAt; i < colCount+startAt; i++ {
-		cols = append(cols, fmt.Sprintf("$%d", i))
+	if groupAt > 1 {
+		buf.WriteByte('(')
 	}
 
-	return strings.Join(cols, ",")
+	groupCounter := 0
+	for i := startAt; i < colCount+startAt; i++ {
+		groupCounter++
+		buf.WriteString(fmt.Sprintf("$%d", i))
+		if i+1 != colCount+startAt {
+			if groupAt > 1 && groupCounter == groupAt {
+				buf.WriteString("),(")
+				groupCounter = 0
+			} else {
+				buf.WriteByte(',')
+			}
+		}
+	}
+	if groupAt > 1 {
+		buf.WriteByte(')')
+	}
+
+	return buf.String()
 }
 
 // WhereClause returns the where clause using start as the $ flag index

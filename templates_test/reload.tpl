@@ -40,3 +40,52 @@ func Test{{$tableNamePlural}}Reload(t *testing.T) {
 
   {{$varNamePlural}}DeleteAllRows(t)
 }
+
+func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
+  var err error
+
+  o1 := make({{$tableNameSingular}}Slice, 3)
+  o2 := make({{$tableNameSingular}}Slice, 3)
+  if err = boil.RandomizeSlice(&o1, {{$varNameSingular}}DBTypes, true); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
+  }
+
+  for i := 0; i < len(o1); i++ {
+    if err = o1[i].InsertG(); err != nil {
+      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o1[i], err)
+    }
+  }
+
+  for i := 0; i < len(o1); i++ {
+    o2[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o1[i]." | join ", "}})
+    if err != nil {
+      t.Errorf("Unable to find {{$tableNameSingular}} row.")
+    }
+
+    {{$varNameSingular}}CompareVals(o1[i], o2[i], t)
+  }
+
+  // Randomize the struct values again, except for the primary key values, so we can call update.
+  err = boil.RandomizeSlice(&o1, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...)
+  if err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice excluding primary keys: %s", err)
+  }
+
+  colsWithoutPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
+
+  for i := 0; i < len(o1); i++ {
+    if err = o1[i].UpdateG(colsWithoutPrimKeys...); err != nil {
+      t.Errorf("Unable to update the {{$tableNameSingular}} row: %s", err)
+    }
+  }
+
+  if err = o2.ReloadAllG(); err != nil {
+    t.Errorf("Unable to reload {{$tableNameSingular}} object: %s", err)
+  }
+
+  for i := 0; i < len(o1); i++  {
+    {{$varNameSingular}}CompareVals(o2[i], o1[i], t)
+  }
+
+  {{$varNamePlural}}DeleteAllRows(t)
+}

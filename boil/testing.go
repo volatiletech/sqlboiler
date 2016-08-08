@@ -140,7 +140,10 @@ func RandomizeSlice(obj interface{}, colTypes map[string]string, includeInvalid 
 
 	for i := 0; i < ptrSlice.Len(); i++ {
 		o := ptrSlice.Index(i)
-		o.Set(reflect.New(structTyp))
+		if o.IsNil() {
+			o.Set(reflect.New(structTyp))
+		}
+
 		if err := RandomizeStruct(o.Interface(), colTypes, includeInvalid, blacklist...); err != nil {
 			return err
 		}

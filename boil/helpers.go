@@ -119,8 +119,15 @@ Outer:
 
 // GenerateParamFlags generates the SQL statement parameter flags
 // For example, $1,$2,$3 etc. It will start counting at startAt.
-func GenerateParamFlags(colCount int, startAt int) string {
-	return strmangle.GenerateParamFlags(colCount, startAt)
+//
+// If GroupAt is greater than 1, instead of returning $1,$2,$3
+// it will return wrapped groups of param flags, for example:
+//
+//	GroupAt(1): $1,$2,$3,$4,$5,$6
+//	GroupAt(2): ($1,$2),($3,$4),($5,$6)
+//	GroupAt(3): ($1,$2,$3),($4,$5,$6),($7,$8,$9)
+func GenerateParamFlags(colCount int, startAt int, groupAt int) string {
+	return strmangle.GenerateParamFlags(colCount, startAt, groupAt)
 }
 
 // WherePrimaryKeyIn generates a "in" string for where queries

@@ -1,5 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $varNamePlural := .Table.Name | plural | camelCase -}}
 // ReloadGP refetches the object from the database and panics on error.
 func (o *{{$tableNameSingular}}) ReloadGP() {
   if err := o.ReloadG(); err != nil {
@@ -32,5 +33,63 @@ func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
   }
 
   *o = *ret
+  return nil
+}
+
+func (o *{{$tableNameSingular}}Slice) ReloadAllGP() {
+  if err := o.ReloadAllG(); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
+func (o *{{$tableNameSingular}}Slice) ReloadAllP(exec boil.Executor) {
+  if err := o.ReloadAll(exec); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
+func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: empty {{$tableNameSingular}}Slice provided for reload all")
+  }
+
+  return o.ReloadAll(boil.GetDB())
+}
+
+// ReloadAll refetches every row with matching primary key column values
+// and overwrites the original object slice with the newly updated slice.
+func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
+  if len(*o) == 0 {
+    return nil
+  }
+
+  {{$varNamePlural}} := {{$tableNameSingular}}Slice{}
+  var args []interface{}
+
+  for i := 0; i < len(*o); i++ {
+    args = append(args, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "(*o)[i]." | join ", "}})
+  }
+
+  sql := fmt.Sprintf(
+    `select {{.Table.Name}}.* from {{.Table.Name}} where (%s) in (%s)`,
+    strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
+    strmangle.GenerateParamFlags(len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
+  )
+
+  q := boil.SQL(sql, args...)
+  boil.SetExecutor(q, exec)
+
+  err := q.Bind(&{{$varNamePlural}})
+  if err != nil {
+    return fmt.Errorf("{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice: %v", err)
+  }
+
+  *o = {{$varNamePlural}}
+
+  if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+    fmt.Fprintln(boil.DebugWriter, args)
+  }
+
   return nil
 }

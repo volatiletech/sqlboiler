@@ -6,6 +6,6 @@ test:
     - psql -U ubuntu sqlboiler < ./testdata/test_schema.sql
     - ./sqlboiler postgres
   override:
-    - >
-      go test -v -race ./... |
-      go-junit-report >> $CIRCLE_TEST_REPORTS/junit.xml
+    - go test -v -race ./... > $CIRCLE_ARTIFACTS/gotest.txt
+  post:
+    - cat $CIRCLE_ARTIFACTS/gotest.txt | go-junit-report > $CIRCLE_TEST_REPORTS/junit.xml

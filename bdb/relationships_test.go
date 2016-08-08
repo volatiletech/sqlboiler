@@ -9,9 +9,9 @@ func TestToManyRelationships(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		Table{Name: "users", Columns: []Column{{Name: "id"}}},
-		Table{Name: "contests", Columns: []Column{{Name: "id"}}},
-		Table{
+		{Name: "users", Columns: []Column{{Name: "id"}}},
+		{Name: "contests", Columns: []Column{{Name: "id"}}},
+		{
 			Name: "videos",
 			Columns: []Column{
 				{Name: "id"},
@@ -23,7 +23,7 @@ func TestToManyRelationships(t *testing.T) {
 				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id"},
 			},
 		},
-		Table{
+		{
 			Name: "notifications",
 			Columns: []Column{
 				{Name: "user_id"},
@@ -34,7 +34,7 @@ func TestToManyRelationships(t *testing.T) {
 				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id"},
 			},
 		},
-		Table{
+		{
 			Name:        "users_video_tags",
 			IsJoinTable: true,
 			Columns: []Column{
@@ -51,7 +51,7 @@ func TestToManyRelationships(t *testing.T) {
 	relationships := ToManyRelationships("users", tables)
 
 	expected := []ToManyRelationship{
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -63,7 +63,7 @@ func TestToManyRelationships(t *testing.T) {
 
 			ToJoinTable: false,
 		},
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -75,7 +75,7 @@ func TestToManyRelationships(t *testing.T) {
 
 			ToJoinTable: false,
 		},
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -87,7 +87,7 @@ func TestToManyRelationships(t *testing.T) {
 
 			ToJoinTable: false,
 		},
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -125,9 +125,9 @@ func TestToManyRelationshipsNull(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		Table{Name: "users", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
-		Table{Name: "contests", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
-		Table{
+		{Name: "users", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
+		{Name: "contests", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
+		{
 			Name: "videos",
 			Columns: []Column{
 				{Name: "id", Nullable: true, Unique: true},
@@ -139,7 +139,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id", Nullable: true, Unique: true},
 			},
 		},
-		Table{
+		{
 			Name: "notifications",
 			Columns: []Column{
 				{Name: "user_id", Nullable: true, Unique: true},
@@ -150,7 +150,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
 			},
 		},
-		Table{
+		{
 			Name:        "users_video_tags",
 			IsJoinTable: true,
 			Columns: []Column{
@@ -170,7 +170,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 	}
 
 	expected := []ToManyRelationship{
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,
@@ -182,7 +182,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 
 			ToJoinTable: false,
 		},
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,
@@ -194,7 +194,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 
 			ToJoinTable: false,
 		},
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,
@@ -206,7 +206,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 
 			ToJoinTable: false,
 		},
-		ToManyRelationship{
+		{
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,

@@ -78,16 +78,16 @@ func TestCombineTypeImports(t *testing.T) {
 	}
 
 	cols := []bdb.Column{
-		bdb.Column{
+		{
 			Type: "null.Time",
 		},
-		bdb.Column{
+		{
 			Type: "null.Time",
 		},
-		bdb.Column{
+		{
 			Type: "time.Time",
 		},
-		bdb.Column{
+		{
 			Type: "null.Float",
 		},
 	}

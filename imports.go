@@ -155,7 +155,7 @@ var defaultTemplateImports = imports{
 }
 
 var defaultSingletonTemplateImports = map[string]imports{
-	"boil_helpers": imports{
+	"boil_helpers": {
 		standard: importList{},
 		thirdParty: importList{
 			`"github.com/nullbio/sqlboiler/boil"`,
@@ -179,7 +179,7 @@ var defaultTestTemplateImports = imports{
 }
 
 var defaultSingletonTestTemplateImports = map[string]imports{
-	"boil_main_helpers": imports{
+	"boil_main_helpers": {
 		standard: importList{
 			`"database/sql"`,
 			`"os"`,
@@ -189,7 +189,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"github.com/spf13/viper"`,
 		},
 	},
-	"boil_helpers": imports{
+	"boil_helpers": {
 		standard: importList{
 			`"crypto/md5"`,
 			`"fmt"`,
@@ -205,7 +205,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 }
 
 var defaultTestMainImports = map[string]imports{
-	"postgres": imports{
+	"postgres": {
 		standard: importList{
 			`"testing"`,
 			`"os"`,
@@ -233,52 +233,52 @@ var defaultTestMainImports = map[string]imports{
 // database requires one of the following special types. Check
 // TranslateColumnType to see the type assignments.
 var importsBasedOnType = map[string]imports{
-	"null.Float32": imports{
+	"null.Float32": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Float64": imports{
+	"null.Float64": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Int": imports{
+	"null.Int": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Int8": imports{
+	"null.Int8": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Int16": imports{
+	"null.Int16": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Int32": imports{
+	"null.Int32": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Int64": imports{
+	"null.Int64": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Uint": imports{
+	"null.Uint": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Uint8": imports{
+	"null.Uint8": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Uint16": imports{
+	"null.Uint16": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Uint32": imports{
+	"null.Uint32": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Uint64": imports{
+	"null.Uint64": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.String": imports{
+	"null.String": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Bool": imports{
+	"null.Bool": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"null.Time": imports{
+	"null.Time": {
 		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
 	},
-	"time.Time": imports{
+	"time.Time": {
 		standard: importList{`"time"`},
 	},
 }

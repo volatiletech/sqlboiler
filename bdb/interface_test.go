@@ -12,8 +12,8 @@ func (t testInterface) TableNames() ([]string, error) {
 }
 
 var testCols = []Column{
-	Column{Name: "col1", Type: "character varying"},
-	Column{Name: "col2", Type: "character varying", Nullable: true},
+	{Name: "col1", Type: "character varying"},
+	{Name: "col2", Type: "character varying", Nullable: true},
 }
 
 func (t testInterface) Columns(tableName string) ([]Column, error) {
@@ -129,18 +129,18 @@ func TestSetForeignKeyConstraints(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		Table{
+		{
 			Name: "one",
 			Columns: []Column{
-				Column{Name: "id1", Type: "string", Nullable: false, Unique: false},
-				Column{Name: "id2", Type: "string", Nullable: true, Unique: true},
+				{Name: "id1", Type: "string", Nullable: false, Unique: false},
+				{Name: "id2", Type: "string", Nullable: true, Unique: true},
 			},
 		},
-		Table{
+		{
 			Name: "other",
 			Columns: []Column{
-				Column{Name: "one_id_1", Type: "string", Nullable: false, Unique: false},
-				Column{Name: "one_id_2", Type: "string", Nullable: true, Unique: true},
+				{Name: "one_id_1", Type: "string", Nullable: false, Unique: false},
+				{Name: "one_id_2", Type: "string", Nullable: true, Unique: true},
 			},
 			FKeys: []ForeignKey{
 				{Column: "one_id_1", ForeignTable: "one", ForeignColumn: "id1"},
@@ -184,16 +184,16 @@ func TestSetRelationships(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		Table{
+		{
 			Name: "one",
 			Columns: []Column{
-				Column{Name: "id", Type: "string"},
+				{Name: "id", Type: "string"},
 			},
 		},
-		Table{
+		{
 			Name: "other",
 			Columns: []Column{
-				Column{Name: "other_id", Type: "string"},
+				{Name: "other_id", Type: "string"},
 			},
 			FKeys: []ForeignKey{{Column: "other_id", ForeignTable: "one", ForeignColumn: "id", Nullable: true}},
 		},

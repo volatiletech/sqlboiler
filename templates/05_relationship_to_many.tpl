@@ -1,7 +1,7 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-  {{- $dot := . }}
-  {{- $table := .Table }}
+  {{- $dot := . -}}
+  {{- $table := .Table -}}
   {{- range .Table.ToManyRelationships -}}
     {{- if .ForeignColumnUnique -}}
 {{- template "relationship_to_one_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}

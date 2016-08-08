@@ -315,7 +315,7 @@ func TestWhereClause(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		r := WhereClause(test.Start, test.Cols...)
+		r := WhereClause(test.Start, test.Cols)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}
@@ -331,7 +331,7 @@ func TestWhereClausePanic(t *testing.T) {
 		}
 	}()
 
-	WhereClause(0)
+	WhereClause(0, nil)
 }
 
 func TestWhereMultiple(t *testing.T) {
@@ -349,7 +349,7 @@ func TestWhereMultiple(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		r := WhereMultiple(test.Start, test.Count, test.Cols...)
+		r := WhereMultiple(test.Start, test.Count, test.Cols)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s", i, test.Should, r)
 		}
@@ -365,7 +365,7 @@ func TestWhereMultiplePanic(t *testing.T) {
 		}
 	}()
 
-	WhereMultiple(0, 0)
+	WhereMultiple(0, 0, nil)
 }
 
 func TestInClause(t *testing.T) {

@@ -51,8 +51,8 @@ type join struct {
 	args   []interface{}
 }
 
-// ExecStatement executes a query that does not need a row returned
-func ExecStatement(q *Query) (sql.Result, error) {
+// ExecQuery executes a query that does not need a row returned
+func ExecQuery(q *Query) (sql.Result, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
@@ -60,8 +60,8 @@ func ExecStatement(q *Query) (sql.Result, error) {
 	return q.executor.Exec(qs, args...)
 }
 
-// ExecQuery executes the query for the One finisher and returns a single row
-func ExecQuery(q *Query) *sql.Row {
+// ExecQueryOne executes the query for the One finisher and returns a row
+func ExecQueryOne(q *Query) *sql.Row {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)

@@ -51,6 +51,16 @@ type join struct {
 	args   []interface{}
 }
 
+// SQL makes a plainSQL query, usually for use with bind
+func SQL(query string, args ...interface{}) *Query {
+	return &Query{
+		plainSQL: plainSQL{
+			sql:  query,
+			args: args,
+		},
+	}
+}
+
 // ExecQuery executes a query that does not need a row returned
 func ExecQuery(q *Query) (sql.Result, error) {
 	qs, args := buildQuery(q)

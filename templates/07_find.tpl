@@ -24,13 +24,15 @@ func {{$tableNameSingular}}FindGP({{$pkArgs}}, selectCols ...string) *{{$tableNa
 func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
 
-  mods := []qm.QueryMod{
-    qm.Select(selectCols...),
-    qm.From("{{.Table.Name}}"),
-    qm.Where(`{{whereClause .Table.PKey.Columns 1}}`, {{$pkNames | join ", "}}),
+  sel := "*"
+  if len(selectCols) > 0 {
+    sel = strings.Join(strmangle.IdentQuoteSlice(selectCols), ",")
   }
-
-  q := NewQuery(exec, mods...)
+  sql := fmt.Sprintf(
+    `select %s from "{{.Table.Name}}" where {{whereClause .Table.PKey.Columns 1}}`, sel,
+  )
+  q := boil.SQL(sql, {{$pkNames | join ", "}})
+  boil.SetExecutor(q, exec)
 
   err := q.Bind({{$varNameSingular}})
   if err != nil {

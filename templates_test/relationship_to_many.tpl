@@ -8,7 +8,6 @@
     {{- else -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
 func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
-  t.Skip("this test is broke")
   var err error
   tx := MustTx(boil.Begin())
   defer tx.Rollback()

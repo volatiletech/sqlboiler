@@ -98,7 +98,7 @@ func bind(q *Query, obj interface{}, structType, sliceType reflect.Type, singula
 
 	var ptrSlice reflect.Value
 	if !singular {
-		ptrSlice = reflect.ValueOf(obj)
+		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
 	for rows.Next() {
@@ -146,9 +146,6 @@ func bindPtrs(obj interface{}, cols ...string) ([]interface{}, error) {
 }
 
 func findField(names []string, v reflect.Value) (interface{}, bool) {
-	fmt.Println("Names:", names)
-	fmt.Println("Type:", v.Type().String())
-
 	if !v.IsValid() || len(names) == 0 {
 		return nil, false
 	}
@@ -167,46 +164,33 @@ func findField(names []string, v reflect.Value) (interface{}, bool) {
 	name := strmangle.TitleCase(names[0])
 	typ := v.Type()
 
-	fi, ok := typ.FieldByName(name)
-	if ok {
-		fieldName, recurse := getBoilTag(fi)
-		if fieldName != "-" {
-			if recurse {
-				return findField(names[1:], v.FieldByName(name))
-			}
-
-			if len(names) == 1 {
-				field := v.FieldByName(name)
-				if field.Kind() != reflect.Ptr {
-					return field.Addr().Interface(), true
-				}
-				return field.Interface(), true
-			}
-		}
-	}
-
 	n := typ.NumField()
 	for i := 0; i < n; i++ {
 		f := typ.Field(i)
 		fieldName, recurse := getBoilTag(f)
-
-		fmt.Println(name, fieldName, recurse)
 
 		if fieldName == "-" {
 			continue
 		}
 
 		if recurse {
-			return findField(names, v.Field(i))
+			if fieldName == name {
+				names = names[1:]
+			}
+			if ptr, ok := findField(names, v.Field(i)); ok {
+				return ptr, ok
+			}
 		}
 
-		if fieldName == name {
-			fieldVal := v.Field(i)
-			if fieldVal.Kind() != reflect.Ptr {
-				return fieldVal.Addr().Interface(), true
-			}
-			return fieldVal.Interface(), true
+		if fieldName != name || len(names) > 1 {
+			continue
 		}
+
+		fieldVal := v.Field(i)
+		if fieldVal.Kind() != reflect.Ptr {
+			return fieldVal.Addr().Interface(), true
+		}
+		return fieldVal.Interface(), true
 	}
 
 	return nil, false
@@ -219,7 +203,9 @@ func getBoilTag(field reflect.StructField) (name string, recurse bool) {
 		tagTokens := strings.Split(tag, ",")
 		name = strmangle.TitleCase(tagTokens[0])
 		recurse = len(tagTokens) > 1 && tagTokens[1] == "bind"
-	} else {
+	}
+
+	if len(name) == 0 {
 		name = field.Name
 	}
 

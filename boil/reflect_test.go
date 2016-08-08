@@ -1,14 +1,217 @@
 package boil
 
 import (
+	"database/sql/driver"
 	"testing"
 	"time"
 
+	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"gopkg.in/nullbio/null.v4"
 )
 
+type mockRowMaker struct {
+	int
+	rows []driver.Value
+}
+
 func TestBind(t *testing.T) {
-	t.Skip("Not implemented")
+	t.Parallel()
+
+	testResults := []*struct {
+		ID   int
+		Name string `boil:"test"`
+	}{}
+
+	query := &Query{
+		from: []string{"fun"},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"id", "test"})
+	ret.AddRow(driver.Value(int64(35)), driver.Value("pat"))
+	ret.AddRow(driver.Value(int64(12)), driver.Value("cat"))
+	mock.ExpectQuery(`SELECT \* FROM "fun";`).WillReturnRows(ret)
+
+	SetExecutor(query, db)
+	err = query.Bind(&testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(testResults) != 2 {
+		t.Fatal("wrong number of results:", len(testResults))
+	}
+	if id := testResults[0].ID; id != 35 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults[0].Name; name != "pat" {
+		t.Error("wrong name:", name)
+	}
+
+	if id := testResults[1].ID; id != 12 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults[1].Name; name != "cat" {
+		t.Error("wrong name:", name)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestBindSingular(t *testing.T) {
+	t.Parallel()
+
+	testResults := struct {
+		ID   int
+		Name string `boil:"test"`
+	}{}
+
+	query := &Query{
+		from: []string{"fun"},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"id", "test"})
+	ret.AddRow(driver.Value(int64(35)), driver.Value("pat"))
+	mock.ExpectQuery(`SELECT \* FROM "fun";`).WillReturnRows(ret)
+
+	SetExecutor(query, db)
+	err = query.Bind(&testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if id := testResults.ID; id != 35 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults.Name; name != "pat" {
+		t.Error("wrong name:", name)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestBind_InnerJoin(t *testing.T) {
+	t.Parallel()
+
+	testResults := []*struct {
+		Happy struct {
+			ID int `boil:"identifier"`
+		} `boil:",bind"`
+		Fun struct {
+			ID int `boil:"id"`
+		} `boil:",bind"`
+	}{}
+
+	query := &Query{
+		from:  []string{"fun"},
+		joins: []join{{kind: JoinInner, clause: "happy as h on fun.id = h.fun_id"}},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"id"})
+	ret.AddRow(driver.Value(int64(10)))
+	ret.AddRow(driver.Value(int64(11)))
+	mock.ExpectQuery(`SELECT "fun"\.\* FROM "fun" INNER JOIN happy as h on fun.id = h.fun_id;`).WillReturnRows(ret)
+
+	SetExecutor(query, db)
+	err = query.Bind(&testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(testResults) != 2 {
+		t.Fatal("wrong number of results:", len(testResults))
+	}
+	if id := testResults[0].Happy.ID; id != 0 {
+		t.Error("wrong ID:", id)
+	}
+	if id := testResults[0].Fun.ID; id != 10 {
+		t.Error("wrong ID:", id)
+	}
+
+	if id := testResults[1].Happy.ID; id != 0 {
+		t.Error("wrong ID:", id)
+	}
+	if id := testResults[1].Fun.ID; id != 11 {
+		t.Error("wrong ID:", id)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestBind_InnerJoinSelect(t *testing.T) {
+	t.Parallel()
+
+	testResults := []*struct {
+		Happy struct {
+			ID int
+		} `boil:",bind"`
+		Fun struct {
+			ID int
+		} `boil:",bind"`
+	}{}
+
+	query := &Query{
+		selectCols: []string{"fun.id", "h.id"},
+		from:       []string{"fun"},
+		joins:      []join{{kind: JoinInner, clause: "happy as h on fun.happy_id = h.id"}},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"fun.id", "h.id"})
+	ret.AddRow(driver.Value(int64(10)), driver.Value(int64(11)))
+	ret.AddRow(driver.Value(int64(12)), driver.Value(int64(13)))
+	mock.ExpectQuery(`SELECT "fun"."id" as "fun.id","h"."id" as "h.id" FROM "fun" INNER JOIN happy as h on fun.happy_id = h.id;`).WillReturnRows(ret)
+
+	SetExecutor(query, db)
+	err = query.Bind(&testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(testResults) != 2 {
+		t.Fatal("wrong number of results:", len(testResults))
+	}
+	if id := testResults[0].Happy.ID; id != 11 {
+		t.Error("wrong ID:", id)
+	}
+	if id := testResults[0].Fun.ID; id != 10 {
+		t.Error("wrong ID:", id)
+	}
+
+	if id := testResults[1].Happy.ID; id != 13 {
+		t.Error("wrong ID:", id)
+	}
+	if id := testResults[1].Fun.ID; id != 12 {
+		t.Error("wrong ID:", id)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
 }
 
 func TestBindPtrs_Easy(t *testing.T) {
@@ -60,6 +263,8 @@ func TestBindPtrs_Recursive(t *testing.T) {
 }
 
 func TestBindPtrs_RecursiveTags(t *testing.T) {
+	t.Parallel()
+
 	testStruct := struct {
 		Happy struct {
 			ID int `boil:"identifier"`

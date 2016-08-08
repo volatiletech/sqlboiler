@@ -53,7 +53,7 @@ func TestGetColumnMissing(t *testing.T) {
 
 	table := Table{
 		Columns: []Column{
-			Column{Name: "one"},
+			{Name: "one"},
 		},
 	}
 

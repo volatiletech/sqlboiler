@@ -197,22 +197,6 @@ func SelectNames(results interface{}) string {
 	return strings.Join(names, ", ")
 }
 
-// WhereClause returns the where clause for an sql statement
-// eg: "col1"=$1 AND "col2"=$2 AND "col3"=$3
-func WhereClause(columns []string) string {
-	names := make([]string, 0, len(columns))
-
-	for _, c := range columns {
-		names = append(names, c)
-	}
-
-	for i, c := range names {
-		names[i] = fmt.Sprintf(`"%s"=$%d`, c, i+1)
-	}
-
-	return strings.Join(names, " AND ")
-}
-
 // Update returns the column list for an update statement SET clause
 // eg: "col1"=$1, "col2"=$2, "col3"=$3
 func Update(columns map[string]interface{}) string {

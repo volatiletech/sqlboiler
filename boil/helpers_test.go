@@ -308,19 +308,3 @@ func TestSelectNames(t *testing.T) {
 		t.Error("Result was wrong, got:", result)
 	}
 }
-
-func TestWhereClause(t *testing.T) {
-	t.Parallel()
-
-	columns := []string{
-		"id",
-		"name",
-		"date",
-	}
-
-	result := WhereClause(columns)
-
-	if result != `"id"=$1 AND "name"=$2 AND "date"=$3` {
-		t.Error("Result was wrong, got:", result)
-	}
-}

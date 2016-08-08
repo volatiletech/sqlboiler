@@ -73,6 +73,14 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	where, args := whereClause(q)
 	buf.WriteString(where)
 
+	if len(q.groupBy) != 0 {
+		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ","))
+	}
+
+	if len(q.having) != 0 {
+		fmt.Fprintf(buf, " HAVING %s", strings.Join(q.having, ","))
+	}
+
 	if len(q.orderBy) != 0 {
 		buf.WriteString(" ORDER BY ")
 		buf.WriteString(strings.Join(q.orderBy, `,`))

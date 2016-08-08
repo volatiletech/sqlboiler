@@ -1,0 +1,1 @@
+SELECT * FROM "a" GROUP BY id,name HAVING id <> 1,length(name, 'utf8') > 5;

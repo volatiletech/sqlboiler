@@ -11,16 +11,97 @@ func TestBind(t *testing.T) {
 	t.Skip("Not implemented")
 }
 
-func TestBindP(t *testing.T) {
-	t.Skip("Not implemented")
+func TestBindPtrs_Easy(t *testing.T) {
+	t.Parallel()
+
+	testStruct := struct {
+		ID   int `boil:"identifier"`
+		Date time.Time
+	}{}
+
+	cols := []string{"identifier", "date"}
+	ptrs, err := bindPtrs(&testStruct, cols...)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if ptrs[0].(*int) != &testStruct.ID {
+		t.Error("id is the wrong pointer")
+	}
+	if ptrs[1].(*time.Time) != &testStruct.Date {
+		t.Error("id is the wrong pointer")
+	}
 }
 
-func TestBindOne(t *testing.T) {
-	t.Skip("Not implemented")
+func TestBindPtrs_Recursive(t *testing.T) {
+	t.Parallel()
+
+	testStruct := struct {
+		Happy struct {
+			ID int `boil:"identifier"`
+		}
+		Fun struct {
+			ID int
+		} `boil:",bind"`
+	}{}
+
+	cols := []string{"id", "fun.id"}
+	ptrs, err := bindPtrs(&testStruct, cols...)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if ptrs[0].(*int) != &testStruct.Fun.ID {
+		t.Error("id is the wrong pointer")
+	}
+	if ptrs[1].(*int) != &testStruct.Fun.ID {
+		t.Error("id is the wrong pointer")
+	}
 }
 
-func TestBindAll(t *testing.T) {
-	t.Skip("Not implemented")
+func TestBindPtrs_RecursiveTags(t *testing.T) {
+	testStruct := struct {
+		Happy struct {
+			ID int `boil:"identifier"`
+		} `boil:",bind"`
+		Fun struct {
+			ID int `boil:"identification"`
+		} `boil:",bind"`
+	}{}
+
+	cols := []string{"happy.identifier", "fun.identification"}
+	ptrs, err := bindPtrs(&testStruct, cols...)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if ptrs[0].(*int) != &testStruct.Happy.ID {
+		t.Error("id is the wrong pointer")
+	}
+	if ptrs[1].(*int) != &testStruct.Fun.ID {
+		t.Error("id is the wrong pointer")
+	}
+}
+
+func TestBindPtrs_Ignore(t *testing.T) {
+	t.Parallel()
+
+	testStruct := struct {
+		ID    int `boil:"-"`
+		Happy struct {
+			ID int
+		} `boil:",bind"`
+	}{}
+
+	cols := []string{"id"}
+	ptrs, err := bindPtrs(&testStruct, cols...)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if ptrs[0].(*int) != &testStruct.Happy.ID {
+		t.Error("id is the wrong pointer")
+	}
 }
 
 func TestGetStructValues(t *testing.T) {

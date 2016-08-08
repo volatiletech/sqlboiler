@@ -60,8 +60,17 @@ func ExecStatement(q *Query) (sql.Result, error) {
 	return q.executor.Exec(qs, args...)
 }
 
-// ExecQuery executes the query for the All finisher and returns multiple rows
-func ExecQuery(q *Query) (*sql.Rows, error) {
+// ExecQuery executes the query for the One finisher and returns a single row
+func ExecQuery(q *Query) *sql.Row {
+	qs, args := buildQuery(q)
+	if DebugMode {
+		fmt.Fprintln(DebugWriter, qs)
+	}
+	return q.executor.QueryRow(qs, args...)
+}
+
+// ExecQueryAll executes the query for the All finisher and returns multiple rows
+func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)

@@ -245,7 +245,7 @@ func GenerateParamFlags(colCount int, startAt int, groupAt int) string {
 
 // WhereClause returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func WhereClause(cols []string, start int) string {
+func WhereClause(start int, cols ...string) string {
 	if start == 0 {
 		panic("0 is not a valid start number for whereClause")
 	}
@@ -256,6 +256,32 @@ func WhereClause(cols []string, start int) string {
 	}
 
 	return strings.Join(ret, " AND ")
+}
+
+// WhereMultiple is a version of Where that binds multiple checks together
+// with an or statement.
+// WhereMultiple(1, 2, "a", "b") = "(a=$1 and b=$2) or (a=$3 and b=$4)"
+func WhereMultiple(start, count int, cols ...string) string {
+	if start == 0 {
+		panic("0 is not a valid start number for whereMultiple")
+	}
+
+	buf := &bytes.Buffer{}
+	for i := 0; i < count; i++ {
+		if i != 0 {
+			buf.WriteString(" OR ")
+		}
+		buf.WriteByte('(')
+		for j, key := range cols {
+			if j != 0 {
+				buf.WriteString(" AND ")
+			}
+			fmt.Fprintf(buf, `"%s"=$%d`, key, start+i*len(cols)+j)
+		}
+		buf.WriteByte(')')
+	}
+
+	return buf.String()
 }
 
 // InClause generates SQL that could go inside an "IN ()" statement

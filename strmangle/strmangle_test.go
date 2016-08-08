@@ -315,14 +315,14 @@ func TestWhereClause(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		r := WhereClause(test.Cols, test.Start)
+		r := WhereClause(test.Start, test.Cols...)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}
 	}
 }
 
-func TestWherePrimaryKeyPanic(t *testing.T) {
+func TestWhereClausePanic(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
@@ -331,7 +331,41 @@ func TestWherePrimaryKeyPanic(t *testing.T) {
 		}
 	}()
 
-	WhereClause(nil, 0)
+	WhereClause(0)
+}
+
+func TestWhereMultiple(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Cols   []string
+		Start  int
+		Count  int
+		Should string
+	}{
+		{Cols: []string{"col1", "col2"}, Start: 2, Count: 2, Should: `("col1"=$2 AND "col2"=$3) OR ("col1"=$4 AND "col2"=$5)`},
+		{Cols: []string{"col1", "col2"}, Start: 4, Count: 2, Should: `("col1"=$4 AND "col2"=$5) OR ("col1"=$6 AND "col2"=$7)`},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Count: 1, Should: `("col1"=$4 AND "col2"=$5 AND "col3"=$6)`},
+	}
+
+	for i, test := range tests {
+		r := WhereMultiple(test.Start, test.Count, test.Cols...)
+		if r != test.Should {
+			t.Errorf("(%d) want: %s, got: %s", i, test.Should, r)
+		}
+	}
+}
+
+func TestWhereMultiplePanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Error("did not panic")
+		}
+	}()
+
+	WhereMultiple(0, 0)
 }
 
 func TestInClause(t *testing.T) {

@@ -180,7 +180,7 @@ func whereClause(q *Query) (string, []interface{}) {
 		if i >= len(q.where)-1 {
 			continue
 		}
-		if q.where[i].orSeperator {
+		if q.where[i].orSeparator {
 			buf.WriteString(" OR ")
 		} else {
 			buf.WriteString(" AND ")

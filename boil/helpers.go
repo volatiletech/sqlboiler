@@ -224,7 +224,7 @@ func Update(columns map[string]interface{}) string {
 	return strings.Join(names, ", ")
 }
 
-// SetParamNames takes a slice of columns and returns a comma seperated
+// SetParamNames takes a slice of columns and returns a comma separated
 // list of parameter names for a template statement SET clause.
 // eg: "col1"=$1, "col2"=$2, "col3"=$3
 func SetParamNames(columns []string) string {

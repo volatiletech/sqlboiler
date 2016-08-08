@@ -12,8 +12,8 @@ func TestSetLastWhereAsOr(t *testing.T) {
 
 	AppendWhere(q, "")
 
-	if q.where[0].orSeperator {
-		t.Errorf("Do not want or seperator")
+	if q.where[0].orSeparator {
+		t.Errorf("Do not want or separator")
 	}
 
 	SetLastWhereAsOr(q)
@@ -21,8 +21,8 @@ func TestSetLastWhereAsOr(t *testing.T) {
 	if len(q.where) != 1 {
 		t.Errorf("Want len 1")
 	}
-	if !q.where[0].orSeperator {
-		t.Errorf("Want or seperator")
+	if !q.where[0].orSeparator {
+		t.Errorf("Want or separator")
 	}
 
 	AppendWhere(q, "")
@@ -31,10 +31,10 @@ func TestSetLastWhereAsOr(t *testing.T) {
 	if len(q.where) != 2 {
 		t.Errorf("Want len 2")
 	}
-	if q.where[0].orSeperator != true {
+	if q.where[0].orSeparator != true {
 		t.Errorf("Expected true")
 	}
-	if q.where[1].orSeperator != true {
+	if q.where[1].orSeparator != true {
 		t.Errorf("Expected true")
 	}
 }

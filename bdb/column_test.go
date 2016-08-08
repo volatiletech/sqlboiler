@@ -9,9 +9,9 @@ func TestColumnNames(t *testing.T) {
 	t.Parallel()
 
 	cols := []Column{
-		Column{Name: "one"},
-		Column{Name: "two"},
-		Column{Name: "three"},
+		{Name: "one"},
+		{Name: "two"},
+		{Name: "three"},
 	}
 
 	out := strings.Join(ColumnNames(cols), " ")
@@ -22,8 +22,8 @@ func TestColumnNames(t *testing.T) {
 
 func TestColumnDBTypes(t *testing.T) {
 	cols := []Column{
-		Column{Name: "test_one", DBType: "integer"},
-		Column{Name: "test_two", DBType: "interval"},
+		{Name: "test_one", DBType: "integer"},
+		{Name: "test_two", DBType: "interval"},
 	}
 
 	res := ColumnDBTypes(cols)

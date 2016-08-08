@@ -39,6 +39,11 @@ func TestBuildQuery(t *testing.T) {
 			from:  []string{"happiness as a"},
 			joins: []join{{clause: "rainbows r on a.id = r.happy_id"}},
 		}, nil},
+		{&Query{
+			from:    []string{"a"},
+			groupBy: []string{"id", "name"},
+			having:  []string{"id <> 1", "length(name, 'utf8') > 5"},
+		}, nil},
 	}
 
 	for i, test := range tests {

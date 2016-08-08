@@ -164,7 +164,7 @@ func TestBind_InnerJoinSelect(t *testing.T) {
 	testResults := []*struct {
 		Happy struct {
 			ID int
-		} `boil:",bind"`
+		} `boil:"h,bind"`
 		Fun struct {
 			ID int
 		} `boil:",bind"`

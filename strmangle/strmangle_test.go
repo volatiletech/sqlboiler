@@ -334,6 +334,29 @@ func TestWherePrimaryKeyPanic(t *testing.T) {
 	WhereClause(nil, 0)
 }
 
+func TestInClause(t *testing.T) {
+	t.Parallel()
+
+	if str := InClause(1, 2); str != `$1,$2` {
+		t.Error("wrong output:", str)
+	}
+	if str := InClause(2, 2); str != `$2,$3` {
+		t.Error("wrong output:", str)
+	}
+}
+
+func TestInClausePanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if recover() == nil {
+			t.Error("did not panic")
+		}
+	}()
+
+	InClause(0, 0)
+}
+
 func TestSubstring(t *testing.T) {
 	t.Parallel()
 

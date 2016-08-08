@@ -258,6 +258,24 @@ func WhereClause(cols []string, start int) string {
 	return strings.Join(ret, " AND ")
 }
 
+// InClause generates SQL that could go inside an "IN ()" statement
+// $1, $2, $3
+func InClause(start, count int) string {
+	if start == 0 {
+		panic("0 is not a valid start number for inClause")
+	}
+
+	buf := &bytes.Buffer{}
+	for i := 0; i < count; i++ {
+		if i > 0 {
+			buf.WriteByte(',')
+		}
+		fmt.Fprintf(buf, "$%d", i+start)
+	}
+
+	return buf.String()
+}
+
 // DriverUsesLastInsertID returns whether the database driver supports the
 // sql.Result interface.
 func DriverUsesLastInsertID(driverName string) bool {

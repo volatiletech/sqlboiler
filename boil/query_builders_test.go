@@ -44,6 +44,22 @@ func TestBuildQuery(t *testing.T) {
 			groupBy: []string{"id", "name"},
 			having:  []string{"id <> 1", "length(name, 'utf8') > 5"},
 		}, nil},
+		{&Query{
+			delete: true,
+			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
+			where: []where{
+				where{clause: "id=$1 and $thing=$2", orSeparator: true, args: []interface{}{}},
+				where{clause: "stuff=$3", args: []interface{}{}},
+			},
+		}, nil},
+		{&Query{
+			delete: true,
+			from:   []string{`"thing" "happy"`},
+			where: []where{
+				where{clause: "id=$1 and $thing=$2", orSeparator: false, args: []interface{}{}},
+				where{clause: "stuff=$3", args: []interface{}{}},
+			},
+		}, nil},
 	}
 
 	for i, test := range tests {

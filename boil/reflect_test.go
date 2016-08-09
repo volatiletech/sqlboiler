@@ -184,7 +184,7 @@ func TestBind_InnerJoinSelect(t *testing.T) {
 	ret := sqlmock.NewRows([]string{"fun.id", "h.id"})
 	ret.AddRow(driver.Value(int64(10)), driver.Value(int64(11)))
 	ret.AddRow(driver.Value(int64(12)), driver.Value(int64(13)))
-	mock.ExpectQuery(`SELECT "fun"."id" as "fun.id","h"."id" as "h.id" FROM "fun" INNER JOIN happy as h on fun.happy_id = h.id;`).WillReturnRows(ret)
+	mock.ExpectQuery(`SELECT "fun"."id" as "fun.id", "h"."id" as "h.id" FROM "fun" INNER JOIN happy as h on fun.happy_id = h.id;`).WillReturnRows(ret)
 
 	SetExecutor(query, db)
 	err = query.Bind(&testResults)

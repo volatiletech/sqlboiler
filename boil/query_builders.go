@@ -47,21 +47,21 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	if hasSelectCols && hasJoins && !hasModFunc {
 		selectColsWithAs := writeAsStatements(q)
 		// Don't identQuoteSlice - writeAsStatements does this
-		buf.WriteString(strings.Join(selectColsWithAs, `,`))
+		buf.WriteString(strings.Join(selectColsWithAs, ", "))
 	} else if hasSelectCols {
-		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), `,`))
+		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), ", "))
 	} else if hasJoins {
 		selectColsWithStars := writeStars(q)
-		buf.WriteString(strings.Join(selectColsWithStars, `,`))
+		buf.WriteString(strings.Join(selectColsWithStars, ", "))
 	} else {
 		buf.WriteByte('*')
 	}
 
 	if hasModFunc {
-		buf.WriteString(")")
+		buf.WriteByte(')')
 	}
 
-	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), `,`))
+	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
 
 	for _, j := range q.joins {
 		if j.kind != JoinInner {
@@ -74,16 +74,16 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString(where)
 
 	if len(q.groupBy) != 0 {
-		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ","))
+		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
 	}
 
 	if len(q.having) != 0 {
-		fmt.Fprintf(buf, " HAVING %s", strings.Join(q.having, ","))
+		fmt.Fprintf(buf, " HAVING %s", strings.Join(q.having, ", "))
 	}
 
 	if len(q.orderBy) != 0 {
 		buf.WriteString(" ORDER BY ")
-		buf.WriteString(strings.Join(q.orderBy, `,`))
+		buf.WriteString(strings.Join(q.orderBy, ", "))
 	}
 
 	if q.limit != 0 {
@@ -148,7 +148,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
 
 	buf.WriteString("DELETE FROM ")
-	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ","))
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
 
 	where, args := whereClause(q)
 	buf.WriteString(where)

@@ -1,0 +1,1 @@
+DELETE FROM "thing" "happy" WHERE id=$1 and $thing=$2 AND stuff=$3;

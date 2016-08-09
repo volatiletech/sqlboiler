@@ -104,7 +104,7 @@ func (o *{{$tableNameSingular}}) generateUpsertQuery(update bool, columns upsert
   query = fmt.Sprintf(
     `INSERT INTO {{.Table.Name}} (%s) VALUES (%s) ON CONFLICT`,
     strings.Join(columns.whitelist, `, `),
-    boil.GenerateParamFlags(len(columns.whitelist), 1, 1),
+    strmangle.Placeholders(len(columns.whitelist), 1, 1),
   )
 
   if !update {

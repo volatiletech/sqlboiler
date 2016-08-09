@@ -207,36 +207,26 @@ func PrefixStringSlice(str string, strs []string) []string {
 	return ret
 }
 
-// GenerateParamFlags generates the SQL statement parameter flags
-// For example, $1,$2,$3 etc. It will start counting at startAt.
-//
-// If GroupAt is greater than 1, instead of returning $1,$2,$3
-// it will return wrapped groups of param flags, for example:
-//
-//	GroupAt(1): $1,$2,$3,$4,$5,$6
-//	GroupAt(2): ($1,$2),($3,$4),($5,$6)
-//	GroupAt(3): ($1,$2,$3),($4,$5,$6),($7,$8,$9)
-func GenerateParamFlags(colCount int, startAt int, groupAt int) string {
+// Placeholders generates the SQL statement placeholders for in queries.
+// For example, ($1,$2,$3),($4,$5,$6) etc.
+// It will start counting placeholders at "start".
+func Placeholders(count int, start int, group int) string {
 	var buf bytes.Buffer
 
-	if groupAt > 1 {
+	if group > 1 {
 		buf.WriteByte('(')
 	}
-
-	groupCounter := 0
-	for i := startAt; i < colCount+startAt; i++ {
-		groupCounter++
-		buf.WriteString(fmt.Sprintf("$%d", i))
-		if i+1 != colCount+startAt {
-			if groupAt > 1 && groupCounter == groupAt {
-				buf.WriteString("),(")
-				groupCounter = 0
+	for i := 0; i < count; i++ {
+		if i != 0 {
+			if group > 1 && i%group == 0 {
+				buf.WriteString(`),(`)
 			} else {
 				buf.WriteByte(',')
 			}
 		}
+		buf.WriteString(fmt.Sprintf("$%d", start+i))
 	}
-	if groupAt > 1 {
+	if group > 1 {
 		buf.WriteByte(')')
 	}
 

@@ -38,7 +38,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     return err
   }
 
-  ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), boil.GenerateParamFlags(len(wl), 1, 1))
+  ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
 
   {{if driverUsesLastInsertID .DriverName}}
   if len(returnColumns) != 0 {

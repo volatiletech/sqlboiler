@@ -80,34 +80,34 @@ func TestDriverUsesLastInsertID(t *testing.T) {
 	}
 }
 
-func TestGenerateParamFlags(t *testing.T) {
+func TestPlaceholders(t *testing.T) {
 	t.Parallel()
 
-	x := GenerateParamFlags(1, 2, 1)
+	x := Placeholders(1, 2, 1)
 	want := "$2"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = GenerateParamFlags(5, 1, 1)
+	x = Placeholders(5, 1, 1)
 	want = "$1,$2,$3,$4,$5"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = GenerateParamFlags(6, 1, 2)
+	x = Placeholders(6, 1, 2)
 	want = "($1,$2),($3,$4),($5,$6)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = GenerateParamFlags(9, 1, 3)
+	x = Placeholders(9, 1, 3)
 	want = "($1,$2,$3),($4,$5,$6),($7,$8,$9)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = GenerateParamFlags(7, 1, 3)
+	x = Placeholders(7, 1, 3)
 	want = "($1,$2,$3),($4,$5,$6),($7)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)

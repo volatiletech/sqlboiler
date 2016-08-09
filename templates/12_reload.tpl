@@ -73,7 +73,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
   sql := fmt.Sprintf(
     `select {{.Table.Name}}.* from {{.Table.Name}} where (%s) in (%s)`,
     strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
-    strmangle.GenerateParamFlags(len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
+    strmangle.Placeholders(len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 
   q := boil.SQL(sql, args...)

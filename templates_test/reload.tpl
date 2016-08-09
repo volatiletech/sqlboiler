@@ -46,7 +46,7 @@ func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
 
   o1 := make({{$tableNameSingular}}Slice, 3)
   o2 := make({{$tableNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o1, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = boil.RandomizeSlice(&o1, {{$varNameSingular}}DBTypes, false); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
@@ -66,7 +66,7 @@ func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
   }
 
   // Randomize the struct values again, except for the primary key values, so we can call update.
-  err = boil.RandomizeSlice(&o1, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...)
+  err = boil.RandomizeSlice(&o1, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...)
   if err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice excluding primary keys: %s", err)
   }

@@ -9,9 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nullbio/sqlboiler/strmangle"
+	null "gopkg.in/nullbio/null.v4"
+
 	"github.com/satori/go.uuid"
-	"gopkg.in/nullbio/null.v4"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 var (

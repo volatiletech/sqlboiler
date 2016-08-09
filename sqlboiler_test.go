@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/nullbio/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/bdb"
 )
 
 var state *State

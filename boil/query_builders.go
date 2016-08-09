@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/nullbio/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 var (

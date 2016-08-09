@@ -7,7 +7,7 @@ import (
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
-	"github.com/nullbio/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/bdb"
 )
 
 // PostgresDriver holds the database connection string and a handle

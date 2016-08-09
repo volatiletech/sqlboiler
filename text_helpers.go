@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/nullbio/sqlboiler/bdb"
-	"github.com/nullbio/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 // RelationshipToOneTexts contains text that will be used by templates.

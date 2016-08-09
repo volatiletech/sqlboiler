@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/nullbio/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/bdb"
 )
 
 // imports defines the optional standard imports and
@@ -148,9 +148,9 @@ var defaultTemplateImports = imports{
 		`"strings"`,
 	},
 	thirdParty: importList{
-		`"github.com/nullbio/sqlboiler/boil"`,
-		`"github.com/nullbio/sqlboiler/boil/qm"`,
-		`"github.com/nullbio/sqlboiler/strmangle"`,
+		`"github.com/vattle/sqlboiler/boil"`,
+		`"github.com/vattle/sqlboiler/boil/qm"`,
+		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }
 
@@ -158,8 +158,8 @@ var defaultSingletonTemplateImports = map[string]imports{
 	"boil_helpers": {
 		standard: importList{},
 		thirdParty: importList{
-			`"github.com/nullbio/sqlboiler/boil"`,
-			`"github.com/nullbio/sqlboiler/boil/qm"`,
+			`"github.com/vattle/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/boil/qm"`,
 		},
 	},
 }
@@ -172,9 +172,9 @@ var defaultTestTemplateImports = imports{
 	},
 	thirdParty: importList{
 		`"gopkg.in/nullbio/null.v4"`,
-		`"github.com/nullbio/sqlboiler/boil"`,
-		`"github.com/nullbio/sqlboiler/boil/qm"`,
-		`"github.com/nullbio/sqlboiler/strmangle"`,
+		`"github.com/vattle/sqlboiler/boil"`,
+		`"github.com/vattle/sqlboiler/boil/qm"`,
+		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }
 
@@ -199,7 +199,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"bytes"`,
 		},
 		thirdParty: importList{
-			`"github.com/nullbio/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/boil"`,
 		},
 	},
 }
@@ -220,8 +220,8 @@ var defaultTestMainImports = map[string]imports{
 			`"math/rand"`,
 		},
 		thirdParty: importList{
-			`"github.com/nullbio/sqlboiler/boil"`,
-			`"github.com/nullbio/sqlboiler/bdb/drivers"`,
+			`"github.com/vattle/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/bdb/drivers"`,
 			`_ "github.com/lib/pq"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/kat-co/vala"`,

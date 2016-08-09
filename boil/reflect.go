@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/nullbio/sqlboiler/strmangle"
 	"github.com/pkg/errors"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 var (

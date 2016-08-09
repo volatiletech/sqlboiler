@@ -1,9 +1,9 @@
 # SQLBoiler
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/nullbio/sqlboiler/blob/master/LICENSE.md)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/vattle/sqlboiler/blob/master/LICENSE.md)
 [![GoDoc](https://godoc.org/github.com/pobri19/sqlboiler?status.svg)](https://godoc.org/github.com/pobri19/sqlboiler)
-[![CircleCI](https://circleci.com/gh/nullbio/sqlboiler.svg?style=shield)](https://circleci.com/gh/nullbio/sqlboiler)
-[![Go Report Card](https://goreportcard.com/badge/kubernetes/helm)](http://goreportcard.com/report/nullbio/sqlboiler)
+[![CircleCI](https://circleci.com/gh/vattle/sqlboiler.svg?style=shield)](https://circleci.com/gh/vattle/sqlboiler)
+[![Go Report Card](https://goreportcard.com/badge/kubernetes/helm)](http://goreportcard.com/report/vattle/sqlboiler)
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 

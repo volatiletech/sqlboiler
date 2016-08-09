@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/nullbio/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 // SetComplement subtracts the elements in b from a

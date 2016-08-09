@@ -50,7 +50,7 @@ func main() {
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates boilerplate structs and statements",
 		Long: "SQL Boiler generates boilerplate structs and statements from template files.\n" +
-			`Complete documentation is available at http://github.com/nullbio/sqlboiler`,
+			`Complete documentation is available at http://github.com/vattle/sqlboiler`,
 		Example:       `sqlboiler -o models -p models postgres`,
 		PreRunE:       preRun,
 		RunE:          run,

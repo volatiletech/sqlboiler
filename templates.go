@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/nullbio/sqlboiler/bdb"
-	"github.com/nullbio/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 // templateData for sqlboiler templates

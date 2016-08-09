@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/nullbio/sqlboiler/bdb"
-	"github.com/nullbio/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 type fakeDB int

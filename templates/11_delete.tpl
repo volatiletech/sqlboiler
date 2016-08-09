@@ -30,7 +30,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
   mods = append(mods,
     qm.From("{{.Table.Name}}"),
-    qm.Where(`{{whereClause 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
+    qm.Where(`{{whereClause 1 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
   )
 
   query := NewQuery(exec, mods...)

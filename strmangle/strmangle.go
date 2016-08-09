@@ -243,25 +243,10 @@ func GenerateParamFlags(colCount int, startAt int, groupAt int) string {
 	return buf.String()
 }
 
-// WhereClause returns the where clause using start as the $ flag index
-// For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func WhereClause(start int, cols []string) string {
-	if start == 0 {
-		panic("0 is not a valid start number for whereClause")
-	}
-
-	ret := make([]string, len(cols))
-	for i, c := range cols {
-		ret[i] = fmt.Sprintf(`"%s"=$%d`, c, start+i)
-	}
-
-	return strings.Join(ret, " AND ")
-}
-
-// WhereMultiple is a version of Where that binds multiple checks together
+// WhereClause is a version of Where that binds multiple checks together
 // with an or statement.
 // WhereMultiple(1, 2, "a", "b") = "(a=$1 and b=$2) or (a=$3 and b=$4)"
-func WhereMultiple(start, count int, cols []string) string {
+func WhereClause(start, count int, cols []string) string {
 	if start == 0 {
 		panic("0 is not a valid start number for whereMultiple")
 	}

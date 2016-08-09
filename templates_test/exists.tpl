@@ -24,7 +24,7 @@ func Test{{$tableNamePlural}}Exists(t *testing.T) {
     t.Errorf("Expected {{$tableNameSingular}}ExistsG to return true, but got false.")
   }
 
-  whereClause := strmangle.WhereClause(1, {{$varNameSingular}}PrimaryKeyColumns)
+  whereClause := strmangle.WhereClause(1, 1, {{$varNameSingular}}PrimaryKeyColumns)
   e, err = {{$tableNamePlural}}G(qm.Where(whereClause, boil.GetStructValues(o, {{$varNameSingular}}PrimaryKeyColumns...)...)).Exists()
   if err != nil {
     t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)

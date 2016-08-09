@@ -307,39 +307,6 @@ func TestWhereClause(t *testing.T) {
 	tests := []struct {
 		Cols   []string
 		Start  int
-		Should string
-	}{
-		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
-		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5`},
-		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5 AND "col3"=$6`},
-	}
-
-	for i, test := range tests {
-		r := WhereClause(test.Start, test.Cols)
-		if r != test.Should {
-			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
-		}
-	}
-}
-
-func TestWhereClausePanic(t *testing.T) {
-	t.Parallel()
-
-	defer func() {
-		if recover() == nil {
-			t.Error("did not panic")
-		}
-	}()
-
-	WhereClause(0, nil)
-}
-
-func TestWhereMultiple(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		Cols   []string
-		Start  int
 		Count  int
 		Should string
 	}{
@@ -349,7 +316,7 @@ func TestWhereMultiple(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		r := WhereMultiple(test.Start, test.Count, test.Cols)
+		r := WhereClause(test.Start, test.Count, test.Cols)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s", i, test.Should, r)
 		}
@@ -365,7 +332,7 @@ func TestWhereMultiplePanic(t *testing.T) {
 		}
 	}()
 
-	WhereMultiple(0, 0, nil)
+	WhereClause(0, 0, nil)
 }
 
 func TestInClause(t *testing.T) {

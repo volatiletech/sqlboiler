@@ -44,7 +44,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   wl := o.generateUpdateColumns(whitelist...)
 
   if len(wl) != 0 {
-    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, boil.SetParamNames(wl), boil.WherePrimaryKey(len(wl)+1, {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}))
+    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
     values = boil.GetStructValues(o, wl...)
     values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
     _, err = exec.Exec(query, values...)

@@ -30,7 +30,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
   mods = append(mods,
     qm.From("{{.Table.Name}}"),
-    qm.Where(`{{whereClause 1 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
+    qm.Where(`{{whereClause 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
   )
 
   query := NewQuery(exec, mods...)
@@ -97,24 +97,28 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
   }
 
-  var mods []qm.QueryMod
+  if len(o) == 0 {
+    return nil
+  }
 
   args := o.inPrimaryKeyArgs()
-  in := boil.WherePrimaryKeyIn(len(o), {{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}})
 
-  mods = append(mods,
-    qm.From("{{.Table.Name}}"),
-    qm.Where(in, args...),
+  sql := fmt.Sprintf(
+    `DELETE FROM {{.Table.Name}} WHERE (%s) IN (%s)`,
+    strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
+    strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 
-  query := NewQuery(exec, mods...)
-  boil.SetDelete(query)
+  q := boil.SQL(sql, args...)
+  boil.SetExecutor(q, exec)
 
-  _, err := boil.ExecQuery(query)
+  _, err := boil.ExecQuery(q)
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice: %s", err)
   }
+
   if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
 		fmt.Fprintln(boil.DebugWriter, args)
   }
 

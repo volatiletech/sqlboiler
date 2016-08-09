@@ -29,7 +29,7 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
     sel = strings.Join(strmangle.IdentQuoteSlice(selectCols), ",")
   }
   sql := fmt.Sprintf(
-    `select %s from "{{.Table.Name}}" where {{whereClause 1 1 .Table.PKey.Columns}}`, sel,
+    `select %s from "{{.Table.Name}}" where {{whereClause 1 .Table.PKey.Columns}}`, sel,
   )
   q := boil.SQL(sql, {{$pkNames | join ", "}})
   boil.SetExecutor(q, exec)

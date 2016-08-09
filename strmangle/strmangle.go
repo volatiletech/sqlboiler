@@ -233,48 +233,32 @@ func Placeholders(count int, start int, group int) string {
 	return buf.String()
 }
 
-// WhereClause is a version of Where that binds multiple checks together
-// with an or statement.
-// WhereMultiple(1, 2, "a", "b") = "(a=$1 and b=$2) or (a=$3 and b=$4)"
-func WhereClause(start, count int, cols []string) string {
-	if start == 0 {
-		panic("0 is not a valid start number for whereMultiple")
+// SetParamNames takes a slice of columns and returns a comma separated
+// list of parameter names for a template statement SET clause.
+// eg: "col1"=$1, "col2"=$2, "col3"=$3
+func SetParamNames(columns []string) string {
+	names := make([]string, 0, len(columns))
+	counter := 0
+	for _, c := range columns {
+		counter++
+		names = append(names, fmt.Sprintf(`"%s"=$%d`, c, counter))
 	}
-
-	buf := &bytes.Buffer{}
-	for i := 0; i < count; i++ {
-		if i != 0 {
-			buf.WriteString(" OR ")
-		}
-		buf.WriteByte('(')
-		for j, key := range cols {
-			if j != 0 {
-				buf.WriteString(" AND ")
-			}
-			fmt.Fprintf(buf, `"%s"=$%d`, key, start+i*len(cols)+j)
-		}
-		buf.WriteByte(')')
-	}
-
-	return buf.String()
+	return strings.Join(names, ", ")
 }
 
-// InClause generates SQL that could go inside an "IN ()" statement
-// $1, $2, $3
-func InClause(start, count int) string {
+// WhereClause returns the where clause using start as the $ flag index
+// For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
+func WhereClause(start int, cols []string) string {
 	if start == 0 {
-		panic("0 is not a valid start number for inClause")
+		panic("0 is not a valid start number for whereClause")
 	}
 
-	buf := &bytes.Buffer{}
-	for i := 0; i < count; i++ {
-		if i > 0 {
-			buf.WriteByte(',')
-		}
-		fmt.Fprintf(buf, "$%d", i+start)
+	ret := make([]string, len(cols))
+	for i, c := range cols {
+		ret[i] = fmt.Sprintf(`"%s"=$%d`, c, start+i)
 	}
 
-	return buf.String()
+	return strings.Join(ret, " AND ")
 }
 
 // DriverUsesLastInsertID returns whether the database driver supports the

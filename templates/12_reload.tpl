@@ -59,19 +59,19 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for reload all")
+  }
+
   if len(*o) == 0 {
     return nil
   }
 
   {{$varNamePlural}} := {{$tableNameSingular}}Slice{}
-  var args []interface{}
-
-  for i := 0; i < len(*o); i++ {
-    args = append(args, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "(*o)[i]." | join ", "}})
-  }
+  args := o.inPrimaryKeyArgs()
 
   sql := fmt.Sprintf(
-    `select {{.Table.Name}}.* from {{.Table.Name}} where (%s) in (%s)`,
+    `SELECT {{.Table.Name}}.* FROM {{.Table.Name}} WHERE (%s) IN (%s)`,
     strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
     strmangle.Placeholders(len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )

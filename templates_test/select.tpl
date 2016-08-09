@@ -29,7 +29,7 @@ func Test{{$tableNamePlural}}Select(t *testing.T) {
     t.Errorf("Unable to insert item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
-  err = {{$tableNamePlural}}G(qm.Select({{$varNameSingular}}AutoIncrementColumns...), qm.Where(`{{whereClause 1 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "item." | join ", "}})).Bind(x)
+  err = {{$tableNamePlural}}G(qm.Select({{$varNameSingular}}AutoIncrementColumns...), qm.Where(`{{whereClause 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "item." | join ", "}})).Bind(x)
   if err != nil {
     t.Errorf("Unable to select insert results with bind: %s", err)
   }

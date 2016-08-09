@@ -307,55 +307,19 @@ func TestWhereClause(t *testing.T) {
 	tests := []struct {
 		Cols   []string
 		Start  int
-		Count  int
 		Should string
 	}{
-		{Cols: []string{"col1", "col2"}, Start: 2, Count: 2, Should: `("col1"=$2 AND "col2"=$3) OR ("col1"=$4 AND "col2"=$5)`},
-		{Cols: []string{"col1", "col2"}, Start: 4, Count: 2, Should: `("col1"=$4 AND "col2"=$5) OR ("col1"=$6 AND "col2"=$7)`},
-		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Count: 1, Should: `("col1"=$4 AND "col2"=$5 AND "col3"=$6)`},
+		{Cols: []string{"col1", "col2"}, Start: 2, Should: `("col1"=$2 AND "col2"=$3 AND "col1"=$4 AND "col2"=$5)`},
+		{Cols: []string{"col1", "col2"}, Start: 4, Should: `("col1"=$4 AND "col2"=$5 AND "col1"=$6 AND "col2"=$7)`},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `("col1"=$4 AND "col2"=$5 AND "col3"=$6)`},
 	}
 
 	for i, test := range tests {
-		r := WhereClause(test.Start, test.Count, test.Cols)
+		r := WhereClause(test.Start, test.Cols)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s", i, test.Should, r)
 		}
 	}
-}
-
-func TestWhereMultiplePanic(t *testing.T) {
-	t.Parallel()
-
-	defer func() {
-		if recover() == nil {
-			t.Error("did not panic")
-		}
-	}()
-
-	WhereClause(0, 0, nil)
-}
-
-func TestInClause(t *testing.T) {
-	t.Parallel()
-
-	if str := InClause(1, 2); str != `$1,$2` {
-		t.Error("wrong output:", str)
-	}
-	if str := InClause(2, 2); str != `$2,$3` {
-		t.Error("wrong output:", str)
-	}
-}
-
-func TestInClausePanic(t *testing.T) {
-	t.Parallel()
-
-	defer func() {
-		if recover() == nil {
-			t.Error("did not panic")
-		}
-	}()
-
-	InClause(0, 0)
 }
 
 func TestSubstring(t *testing.T) {

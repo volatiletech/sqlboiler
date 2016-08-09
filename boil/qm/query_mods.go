@@ -19,20 +19,6 @@ func SQL(sql string, args ...interface{}) QueryMod {
 	}
 }
 
-// Or surrounds where clauses to join them with OR as opposed to AND
-func Or(whereMods ...QueryMod) QueryMod {
-	return func(q *boil.Query) {
-		if len(whereMods) < 2 {
-			panic("Or requires at least two arguments")
-		}
-
-		for _, w := range whereMods {
-			w(q)
-			boil.SetLastWhereAsOr(q)
-		}
-	}
-}
-
 // Limit the number of returned rows
 func Limit(limit int) QueryMod {
 	return func(q *boil.Query) {

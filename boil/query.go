@@ -35,9 +35,8 @@ type Query struct {
 }
 
 type where struct {
-	clause      string
-	orSeparator bool
-	args        []interface{}
+	clause string
+	args   []interface{}
 }
 
 type plainSQL struct {
@@ -178,11 +177,6 @@ func AppendWhere(q *Query, clause string, args ...interface{}) {
 // SetWhere on the query.
 func SetWhere(q *Query, clause string, args ...interface{}) {
 	q.where = append([]where(nil), where{clause: clause, args: args})
-}
-
-// SetLastWhereAsOr sets the or separator for the last element in the where slice
-func SetLastWhereAsOr(q *Query) {
-	q.where[len(q.where)-1].orSeparator = true
 }
 
 // ApplyGroupBy on the query.

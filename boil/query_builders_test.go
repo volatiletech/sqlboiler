@@ -48,16 +48,16 @@ func TestBuildQuery(t *testing.T) {
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				where{clause: "id=$1 and $thing=$2", orSeparator: true, args: []interface{}{}},
-				where{clause: "stuff=$3", args: []interface{}{}},
+				where{clause: "a=$1", args: []interface{}{}},
+				where{clause: "b=$2", args: []interface{}{}},
+				where{clause: "c=$3", args: []interface{}{}},
 			},
 		}, nil},
 		{&Query{
 			delete: true,
-			from:   []string{`"thing" "happy"`},
+			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				where{clause: "id=$1 and $thing=$2", orSeparator: false, args: []interface{}{}},
-				where{clause: "stuff=$3", args: []interface{}{}},
+				where{clause: "(id=$1 and $thing=$2) or stuff=$3", args: []interface{}{}},
 			},
 		}, nil},
 	}
@@ -175,6 +175,88 @@ func TestWriteStars(t *testing.T) {
 		selects := writeStars(&test.In)
 		if !reflect.DeepEqual(selects, test.Out) {
 			t.Errorf("writeStar test fail %d\nwant: %v\ngot:  %v", i, test.Out, selects)
+		}
+	}
+}
+
+func TestWhereClause(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		q      Query
+		expect string
+	}{
+		// Where("a=$1")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "a=$1"},
+				},
+			},
+			expect: " WHERE a=$1",
+		},
+		// Where("a=$1 OR b=$2")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "a=$1 OR b=$2"},
+				},
+			},
+			expect: " WHERE a=$1 OR b=$2",
+		},
+		// Where("a=$1", "b=$2")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "a=$1"},
+					where{clause: "b=$2"},
+				},
+			},
+			expect: " WHERE a=$1 AND b=$2",
+		},
+		// Where("(a=$1 AND b=$2) OR c=$3")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "(a=$1 AND b=$2) OR c=$3"},
+				},
+			},
+			expect: " WHERE (a=$1 AND b=$2) OR c=$3",
+		},
+		// Where("a=$1 OR b=$2", "c=$3 OR d=$4 OR e=$5")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "(a=$1 OR b=$2)"},
+					where{clause: "(c=$3 OR d=$4 OR e=$5)"},
+				},
+			},
+			expect: " WHERE (a=$1 OR b=$2) AND (c=$3 OR d=$4 OR e=$5)",
+		},
+		// Where("(a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR f=$7")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "(a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7"},
+				},
+			},
+			expect: " WHERE (a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7",
+		},
+		// Where("(a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "(a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7"},
+				},
+			},
+			expect: " WHERE (a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7",
+		},
+	}
+
+	for i, test := range tests {
+		result, _ := whereClause(&test.q)
+		if result != test.expect {
+			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
 		}
 	}
 }

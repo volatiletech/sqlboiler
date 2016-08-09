@@ -177,12 +177,7 @@ func whereClause(q *Query) (string, []interface{}) {
 	for i := 0; i < len(q.where); i++ {
 		buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
 		args = append(args, q.where[i].args...)
-		if i >= len(q.where)-1 {
-			continue
-		}
-		if q.where[i].orSeparator {
-			buf.WriteString(" OR ")
-		} else {
+		if i < len(q.where)-1 {
 			buf.WriteString(" AND ")
 		}
 	}

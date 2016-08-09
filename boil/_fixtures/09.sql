@@ -1,1 +1,1 @@
-DELETE FROM "thing" "happy" WHERE id=$1 and $thing=$2 AND stuff=$3;
+DELETE FROM thing happy, upset as "sad", "fun", thing as stuff, "angry" as mad WHERE (id=$1 and $thing=$2) or stuff=$3;

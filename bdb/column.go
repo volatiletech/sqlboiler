@@ -105,6 +105,19 @@ func FilterColumnsByValidated(columns []Column) []Column {
 	return cols
 }
 
+// FilterColumnsByUnique generates the list of unique columns
+func FilterColumnsByUnique(columns []Column) []Column {
+	var cols []Column
+
+	for _, c := range columns {
+		if c.Unique == true {
+			cols = append(cols, c)
+		}
+	}
+
+	return cols
+}
+
 var (
 	rgxRawDefaultValue   = regexp.MustCompile(`'(.*)'::`)
 	rgxBoolDefaultValue  = regexp.MustCompile(`(?i)true|false`)

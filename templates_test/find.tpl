@@ -20,7 +20,9 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
   // Perform all Find queries and assign result objects to slice for comparison
   for i := 0; i < len(j); i++ {
     j[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
-    {{$varNameSingular}}CompareVals(o[i], j[i], t)
+    err = {{$varNameSingular}}CompareVals(o[i], j[i], true); if err != nil {
+      t.Error(err)
+    }
   }
 
   f, err := {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[0]." | join ", "}}, {{$varNameSingular}}PrimaryKeyColumns...)

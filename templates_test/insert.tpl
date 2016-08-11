@@ -33,13 +33,15 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     if err != nil {
       t.Errorf("Unable to find {{$tableNameSingular}} row: %s", err)
     }
-    {{$varNameSingular}}CompareVals(o[i], j[i], t)
+    err = {{$varNameSingular}}CompareVals(o[i], j[i], true); if err != nil { 
+      t.Error(err)
+    }
   }
 
   {{$varNamePlural}}DeleteAllRows(t)
 
   item := &{{$tableNameSingular}}{}
-  boil.RandomizeValidatedStruct(item, {{$varNameSingular}}ColumnsValidated, {{$varNameSingular}}DBTypes)
+  boil.RandomizeValidatedStruct(item, {{$varNameSingular}}ValidatedColumns, {{$varNameSingular}}DBTypes)
   if err = item.InsertG(); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
@@ -71,7 +73,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   regularCols := []string{{"{"}}{{.Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
 
   // Remove the validated columns, they can never be zero values
-  regularCols = boil.SetComplement(regularCols, {{$varNameSingular}}ColumnsValidated)
+  regularCols = boil.SetComplement(regularCols, {{$varNameSingular}}ValidatedColumns)
 
   // Ensure the non-defaultvalue columns and non-autoincrement columns are stored correctly as zero or null values.
   for _, c := range regularCols {

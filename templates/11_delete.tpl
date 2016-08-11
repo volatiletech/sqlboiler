@@ -112,7 +112,7 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 
   sql := fmt.Sprintf(
     `DELETE FROM {{.Table.Name}} WHERE (%s) IN (%s)`,
-    strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
+    strings.Join(strmangle.IdentQuoteSlice({{$varNameSingular}}PrimaryKeyColumns), ","),
     strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 

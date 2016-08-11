@@ -41,14 +41,14 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   }
 
   query := o.generateUpsertQuery(false, upsertCols)
-  expectedQuery := `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1,$2) ON CONFLICT DO NOTHING`
+  expectedQuery := `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1, $2) ON CONFLICT DO NOTHING`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
   }
 
   query = o.generateUpsertQuery(true, upsertCols)
-  expectedQuery = `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1,$2) ON CONFLICT ("key1", "key2") DO UPDATE SET "aaa" = EXCLUDED."aaa", "bbb" = EXCLUDED."bbb"`
+  expectedQuery = `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1, $2) ON CONFLICT ("key1", "key2") DO UPDATE SET "aaa" = EXCLUDED."aaa", "bbb" = EXCLUDED."bbb"`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
@@ -56,7 +56,7 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
 
   upsertCols.returning = []string{"stuff"}
   query = o.generateUpsertQuery(true, upsertCols)
-  expectedQuery = expectedQuery + ` RETURNING stuff`
+  expectedQuery = expectedQuery + ` RETURNING "stuff"`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
@@ -75,8 +75,9 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   if err != nil {
     t.Errorf("Unable to find {{$tableNameSingular}}: %s", err)
   }
-
-  {{$varNameSingular}}CompareVals(&o, compare, t)
+  err = {{$varNameSingular}}CompareVals(&o, compare, true); if err != nil {
+    t.Error(err)
+  }
 
   // Attempt the UPDATE side of an UPSERT
   if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
@@ -91,8 +92,9 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   if err != nil {
     t.Errorf("Unable to find {{$tableNameSingular}}: %s", err)
   }
-
-  {{$varNameSingular}}CompareVals(&o, compare, t)
+  err = {{$varNameSingular}}CompareVals(&o, compare, true); if err != nil {
+    t.Error(err)
+  }
 
   {{$varNamePlural}}DeleteAllRows(t)
 }

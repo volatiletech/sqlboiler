@@ -80,7 +80,8 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   {{end}}
 
   if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, ins, boil.GetStructValues(o, wl...))
+		fmt.Fprintln(boil.DebugWriter, ins)
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
   }
 
   if err != nil {

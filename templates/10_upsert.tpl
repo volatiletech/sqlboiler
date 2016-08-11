@@ -41,7 +41,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, update bool, conflic
   }
 
   if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query, boil.GetStructValues(o, columns.whitelist...))
+		fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, columns.whitelist...))
   }
 
   if err != nil {
@@ -90,8 +91,9 @@ func (o *{{$tableNameSingular}}) generateConflictColumns(columns ...string) []st
 func (o *{{$tableNameSingular}}) generateUpsertQuery(update bool, columns upsertData) string {
   var set, query string
 
-  columns.conflict = strmangle.IdentQuoteSlice(columns.conflict)
-  columns.whitelist = strmangle.IdentQuoteSlice(columns.whitelist)
+  conflict := strmangle.IdentQuoteSlice(columns.conflict)
+  whitelist := strmangle.IdentQuoteSlice(columns.whitelist)
+  returning := strmangle.IdentQuoteSlice(columns.returning)
 
   var sets []string
   // Generate the UPDATE SET clause
@@ -102,19 +104,19 @@ func (o *{{$tableNameSingular}}) generateUpsertQuery(update bool, columns upsert
   set = strings.Join(sets, ", ")
 
   query = fmt.Sprintf(
-    `INSERT INTO {{.Table.Name}} (%s) VALUES (%s) ON CONFLICT`,
-    strings.Join(columns.whitelist, `, `),
-    strmangle.Placeholders(len(columns.whitelist), 1, 1),
+    "INSERT INTO {{.Table.Name}} (%s) VALUES (%s) ON CONFLICT",
+    strings.Join(whitelist, ", "),
+    strmangle.Placeholders(len(whitelist), 1, 1),
   )
 
   if !update {
     query = query + " DO NOTHING"
   } else {
-    query = fmt.Sprintf(`%s (%s) DO UPDATE SET %s`, query, strings.Join(columns.conflict, `, `), set)
+    query = fmt.Sprintf("%s (%s) DO UPDATE SET %s", query, strings.Join(conflict, ", "), set)
   }
 
   if len(columns.returning) != 0 {
-    query = fmt.Sprintf(`%s RETURNING %s`, query, strings.Join(columns.returning, ","))
+    query = fmt.Sprintf("%s RETURNING %s", query, strings.Join(returning, ", "))
   }
 
   return query

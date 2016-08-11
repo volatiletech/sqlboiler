@@ -112,7 +112,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	}
 
 	buf.WriteString(fmt.Sprintf(
-		" SET (%s) VALUES (%s)",
+		" SET (%s) = (%s)",
 		strings.Join(cols, ", "),
 		strmangle.Placeholders(len(cols), 1, 1)),
 	)

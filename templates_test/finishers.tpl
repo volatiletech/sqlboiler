@@ -21,7 +21,9 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
     t.Errorf("Unable to call Bind on {{$tableNameSingular}} single object: %s", err)
   }
 
-  {{$varNameSingular}}CompareVals(&o, &j, t)
+  err = {{$varNameSingular}}CompareVals(&o, &j, true); if err != nil {
+    t.Error(err)
+  }
 
   // insert 3 rows, attempt to bind into slice
   {{$varNamePlural}}DeleteAllRows(t)
@@ -50,7 +52,9 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
   }
 
   for i := 0; i < len(y); i++ {
-    {{$varNameSingular}}CompareVals(y[i], k[i], t)
+    err = {{$varNameSingular}}CompareVals(y[i], k[i], true); if err != nil {
+      t.Error(err)
+    }
   }
 
   {{$varNamePlural}}DeleteAllRows(t)
@@ -73,7 +77,9 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
     t.Errorf("Unable to fetch One {{$tableNameSingular}} result:\n#%v\nErr: %s", j, err)
   }
 
-  {{$varNameSingular}}CompareVals(&o, j, t)
+  err = {{$varNameSingular}}CompareVals(&o, j, true); if err != nil {
+    t.Error(err)
+  }
 
   {{$varNamePlural}}DeleteAllRows(t)
 }
@@ -104,7 +110,9 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
   }
 
   for i := 0; i < len(o); i++ {
-    {{$varNameSingular}}CompareVals(o[i], j[i], t)
+    err = {{$varNameSingular}}CompareVals(o[i], j[i], true); if err != nil {
+      t.Error(err)
+    }
   }
 
   {{$varNamePlural}}DeleteAllRows(t)

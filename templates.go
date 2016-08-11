@@ -156,7 +156,9 @@ var templateFunctions = template.FuncMap{
 	"makeStringMap": strmangle.MakeStringMap,
 
 	// Database related mangling
-	"whereClause": strmangle.WhereClause,
+	"whereClause":     strmangle.WhereClause,
+	"identQuote":      strmangle.IdentQuote,
+	"identQuoteSlice": strmangle.IdentQuoteSlice,
 
 	// Text helpers
 	"textsFromForeignKey":           textsFromForeignKey,
@@ -170,6 +172,7 @@ var templateFunctions = template.FuncMap{
 	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,
 	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,
 	"filterColumnsByValidated":     bdb.FilterColumnsByValidated,
+	"filterColumnsByUnique":        bdb.FilterColumnsByUnique,
 	"autoIncPrimaryKey":            bdb.AutoIncPrimaryKey,
 	"sqlColDefinitions":            bdb.SQLColDefinitions,
 	"sqlColDefStrings":             bdb.SQLColDefStrings,

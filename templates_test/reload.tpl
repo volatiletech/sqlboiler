@@ -35,8 +35,9 @@ func Test{{$tableNamePlural}}Reload(t *testing.T) {
   if err = o1.ReloadG(); err != nil {
     t.Errorf("Unable to reload {{$tableNameSingular}} object: %s", err)
   }
-
-  {{$varNameSingular}}CompareVals(&o, o1, t)
+  err = {{$varNameSingular}}CompareVals(&o, o1, true); if err != nil {
+    t.Error(err)
+  }
 
   {{$varNamePlural}}DeleteAllRows(t)
 }
@@ -61,8 +62,9 @@ func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
     if err != nil {
       t.Errorf("Unable to find {{$tableNameSingular}} row.")
     }
-
-    {{$varNameSingular}}CompareVals(o1[i], o2[i], t)
+    err = {{$varNameSingular}}CompareVals(o1[i], o2[i], true); if err != nil {
+      t.Error(err)
+    }
   }
 
   // Randomize the struct values again, except for the primary key values, so we can call update.
@@ -84,7 +86,9 @@ func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
   }
 
   for i := 0; i < len(o1); i++  {
-    {{$varNameSingular}}CompareVals(o2[i], o1[i], t)
+    err = {{$varNameSingular}}CompareVals(o2[i], o1[i], true); if err != nil {
+      t.Error(err)
+    }
   }
 
   {{$varNamePlural}}DeleteAllRows(t)

@@ -121,20 +121,20 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 
   count := 0
   for name, value := range cols {
-    colNames[count] = name
+    colNames[count] = strmangle.IdentQuote(name)
     args = append(args, value)
     count++
   }
 
   // Append all of the primary key values for each column
-  args = append(args, o.inPrimaryKeyArgs())
+  args = append(args, o.inPrimaryKeyArgs()...)
 
   sql := fmt.Sprintf(
-    `UPDATE {{.Table.Name}} SET (%s) VALUES (%s) WHERE (%s) IN (%s)`,
+    `UPDATE {{.Table.Name}} SET (%s) = (%s) WHERE (%s) IN (%s)`,
     strings.Join(colNames, ", "),
-    strmangle.Placeholders(len(args), 1, 1),
-    strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
-    strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(args)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
+    strmangle.Placeholders(len(colNames), 1, 1),
+    strings.Join(strmangle.IdentQuoteSlice({{$varNameSingular}}PrimaryKeyColumns), ","),
+    strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(colNames)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 
   q := boil.SQL(sql, args...)
@@ -143,11 +143,6 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
   _, err := boil.ExecQuery(q)
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to update all in {{$varNameSingular}} slice: %s", err)
-  }
-
-  if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, )
   }
 
   return nil

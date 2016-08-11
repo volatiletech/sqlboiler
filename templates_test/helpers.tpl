@@ -4,26 +4,36 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 
-func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, t *testing.T) {
+func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, equal bool, blacklist ...string) error {
   {{- range $key, $value := .Table.Columns -}}
   {{if eq $value.Type "null.Time"}}
-  if o.{{titleCase $value.Name}}.Time.Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.Format("02/01/2006") {
-    t.Errorf("Expected NullTime {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006"))
+  if ((equal && o.{{titleCase $value.Name}}.Time.Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.Format("02/01/2006")) ||
+    (!equal && o.{{titleCase $value.Name}}.Time.Format("02/01/2006") == j.{{titleCase $value.Name}}.Time.Format("02/01/2006"))) &&
+    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    return errors.New(fmt.Sprintf("NullTime {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006")))
   }
   {{else if eq $value.Type "time.Time"}}
-  if o.{{titleCase $value.Name}}.Format("02/01/2006") != j.{{titleCase $value.Name}}.Format("02/01/2006") {
-    t.Errorf("Expected Time {{$value.Name}} column string values to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006"))
+  if ((equal && o.{{titleCase $value.Name}}.Format("02/01/2006") != j.{{titleCase $value.Name}}.Format("02/01/2006")) ||
+    (!equal && o.{{titleCase $value.Name}}.Format("02/01/2006") == j.{{titleCase $value.Name}}.Format("02/01/2006"))) &&
+    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    return errors.New(fmt.Sprintf("Time {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006")))
   }
   {{else if eq $value.Type "[]byte"}}
-  if !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}) {
-    t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
+  if ((equal && !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})) ||
+    (!equal && byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))) &&
+    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
   }
   {{else}}
-  if j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}} {
-    t.Errorf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})
+  if ((equal && j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}}) ||
+    (!equal && j.{{titleCase $value.Name}} == o.{{titleCase $value.Name}})) &&
+    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
   }
   {{end}}
   {{- end -}}
+
+  return nil
 }
 
 func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {

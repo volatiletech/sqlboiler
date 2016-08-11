@@ -169,6 +169,8 @@ var defaultTestTemplateImports = imports{
 		`"testing"`,
 		`"reflect"`,
 		`"time"`,
+		`"errors"`,
+		`"fmt"`,
 	},
 	thirdParty: importList{
 		`"gopkg.in/nullbio/null.v4"`,

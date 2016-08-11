@@ -66,6 +66,7 @@ func ExecQuery(q *Query) (sql.Result, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
+		fmt.Fprintln(DebugWriter, args)
 	}
 	return q.executor.Exec(qs, args...)
 }
@@ -75,6 +76,7 @@ func ExecQueryOne(q *Query) *sql.Row {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
+		fmt.Fprintln(DebugWriter, args)
 	}
 	return q.executor.QueryRow(qs, args...)
 }
@@ -84,6 +86,7 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
+		fmt.Fprintln(DebugWriter, args)
 	}
 	return q.executor.Query(qs, args...)
 }

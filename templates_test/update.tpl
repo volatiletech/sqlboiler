@@ -65,7 +65,6 @@ func Test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 
   tmp := {{$tableNameSingular}}{}
   blacklist := boil.SetMerge({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}UniqueColumns)
-  fmt.Printf("blacklist: %s\n\n", blacklist)
   if err = boil.RandomizeStruct(&tmp, {{$varNameSingular}}DBTypes, false, blacklist...); err != nil {
     t.Errorf("Unable to randomize struct {{$tableNameSingular}}: %s", err)
   }

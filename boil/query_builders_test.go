@@ -48,16 +48,16 @@ func TestBuildQuery(t *testing.T) {
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				where{clause: "a=$1", args: []interface{}{}},
-				where{clause: "b=$2", args: []interface{}{}},
-				where{clause: "c=$3", args: []interface{}{}},
+				where{clause: "a=?", args: []interface{}{}},
+				where{clause: "b=?", args: []interface{}{}},
+				where{clause: "c=?", args: []interface{}{}},
 			},
 		}, nil},
 		{&Query{
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				where{clause: "(id=$1 and $thing=$2) or stuff=$3", args: []interface{}{}},
+				where{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{}},
 			},
 		}, nil},
 	}
@@ -180,76 +180,119 @@ func TestWriteStars(t *testing.T) {
 }
 
 func TestWhereClause(t *testing.T) {
-	t.Parallel()
 
 	tests := []struct {
 		q      Query
 		expect string
 	}{
-		// Where("a=$1")
+		// Or("a=?")
 		{
 			q: Query{
-				where: []where{
-					where{clause: "a=$1"},
-				},
+				where: []where{where{clause: "a=?", orSeparator: true}},
 			},
-			expect: " WHERE a=$1",
+			expect: " WHERE (a=$1)",
 		},
-		// Where("a=$1 OR b=$2")
+		// Where("a=?")
 		{
 			q: Query{
-				where: []where{
-					where{clause: "a=$1 OR b=$2"},
-				},
+				where: []where{where{clause: "a=?"}},
 			},
-			expect: " WHERE a=$1 OR b=$2",
+			expect: " WHERE (a=$1)",
 		},
-		// Where("a=$1", "b=$2")
+		// Where("(a=?)")
 		{
 			q: Query{
-				where: []where{
-					where{clause: "a=$1"},
-					where{clause: "b=$2"},
-				},
+				where: []where{where{clause: "(a=?)"}},
 			},
-			expect: " WHERE a=$1 AND b=$2",
+			expect: " WHERE ((a=$1))",
 		},
-		// Where("(a=$1 AND b=$2) OR c=$3")
+		// Where("((a=? OR b=?))")
 		{
 			q: Query{
-				where: []where{
-					where{clause: "(a=$1 AND b=$2) OR c=$3"},
-				},
+				where: []where{where{clause: "((a=? OR b=?))"}},
 			},
-			expect: " WHERE (a=$1 AND b=$2) OR c=$3",
+			expect: " WHERE (((a=$1 OR b=$2)))",
 		},
-		// Where("a=$1 OR b=$2", "c=$3 OR d=$4 OR e=$5")
+		// Where("(a=?)", Or("(b=?)")
 		{
 			q: Query{
 				where: []where{
-					where{clause: "(a=$1 OR b=$2)"},
-					where{clause: "(c=$3 OR d=$4 OR e=$5)"},
+					where{clause: "(a=?)", orSeparator: true},
+					where{clause: "(b=?)"},
 				},
 			},
-			expect: " WHERE (a=$1 OR b=$2) AND (c=$3 OR d=$4 OR e=$5)",
+			expect: " WHERE ((a=$1)) OR ((b=$2))",
 		},
-		// Where("(a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR f=$7")
+		// Where("a=? OR b=?")
 		{
 			q: Query{
-				where: []where{
-					where{clause: "(a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7"},
-				},
+				where: []where{where{clause: "a=? OR b=?"}},
 			},
-			expect: " WHERE (a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7",
+			expect: " WHERE (a=$1 OR b=$2)",
 		},
-		// Where("(a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7")
+		// Where("a=?"), Where("b=?")
+		{
+			q: Query{
+				where: []where{where{clause: "a=?"}, where{clause: "b=?"}},
+			},
+			expect: " WHERE (a=$1) AND (b=$2)",
+		},
+		// Where("(a=? AND b=?) OR c=?")
+		{
+			q: Query{
+				where: []where{where{clause: "(a=? AND b=?) OR c=?"}},
+			},
+			expect: " WHERE ((a=$1 AND b=$2) OR c=$3)",
+		},
+		// Where("a=? OR b=?"), Where("c=? OR d=? OR e=?")
 		{
 			q: Query{
 				where: []where{
-					where{clause: "(a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7"},
+					where{clause: "(a=? OR b=?)"},
+					where{clause: "(c=? OR d=? OR e=?)"},
 				},
 			},
-			expect: " WHERE (a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7",
+			expect: " WHERE ((a=$1 OR b=$2)) AND ((c=$3 OR d=$4 OR e=$5))",
+		},
+		// Where("(a=? AND b=?) OR (c=? AND d=? AND e=?) OR f=? OR f=?")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "(a=? AND b=?) OR (c=? AND d=? AND e=?) OR f=? OR g=?"},
+				},
+			},
+			expect: " WHERE ((a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7)",
+		},
+		// Where("(a=? AND b=?) OR (c=? AND d=? OR e=?) OR f=? OR g=?")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "(a=? AND b=?) OR (c=? AND d=? OR e=?) OR f=? OR g=?"},
+				},
+			},
+			expect: " WHERE ((a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7)",
+		},
+		// Where("a=? or b=?"), Or("c=? and d=?"), Or("e=? or f=?")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "a=? or b=?", orSeparator: true},
+					where{clause: "c=? and d=?", orSeparator: true},
+					where{clause: "e=? or f=?", orSeparator: true},
+				},
+			},
+			expect: " WHERE (a=$1 or b=$2) OR (c=$3 and d=$4) OR (e=$5 or f=$6)",
+		},
+		// Where("a=? or b=?"), Or("c=? and d=?"), Or("e=? or f=?")
+		{
+			q: Query{
+				where: []where{
+					where{clause: "a=? or b=?"},
+					where{clause: "c=? and d=?"},
+					where{clause: "e=? or f=?"},
+				},
+			},
+			expect: " WHERE (a=$1 or b=$2) AND (c=$3 and d=$4) AND (e=$5 or f=$6)",
 		},
 	}
 

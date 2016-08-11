@@ -54,6 +54,23 @@ func Where(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+// And allows you to specify a where clause seperated by an AND for your statement
+// And is a duplicate of the Where function, but allows for more natural looking
+// query mod chains, for example: (Where("a=?"), And("b=?"), Or("c=?")))
+func And(clause string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.AppendWhere(q, clause, args...)
+	}
+}
+
+// Or allows you to specify a where clause seperated by an OR for your statement
+func Or(clause string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetLastWhereAsOr(q)
+		boil.AppendWhere(q, clause, args...)
+	}
+}
+
 // GroupBy allows you to specify a group by clause for your statement
 func GroupBy(clause string) QueryMod {
 	return func(q *boil.Query) {

@@ -87,6 +87,39 @@ func TestWhere(t *testing.T) {
 	}
 }
 
+func TestSetLastWhereAsOr(t *testing.T) {
+	t.Parallel()
+	q := &Query{}
+
+	AppendWhere(q, "")
+
+	if q.where[0].orSeparator {
+		t.Errorf("Do not want or separator")
+	}
+
+	SetLastWhereAsOr(q)
+
+	if len(q.where) != 1 {
+		t.Errorf("Want len 1")
+	}
+	if !q.where[0].orSeparator {
+		t.Errorf("Want or separator")
+	}
+
+	AppendWhere(q, "")
+	SetLastWhereAsOr(q)
+
+	if len(q.where) != 2 {
+		t.Errorf("Want len 2")
+	}
+	if q.where[0].orSeparator != true {
+		t.Errorf("Expected true")
+	}
+	if q.where[1].orSeparator != true {
+		t.Errorf("Expected true")
+	}
+}
+
 func TestGroupBy(t *testing.T) {
 	t.Parallel()
 

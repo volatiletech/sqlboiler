@@ -175,14 +175,43 @@ func whereClause(q *Query) (string, []interface{}) {
 
 	buf.WriteString(" WHERE ")
 	for i := 0; i < len(q.where); i++ {
-		buf.WriteString(fmt.Sprintf("%s", q.where[i].clause))
+		buf.WriteString(fmt.Sprintf("(%s)", q.where[i].clause))
 		args = append(args, q.where[i].args...)
-		if i < len(q.where)-1 {
+
+		// break on the last loop
+		if i == len(q.where)-1 {
+			break
+		}
+
+		if q.where[i].orSeparator {
+			buf.WriteString(" OR ")
+		} else {
 			buf.WriteString(" AND ")
 		}
 	}
 
-	return buf.String(), args
+	whereStr := buf.String()
+	paramBuf := &bytes.Buffer{}
+	paramIndex := 0
+
+	for counter := 1; ; counter++ {
+		if paramIndex >= len(whereStr) {
+			break
+		}
+
+		whereStr = whereStr[paramIndex:]
+		paramIndex = strings.IndexByte(whereStr, '?')
+
+		if paramIndex == -1 {
+			paramBuf.WriteString(whereStr)
+			break
+		}
+
+		paramBuf.WriteString(whereStr[:paramIndex] + fmt.Sprintf("$%d", counter))
+		paramIndex++
+	}
+
+	return paramBuf.String(), args
 }
 
 // identifierMapping creates a map of all identifiers to potential model names

@@ -1,0 +1,1 @@
+UPDATE thing happy, "fun", "stuff" SET ("col1", "col2", "fun"."col3") VALUES ($1, $2, $3) WHERE (aa=$4 or bb=$5) OR (cc=$6) LIMIT 5;

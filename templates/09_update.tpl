@@ -68,7 +68,14 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   return nil
 }
 
-// UpdateAll updates all rows with matching column names.
+// UpdateAllP updates all rows with matching column names, and panics on error.
+func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
+  if err := q.UpdateAll(cols); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
+// UpdateAll updates all rows with the specified column values.
 func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
   boil.SetUpdate(q.Query, cols)
 
@@ -80,11 +87,70 @@ func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
   return nil
 }
 
-// UpdateAllP updates all rows with matching column names, and panics on error.
-func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
-  if err := q.UpdateAll(cols); err != nil {
+// UpdateAllG updates all rows with the specified column values.
+func (o {{$tableNameSingular}}Slice) UpdateAllG(cols M) error {
+  return o.UpdateAll(boil.GetDB(), cols)
+}
+
+// UpdateAllGP updates all rows with the specified column values, and panics on error.
+func (o {{$tableNameSingular}}Slice) UpdateAllGP(cols M) {
+  if err := o.UpdateAll(boil.GetDB(), cols); err != nil {
     panic(boil.WrapErr(err))
   }
+}
+
+// UpdateAllP updates all rows with the specified column values, and panics on error.
+func (o {{$tableNameSingular}}Slice) UpdateAllP(exec boil.Executor, cols M) {
+  if err := o.UpdateAll(exec, cols); err != nil {
+    panic(boil.WrapErr(err))
+  }
+}
+
+// UpdateAll updates all rows with the specified column values, using an executor.
+func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error {
+  if o == nil {
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for update all")
+  }
+
+  if len(o) == 0 {
+    return nil
+  }
+
+  colNames := make([]string, len(cols))
+  var args []interface{}
+
+  count := 0
+  for name, value := range cols {
+    colNames[count] = name
+    args = append(args, value)
+    count++
+  }
+
+  // Append all of the primary key values for each column
+  args = append(args, o.inPrimaryKeyArgs())
+
+  sql := fmt.Sprintf(
+    `UPDATE {{.Table.Name}} SET (%s) VALUES (%s) WHERE (%s) IN (%s)`,
+    strings.Join(colNames, ", "),
+    strmangle.Placeholders(len(args), 1, 1),
+    strings.Join({{$varNameSingular}}PrimaryKeyColumns, ","),
+    strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(args)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
+  )
+
+  q := boil.SQL(sql, args...)
+  boil.SetExecutor(q, exec)
+
+  _, err := boil.ExecQuery(q)
+  if err != nil {
+    return fmt.Errorf("{{.PkgName}}: unable to update all in {{$varNameSingular}} slice: %s", err)
+  }
+
+  if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, )
+  }
+
+  return nil
 }
 
 // generateUpdateColumns generates the whitelist columns for an update statement

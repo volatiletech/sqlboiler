@@ -59,7 +59,21 @@ func TestBuildQuery(t *testing.T) {
 			where: []where{
 				where{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{}},
 			},
+			limit: 5,
 		}, nil},
+		{&Query{
+			from: []string{"thing happy", `"fun"`, `stuff`},
+			update: map[string]interface{}{
+				"col1":       1,
+				`"col2"`:     2,
+				`"fun".col3`: 3,
+			},
+			where: []where{
+				where{clause: "aa=? or bb=?", orSeparator: true, args: []interface{}{4, 5}},
+				where{clause: "cc=?", args: []interface{}{6}},
+			},
+			limit: 5,
+		}, []interface{}{1, 2, 3, 4, 5, 6}},
 	}
 
 	for i, test := range tests {
@@ -297,7 +311,7 @@ func TestWhereClause(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		result, _ := whereClause(&test.q)
+		result, _ := whereClause(&test.q, 1)
 		if result != test.expect {
 			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
 		}

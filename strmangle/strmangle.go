@@ -208,10 +208,14 @@ func PrefixStringSlice(str string, strs []string) []string {
 }
 
 // Placeholders generates the SQL statement placeholders for in queries.
-// For example, ($1,$2,$3),($4,$5,$6) etc.
+// For example, ($1, $2, $3), ($4, $5, $6) etc.
 // It will start counting placeholders at "start".
 func Placeholders(count int, start int, group int) string {
 	var buf bytes.Buffer
+
+	if start == 0 || group == 0 {
+		panic("Invalid start or group numbers supplied.")
+	}
 
 	if group > 1 {
 		buf.WriteByte('(')
@@ -219,9 +223,9 @@ func Placeholders(count int, start int, group int) string {
 	for i := 0; i < count; i++ {
 		if i != 0 {
 			if group > 1 && i%group == 0 {
-				buf.WriteString(`),(`)
+				buf.WriteString("), (")
 			} else {
-				buf.WriteByte(',')
+				buf.WriteString(", ")
 			}
 		}
 		buf.WriteString(fmt.Sprintf("$%d", start+i))

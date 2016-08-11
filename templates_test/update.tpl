@@ -41,3 +41,50 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
 
   {{$varNamePlural}}DeleteAllRows(t)
 }
+
+func Test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
+  var err error
+
+  // insert random columns to test UpdateAll
+  o := make({{$tableNameSingular}}Slice, 3)
+  j := make({{$tableNameSingular}}Slice, 3)
+
+  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, false); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
+  }
+
+  for i := 0; i < len(o); i++ {
+    if err = o[i].InsertG(); err != nil {
+      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
+    }
+  }
+
+  vals := M{}
+
+  tmp := {{$tableNameSingular}}{}
+  if err = boil.RandomizeStruct(&tmp, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+    t.Errorf("Unable to randomize struct {{$tableNameSingular}}: %s", err)
+  }
+
+  // Build the columns and column values from the randomized struct
+	tmpVal := reflect.Indirect(reflect.ValueOf(tmp))
+  nonPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
+  for _, col := range nonPrimKeys {
+    vals[col] = tmpVal.FieldByName(strmangle.TitleCase(col)).Interface()
+  }
+
+  err = o.UpdateAllG(vals)
+  if err != nil {
+    t.Errorf("Failed to update all for {{$tableNameSingular}}: %s", err)
+  }
+
+  for i := 0; i < len(o); i++ {
+    j[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
+    if err != nil {
+      t.Errorf("Unable to find {{$tableNameSingular}} row: %s", err)
+    }
+    {{$varNameSingular}}CompareVals(o[i], &tmp, t)
+  }
+
+  {{$varNamePlural}}DeleteAllRows(t)
+}

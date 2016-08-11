@@ -28,8 +28,11 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
 
   j := make({{$tableNameSingular}}Slice, 3)
   // Perform all Find queries and assign result objects to slice for comparison
-  for i := 0; i < len(j); i++ {
+  for i := 0; i < len(o); i++ {
     j[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
+    if err != nil {
+      t.Errorf("Unable to find {{$tableNameSingular}} row: %s", err)
+    }
     {{$varNameSingular}}CompareVals(o[i], j[i], t)
   }
 

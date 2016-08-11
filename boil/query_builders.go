@@ -70,9 +70,65 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		fmt.Fprintf(buf, " INNER JOIN %s", j.clause)
 	}
 
-	where, args := whereClause(q)
+	where, args := whereClause(q, 1)
 	buf.WriteString(where)
 
+	writeModifiers(q, buf)
+
+	buf.WriteByte(';')
+	return buf, args
+}
+
+func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
+	buf := &bytes.Buffer{}
+
+	buf.WriteString("DELETE FROM ")
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
+
+	where, args := whereClause(q, 1)
+	buf.WriteString(where)
+
+	writeModifiers(q, buf)
+
+	buf.WriteByte(';')
+
+	return buf, args
+}
+
+func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
+	buf := &bytes.Buffer{}
+
+	buf.WriteString("UPDATE ")
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
+
+	cols := make([]string, len(q.update))
+	args := make([]interface{}, len(q.update))
+
+	count := 0
+	for name, value := range q.update {
+		cols[count] = strmangle.IdentQuote(name)
+		args[count] = value
+		count++
+	}
+
+	buf.WriteString(fmt.Sprintf(
+		" SET (%s) VALUES (%s)",
+		strings.Join(cols, ", "),
+		strmangle.Placeholders(len(cols), 1, 1)),
+	)
+
+	where, whereArgs := whereClause(q, len(args)+1)
+	buf.WriteString(where)
+	args = append(args, whereArgs...)
+
+	writeModifiers(q, buf)
+
+	buf.WriteByte(';')
+
+	return buf, args
+}
+
+func writeModifiers(q *Query, buf *bytes.Buffer) {
 	if len(q.groupBy) != 0 {
 		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
 	}
@@ -92,9 +148,6 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	if q.offset != 0 {
 		fmt.Fprintf(buf, " OFFSET %d", q.offset)
 	}
-
-	buf.WriteByte(';')
-	return buf, args
 }
 
 func writeStars(q *Query) []string {
@@ -144,28 +197,12 @@ func writeAsStatements(q *Query) []string {
 	return cols
 }
 
-func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
-	buf := &bytes.Buffer{}
-
-	buf.WriteString("DELETE FROM ")
-	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
-
-	where, args := whereClause(q)
-	buf.WriteString(where)
-
-	buf.WriteByte(';')
-
-	return buf, args
-}
-
-func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
-	buf := &bytes.Buffer{}
-
-	buf.WriteByte(';')
-	return buf, nil
-}
-
-func whereClause(q *Query) (string, []interface{}) {
+// whereClause parses a where slice and converts it into a
+// single WHERE clause like:
+// WHERE (a=$1) AND (b=$2)
+//
+// startAt specifies what number placeholders start at
+func whereClause(q *Query, startAt int) (string, []interface{}) {
 	if len(q.where) == 0 {
 		return "", nil
 	}
@@ -211,7 +248,35 @@ func whereClause(q *Query) (string, []interface{}) {
 		paramIndex++
 	}
 
-	return paramBuf.String(), args
+	return convertQuestionMarks(buf.String(), startAt), args
+}
+
+func convertQuestionMarks(clause string, startAt int) string {
+	if startAt == 0 {
+		panic("Not a valid start number.")
+	}
+
+	paramBuf := &bytes.Buffer{}
+	paramIndex := 0
+
+	for ; ; startAt++ {
+		if paramIndex >= len(clause) {
+			break
+		}
+
+		clause = clause[paramIndex:]
+		paramIndex = strings.IndexByte(clause, '?')
+
+		if paramIndex == -1 {
+			paramBuf.WriteString(clause)
+			break
+		}
+
+		paramBuf.WriteString(clause[:paramIndex] + fmt.Sprintf("$%d", startAt))
+		paramIndex++
+	}
+
+	return paramBuf.String()
 }
 
 // identifierMapping creates a map of all identifiers to potential model names

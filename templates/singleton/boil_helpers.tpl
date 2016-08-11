@@ -1,6 +1,3 @@
-// M type is for providing where filters to Where helpers.
-type M map[string]interface{}
-
 // NewQueryG initializes a new Query using the passed in QueryMods
 func NewQueryG(mods ...qm.QueryMod) *boil.Query {
 	return NewQuery(boil.GetDB(), mods...)

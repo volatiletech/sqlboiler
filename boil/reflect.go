@@ -16,7 +16,7 @@ var (
 
 // BindP executes the query and inserts the
 // result into the passed in object pointer.
-// It panics on error.
+// It panics on error. See boil.Bind() documentation.
 func (q *Query) BindP(obj interface{}) {
 	if err := q.Bind(obj); err != nil {
 		panic(WrapErr(err))
@@ -49,13 +49,40 @@ func (q *Query) BindP(obj interface{}) {
 //   }
 //
 //   models.Users(qm.InnerJoin("users as friend on users.friend_id = friend.id")).Bind(&joinStruct)
+func Bind(rows *sql.Rows, obj interface{}) error {
+	structType, sliceType, singular, err := bindChecks(obj)
+
+	if err != nil {
+		return err
+	}
+
+	return bind(rows, obj, structType, sliceType, singular)
+}
+
+// Bind executes the query and inserts the
+// result into the passed in object pointer
+//
+// See documentation for boil.Bind()
 func (q *Query) Bind(obj interface{}) error {
+	structType, sliceType, singular, err := bindChecks(obj)
+	if err != nil {
+		return err
+	}
+
+	rows, err := ExecQueryAll(q)
+	if err != nil {
+		return errors.Wrap(err, "bind failed to execute query")
+	}
+	defer rows.Close()
+
+	return bind(rows, obj, structType, sliceType, singular)
+}
+
+// bindChecks resolves information about the bind target, and errors if it's not an object
+// we can bind to.
+func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Type, singular bool, err error) {
 	typ := reflect.TypeOf(obj)
 	kind := typ.Kind()
-
-	var structType reflect.Type
-	var sliceType reflect.Type
-	var singular bool
 
 	for i := 0; i < len(bindAccepts); i++ {
 		exp := bindAccepts[i]
@@ -72,7 +99,7 @@ func (q *Query) Bind(obj interface{}) error {
 				break
 			}
 
-			return errors.Errorf("obj type should be *[]*Type or *Type but was %q", reflect.TypeOf(obj).String())
+			return nil, nil, false, errors.Errorf("obj type should be *[]*Type or *Type but was %q", reflect.TypeOf(obj).String())
 		}
 
 		switch kind {
@@ -83,16 +110,10 @@ func (q *Query) Bind(obj interface{}) error {
 		}
 	}
 
-	return bind(q, obj, structType, sliceType, singular)
+	return structType, sliceType, singular, nil
 }
 
-func bind(q *Query, obj interface{}, structType, sliceType reflect.Type, singular bool) error {
-	rows, err := ExecQueryAll(q)
-	if err != nil {
-		return errors.Wrap(err, "bind failed to execute query")
-	}
-	defer rows.Close()
-
+func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool) error {
 	cols, err := rows.Columns()
 	if err != nil {
 		return errors.Wrap(err, "bind failed to get column names")

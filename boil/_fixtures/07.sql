@@ -1,1 +1,1 @@
-SELECT * FROM "a" GROUP BY id, name HAVING id <> 1, length(name, 'utf8') > 5;
+SELECT * FROM "a" WHERE (a=$1 or b=$2) AND (c=$3) GROUP BY id, name HAVING id <> ?, length(name, ?) > ?;

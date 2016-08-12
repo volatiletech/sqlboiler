@@ -86,9 +86,9 @@ func OrderBy(clause string) QueryMod {
 }
 
 // Having allows you to specify a having clause for your statement
-func Having(clause string) QueryMod {
+func Having(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.ApplyHaving(q, clause)
+		boil.ApplyHaving(q, clause, args...)
 	}
 }
 

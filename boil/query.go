@@ -29,7 +29,7 @@ type Query struct {
 	where       []where
 	groupBy     []string
 	orderBy     []string
-	having      []string
+	having      []having
 	limit       int
 	offset      int
 }
@@ -38,6 +38,11 @@ type where struct {
 	clause      string
 	orSeparator bool
 	args        []interface{}
+}
+
+type having struct {
+	clause string
+	args   []interface{}
 }
 
 type plainSQL struct {
@@ -213,13 +218,13 @@ func SetOrderBy(q *Query, clause string) {
 }
 
 // ApplyHaving on the query.
-func ApplyHaving(q *Query, clause string) {
-	q.having = append(q.having, clause)
+func ApplyHaving(q *Query, clause string, args ...interface{}) {
+	q.having = append(q.having, having{clause: clause, args: args})
 }
 
 // SetHaving on the query.
-func SetHaving(q *Query, clause string) {
-	q.having = append([]string(nil), clause)
+func SetHaving(q *Query, clause string, args ...interface{}) {
+	q.having = append([]having(nil), having{clause: clause, args: args})
 }
 
 // SetLimit on the query.

@@ -160,17 +160,25 @@ func TestHaving(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	expect := "count(orders.order_id) > 10"
-	ApplyHaving(q, expect)
-	ApplyHaving(q, expect)
+	expect := "count(orders.order_id) > ?"
+	ApplyHaving(q, expect, 10)
+	ApplyHaving(q, expect, 10)
 
-	if len(q.having) != 2 && (q.having[0] != expect || q.having[1] != expect) {
-		t.Errorf("Expected %s, got %s %s", expect, q.having[0], q.having[1])
+	if len(q.having) != 2 {
+		t.Errorf("Expected 2, got %d", len(q.having))
 	}
 
-	SetHaving(q, expect)
-	if len(q.having) != 1 && q.having[0] != expect {
-		t.Errorf("Expected %s, got %s", expect, q.having[0])
+	if q.having[0].clause != expect || q.having[1].clause != expect {
+		t.Errorf("Expected %s, got %s %s", expect, q.having[0].clause, q.having[1].clause)
+	}
+
+	if q.having[0].args[0] != 10 || q.having[1].args[0] != 10 {
+		t.Errorf("Expected %v, got %v %v", 10, q.having[0].args[0], q.having[1].args[0])
+	}
+
+	SetHaving(q, expect, 10)
+	if len(q.having) != 1 && (q.having[0].clause != expect || q.having[0].args[0] != 10) {
+		t.Errorf("Expected %s, got %s %v", expect, q.having[0], q.having[0].args[0])
 	}
 }
 

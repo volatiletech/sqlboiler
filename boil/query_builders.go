@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/vattle/sqlboiler/strmangle"
@@ -63,17 +64,20 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
 
+	var args []interface{}
 	for _, j := range q.joins {
 		if j.kind != JoinInner {
 			panic("only inner joins are supported")
 		}
 		fmt.Fprintf(buf, " INNER JOIN %s", j.clause)
+		args = append(args, j.args...)
 	}
 
-	where, args := whereClause(q, 1)
+	where, whereArgs := whereClause(q, len(args)+1)
 	buf.WriteString(where)
 
-	writeModifiers(q, buf)
+	args = append(args, whereArgs...)
+	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
 	return buf, args
@@ -88,7 +92,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	where, args := whereClause(q, 1)
 	buf.WriteString(where)
 
-	writeModifiers(q, buf)
+	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
 
@@ -101,14 +105,20 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString("UPDATE ")
 	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
 
-	cols := make([]string, len(q.update))
-	args := make([]interface{}, len(q.update))
+	cols := make(sort.StringSlice, len(q.update))
+	var args []interface{}
 
 	count := 0
-	for name, value := range q.update {
-		cols[count] = strmangle.IdentQuote(name)
-		args[count] = value
+	for name := range q.update {
+		cols[count] = name
 		count++
+	}
+
+	cols.Sort()
+
+	for i := 0; i < len(cols); i++ {
+		args = append(args, q.update[cols[i]])
+		cols[i] = strmangle.IdentQuote(cols[i])
 	}
 
 	buf.WriteString(fmt.Sprintf(
@@ -119,22 +129,29 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	where, whereArgs := whereClause(q, len(args)+1)
 	buf.WriteString(where)
-	args = append(args, whereArgs...)
 
-	writeModifiers(q, buf)
+	args = append(args, whereArgs...)
+	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
 
 	return buf, args
 }
 
-func writeModifiers(q *Query, buf *bytes.Buffer) {
+func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if len(q.groupBy) != 0 {
 		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
 	}
 
 	if len(q.having) != 0 {
-		fmt.Fprintf(buf, " HAVING %s", strings.Join(q.having, ", "))
+		fmt.Fprintf(buf, " HAVING ")
+		for i, j := range q.having {
+			if i > 0 {
+				fmt.Fprintf(buf, ", ")
+			}
+			fmt.Fprintf(buf, j.clause)
+			*args = append(*args, j.args...)
+		}
 	}
 
 	if len(q.orderBy) != 0 {

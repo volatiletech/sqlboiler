@@ -42,22 +42,29 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{
 			from:    []string{"a"},
 			groupBy: []string{"id", "name"},
-			having:  []string{"id <> 1", "length(name, 'utf8') > 5"},
-		}, nil},
+			where: []where{
+				{clause: "a=? or b=?", args: []interface{}{1, 2}},
+				{clause: "c=?", args: []interface{}{3}},
+			},
+			having: []having{
+				{clause: "id <> ?", args: []interface{}{1}},
+				{clause: "length(name, ?) > ?", args: []interface{}{"utf8", 5}},
+			},
+		}, []interface{}{1, 2, 3, 1, "utf8", 5}},
 		{&Query{
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				where{clause: "a=?", args: []interface{}{}},
-				where{clause: "b=?", args: []interface{}{}},
-				where{clause: "c=?", args: []interface{}{}},
+				{clause: "a=?", args: []interface{}{}},
+				{clause: "b=?", args: []interface{}{}},
+				{clause: "c=?", args: []interface{}{}},
 			},
 		}, nil},
 		{&Query{
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				where{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{}},
+				{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{}},
 			},
 			limit: 5,
 		}, nil},
@@ -69,11 +76,11 @@ func TestBuildQuery(t *testing.T) {
 				`"fun".col3`: 3,
 			},
 			where: []where{
-				where{clause: "aa=? or bb=?", orSeparator: true, args: []interface{}{4, 5}},
-				where{clause: "cc=?", args: []interface{}{6}},
+				{clause: "aa=? or bb=? or cc=?", orSeparator: true, args: []interface{}{4, 5, 6}},
+				{clause: "dd=? or ee=? or ff=? and gg=?", args: []interface{}{7, 8, 9, 10}},
 			},
 			limit: 5,
-		}, []interface{}{1, 2, 3, 4, 5, 6}},
+		}, []interface{}{2, 3, 1, 4, 5, 6, 7, 8, 9, 10}},
 	}
 
 	for i, test := range tests {

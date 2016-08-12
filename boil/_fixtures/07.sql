@@ -1,1 +1,1 @@
-SELECT * FROM "a" WHERE (a=$1 or b=$2) AND (c=$3) GROUP BY id, name HAVING id <> ?, length(name, ?) > ?;
+SELECT "videos".* FROM "videos" INNER JOIN (select id from users where deleted = ?) u on u.id = videos.user_id WHERE (videos.deleted = $2);

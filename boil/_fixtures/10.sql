@@ -1,1 +1,1 @@
-UPDATE thing happy, "fun", "stuff" SET ("col2", "fun"."col3", "col1") = ($1, $2, $3) WHERE (aa=$4 or bb=$5 or cc=$6) OR (dd=$7 or ee=$8 or ff=$9 and gg=$10) LIMIT 5;
+DELETE FROM thing happy, upset as "sad", "fun", thing as stuff, "angry" as mad WHERE ((id=$1 and thing=$2) or stuff=$3) LIMIT 5;

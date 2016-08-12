@@ -40,6 +40,14 @@ func TestBuildQuery(t *testing.T) {
 			joins: []join{{clause: "rainbows r on a.id = r.happy_id"}},
 		}, nil},
 		{&Query{
+			from: []string{"videos"},
+			joins: []join{{
+				clause: "(select id from users where deleted = ?) u on u.id = videos.user_id",
+				args:   []interface{}{true},
+			}},
+			where: []where{{clause: "videos.deleted = ?", args: []interface{}{false}}},
+		}, []interface{}{true, false}},
+		{&Query{
 			from:    []string{"a"},
 			groupBy: []string{"id", "name"},
 			where: []where{

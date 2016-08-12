@@ -34,6 +34,7 @@ func buildQuery(q *Query) (string, []interface{}) {
 
 func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := &bytes.Buffer{}
+	var args []interface{}
 
 	buf.WriteString("SELECT ")
 
@@ -64,13 +65,17 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
 
-	var args []interface{}
-	for _, j := range q.joins {
-		if j.kind != JoinInner {
-			panic("only inner joins are supported")
+	if len(q.joins) > 0 {
+		argsLen := len(args)
+		joinBuf := &bytes.Buffer{}
+		for _, j := range q.joins {
+			if j.kind != JoinInner {
+				panic("only inner joins are supported")
+			}
+			fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
+			args = append(args, j.args...)
 		}
-		fmt.Fprintf(buf, " INNER JOIN %s", j.clause)
-		args = append(args, j.args...)
+		fmt.Fprintf(buf, convertQuestionMarks(joinBuf.String(), argsLen+1))
 	}
 
 	where, whereArgs := whereClause(q, len(args)+1)
@@ -144,14 +149,17 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	}
 
 	if len(q.having) != 0 {
-		fmt.Fprintf(buf, " HAVING ")
+		argsLen := len(*args)
+		havingBuf := &bytes.Buffer{}
+		fmt.Fprintf(havingBuf, " HAVING ")
 		for i, j := range q.having {
 			if i > 0 {
-				fmt.Fprintf(buf, ", ")
+				fmt.Fprintf(havingBuf, ", ")
 			}
-			fmt.Fprintf(buf, j.clause)
+			fmt.Fprintf(havingBuf, j.clause)
 			*args = append(*args, j.args...)
 		}
+		fmt.Fprintf(buf, convertQuestionMarks(havingBuf.String(), argsLen+1))
 	}
 
 	if len(q.orderBy) != 0 {
@@ -242,27 +250,6 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 		} else {
 			buf.WriteString(" AND ")
 		}
-	}
-
-	whereStr := buf.String()
-	paramBuf := &bytes.Buffer{}
-	paramIndex := 0
-
-	for counter := 1; ; counter++ {
-		if paramIndex >= len(whereStr) {
-			break
-		}
-
-		whereStr = whereStr[paramIndex:]
-		paramIndex = strings.IndexByte(whereStr, '?')
-
-		if paramIndex == -1 {
-			paramBuf.WriteString(whereStr)
-			break
-		}
-
-		paramBuf.WriteString(whereStr[:paramIndex] + fmt.Sprintf("$%d", counter))
-		paramIndex++
 	}
 
 	return convertQuestionMarks(buf.String(), startAt), args

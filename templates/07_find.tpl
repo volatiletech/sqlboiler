@@ -28,15 +28,18 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
   if len(selectCols) > 0 {
     sel = strings.Join(strmangle.IdentQuoteSlice(selectCols), ",")
   }
-  sql := fmt.Sprintf(
+  query := fmt.Sprintf(
     `select %s from "{{.Table.Name}}" where {{whereClause 1 .Table.PKey.Columns}}`, sel,
   )
 
-  q := boil.SQL(sql, {{$pkNames | join ", "}})
+  q := boil.SQL(query, {{$pkNames | join ", "}})
   boil.SetExecutor(q, exec)
 
   err := q.Bind({{$varNameSingular}})
   if err != nil {
+    if errors.Cause(err) == sql.ErrNoRows {
+      return nil, sql.ErrNoRows
+    }
     return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
   }
 

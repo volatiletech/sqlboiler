@@ -53,7 +53,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   }
 
   if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, query)
     fmt.Fprintln(boil.DebugWriter, values)
   }
 

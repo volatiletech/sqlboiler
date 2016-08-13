@@ -154,7 +154,8 @@ var templateFunctions = template.FuncMap{
 	"makeStringMap": strmangle.MakeStringMap,
 
 	// Set operations
-	"setInclude": strmangle.SetInclude,
+	"setInclude":   strmangle.SetInclude,
+	"setIntersect": strmangle.SetIntersect,
 
 	// Database related mangling
 	"whereClause":     strmangle.WhereClause,

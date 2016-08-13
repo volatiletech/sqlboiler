@@ -74,6 +74,11 @@ func (p *PostgresDriver) Close() {
 	p.dbConn.Close()
 }
 
+// UseLastInsertID returns false for postgres
+func (p *PostgresDriver) UseLastInsertID() bool {
+	return false
+}
+
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is public. It excludes common migration tool tables

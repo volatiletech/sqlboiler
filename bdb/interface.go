@@ -14,9 +14,12 @@ type Interface interface {
 	// TranslateColumnType takes a Database column type and returns a go column type.
 	TranslateColumnType(Column) Column
 
+	// UseLastInsertID should return true if the driver is capable of using
+	// the sql.Exec result's LastInsertId
+	UseLastInsertID() bool
+
 	// Open the database connection
 	Open() error
-
 	// Close the database connection
 	Close()
 }
@@ -108,15 +111,4 @@ func setForeignKeyConstraints(t *Table, tables []Table) {
 
 func setRelationships(t *Table, tables []Table) {
 	t.ToManyRelationships = toManyRelationships(*t, tables)
-}
-
-// DriverUsesLastInsertID returns whether the database driver
-// supports the sql.Result interface.
-func DriverUsesLastInsertID(driverName string) bool {
-	switch driverName {
-	case "postgres":
-		return false
-	default:
-		return true
-	}
 }

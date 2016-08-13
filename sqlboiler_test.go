@@ -20,6 +20,7 @@ var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 func init() {
 	state = &State{
+		Driver: fakeDB(0),
 		Tables: []bdb.Table{
 			{
 				Name: "patrick_table",

@@ -40,7 +40,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
   ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
 
-  {{if driverUsesLastInsertID .DriverName}}
+  {{if .UseLastInsertID}}
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, ins)
     fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))

@@ -75,9 +75,10 @@ func New(config *Config) (*State, error) {
 // state given.
 func (s *State) Run(includeTests bool) error {
 	singletonData := &templateData{
-		Tables:     s.Tables,
-		DriverName: s.Config.DriverName,
-		PkgName:    s.Config.PkgName,
+		Tables:          s.Tables,
+		DriverName:      s.Config.DriverName,
+		UseLastInsertID: s.Driver.UseLastInsertID(),
+		PkgName:         s.Config.PkgName,
 
 		StringFuncs: templateStringMappers,
 	}
@@ -102,10 +103,11 @@ func (s *State) Run(includeTests bool) error {
 		}
 
 		data := &templateData{
-			Tables:     s.Tables,
-			Table:      table,
-			DriverName: s.Config.DriverName,
-			PkgName:    s.Config.PkgName,
+			Tables:          s.Tables,
+			Table:           table,
+			DriverName:      s.Config.DriverName,
+			UseLastInsertID: s.Driver.UseLastInsertID(),
+			PkgName:         s.Config.PkgName,
 
 			StringFuncs: templateStringMappers,
 		}

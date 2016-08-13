@@ -20,6 +20,10 @@ func (t testInterface) Columns(tableName string) ([]Column, error) {
 	return testCols, nil
 }
 
+func (t testInterface) UseLastInsertID() bool {
+	return false
+}
+
 var testPkey = &PrimaryKey{Name: "pkey1", Columns: []string{"col1", "col2"}}
 
 func (t testInterface) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
@@ -221,16 +225,5 @@ func TestSetRelationships(t *testing.T) {
 	}
 	if rel.ToJoinTable {
 		t.Error("should not be a join table")
-	}
-}
-
-func TestDriverUsesLastInsertID(t *testing.T) {
-	t.Parallel()
-
-	if DriverUsesLastInsertID("postgres") {
-		t.Error("postgres does not support LastInsertId")
-	}
-	if !DriverUsesLastInsertID("mysql") {
-		t.Error("postgres does support LastInsertId")
 	}
 }

@@ -14,10 +14,11 @@ import (
 
 // templateData for sqlboiler templates
 type templateData struct {
-	Tables     []bdb.Table
-	Table      bdb.Table
-	DriverName string
-	PkgName    string
+	Tables          []bdb.Table
+	Table           bdb.Table
+	DriverName      string
+	UseLastInsertID bool
+	PkgName         string
 
 	StringFuncs map[string]func(string) string
 }
@@ -168,7 +169,6 @@ var templateFunctions = template.FuncMap{
 	"textsFromRelationship":         textsFromRelationship,
 
 	// dbdrivers ops
-	"driverUsesLastInsertID":       bdb.DriverUsesLastInsertID,
 	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
 	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,
 	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,

@@ -209,6 +209,7 @@ func TestWriteStars(t *testing.T) {
 }
 
 func TestWhereClause(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
 		q      Query
@@ -329,6 +330,45 @@ func TestWhereClause(t *testing.T) {
 		result, _ := whereClause(&test.q, 1)
 		if result != test.expect {
 			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
+		}
+	}
+}
+
+func TestConvertQuestionMarks(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		clause string
+		start  int
+		expect string
+	}{
+		{clause: "hello friend", start: 1, expect: "hello friend"},
+		{clause: "thing=?", start: 2, expect: "thing=$2"},
+		{clause: "thing=? and stuff=? and happy=?", start: 2, expect: "thing=$2 and stuff=$3 and happy=$4"},
+		{clause: `thing \? stuff`, start: 2, expect: `thing ? stuff`},
+		{clause: `thing \? stuff and happy \? fun`, start: 2, expect: `thing ? stuff and happy ? fun`},
+		{
+			clause: `thing \? stuff ? happy \? and mad ? fun \? \? \?`,
+			start:  2,
+			expect: `thing ? stuff $2 happy ? and mad $3 fun ? ? ?`,
+		},
+		{
+			clause: `thing ? stuff ? happy \? fun \? ? ?`,
+			start:  1,
+			expect: `thing $1 stuff $2 happy ? fun ? $3 $4`,
+		},
+		{clause: `?`, start: 1, expect: `$1`},
+		{clause: `???`, start: 1, expect: `$1$2$3`},
+		{clause: `\?`, start: 1, expect: `?`},
+		{clause: `\?\?\?`, start: 1, expect: `???`},
+		{clause: `\??\??\??`, start: 1, expect: `?$1?$2?$3`},
+		{clause: `?\??\??\?`, start: 1, expect: `$1?$2?$3?`},
+	}
+
+	for i, test := range tests {
+		res := convertQuestionMarks(test.clause, test.start)
+		if res != test.expect {
+			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, res)
 		}
 	}
 }

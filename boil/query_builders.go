@@ -269,7 +269,7 @@ func convertQuestionMarks(clause string, startAt int) string {
 	defer strmangle.PutBuffer(paramBuf)
 	paramIndex := 0
 
-	for ; ; startAt++ {
+	for {
 		if paramIndex >= len(clause) {
 			break
 		}
@@ -282,7 +282,15 @@ func convertQuestionMarks(clause string, startAt int) string {
 			break
 		}
 
+		escapeIndex := strings.Index(clause, `\?`)
+		if escapeIndex != -1 && paramIndex > escapeIndex {
+			paramBuf.WriteString(clause[:escapeIndex] + "?")
+			paramIndex++
+			continue
+		}
+
 		paramBuf.WriteString(clause[:paramIndex] + fmt.Sprintf("$%d", startAt))
+		startAt++
 		paramIndex++
 	}
 

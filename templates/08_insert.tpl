@@ -55,18 +55,13 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
       return o.doAfterCreateHooks()
   }
 
-  lastId, err := result.lastInsertId()
-  if err != nil || lastId == 0 {
+  lastID, err := result.LastInsertId()
+  if err != nil || lastID == 0 || len({{$varNameSingular}}AutoIncPrimaryKeys) != 1 {
     return ErrSyncFail
   }
 
-  if len({{$varNameSingular}}AutoIncPrimaryKeys) != 1 {
-    return ErrSyncFail
-  }
-
-  pkey := {{$varNameSingular}}AutoIncPrimaryKeys[0]
-  sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, pkey))
-  err := exec.QueryRow(sel, lastId).Scan(boil.GetStructPointers(o, returnColumns...))
+  sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}AutoIncPrimaryKeys))
+  err = exec.QueryRow(sel, lastID).Scan(boil.GetStructPointers(o, returnColumns...))
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
   }

@@ -33,14 +33,9 @@ func Test{{$tableNamePlural}}Exists(t *testing.T) {
     t.Errorf("Expected ExistsG to return true, but got false.")
   }
 
-  // Check Exists does not find non-existing rows
   o = {{$tableNameSingular}}{}
-  e, err = {{$tableNameSingular}}ExistsG({{$pkeyArgs}})
-  if err != nil {
-    t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
-  }
-  if e != false {
-    t.Errorf("Expected {{$tableNameSingular}}ExistsG to return false, but got true.")
+  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
   e, err = {{$tableNamePlural}}G(qm.Where(whereClause, boil.GetStructValues(o, {{$varNameSingular}}PrimaryKeyColumns...)...)).Exists()

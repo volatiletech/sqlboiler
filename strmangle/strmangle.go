@@ -300,12 +300,17 @@ func WhereClause(start int, cols []string) string {
 		panic("0 is not a valid start number for whereClause")
 	}
 
-	ret := make([]string, len(cols))
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
 	for i, c := range cols {
-		ret[i] = fmt.Sprintf(`"%s"=$%d`, c, start+i)
+		buf.WriteString(fmt.Sprintf(`"%s"=$%d`, c, start+i))
+		if i < len(cols)-1 {
+			buf.WriteString(" AND ")
+		}
 	}
 
-	return strings.Join(ret, " AND ")
+	return buf.String()
 }
 
 // DriverUsesLastInsertID returns whether the database driver supports the

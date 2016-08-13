@@ -206,9 +206,9 @@ func Placeholders(count int, start int, group int) string {
 	for i := 0; i < count; i++ {
 		if i != 0 {
 			if group > 1 && i%group == 0 {
-				buf.WriteString("), (")
+				buf.WriteString("),(")
 			} else {
-				buf.WriteString(", ")
+				buf.WriteByte(',')
 			}
 		}
 		buf.WriteString(fmt.Sprintf("$%d", start+i))

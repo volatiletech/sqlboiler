@@ -143,18 +143,21 @@ func Singular(name string) string {
 // titleCase also fully uppercases "ID" components of names, for example
 // "column_name_id" to "ColumnNameID".
 func TitleCase(name string) string {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
 	splits := strings.Split(name, "_")
 
-	for i, split := range splits {
+	for _, split := range splits {
 		if uppercaseWords.MatchString(split) {
-			splits[i] = strings.ToUpper(split)
+			buf.WriteString(strings.ToUpper(split))
 			continue
 		}
 
-		splits[i] = strings.Title(split)
+		buf.WriteString(strings.Title(split))
 	}
 
-	return strings.Join(splits, "")
+	return buf.String()
 }
 
 // CamelCase takes a variable name in the format of "var_name" and converts
@@ -162,24 +165,26 @@ func TitleCase(name string) string {
 // camelCase also fully uppercases "ID" components of names, for example
 // "var_name_id" to "varNameID".
 func CamelCase(name string) string {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
 	splits := strings.Split(name, "_")
 
 	for i, split := range splits {
 		if i == 0 {
+			buf.WriteString(split)
 			continue
 		}
 
-		if i > 0 {
-			if uppercaseWords.MatchString(split) {
-				splits[i] = strings.ToUpper(split)
-				continue
-			}
+		if uppercaseWords.MatchString(split) {
+			buf.WriteString(strings.ToUpper(split))
+			continue
 		}
 
-		splits[i] = strings.Title(split)
+		buf.WriteString(strings.Title(split))
 	}
 
-	return strings.Join(splits, "")
+	return buf.String()
 }
 
 // MakeStringMap converts a map[string]string into the format:

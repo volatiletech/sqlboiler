@@ -281,15 +281,15 @@ func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) 
 				newVal = null.NewBool(false, false)
 			}
 		case typeNullString:
-			if b {
+			if fieldType == "uuid" {
+				newVal = null.NewString(uuid.NewV4().String(), true)
+			} else if b {
 				switch fieldType {
 				case "interval":
 					newVal = null.NewString(strconv.Itoa((sd.nextInt()%26)+2)+" days", b)
 				default:
 					newVal = null.NewString(randStr(1, sd.nextInt()), b)
 				}
-			} else if fieldType == "uuid" {
-				newVal = null.NewString(uuid.NewV4().String(), true)
 			} else {
 				newVal = null.NewString("", false)
 			}

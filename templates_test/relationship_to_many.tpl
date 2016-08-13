@@ -3,7 +3,7 @@
   {{- $dot := . }}
   {{- $table := .Table }}
   {{- range .Table.ToManyRelationships -}}
-    {{- if .ForeignColumnUnique -}}
+    {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
 {{- template "relationship_to_one_test_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
     {{- else -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}

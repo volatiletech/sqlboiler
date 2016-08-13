@@ -26,7 +26,7 @@ type {{$modelName}}Relationships struct {
     {{- template "relationship_to_one_struct_helper" $rel}}
   {{end -}}
   {{- range .Table.ToManyRelationships -}}
-    {{- if .ForeignColumnUnique -}}
+    {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
       {{- template "relationship_to_one_struct_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table .)}}
     {{else -}}
     {{- $rel := textsFromRelationship $dot.Tables $dot.Table . -}}

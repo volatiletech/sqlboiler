@@ -30,16 +30,26 @@ func IdentQuote(s string) string {
 		return s
 	}
 
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
 	splits := strings.Split(s, ".")
 	for i, split := range splits {
+		if i != 0 {
+			buf.WriteByte('.')
+		}
+
 		if strings.HasPrefix(split, `"`) || strings.HasSuffix(split, `"`) || split == "*" {
+			buf.WriteString(split)
 			continue
 		}
 
-		splits[i] = fmt.Sprintf(`"%s"`, split)
+		buf.WriteByte('"')
+		buf.WriteString(split)
+		buf.WriteByte('"')
 	}
 
-	return strings.Join(splits, ".")
+	return buf.String()
 }
 
 // IdentQuoteSlice applies IdentQuote to a slice.

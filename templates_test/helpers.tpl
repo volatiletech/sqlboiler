@@ -9,25 +9,25 @@ func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameS
   {{if eq $value.Type "null.Time"}}
   if ((equal && o.{{titleCase $value.Name}}.Time.Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.Format("02/01/2006")) ||
     (!equal && o.{{titleCase $value.Name}}.Time.Format("02/01/2006") == j.{{titleCase $value.Name}}.Time.Format("02/01/2006"))) &&
-    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
     return errors.New(fmt.Sprintf("NullTime {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006")))
   }
   {{else if eq $value.Type "time.Time"}}
   if ((equal && o.{{titleCase $value.Name}}.Format("02/01/2006") != j.{{titleCase $value.Name}}.Format("02/01/2006")) ||
     (!equal && o.{{titleCase $value.Name}}.Format("02/01/2006") == j.{{titleCase $value.Name}}.Format("02/01/2006"))) &&
-    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
     return errors.New(fmt.Sprintf("Time {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006")))
   }
   {{else if eq $value.Type "[]byte"}}
   if ((equal && !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})) ||
     (!equal && byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))) &&
-    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
     return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
   }
   {{else}}
   if ((equal && j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}}) ||
     (!equal && j.{{titleCase $value.Name}} == o.{{titleCase $value.Name}})) &&
-    !strmangle.HasElement("{{$value.Name}}", blacklist) {
+    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
     return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
   }
   {{end}}

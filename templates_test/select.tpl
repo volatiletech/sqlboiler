@@ -20,7 +20,7 @@ func Test{{$tableNamePlural}}Select(t *testing.T) {
 
   item := {{$tableNameSingular}}{}
 
-  blacklistCols := boil.SetMerge({{$varNameSingular}}AutoIncrementColumns, {{$varNameSingular}}PrimaryKeyColumns)
+  blacklistCols := strmangle.SetMerge({{$varNameSingular}}AutoIncrementColumns, {{$varNameSingular}}PrimaryKeyColumns)
   if err = boil.RandomizeStruct(&item, {{$varNameSingular}}DBTypes, false, blacklistCols...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }

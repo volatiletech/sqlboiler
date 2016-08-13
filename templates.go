@@ -148,11 +148,13 @@ var templateFunctions = template.FuncMap{
 	"join":              func(sep string, slice []string) string { return strings.Join(slice, sep) },
 	"joinSlices":        strmangle.JoinSlices,
 	"stringMap":         strmangle.StringMap,
-	"hasElement":        strmangle.HasElement,
 	"prefixStringSlice": strmangle.PrefixStringSlice,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,
+
+	// Set operations
+	"setInclude": strmangle.SetInclude,
 
 	// Database related mangling
 	"whereClause":     strmangle.WhereClause,
@@ -165,7 +167,6 @@ var templateFunctions = template.FuncMap{
 	"textsFromRelationship":         textsFromRelationship,
 
 	// dbdrivers ops
-	"makeDBName":                   strmangle.MakeDBName,
 	"driverUsesLastInsertID":       bdb.DriverUsesLastInsertID,
 	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
 	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,

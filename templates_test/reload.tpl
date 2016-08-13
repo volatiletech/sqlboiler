@@ -26,7 +26,7 @@ func Test{{$tableNamePlural}}Reload(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct members excluding primary keys: %s", err)
   }
 
-  colsWithoutPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
+  colsWithoutPrimKeys := strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
 
   if err = o.UpdateG(colsWithoutPrimKeys...); err != nil {
     t.Errorf("Unable to update the {{$tableNameSingular}} row: %s", err)
@@ -73,7 +73,7 @@ func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice excluding primary keys: %s", err)
   }
 
-  colsWithoutPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
+  colsWithoutPrimKeys := strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
 
   for i := 0; i < len(o1); i++ {
     if err = o1[i].UpdateG(colsWithoutPrimKeys...); err != nil {

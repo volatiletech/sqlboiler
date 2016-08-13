@@ -73,7 +73,7 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   regularCols := []string{{"{"}}{{.Table.Columns | filterColumnsByAutoIncrement false | filterColumnsByDefault false | columnNames | stringMap $parent.StringFuncs.quoteWrap | join ", "}}{{"}"}}
 
   // Remove the validated columns, they can never be zero values
-  regularCols = boil.SetComplement(regularCols, {{$varNameSingular}}ValidatedColumns)
+  regularCols = strmangle.SetComplement(regularCols, {{$varNameSingular}}ValidatedColumns)
 
   // Ensure the non-defaultvalue columns and non-autoincrement columns are stored correctly as zero or null values.
   for _, c := range regularCols {

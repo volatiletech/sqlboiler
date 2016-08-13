@@ -11,12 +11,12 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
-  blacklistCols := boil.SetMerge({{$varNameSingular}}AutoIncrementColumns, {{$varNameSingular}}PrimaryKeyColumns)
+  blacklistCols := strmangle.SetMerge({{$varNameSingular}}AutoIncrementColumns, {{$varNameSingular}}PrimaryKeyColumns)
   if err = boil.RandomizeStruct(&item, {{$varNameSingular}}DBTypes, false, blacklistCols...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  whitelist := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}AutoIncrementColumns)
+  whitelist := strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}AutoIncrementColumns)
   if err = item.UpdateG(whitelist...); err != nil {
     t.Errorf("Unable to update {{$tableNameSingular}}: %s", err)
   }
@@ -64,14 +64,14 @@ func Test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
   vals := M{}
 
   tmp := {{$tableNameSingular}}{}
-  blacklist := boil.SetMerge({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}UniqueColumns)
+  blacklist := strmangle.SetMerge({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}UniqueColumns)
   if err = boil.RandomizeStruct(&tmp, {{$varNameSingular}}DBTypes, false, blacklist...); err != nil {
     t.Errorf("Unable to randomize struct {{$tableNameSingular}}: %s", err)
   }
 
   // Build the columns and column values from the randomized struct
 	tmpVal := reflect.Indirect(reflect.ValueOf(tmp))
-  nonBlacklist := boil.SetComplement({{$varNameSingular}}Columns, blacklist)
+  nonBlacklist := strmangle.SetComplement({{$varNameSingular}}Columns, blacklist)
   for _, col := range nonBlacklist {
     vals[col] = tmpVal.FieldByName(strmangle.TitleCase(col)).Interface()
   }

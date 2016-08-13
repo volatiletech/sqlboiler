@@ -1,6 +1,6 @@
-// Package strmangle is used exclusively by the templates in sqlboiler.
-// There are many helper functions to deal with bdb.* values as well
-// as string manipulation. Because it is focused on pipelining inside templates
+// Package strmangle is a collection of string manipulation functions.
+// Primarily used by boil and templates for code generation.
+// Because it is focused on pipelining inside templates
 // you will see some odd parameter ordering.
 package strmangle
 
@@ -214,24 +214,6 @@ func StringMap(modifier func(string) string, strs []string) []string {
 	}
 
 	return ret
-}
-
-// MakeDBName takes a table name in the format of "table_name" and a
-// column name in the format of "column_name" and returns a name used in the
-// `db:""` component of an object in the format of "table_name_column_name"
-func MakeDBName(tableName, colName string) string {
-	return fmt.Sprintf("%s_%s", tableName, colName)
-}
-
-// HasElement checks to see if the string is found in the string slice
-func HasElement(str string, slice []string) bool {
-	for _, s := range slice {
-		if str == s {
-			return true
-		}
-	}
-
-	return false
 }
 
 // PrefixStringSlice with the given str.

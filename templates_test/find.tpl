@@ -32,7 +32,7 @@ func Test{{$tableNamePlural}}Find(t *testing.T) {
   }
   {{end}}
 
-  colsWithoutPrimKeys := boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
+  colsWithoutPrimKeys := strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
   fRef := reflect.ValueOf(f).Elem()
   for _, v := range colsWithoutPrimKeys {
     val := fRef.FieldByName(v)

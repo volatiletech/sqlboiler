@@ -234,26 +234,6 @@ func TestStringMap(t *testing.T) {
 	}
 }
 
-func TestMakeDBName(t *testing.T) {
-	t.Parallel()
-
-	if out := MakeDBName("a", "b"); out != "a_b" {
-		t.Error("Out was wrong:", out)
-	}
-}
-
-func TestHasElement(t *testing.T) {
-	t.Parallel()
-
-	elements := []string{"one", "two"}
-	if got := HasElement("one", elements); !got {
-		t.Error("should have found element key")
-	}
-	if got := HasElement("three", elements); got {
-		t.Error("should not have found element key")
-	}
-}
-
 func TestPrefixStringSlice(t *testing.T) {
 	t.Parallel()
 
@@ -262,6 +242,7 @@ func TestPrefixStringSlice(t *testing.T) {
 		t.Error("wrong output:", got)
 	}
 }
+
 func TestWhereClause(t *testing.T) {
 	t.Parallel()
 

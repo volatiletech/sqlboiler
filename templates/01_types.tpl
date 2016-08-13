@@ -9,7 +9,6 @@ var (
   {{$varNameSingular}}UniqueColumns             = []string{{"{"}}{{.Table.Columns | filterColumnsByUnique | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
   {{$varNameSingular}}PrimaryKeyColumns         = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
   {{$varNameSingular}}AutoIncrementColumns      = []string{{"{"}}{{.Table.Columns | filterColumnsByAutoIncrement true | columnNames | stringMap .StringFuncs.quoteWrap | join "," }}{{"}"}}
-  {{$varNameSingular}}AutoIncPrimaryKeys        = []string{{"{"}}{{.Table.Columns | filterColumnsByPrimaryKey .Table.PKey | filterColumnsByDefault true | columnNames | join ", "}}{{"}"}}
 )
 
 type (

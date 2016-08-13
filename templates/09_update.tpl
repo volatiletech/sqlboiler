@@ -155,5 +155,5 @@ func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []st
     return whitelist
   }
 
-  return boil.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
+  return strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
 }

@@ -29,11 +29,13 @@ func buildQuery(q *Query) (string, []interface{}) {
 		buf, args = buildSelectQuery(q)
 	}
 
+	defer strmangle.PutBuffer(buf)
+
 	return buf.String(), args
 }
 
 func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
-	buf := &bytes.Buffer{}
+	buf := strmangle.GetBuffer()
 	var args []interface{}
 
 	buf.WriteString("SELECT ")
@@ -67,7 +69,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	if len(q.joins) > 0 {
 		argsLen := len(args)
-		joinBuf := &bytes.Buffer{}
+		joinBuf := strmangle.GetBuffer()
 		for _, j := range q.joins {
 			if j.kind != JoinInner {
 				panic("only inner joins are supported")
@@ -76,6 +78,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			args = append(args, j.args...)
 		}
 		fmt.Fprintf(buf, convertQuestionMarks(joinBuf.String(), argsLen+1))
+		strmangle.PutBuffer(joinBuf)
 	}
 
 	where, whereArgs := whereClause(q, len(args)+1)
@@ -89,7 +92,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
-	buf := &bytes.Buffer{}
+	buf := strmangle.GetBuffer()
 
 	buf.WriteString("DELETE FROM ")
 	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
@@ -105,7 +108,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
-	buf := &bytes.Buffer{}
+	buf := strmangle.GetBuffer()
 
 	buf.WriteString("UPDATE ")
 	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
@@ -150,7 +153,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 
 	if len(q.having) != 0 {
 		argsLen := len(*args)
-		havingBuf := &bytes.Buffer{}
+		havingBuf := strmangle.GetBuffer()
 		fmt.Fprintf(havingBuf, " HAVING ")
 		for i, j := range q.having {
 			if i > 0 {
@@ -160,6 +163,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 			*args = append(*args, j.args...)
 		}
 		fmt.Fprintf(buf, convertQuestionMarks(havingBuf.String(), argsLen+1))
+		strmangle.PutBuffer(havingBuf)
 	}
 
 	if len(q.orderBy) != 0 {
@@ -232,7 +236,8 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 		return "", nil
 	}
 
-	buf := &bytes.Buffer{}
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
 	var args []interface{}
 
 	buf.WriteString(" WHERE ")
@@ -260,7 +265,8 @@ func convertQuestionMarks(clause string, startAt int) string {
 		panic("Not a valid start number.")
 	}
 
-	paramBuf := &bytes.Buffer{}
+	paramBuf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(paramBuf)
 	paramIndex := 0
 
 	for ; ; startAt++ {

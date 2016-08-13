@@ -1,6 +1,7 @@
 package boil
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
@@ -101,7 +102,9 @@ func bind(q *Query, obj interface{}, structType, sliceType reflect.Type, singula
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
+	foundOne := false
 	for rows.Next() {
+		foundOne = true
 		var newStruct reflect.Value
 		var pointers []interface{}
 
@@ -122,6 +125,10 @@ func bind(q *Query, obj interface{}, structType, sliceType reflect.Type, singula
 		if !singular {
 			ptrSlice.Set(reflect.Append(ptrSlice, newStruct))
 		}
+	}
+
+	if singular && !foundOne {
+		return sql.ErrNoRows
 	}
 
 	return nil

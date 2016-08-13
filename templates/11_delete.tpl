@@ -32,20 +32,19 @@ func (o *{{$tableNameSingular}}) DeleteGP() {
 // Delete will match against the primary key column to find the record to delete.
 func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
   if o == nil {
-    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
+    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for delete")
   }
 
-  var mods []qm.QueryMod
+  args := o.inPrimaryKeyArgs()
 
-  mods = append(mods,
-    qm.From("{{.Table.Name}}"),
-    qm.Where(`{{whereClause 1 .Table.PKey.Columns}}`, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}}),
-  )
+  sql := `DELETE FROM {{.Table.Name}} WHERE {{whereClause 1 .Table.PKey.Columns}}`
 
-  query := NewQuery(exec, mods...)
-  boil.SetDelete(query)
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, sql)
+    fmt.Fprintln(boil.DebugWriter, args...)
+  }
 
-  _, err := boil.ExecQuery(query)
+  _, err := exec.Exec(sql, args...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to delete from {{.Table.Name}}")
   }

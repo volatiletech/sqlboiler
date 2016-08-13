@@ -78,17 +78,18 @@ func Identifier(in int) string {
 		n = 1 + int(math.Log(float64(in))/math.Log(float64(ln)))
 	}
 
-	cols := make([]byte, n)
+	cols := GetBuffer()
+	defer PutBuffer(cols)
 
 	for i := 0; i < n; i++ {
 		divisor := int(math.Pow(float64(ln), float64(n-i-1)))
 		rem := in / divisor
-		cols[i] = idAlphabet[rem]
+		cols.WriteByte(idAlphabet[rem])
 
 		in -= rem * divisor
 	}
 
-	return string(cols)
+	return cols.String()
 }
 
 // Plural converts singular words to plural words (eg: person to people)

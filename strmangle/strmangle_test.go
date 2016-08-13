@@ -47,7 +47,7 @@ func TestIdentQuoteSlice(t *testing.T) {
 	}
 }
 
-func TestIDGen(t *testing.T) {
+func TestIdentifier(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

@@ -280,13 +280,17 @@ func Placeholders(count int, start int, group int) string {
 // list of parameter names for a template statement SET clause.
 // eg: "col1"=$1, "col2"=$2, "col3"=$3
 func SetParamNames(columns []string) string {
-	names := make([]string, 0, len(columns))
-	counter := 0
-	for _, c := range columns {
-		counter++
-		names = append(names, fmt.Sprintf(`"%s"=$%d`, c, counter))
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
+	for i, c := range columns {
+		buf.WriteString(fmt.Sprintf(`"%s"=$%d`, c, i+1))
+		if i < len(columns)-1 {
+			buf.WriteString(", ")
+		}
 	}
-	return strings.Join(names, ", ")
+
+	return buf.String()
 }
 
 // WhereClause returns the where clause using start as the $ flag index

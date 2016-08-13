@@ -43,30 +43,25 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
   wl := o.generateUpdateColumns(whitelist...)
 
-  if len(wl) != 0 {
-    query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
-    values = boil.GetStructValues(o, wl...)
-    values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
-
-    if boil.DebugMode {
-      fmt.Fprintln(boil.DebugWriter, query)
-      fmt.Fprintln(boil.DebugWriter, values)
-    }
-
-    _, err = exec.Exec(query, values...)
-  } else {
+  if len(wl) == 0 {
     return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
   }
 
+  query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
+  values = boil.GetStructValues(o, wl...)
+  values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, values)
+  }
+
+    _, err = exec.Exec(query, values...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
   }
 
-  if err := o.doAfterUpdateHooks(); err != nil {
-    return err
-  }
-
-  return nil
+  return o.doAfterUpdateHooks()
 }
 
 // UpdateAllP updates all rows with matching column names, and panics on error.

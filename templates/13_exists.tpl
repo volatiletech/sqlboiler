@@ -13,10 +13,7 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
     fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
   }
 
-  row := exec.QueryRow(
-    sql,
-    {{$pkNames | join ", "}},
-  )
+  row := exec.QueryRow(sql, {{$pkNames | join ", "}})
 
   err := row.Scan(&exists)
   if err != nil {

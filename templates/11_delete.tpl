@@ -55,9 +55,9 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
 // DeleteAllP deletes all rows, and panics on error.
 func (q {{$varNameSingular}}Query) DeleteAllP() {
-    if err := q.DeleteAll(); err != nil {
-      panic(boil.WrapErr(err))
-    }
+  if err := q.DeleteAll(); err != nil {
+    panic(boil.WrapErr(err))
+  }
 }
 
 // DeleteAll deletes all matching rows.
@@ -125,8 +125,8 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
   }
 
   if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, args)
+    fmt.Fprintln(boil.DebugWriter, sql)
+    fmt.Fprintln(boil.DebugWriter, args)
   }
 
   return nil

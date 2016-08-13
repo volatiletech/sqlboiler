@@ -26,12 +26,12 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 
 // AllP returns all {{$tableNameSingular}} records from the query, and panics on error.
 func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
-    o, err := q.All()
-    if err != nil {
-      panic(boil.WrapErr(err))
-    }
+  o, err := q.All()
+  if err != nil {
+    panic(boil.WrapErr(err))
+  }
 
-    return o
+  return o
 }
 
 // All returns all {{$tableNameSingular}} records from the query.

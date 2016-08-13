@@ -41,14 +41,14 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   }
 
   query := o.generateUpsertQuery(false, upsertCols)
-  expectedQuery := `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1, $2) ON CONFLICT DO NOTHING`
+  expectedQuery := `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1,$2) ON CONFLICT DO NOTHING`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)
   }
 
   query = o.generateUpsertQuery(true, upsertCols)
-  expectedQuery = `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1, $2) ON CONFLICT ("key1", "key2") DO UPDATE SET "aaa" = EXCLUDED."aaa", "bbb" = EXCLUDED."bbb"`
+  expectedQuery = `INSERT INTO {{.Table.Name}} ("thing", "stuff") VALUES ($1,$2) ON CONFLICT ("key1", "key2") DO UPDATE SET "aaa" = EXCLUDED."aaa", "bbb" = EXCLUDED."bbb"`
 
   if query != expectedQuery {
     t.Errorf("Expected query mismatch:\n\n%s\n%s\n", query, expectedQuery)

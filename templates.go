@@ -165,8 +165,8 @@ var templateFunctions = template.FuncMap{
 	"textsFromRelationship":         textsFromRelationship,
 
 	// dbdrivers ops
-	"driverUsesLastInsertID":       strmangle.DriverUsesLastInsertID,
 	"makeDBName":                   strmangle.MakeDBName,
+	"driverUsesLastInsertID":       bdb.DriverUsesLastInsertID,
 	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
 	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,
 	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,

@@ -313,17 +313,6 @@ func WhereClause(start int, cols []string) string {
 	return buf.String()
 }
 
-// DriverUsesLastInsertID returns whether the database driver supports the
-// sql.Result interface.
-func DriverUsesLastInsertID(driverName string) bool {
-	switch driverName {
-	case "postgres":
-		return false
-	default:
-		return true
-	}
-}
-
 // Substring returns a substring of str starting at index start and going
 // to end-1.
 func Substring(start, end int, str string) string {

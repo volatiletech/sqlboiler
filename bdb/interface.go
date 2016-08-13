@@ -69,7 +69,7 @@ func Tables(db Interface, names ...string) ([]Table, error) {
 	return tables, nil
 }
 
-// setIsJoinTable iff there are:
+// setIsJoinTable if there are:
 // A composite primary key involving two columns
 // Both primary key columns are also foreign keys
 func setIsJoinTable(t *Table) {
@@ -108,4 +108,15 @@ func setForeignKeyConstraints(t *Table, tables []Table) {
 
 func setRelationships(t *Table, tables []Table) {
 	t.ToManyRelationships = toManyRelationships(*t, tables)
+}
+
+// DriverUsesLastInsertID returns whether the database driver
+// supports the sql.Result interface.
+func DriverUsesLastInsertID(driverName string) bool {
+	switch driverName {
+	case "postgres":
+		return false
+	default:
+		return true
+	}
 }

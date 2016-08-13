@@ -69,17 +69,6 @@ func TestIdentifier(t *testing.T) {
 	}
 }
 
-func TestDriverUsesLastInsertID(t *testing.T) {
-	t.Parallel()
-
-	if DriverUsesLastInsertID("postgres") {
-		t.Error("postgres does not support LastInsertId")
-	}
-	if !DriverUsesLastInsertID("mysql") {
-		t.Error("postgres does support LastInsertId")
-	}
-}
-
 func TestPlaceholders(t *testing.T) {
 	t.Parallel()
 

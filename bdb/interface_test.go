@@ -223,3 +223,14 @@ func TestSetRelationships(t *testing.T) {
 		t.Error("should not be a join table")
 	}
 }
+
+func TestDriverUsesLastInsertID(t *testing.T) {
+	t.Parallel()
+
+	if DriverUsesLastInsertID("postgres") {
+		t.Error("postgres does not support LastInsertId")
+	}
+	if !DriverUsesLastInsertID("mysql") {
+		t.Error("postgres does support LastInsertId")
+	}
+}

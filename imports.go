@@ -157,10 +157,14 @@ var defaultTemplateImports = imports{
 
 var defaultSingletonTemplateImports = map[string]imports{
 	"boil_helpers": {
-		standard: importList{},
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
 			`"github.com/vattle/sqlboiler/boil/qm"`,
+		},
+	},
+	"boil_types": {
+		thirdParty: importList{
+			`"github.com/pkg/errors"`,
 		},
 	},
 }

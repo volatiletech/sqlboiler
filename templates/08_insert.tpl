@@ -75,7 +75,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
     err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
   } else {
-    _, err = exec.Exec(ins, {{.Table.Columns | columnNames | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+    _, err = exec.Exec(ins, boil.GetStructValues(o, wl...)...)
   }
   {{end}}
 

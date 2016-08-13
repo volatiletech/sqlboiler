@@ -86,10 +86,5 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 
   *o = {{$varNamePlural}}
 
-  if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, sql)
-    fmt.Fprintln(boil.DebugWriter, args)
-  }
-
   return nil
 }

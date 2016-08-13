@@ -7,6 +7,12 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
   var exists bool
 
   sql := `select exists(select 1 from "{{.Table.Name}}" where {{whereClause 1 .Table.PKey.Columns}} limit 1)`
+
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, sql)
+    fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
+  }
+
   row := exec.QueryRow(
     sql,
     {{$pkNames | join ", "}},
@@ -15,11 +21,6 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
   err := row.Scan(&exists)
   if err != nil {
     return false, fmt.Errorf("{{.PkgName}}: unable to check if {{.Table.Name}} exists: %v", err)
-  }
-
-  if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, sql)
-    fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
   }
 
   return exists, nil

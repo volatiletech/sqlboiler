@@ -34,15 +34,15 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, update bool, conflic
     return err
   }
 
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, columns.whitelist...))
+  }
+
   if len(columns.returning) != 0 {
     err = exec.QueryRow(query, boil.GetStructValues(o, columns.whitelist...)...).Scan(boil.GetStructPointers(o, columns.returning...)...)
   } else {
     _, err = exec.Exec(query, {{.Table.Columns | columnNames | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
-  }
-
-  if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, columns.whitelist...))
   }
 
   if err != nil {

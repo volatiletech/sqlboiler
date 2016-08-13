@@ -116,17 +116,14 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
     strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 
-  q := boil.SQL(sql, args...)
-  boil.SetExecutor(q, exec)
-
-  _, err := boil.ExecQuery(q)
-  if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice: %s", err)
-  }
-
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, sql)
     fmt.Fprintln(boil.DebugWriter, args)
+  }
+
+  _, err := exec.Exec(sql, args...)
+  if err != nil {
+    return fmt.Errorf("{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice: %s", err)
   }
 
   return nil

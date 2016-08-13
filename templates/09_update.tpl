@@ -47,14 +47,15 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
     query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
     values = boil.GetStructValues(o, wl...)
     values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+
+    if boil.DebugMode {
+      fmt.Fprintln(boil.DebugWriter, query)
+      fmt.Fprintln(boil.DebugWriter, values)
+    }
+
     _, err = exec.Exec(query, values...)
   } else {
     return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
-  }
-
-  if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, query)
-    fmt.Fprintln(boil.DebugWriter, values)
   }
 
   if err != nil {
@@ -137,10 +138,12 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
     strmangle.Placeholders(len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(colNames)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 
-  q := boil.SQL(sql, args...)
-  boil.SetExecutor(q, exec)
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, sql)
+    fmt.Fprintln(boil.DebugWriter, args...)
+  }
 
-  _, err := boil.ExecQuery(q)
+  _, err := exec.Exec(sql, args...)
   if err != nil {
     return fmt.Errorf("{{.PkgName}}: unable to update all in {{$varNameSingular}} slice: %s", err)
   }

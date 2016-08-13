@@ -10,7 +10,6 @@ import (
 	"math"
 	"regexp"
 	"strings"
-	"unicode"
 
 	"github.com/jinzhu/inflection"
 )
@@ -138,22 +137,6 @@ func CamelCase(name string) string {
 	}
 
 	return strings.Join(splits, "")
-}
-
-// SnakeCase converts TitleCase variable names to snake_case format.
-func SnakeCase(name string) string {
-	runes := []rune(name)
-	length := len(runes)
-
-	var out []rune
-	for i := 0; i < length; i++ {
-		if i > 0 && unicode.IsUpper(runes[i]) && ((i+1 < length && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1]) || unicode.IsDigit(runes[i-1])) {
-			out = append(out, '_')
-		}
-		out = append(out, unicode.ToLower(runes[i]))
-	}
-
-	return string(out)
 }
 
 // MakeStringMap converts a map[string]string into the format:

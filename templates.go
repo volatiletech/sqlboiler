@@ -119,7 +119,6 @@ var templateStringMappers = map[string]func(string) string{
 	"toUpper":   strings.ToUpper,
 	"titleCase": strmangle.TitleCase,
 	"camelCase": strmangle.CamelCase,
-	"snakeCase": strmangle.SnakeCase,
 }
 
 // templateFunctions is a map of all the functions that get passed into the

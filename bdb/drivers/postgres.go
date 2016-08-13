@@ -110,12 +110,21 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 
 	rows, err := p.dbConn.Query(`
 		select column_name, data_type, column_default, is_nullable,
-			(
-				select cast(count(*) as bit) as is_unique
+			(select exists(
+		    select 1
 				from information_schema.constraint_column_usage as ccu
 		    inner join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name
 		    where ccu.table_name = c.table_name and ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
-			) as is_unique
+			)) OR (select exists(
+		    select 1
+		    from
+		      pg_indexes pgix
+		      inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i'
+		      inner join pg_index pgi on pgi.indexrelid = pgc.oid
+		      inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
+		    where
+		      pgix.schemaname = 'public' and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
+		)) as is_unique
 		from information_schema.columns as c
 		where table_name=$1 and table_schema = 'public';
 	`, tableName)

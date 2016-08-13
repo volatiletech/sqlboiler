@@ -47,7 +47,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
   _, err := boil.ExecQuery(query)
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to delete from {{.Table.Name}}: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to delete from {{.Table.Name}}")
   }
 
   return nil
@@ -70,7 +70,7 @@ func (q {{$varNameSingular}}Query) DeleteAll() error {
 
   _, err := boil.ExecQuery(q.Query)
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to delete all from {{.Table.Name}}: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{.Table.Name}}")
   }
 
   return nil
@@ -123,7 +123,7 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 
   _, err := exec.Exec(sql, args...)
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice")
   }
 
   return nil

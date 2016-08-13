@@ -3,14 +3,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"text/template"
 
+	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -225,7 +224,7 @@ func checkPKeys(tables []bdb.Table) error {
 	}
 
 	if len(missingPkey) != 0 {
-		return fmt.Errorf("primary key missing in tables (%s)", strings.Join(missingPkey, ", "))
+		return errors.Errorf("primary key missing in tables (%s)", strings.Join(missingPkey, ", "))
 	}
 
 	return nil

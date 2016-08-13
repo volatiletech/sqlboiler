@@ -11,6 +11,7 @@ import (
 
 	null "gopkg.in/nullbio/null.v4"
 
+	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/vattle/sqlboiler/strmangle"
 )
@@ -60,9 +61,9 @@ func IsZeroValue(obj interface{}, shouldZero bool, columns ...string) []error {
 
 		zv := reflect.Zero(field.Type())
 		if shouldZero && !reflect.DeepEqual(field.Interface(), zv.Interface()) {
-			errs = append(errs, fmt.Errorf("Column with name %s is not zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
+			errs = append(errs, errors.Errorf("Column with name %s is not zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
 		} else if !shouldZero && reflect.DeepEqual(field.Interface(), zv.Interface()) {
-			errs = append(errs, fmt.Errorf("Column with name %s is zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
+			errs = append(errs, errors.Errorf("Column with name %s is zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
 		}
 	}
 
@@ -93,20 +94,20 @@ func IsValueMatch(obj interface{}, columns []string, values []interface{}) []err
 				timeField = field.FieldByName("Time")
 				validField := field.FieldByName("Valid")
 				if validField.Interface() != values[i].(null.Time).Valid {
-					errs = append(errs, fmt.Errorf("Null.Time column with name %s Valid field does not match: %v ≠ %v", c, values[i].(null.Time).Valid, validField.Interface()))
+					errs = append(errs, errors.Errorf("Null.Time column with name %s Valid field does not match: %v ≠ %v", c, values[i].(null.Time).Valid, validField.Interface()))
 				}
 			}
 
 			if (rgxValidTime.MatchString(valTimeStr) && timeField.Interface() == reflect.Zero(timeField.Type()).Interface()) ||
 				(!rgxValidTime.MatchString(valTimeStr) && timeField.Interface() != reflect.Zero(timeField.Type()).Interface()) {
-				errs = append(errs, fmt.Errorf("Time column with name %s Time field does not match: %v ≠ %v", c, values[i], timeField.Interface()))
+				errs = append(errs, errors.Errorf("Time column with name %s Time field does not match: %v ≠ %v", c, values[i], timeField.Interface()))
 			}
 
 			continue
 		}
 
 		if !reflect.DeepEqual(field.Interface(), values[i]) {
-			errs = append(errs, fmt.Errorf("Column with name %s does not match value: %#v ≠ %#v", c, values[i], field.Interface()))
+			errs = append(errs, errors.Errorf("Column with name %s does not match value: %#v ≠ %#v", c, values[i], field.Interface()))
 		}
 	}
 
@@ -131,7 +132,7 @@ func RandomizeSlice(obj interface{}, colTypes map[string]string, includeInvalid 
 		}
 
 		if kind != exp {
-			return fmt.Errorf("[%d] RandomizeSlice object type should be *[]*Type but was: %s", i, ptrSlice.Type().String())
+			return errors.Errorf("[%d] RandomizeSlice object type should be *[]*Type but was: %s", i, ptrSlice.Type().String())
 		}
 
 		if kind == reflect.Struct {
@@ -167,14 +168,14 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 	value := reflect.ValueOf(str)
 	kind := value.Kind()
 	if kind != reflect.Ptr {
-		return fmt.Errorf("Outer element should be a pointer, given a non-pointer: %T", str)
+		return errors.Errorf("Outer element should be a pointer, given a non-pointer: %T", str)
 	}
 
 	// Check if it's a struct
 	value = value.Elem()
 	kind = value.Kind()
 	if kind != reflect.Struct {
-		return fmt.Errorf("Inner element should be a struct, given a non-struct: %T", str)
+		return errors.Errorf("Inner element should be a struct, given a non-struct: %T", str)
 	}
 
 	typ := value.Type()
@@ -212,14 +213,14 @@ func RandomizeValidatedStruct(obj interface{}, validatedCols []string, colTypes 
 	value := reflect.ValueOf(obj)
 	kind := value.Kind()
 	if kind != reflect.Ptr {
-		return fmt.Errorf("Outer element should be a pointer, given a non-pointer: %T", obj)
+		return errors.Errorf("Outer element should be a pointer, given a non-pointer: %T", obj)
 	}
 
 	// Check if it's a struct
 	value = value.Elem()
 	kind = value.Kind()
 	if kind != reflect.Struct {
-		return fmt.Errorf("Inner element should be a struct, given a non-struct: %T", obj)
+		return errors.Errorf("Inner element should be a struct, given a non-struct: %T", obj)
 	}
 
 	typ := value.Type()
@@ -420,11 +421,11 @@ func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) 
 		case reflect.Slice:
 			sliceVal := typ.Elem()
 			if sliceVal.Kind() != reflect.Uint8 {
-				return fmt.Errorf("unsupported slice type: %T", typ.String())
+				return errors.Errorf("unsupported slice type: %T", typ.String())
 			}
 			newVal = randByteSlice(5+rand.Intn(20), sd.nextInt())
 		default:
-			return fmt.Errorf("unsupported type: %T", typ.String())
+			return errors.Errorf("unsupported type: %T", typ.String())
 		}
 	}
 

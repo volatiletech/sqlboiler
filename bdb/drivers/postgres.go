@@ -7,6 +7,7 @@ import (
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 )
 
@@ -139,7 +140,7 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 		var unique bool
 		var defaultPtr *string
 		if err := rows.Scan(&colName, &colType, &defaultPtr, &nullable, &unique); err != nil {
-			return nil, fmt.Errorf("unable to scan for table %s: %s", tableName, err)
+			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		if defaultPtr == nil {

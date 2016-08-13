@@ -18,7 +18,7 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 
   err := q.Bind(o)
   if err != nil {
-    return nil, fmt.Errorf("{{.PkgName}}: failed to execute a one query for {{.Table.Name}}: %s", err)
+    return nil, errors.Wrap(err, "{{.PkgName}}: failed to execute a one query for {{.Table.Name}}")
   }
 
   return o, nil
@@ -40,7 +40,7 @@ func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
 
   err := q.Bind(&o)
   if err != nil {
-    return nil, fmt.Errorf("{{.PkgName}}: failed to assign all query results to {{$tableNameSingular}} slice: %s", err)
+    return nil, errors.Wrap(err, "{{.PkgName}}: failed to assign all query results to {{$tableNameSingular}} slice")
   }
 
   return o, nil
@@ -64,7 +64,7 @@ func (q {{$varNameSingular}}Query) Count() (int64, error) {
 
   err := boil.ExecQueryOne(q.Query).Scan(&count)
   if err != nil {
-    return 0, fmt.Errorf("{{.PkgName}}: failed to count {{.Table.Name}} rows: %s", err)
+    return 0, errors.Wrap(err, "{{.PkgName}}: failed to count {{.Table.Name}} rows")
   }
 
   return count, nil
@@ -89,7 +89,7 @@ func (q {{$varNameSingular}}Query) Exists() (bool, error) {
 
   err := boil.ExecQueryOne(q.Query).Scan(&count)
   if err != nil {
-    return false, fmt.Errorf("{{.PkgName}}: failed to check if {{.Table.Name}} exists: %s", err)
+    return false, errors.Wrap(err, "{{.PkgName}}: failed to check if {{.Table.Name}} exists")
   }
 
   return count > 0, nil

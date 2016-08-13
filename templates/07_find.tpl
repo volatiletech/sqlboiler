@@ -37,7 +37,7 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
   err := q.Bind({{$varNameSingular}})
   if err != nil {
-    return nil, fmt.Errorf("{{.PkgName}}: unable to select from {{.Table.Name}}: %v", err)
+    return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
   }
 
   return {{$varNameSingular}}, nil

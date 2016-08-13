@@ -46,7 +46,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, update bool, conflic
   }
 
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to upsert for {{.Table.Name}}: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
   }
 
   if err := o.doAfterUpsertHooks(); err != nil {

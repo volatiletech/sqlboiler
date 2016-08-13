@@ -112,7 +112,7 @@ func setup() error {
 	// Initialize Viper and load the config file
 	err = InitViper()
 	if err != nil {
-		return fmt.Errorf("Unable to load config file: %s", err)
+		return errors.Wrap(err, "Unable to load config file")
 	}
 
 	viper.SetDefault("postgres.sslmode", "require")
@@ -141,7 +141,7 @@ func setup() error {
 	).Check()
 
 	if err != nil {
-		return fmt.Errorf("Unable to load testCfg: %s", err.Error())
+		return errors.Wrap(err, "Unable to load testCfg")
 	}
 
 	err = dropTestDB()
@@ -152,13 +152,13 @@ func setup() error {
 
 	fhSchema, err := ioutil.TempFile(os.TempDir(), "sqlboilerschema")
 	if err != nil {
-		return fmt.Errorf("Unable to create sqlboiler schema tmp file: %s", err)
+		return errors.Wrap(err, "Unable to create sqlboiler schema tmp file")
 	}
 	defer os.Remove(fhSchema.Name())
 
 	passDir, err := ioutil.TempDir(os.TempDir(), "sqlboiler")
 	if err != nil {
-		return fmt.Errorf("Unable to create sqlboiler tmp dir for postgres pw file: %s", err)
+		return errors.Wrap(err, "Unable to create sqlboiler tmp dir for postgres pw file")
 	}
 	defer os.RemoveAll(passDir)
 
@@ -178,7 +178,7 @@ func setup() error {
 
 	err = ioutil.WriteFile(passFilePath, pwBytes, 0600)
 	if err != nil {
-		return fmt.Errorf("Unable to create pwfile in passDir: %s", err)
+		return errors.Wrap(err, "Unable to create pwfile in passDir")
 	}
 
 	// The params for the pg_dump command to dump the database schema
@@ -247,7 +247,7 @@ func setup() error {
 
 	err = ioutil.WriteFile(testPassFilePath, testPwBytes, 0600)
 	if err != nil {
-		return fmt.Errorf("Unable to create testpwfile in passDir: %s", err)
+		return errors.Wrapf(err, "Unable to create testpwfile in passDir")
 	}
 
 	// The params for the psql schema import command

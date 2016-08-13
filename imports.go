@@ -143,11 +143,11 @@ func removeDuplicates(dedup []string) []string {
 
 var defaultTemplateImports = imports{
 	standard: importList{
-		`"errors"`,
 		`"fmt"`,
 		`"strings"`,
 	},
 	thirdParty: importList{
+		`"github.com/pkg/errors"`,
 		`"github.com/vattle/sqlboiler/boil"`,
 		`"github.com/vattle/sqlboiler/boil/qm"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
@@ -169,10 +169,10 @@ var defaultTestTemplateImports = imports{
 		`"testing"`,
 		`"reflect"`,
 		`"time"`,
-		`"errors"`,
 		`"fmt"`,
 	},
 	thirdParty: importList{
+		`"github.com/pkg/errors"`,
 		`"gopkg.in/nullbio/null.v4"`,
 		`"github.com/vattle/sqlboiler/boil"`,
 		`"github.com/vattle/sqlboiler/boil/qm"`,
@@ -222,11 +222,12 @@ var defaultTestMainImports = map[string]imports{
 			`"math/rand"`,
 		},
 		thirdParty: importList{
+			`"github.com/kat-co/vala"`,
+			`"github.com/pkg/errors"`,
+			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/boil"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
 			`_ "github.com/lib/pq"`,
-			`"github.com/spf13/viper"`,
-			`"github.com/kat-co/vala"`,
 		},
 	},
 }

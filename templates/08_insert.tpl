@@ -44,7 +44,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   if len(returnColumns) != 0 {
     result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
     if err != nil {
-      return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)
+      return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
     }
 
     lastId, err := result.lastInsertId()
@@ -52,7 +52,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
       sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, wl))
       rows, err := exec.Query(sel, boil.GetStructValues(o, wl...)...)
       if err != nil {
-        return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)
+        return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
       }
       defer rows.Close()
 
@@ -60,7 +60,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
       ptrs := boil.GetStructPointers(o, returnColumns...)
       for rows.Next() {
         if err := rows.Scan(ptrs[i]); err != nil {
-          return fmt.Errorf("{{.PkgName}}: unable to get result of insert, scan failed for column %s index %d: %s\n\n%#v", returnColumns[i], i, err, ptrs)
+          return errors.Wrapf(err, "{{.PkgName}}: unable to get result of insert, scan failed for column %s index %d\n\n%#v", returnColumns[i], i, ptrs)
         }
         i++
       }
@@ -85,7 +85,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
 
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to insert into {{.Table.Name}}: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
 
   if err := o.doAfterCreateHooks(); err != nil {

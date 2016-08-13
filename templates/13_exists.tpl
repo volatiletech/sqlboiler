@@ -20,7 +20,7 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
 
   err := row.Scan(&exists)
   if err != nil {
-    return false, fmt.Errorf("{{.PkgName}}: unable to check if {{.Table.Name}} exists: %v", err)
+    return false, errors.Wrap(err, "{{.PkgName}}: unable to check if {{.Table.Name}} exists")
   }
 
   return exists, nil

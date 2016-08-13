@@ -101,7 +101,7 @@ func executeTemplates(e executeTemplateData) error {
 
 		resp, err := executeTemplate(e.templates.Template, tplName, e.data)
 		if err != nil {
-			return fmt.Errorf("Error generating template %s: %s", tplName, err)
+			return errors.Wrapf(err, "Error generating template %s", tplName)
 		}
 		out = append(out, resp)
 	}
@@ -125,7 +125,7 @@ func executeSingletonTemplates(e executeTemplateData) error {
 	for _, tplName := range e.templates.Templates() {
 		resp, err := executeTemplate(e.templates.Template, tplName, e.data)
 		if err != nil {
-			return fmt.Errorf("Error generating template %s: %s", tplName, err)
+			return errors.Wrapf(err, "Error generating template %s", tplName)
 		}
 
 		fName := tplName
@@ -184,25 +184,25 @@ func outHandler(outFolder string, fileName string, pkgName string, imps imports,
 
 	outFile, err := testHarnessFileOpen(path)
 	if err != nil {
-		return fmt.Errorf("Unable to create output file %s: %s", path, err)
+		return errors.Wrapf(err, "Unable to create output file %s", path)
 	}
 	defer outFile.Close()
 	out = outFile
 
 	if _, err := fmt.Fprintf(out, "package %s\n\n", pkgName); err != nil {
-		return fmt.Errorf("Unable to write package name %s to file: %s", pkgName, path)
+		return errors.Errorf("Unable to write package name %s to file: %s", pkgName, path)
 	}
 
 	impStr := buildImportString(imps)
 	if len(impStr) > 0 {
 		if _, err := fmt.Fprintf(out, "%s\n", impStr); err != nil {
-			return fmt.Errorf("Unable to write imports to file handle: %v", err)
+			return errors.Wrap(err, "Unable to write imports to file handle")
 		}
 	}
 
 	for _, templateOutput := range contents {
 		if _, err := fmt.Fprintf(out, "%s\n", templateOutput); err != nil {
-			return fmt.Errorf("Unable to write template output to file handle: %v", err)
+			return errors.Wrap(err, "Unable to write template output to file handle")
 		}
 	}
 

@@ -81,7 +81,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 
   err := q.Bind(&{{$varNamePlural}})
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice: %v", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice")
   }
 
   *o = {{$varNamePlural}}

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 	"sort"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 )
 
@@ -146,7 +146,7 @@ func TestRemoveDuplicates(t *testing.T) {
 		for i := 0; i < len(possible)-1; i++ {
 			for j := i + 1; j < len(possible); j++ {
 				if possible[i] == possible[j] {
-					return fmt.Errorf("found duplicate: %s [%d] [%d]", possible[i], i, j)
+					return errors.Errorf("found duplicate: %s [%d] [%d]", possible[i], i, j)
 				}
 			}
 		}

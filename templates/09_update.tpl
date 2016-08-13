@@ -55,11 +55,11 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
     _, err = exec.Exec(query, values...)
   } else {
-    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
+    return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
   }
 
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to update {{.Table.Name}} row: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
   }
 
   if err := o.doAfterUpdateHooks(); err != nil {
@@ -82,7 +82,7 @@ func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
 
   _, err := boil.ExecQuery(q.Query)
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to update all for {{.Table.Name}}: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to update all for {{.Table.Name}}")
   }
 
   return nil
@@ -145,7 +145,7 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 
   _, err := exec.Exec(sql, args...)
   if err != nil {
-    return fmt.Errorf("{{.PkgName}}: unable to update all in {{$varNameSingular}} slice: %s", err)
+    return errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")
   }
 
   return nil

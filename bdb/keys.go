@@ -3,7 +3,6 @@ package bdb
 import (
 	"fmt"
 	"regexp"
-	"strings"
 )
 
 var rgxAutoIncColumn = regexp.MustCompile(`^nextval\(.*\)`)
@@ -89,29 +88,4 @@ func SQLColDefStrings(defs []SQLColumnDef) []string {
 	}
 
 	return strs
-}
-
-// AutoIncPrimaryKey returns the auto-increment primary key column name or an
-// empty string.
-func AutoIncPrimaryKey(cols []Column, pkey *PrimaryKey) *Column {
-	if pkey == nil {
-		return nil
-	}
-
-	for _, pkeyColumn := range pkey.Columns {
-		for _, c := range cols {
-			if c.Name != pkeyColumn {
-				continue
-			}
-
-			if !rgxAutoIncColumn.MatchString(c.Default) || c.Nullable ||
-				!(strings.HasPrefix(c.Type, "int") || strings.HasPrefix(c.Type, "uint")) {
-				continue
-			}
-
-			return &c
-		}
-	}
-
-	return nil
 }

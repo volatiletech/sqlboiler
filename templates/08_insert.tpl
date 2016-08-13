@@ -41,34 +41,34 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
 
   {{if driverUsesLastInsertID .DriverName}}
-  if len(returnColumns) != 0 {
-    result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
-    if err != nil {
-      return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
-    }
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, ins)
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
+  }
 
-    lastId, err := result.lastInsertId()
-    if err != nil || lastId == 0 {
-      sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, wl))
-      rows, err := exec.Query(sel, boil.GetStructValues(o, wl...)...)
-      if err != nil {
-        return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
-      }
-      defer rows.Close()
+  result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
+  if err != nil {
+    return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
+  }
 
-      i := 0
-      ptrs := boil.GetStructPointers(o, returnColumns...)
-      for rows.Next() {
-        if err := rows.Scan(ptrs[i]); err != nil {
-          return errors.Wrapf(err, "{{.PkgName}}: unable to get result of insert, scan failed for column %s index %d\n\n%#v", returnColumns[i], i, ptrs)
-        }
-        i++
-      }
-    } else if {{$varNameSingular}}AutoIncPrimKey != "" {
-      sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s=$1`, strings.Join(returnColumns, ","), {{$varNameSingular}}AutoIncPrimaryKey, lastId)
-    }
-  } else {
-    _, err = exec.Exec(ins, boil.GetStructValues(o, wl...)...)
+  if len(returnColumns) == 0 {
+      return o.doAfterCreateHooks()
+  }
+
+  lastId, err := result.lastInsertId()
+  if err != nil || lastId == 0 {
+    return ErrSyncFail
+  }
+
+  if len({{$varNameSingular}}AutoIncPrimaryKeys) != 1 {
+    return ErrSyncFail
+  }
+
+  pkey := {{$varNameSingular}}AutoIncPrimaryKeys[0]
+  sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, pkey))
+  err := exec.QueryRow(sel, lastId).Scan(boil.GetStructPointers(o, returnColumns...))
+  if err != nil {
+    return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
   }
   {{else}}
   if len(returnColumns) != 0 {
@@ -77,7 +77,6 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   } else {
     _, err = exec.Exec(ins, boil.GetStructValues(o, wl...)...)
   }
-  {{end}}
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, ins)
@@ -87,12 +86,9 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
+  {{end}}
 
-  if err := o.doAfterCreateHooks(); err != nil {
-    return err
-  }
-
-  return nil
+  return o.doAfterCreateHooks()
 }
 
 // generateInsertColumns generates the whitelist columns and return columns for an insert statement

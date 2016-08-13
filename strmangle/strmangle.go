@@ -5,7 +5,6 @@
 package strmangle
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"regexp"
@@ -250,7 +249,8 @@ func PrefixStringSlice(str string, strs []string) []string {
 // For example, ($1, $2, $3), ($4, $5, $6) etc.
 // It will start counting placeholders at "start".
 func Placeholders(count int, start int, group int) string {
-	var buf bytes.Buffer
+	buf := GetBuffer()
+	defer PutBuffer(buf)
 
 	if start == 0 || group == 0 {
 		panic("Invalid start or group numbers supplied.")

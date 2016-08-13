@@ -94,16 +94,48 @@ func Identifier(in int) string {
 
 // Plural converts singular words to plural words (eg: person to people)
 func Plural(name string) string {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
 	splits := strings.Split(name, "_")
-	splits[len(splits)-1] = inflection.Plural(splits[len(splits)-1])
-	return strings.Join(splits, "_")
+
+	for i := 0; i < len(splits); i++ {
+		if i != 0 {
+			buf.WriteByte('_')
+		}
+
+		if i == len(splits)-1 {
+			buf.WriteString(inflection.Plural(splits[len(splits)-1]))
+			break
+		}
+
+		buf.WriteString(splits[i])
+	}
+
+	return buf.String()
 }
 
 // Singular converts plural words to singular words (eg: people to person)
 func Singular(name string) string {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
 	splits := strings.Split(name, "_")
-	splits[len(splits)-1] = inflection.Singular(splits[len(splits)-1])
-	return strings.Join(splits, "_")
+
+	for i := 0; i < len(splits); i++ {
+		if i != 0 {
+			buf.WriteByte('_')
+		}
+
+		if i == len(splits)-1 {
+			buf.WriteString(inflection.Singular(splits[len(splits)-1]))
+			break
+		}
+
+		buf.WriteString(splits[i])
+	}
+
+	return buf.String()
 }
 
 // TitleCase changes a snake-case variable name

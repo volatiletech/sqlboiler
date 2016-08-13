@@ -124,6 +124,7 @@ func TestSingular(t *testing.T) {
 		{"hello_people", "hello_person"},
 		{"hello_person", "hello_person"},
 		{"friends", "friend"},
+		{"hello_there_people", "hello_there_person"},
 	}
 
 	for i, test := range tests {
@@ -143,6 +144,7 @@ func TestPlural(t *testing.T) {
 		{"hello_person", "hello_people"},
 		{"friend", "friends"},
 		{"friends", "friends"},
+		{"hello_there_person", "hello_there_people"},
 	}
 
 	for i, test := range tests {

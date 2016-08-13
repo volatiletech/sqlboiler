@@ -190,12 +190,20 @@ func CamelCase(name string) string {
 // MakeStringMap converts a map[string]string into the format:
 // "key": "value", "key": "value"
 func MakeStringMap(types map[string]string) string {
-	var typArr []string
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
+	c := 0
 	for k, v := range types {
-		typArr = append(typArr, fmt.Sprintf(`"%s": "%s"`, k, v))
+		buf.WriteString(fmt.Sprintf(`"%s": "%s"`, k, v))
+		if c < len(types)-1 {
+			buf.WriteString(", ")
+		}
+
+		c++
 	}
 
-	return strings.Join(typArr, ", ")
+	return buf.String()
 }
 
 // StringMap maps a function over a slice of strings.

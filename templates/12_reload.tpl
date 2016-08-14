@@ -59,11 +59,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
-  if o == nil {
-    return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for reload all")
-  }
-
-  if len(*o) == 0 {
+  if o == nil || len(*o) == 0 {
     return nil
   }
 

@@ -3,43 +3,27 @@
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}Find(t *testing.T) {
-  var err error
-
-  o := make({{$tableNameSingular}}Slice, 3)
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
+  {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
-  for i := 0; i < len(o); i++ {
-    if err = o[i].InsertG(); err != nil {
-      t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
-    }
+  tx, err := boil.Begin()
+  if err != nil {
+    t.Fatal(err)
+  }
+  defer tx.Rollback()
+
+  if err = {{$varNameSingular}}.Insert(tx); err != nil {
+    t.Error(err)
   }
 
-  j := make({{$tableNameSingular}}Slice, 3)
-  // Perform all Find queries and assign result objects to slice for comparison
-  for i := 0; i < len(j); i++ {
-    j[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
-    err = {{$varNameSingular}}CompareVals(o[i], j[i], true); if err != nil {
-      t.Error(err)
-    }
+  {{$varNameSingular}}Found, err := {{$tableNameSingular}}Find(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", "}})
+  if err != nil {
+    t.Error(err)
   }
 
-  f, err := {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[0]." | join ", "}}, {{$varNameSingular}}PrimaryKeyColumns...)
-  {{range $key, $value := .Table.PKey.Columns}}
-  if o[0].{{titleCase $value}} != f.{{titleCase $value}} {
-    t.Errorf("Expected primary key values to match, {{titleCase $value}} did not match")
+  if {{$varNameSingular}}Found == nil {
+    t.Error("want a record, got nil")
   }
-  {{end}}
-
-  colsWithoutPrimKeys := strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
-  fRef := reflect.ValueOf(f).Elem()
-  for _, v := range colsWithoutPrimKeys {
-    val := fRef.FieldByName(v)
-    if val.IsValid() {
-      t.Errorf("Expected all other columns to be zero value, but column %s was %#v", v, val.Interface())
-    }
-  }
-
-  {{$varNamePlural}}DeleteAllRows(t)
 }

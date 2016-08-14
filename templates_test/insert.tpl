@@ -4,6 +4,8 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $parent := . -}}
 func Test{{$tableNamePlural}}Insert(t *testing.T) {
+  t.Parallel()
+
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
@@ -30,6 +32,8 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
 }
 
 func Test{{$tableNamePlural}}InsertWhitelist(t *testing.T) {
+  t.Parallel()
+
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)

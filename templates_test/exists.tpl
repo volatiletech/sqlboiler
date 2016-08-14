@@ -2,49 +2,30 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $pkeyArgs := .Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", " -}}
 func Test{{$tableNamePlural}}Exists(t *testing.T) {
-  var err error
+  t.Parallel()
 
-  o := {{$tableNameSingular}}{}
-  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
-    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+  {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
-  if err = o.InsertG(); err != nil {
-    t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o, err)
+  tx, err := boil.Begin()
+  if err != nil {
+    t.Fatal(err)
+  }
+  defer tx.Rollback()
+
+  if err = {{$varNameSingular}}.Insert(tx); err != nil {
+    t.Error(err)
   }
 
-  // Check Exists finds existing rows
-  e, err := {{$tableNameSingular}}ExistsG({{$pkeyArgs}})
+  {{$pkeyArgs := .Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", " -}}
+  e, err := {{$tableNameSingular}}Exists(tx, {{$pkeyArgs}})
   if err != nil {
     t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
   }
   if e != true {
     t.Errorf("Expected {{$tableNameSingular}}ExistsG to return true, but got false.")
   }
-
-  whereClause := strmangle.WhereClause(1, {{$varNameSingular}}PrimaryKeyColumns)
-  e, err = {{$tableNamePlural}}G(qm.Where(whereClause, boil.GetStructValues(o, {{$varNameSingular}}PrimaryKeyColumns...)...)).Exists()
-  if err != nil {
-    t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
-  }
-  if e != true {
-    t.Errorf("Expected ExistsG to return true, but got false.")
-  }
-
-  o = {{$tableNameSingular}}{}
-  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
-    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
-  }
-
-  e, err = {{$tableNamePlural}}G(qm.Where(whereClause, boil.GetStructValues(o, {{$varNameSingular}}PrimaryKeyColumns...)...)).Exists()
-  if err != nil {
-    t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
-  }
-  if e != false {
-    t.Errorf("Expected ExistsG to return false, but got true.")
-  }
-
-  {{$varNamePlural}}DeleteAllRows(t)
 }

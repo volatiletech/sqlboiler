@@ -4,44 +4,6 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 
-var (
-  _ = bytes.Equal
-  _ = time.Second
-  _ = null.Bool.IsZero
-)
-
-func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, equal bool, blacklist ...string) error {
-  {{- range $key, $value := .Table.Columns -}}
-  {{if eq $value.Type "null.Time"}}
-  if ((equal && o.{{titleCase $value.Name}}.Time.UTC().Format("02/01/2006") != j.{{titleCase $value.Name}}.Time.UTC().Format("02/01/2006")) ||
-    (!equal && o.{{titleCase $value.Name}}.Time.UTC().Format("02/01/2006") == j.{{titleCase $value.Name}}.Time.UTC().Format("02/01/2006"))) &&
-    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
-    return errors.New(fmt.Sprintf("NullTime {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Time.Format("02/01/2006"), j.{{titleCase $value.Name}}.Time.Format("02/01/2006")))
-  }
-  {{else if eq $value.Type "time.Time"}}
-  if ((equal && o.{{titleCase $value.Name}}.UTC().Format("02/01/2006") != j.{{titleCase $value.Name}}.UTC().Format("02/01/2006")) ||
-    (!equal && o.{{titleCase $value.Name}}.UTC().Format("02/01/2006") == j.{{titleCase $value.Name}}.UTC().Format("02/01/2006"))) &&
-    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
-    return errors.New(fmt.Sprintf("Time {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006")))
-  }
-  {{else if eq $value.Type "[]byte"}}
-  if ((equal && !bytes.Equal(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})) ||
-    (!equal && bytes.Equal(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))) &&
-    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
-    return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
-  }
-  {{else}}
-  if ((equal && j.{{titleCase $value.Name}} != o.{{titleCase $value.Name}}) ||
-    (!equal && j.{{titleCase $value.Name}} == o.{{titleCase $value.Name}})) &&
-    !strmangle.SetInclude("{{$value.Name}}", blacklist) {
-    return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
-  }
-  {{end}}
-  {{- end -}}
-
-  return nil
-}
-
 func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
   var err error
   var o {{$tableNameSingular}}

@@ -1,5 +1,7 @@
 {{- define "relationship_to_one_test_helper"}}
 func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
+  t.Parallel()
+
   tx := MustTx(boil.Begin())
   defer tx.Rollback()
 
@@ -11,7 +13,6 @@ func Test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   {{- if .ForeignKey.ForeignColumnNullable -}}
   foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
   {{end}}
-
 
   {{if not .Function.ReverseInserts -}}
   if err := foreign.Insert(tx); err != nil {

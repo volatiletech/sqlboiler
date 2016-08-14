@@ -5,10 +5,10 @@
 func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   var err error
 
-  o := {{$tableNameSingular}}{}
+  {{$varNameSingular}} := {{$tableNameSingular}}{}
 
   // Attempt the INSERT side of an UPSERT
-  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = boil.RandomizeStruct(&{{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -18,32 +18,32 @@ func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   }
   defer tx.Rollback()
 
-  if err = o.Upsert(tx, false, nil, nil); err != nil {
+  if err = {{$varNameSingular}}.Upsert(tx, false, nil, nil); err != nil {
     t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
   }
 
-  compare, err := {{$tableNameSingular}}Find(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  count, err := {{$tableNamePlural}}(tx).Count()
   if err != nil {
-    t.Errorf("Unable to find {{$tableNameSingular}}: %s", err)
-  }
-  err = {{$varNameSingular}}CompareVals(&o, compare, true); if err != nil {
     t.Error(err)
+  }
+  if count != 1 {
+    t.Error("want one record, got:", count)
   }
 
   // Attempt the UPDATE side of an UPSERT
-  if err = boil.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+  if err = boil.RandomizeStruct(&{{$varNameSingular}}, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  if err = o.Upsert(tx, true, nil, nil); err != nil {
+  if err = {{$varNameSingular}}.Upsert(tx, true, nil, nil); err != nil {
     t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
   }
 
-  compare, err = {{$tableNameSingular}}Find(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  count, err = {{$tableNamePlural}}(tx).Count()
   if err != nil {
-    t.Errorf("Unable to find {{$tableNameSingular}}: %s", err)
-  }
-  err = {{$varNameSingular}}CompareVals(&o, compare, true); if err != nil {
     t.Error(err)
+  }
+  if count != 1 {
+    t.Error("want one record, got:", count)
   }
 }

@@ -178,15 +178,9 @@ var defaultTestTemplateImports = imports{
 	standard: importList{
 		`"testing"`,
 		`"reflect"`,
-		`"time"`,
-		`"fmt"`,
-		`"bytes"`,
 	},
 	thirdParty: importList{
-		`"github.com/pkg/errors"`,
-		`"gopkg.in/nullbio/null.v4"`,
 		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/boil/qm"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }

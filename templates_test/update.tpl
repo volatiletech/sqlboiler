@@ -68,7 +68,7 @@ func Test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
   // Remove Primary keys and unique columns from what we plan to update
   fields := strmangle.SetComplement(
     {{$varNameSingular}}Columns,
-    strmangle.SetMerge({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}UniqueColumns),
+    {{$varNameSingular}}PrimaryKeyColumns,
   )
 
 	value := reflect.Indirect(reflect.ValueOf({{$varNameSingular}}))

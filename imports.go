@@ -180,6 +180,7 @@ var defaultTestTemplateImports = imports{
 		`"reflect"`,
 		`"time"`,
 		`"fmt"`,
+		`"bytes"`,
 	},
 	thirdParty: importList{
 		`"github.com/pkg/errors"`,
@@ -208,7 +209,6 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"os"`,
 			`"strconv"`,
 			`"math/rand"`,
-			`"bytes"`,
 		},
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,

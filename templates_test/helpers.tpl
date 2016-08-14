@@ -4,6 +4,12 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 
+var (
+  _ = bytes.Equal
+  _ = time.Second
+  _ = null.Bool.IsZero
+)
+
 func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameSingular}}, equal bool, blacklist ...string) error {
   {{- range $key, $value := .Table.Columns -}}
   {{if eq $value.Type "null.Time"}}
@@ -19,8 +25,8 @@ func {{$varNameSingular}}CompareVals(o *{{$tableNameSingular}}, j *{{$tableNameS
     return errors.New(fmt.Sprintf("Time {{$value.Name}} unexpected value, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}.Format("02/01/2006"), j.{{titleCase $value.Name}}.Format("02/01/2006")))
   }
   {{else if eq $value.Type "[]byte"}}
-  if ((equal && !byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})) ||
-    (!equal && byteSliceEqual(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))) &&
+  if ((equal && !bytes.Equal(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}})) ||
+    (!equal && bytes.Equal(o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))) &&
     !strmangle.SetInclude("{{$value.Name}}", blacklist) {
     return errors.New(fmt.Sprintf("Expected {{$value.Name}} columns to match, got:\nStruct: %#v\nResponse: %#v\n\n", o.{{titleCase $value.Name}}, j.{{titleCase $value.Name}}))
   }

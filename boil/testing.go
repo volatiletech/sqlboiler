@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	null "gopkg.in/nullbio/null.v4"
@@ -36,14 +37,12 @@ var (
 	rgxValidTime = regexp.MustCompile(`[2-9]+`)
 )
 
-type seed int
+type seed int64
 
 var sd = new(seed)
 
 func (s *seed) nextInt() int {
-	nextInt := int(*s)
-	*s++
-	return nextInt
+	return int(atomic.AddInt64((*int64)(s), 1))
 }
 
 // RandomizeStruct takes an object and fills it with random data.

@@ -169,15 +169,10 @@ var templateFunctions = template.FuncMap{
 	"textsFromRelationship":         textsFromRelationship,
 
 	// dbdrivers ops
-	"filterColumnsByDefault":       bdb.FilterColumnsByDefault,
-	"filterColumnsBySimpleDefault": bdb.FilterColumnsBySimpleDefault,
-	"filterColumnsByAutoIncrement": bdb.FilterColumnsByAutoIncrement,
-	"filterColumnsByValidated":     bdb.FilterColumnsByValidated,
-	"filterColumnsByUnique":        bdb.FilterColumnsByUnique,
-	"sqlColDefinitions":            bdb.SQLColDefinitions,
-	"sqlColDefStrings":             bdb.SQLColDefStrings,
-	"columnNames":                  bdb.ColumnNames,
-	"columnTypes":                  bdb.ColumnTypes,
-	"columnDBTypes":                bdb.ColumnDBTypes,
-	"defaultValues":                bdb.DefaultValues,
+	"filterColumnsByDefault": bdb.FilterColumnsByDefault,
+	"sqlColDefinitions":      bdb.SQLColDefinitions,
+	"sqlColDefStrings":       bdb.SQLColDefStrings,
+	"columnNames":            bdb.ColumnNames,
+	"columnTypes":            bdb.ColumnTypes,
+	"columnDBTypes":          bdb.ColumnDBTypes,
 }

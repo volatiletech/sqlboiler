@@ -55,10 +55,10 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
 
   {{$varNameSingular}}One := &{{$tableNameSingular}}{}
   {{$varNameSingular}}Two := &{{$tableNameSingular}}{}
-  if err := boil.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err := boil.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
-  if err := boil.RandomizeStruct({{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err := boil.RandomizeStruct({{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -90,10 +90,10 @@ func Test{{$tableNamePlural}}Count(t *testing.T) {
 
   {{$varNameSingular}}One := &{{$tableNameSingular}}{}
   {{$varNameSingular}}Two := &{{$tableNameSingular}}{}
-  if err := boil.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err := boil.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
-  if err := boil.RandomizeStruct({{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err := boil.RandomizeStruct({{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 

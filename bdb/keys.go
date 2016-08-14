@@ -78,14 +78,3 @@ func SQLColDefinitions(cols []Column, names []string) SQLColumnDefs {
 
 	return ret
 }
-
-// SQLColDefStrings turns SQLColumnDefs into strings.
-func SQLColDefStrings(defs []SQLColumnDef) []string {
-	strs := make([]string, len(defs))
-
-	for i, d := range defs {
-		strs[i] = d.String()
-	}
-
-	return strs
-}

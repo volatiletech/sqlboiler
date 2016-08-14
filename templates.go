@@ -171,8 +171,6 @@ var templateFunctions = template.FuncMap{
 	// dbdrivers ops
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,
 	"sqlColDefinitions":      bdb.SQLColDefinitions,
-	"sqlColDefStrings":       bdb.SQLColDefStrings,
 	"columnNames":            bdb.ColumnNames,
-	"columnTypes":            bdb.ColumnTypes,
 	"columnDBTypes":          bdb.ColumnDBTypes,
 }

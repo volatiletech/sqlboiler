@@ -30,23 +30,3 @@ func TestSQLColDefinitions(t *testing.T) {
 		t.Error("wrong def:", got)
 	}
 }
-
-func TestSQLDefStrings(t *testing.T) {
-	t.Parallel()
-
-	cols := []Column{
-		{Name: "one", Type: "int64"},
-		{Name: "two", Type: "string"},
-		{Name: "three", Type: "string"},
-	}
-
-	defs := SQLColDefinitions(cols, []string{"one", "three"})
-	strs := SQLColDefStrings(defs)
-
-	if got := strs[0]; got != "one int64" {
-		t.Error("wrong str:", got)
-	}
-	if got := strs[1]; got != "three string" {
-		t.Error("wrong str:", got)
-	}
-}

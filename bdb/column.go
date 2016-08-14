@@ -24,16 +24,6 @@ func ColumnNames(cols []Column) []string {
 	return names
 }
 
-// ColumnTypes of the columns.
-func ColumnTypes(cols []Column) []string {
-	types := make([]string, len(cols))
-	for i, c := range cols {
-		types[i] = c.Type
-	}
-
-	return types
-}
-
 // ColumnDBTypes of the columns.
 func ColumnDBTypes(cols []Column) map[string]string {
 	types := map[string]string{}

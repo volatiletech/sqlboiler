@@ -1,7 +1,6 @@
 package boil
 
 import (
-	"fmt"
 	"math/rand"
 	"reflect"
 	"regexp"
@@ -45,73 +44,6 @@ func (s *seed) nextInt() int {
 	nextInt := int(*s)
 	*s++
 	return nextInt
-}
-
-// IsZeroValue checks if the variables with matching columns in obj
-// are or are not zero values, depending on whether shouldZero is true or false
-func IsZeroValue(obj interface{}, shouldZero bool, columns ...string) []error {
-	val := reflect.Indirect(reflect.ValueOf(obj))
-
-	var errs []error
-	for _, c := range columns {
-		field := val.FieldByName(strmangle.TitleCase(c))
-		if !field.IsValid() {
-			panic(fmt.Sprintf("Unable to find variable with column name %s", c))
-		}
-
-		zv := reflect.Zero(field.Type())
-		if shouldZero && !reflect.DeepEqual(field.Interface(), zv.Interface()) {
-			errs = append(errs, errors.Errorf("Column with name %s is not zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
-		} else if !shouldZero && reflect.DeepEqual(field.Interface(), zv.Interface()) {
-			errs = append(errs, errors.Errorf("Column with name %s is zero value: %#v, %#v", c, field.Interface(), zv.Interface()))
-		}
-	}
-
-	return errs
-}
-
-// IsValueMatch checks whether the variables in obj with matching column names
-// match the values in the values slice.
-func IsValueMatch(obj interface{}, columns []string, values []interface{}) []error {
-	val := reflect.Indirect(reflect.ValueOf(obj))
-
-	var errs []error
-	for i, c := range columns {
-		field := val.FieldByName(strmangle.TitleCase(c))
-		if !field.IsValid() {
-			panic(fmt.Sprintf("Unable to find variable with column name %s", c))
-		}
-
-		typ := field.Type().String()
-		if typ == "time.Time" || typ == "null.Time" {
-			var timeField reflect.Value
-			var valTimeStr string
-			if typ == "time.Time" {
-				valTimeStr = values[i].(time.Time).String()
-				timeField = field
-			} else {
-				valTimeStr = values[i].(null.Time).Time.String()
-				timeField = field.FieldByName("Time")
-				validField := field.FieldByName("Valid")
-				if validField.Interface() != values[i].(null.Time).Valid {
-					errs = append(errs, errors.Errorf("Null.Time column with name %s Valid field does not match: %v ≠ %v", c, values[i].(null.Time).Valid, validField.Interface()))
-				}
-			}
-
-			if (rgxValidTime.MatchString(valTimeStr) && timeField.Interface() == reflect.Zero(timeField.Type()).Interface()) ||
-				(!rgxValidTime.MatchString(valTimeStr) && timeField.Interface() != reflect.Zero(timeField.Type()).Interface()) {
-				errs = append(errs, errors.Errorf("Time column with name %s Time field does not match: %v ≠ %v", c, values[i], timeField.Interface()))
-			}
-
-			continue
-		}
-
-		if !reflect.DeepEqual(field.Interface(), values[i]) {
-			errs = append(errs, errors.Errorf("Column with name %s does not match value: %#v ≠ %#v", c, values[i], field.Interface()))
-		}
-	}
-
-	return errs
 }
 
 // RandomizeSlice takes a pointer to a slice of pointers to objects
@@ -201,42 +133,6 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid
 		fieldDBType := colTypes[fieldTyp.Name]
 		if err := randomizeField(fieldVal, fieldDBType, includeInvalid); err != nil {
 			return err
-		}
-	}
-
-	return nil
-}
-
-// RandomizeValidatedStruct takes an object fills its validated columns with random data.
-func RandomizeValidatedStruct(obj interface{}, validatedCols []string, colTypes map[string]string) error {
-	// Check if it's pointer
-	value := reflect.ValueOf(obj)
-	kind := value.Kind()
-	if kind != reflect.Ptr {
-		return errors.Errorf("Outer element should be a pointer, given a non-pointer: %T", obj)
-	}
-
-	// Check if it's a struct
-	value = value.Elem()
-	kind = value.Kind()
-	if kind != reflect.Struct {
-		return errors.Errorf("Inner element should be a struct, given a non-struct: %T", obj)
-	}
-
-	typ := value.Type()
-	nFields := value.NumField()
-
-	// Iterate through fields
-	for i := 0; i < nFields; i++ {
-		fieldVal := value.Field(i)
-		fieldTyp := typ.Field(i)
-		for _, v := range validatedCols {
-			if strmangle.TitleCase(v) == fieldTyp.Name {
-				if err := randomizeField(fieldVal, colTypes[fieldTyp.Name], false); err != nil {
-					return err
-				}
-				break
-			}
 		}
 	}
 

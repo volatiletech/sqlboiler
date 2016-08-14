@@ -5,6 +5,8 @@
 var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 
 func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
+  t.Parallel()
+
   var err error
   var o {{$tableNameSingular}}
   o = {{$tableNameSingular}}{}
@@ -27,11 +29,16 @@ func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
 }
 
 func Test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
+  t.Parallel()
+
   var err error
   o := make({{$tableNameSingular}}Slice, 3)
 
-  if err = boil.RandomizeSlice(&o, {{$varNameSingular}}DBTypes, true); err != nil {
-    t.Errorf("Could not randomize slice: %s", err)
+  for i := range o {
+    o[i] = &{{$tableNameSingular}}{}
+    if err = boil.RandomizeStruct(o[i], {{$varNameSingular}}DBTypes, true); err != nil {
+      t.Errorf("Could not randomize struct: %s", err)
+    }
   }
 
   args := o.inPrimaryKeyArgs()

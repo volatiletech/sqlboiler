@@ -46,46 +46,6 @@ func (s *seed) nextInt() int {
 	return nextInt
 }
 
-// RandomizeSlice takes a pointer to a slice of pointers to objects
-// and fills the pointed to objects with random data.
-// It will ignore the fields in the blacklist.
-func RandomizeSlice(obj interface{}, colTypes map[string]string, includeInvalid bool, blacklist ...string) error {
-	ptrSlice := reflect.ValueOf(obj)
-	typ := ptrSlice.Type()
-	ptrSlice = ptrSlice.Elem()
-	kind := typ.Kind()
-
-	var structTyp reflect.Type
-
-	for i, exp := range []reflect.Kind{reflect.Ptr, reflect.Slice, reflect.Ptr, reflect.Struct} {
-		if i != 0 {
-			typ = typ.Elem()
-			kind = typ.Kind()
-		}
-
-		if kind != exp {
-			return errors.Errorf("[%d] RandomizeSlice object type should be *[]*Type but was: %s", i, ptrSlice.Type().String())
-		}
-
-		if kind == reflect.Struct {
-			structTyp = typ
-		}
-	}
-
-	for i := 0; i < ptrSlice.Len(); i++ {
-		o := ptrSlice.Index(i)
-		if o.IsNil() {
-			o.Set(reflect.New(structTyp))
-		}
-
-		if err := RandomizeStruct(o.Interface(), colTypes, includeInvalid, blacklist...); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // RandomizeStruct takes an object and fills it with random data.
 // It will ignore the fields in the blacklist.
 func RandomizeStruct(str interface{}, colTypes map[string]string, includeInvalid bool, blacklist ...string) error {

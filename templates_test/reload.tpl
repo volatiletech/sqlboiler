@@ -7,7 +7,7 @@ func Test{{$tableNamePlural}}Reload(t *testing.T) {
 
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
   tx, err := boil.Begin()
@@ -30,7 +30,7 @@ func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
 
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-    t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
   tx, err := boil.Begin()

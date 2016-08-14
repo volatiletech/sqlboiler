@@ -12,6 +12,10 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
   defer tx.Rollback()
 
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+  }
+
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }
@@ -40,6 +44,10 @@ func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   defer tx.Rollback()
 
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+  }
+
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }
@@ -68,6 +76,10 @@ func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
   defer tx.Rollback()
 
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+    t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+  }
+
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }

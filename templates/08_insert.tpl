@@ -31,7 +31,13 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }
 
-  wl, returnColumns := o.generateInsertColumns(whitelist...)
+  wl, returnColumns := strmangle.InsertColumnSet(
+    {{$varNameSingular}}Columns,
+    {{$varNameSingular}}ColumnsWithDefault,
+    {{$varNameSingular}}ColumnsWithoutDefault,
+    boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
+    whitelist,
+  )
 
   var err error
   if err := o.doBeforeCreateHooks(); err != nil {
@@ -84,32 +90,4 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   {{end}}
 
   return o.doAfterCreateHooks()
-}
-
-// generateInsertColumns generates the whitelist columns and return columns for an insert statement
-// the return columns are used to get values that are assigned within the database during the
-// insert to keep the struct in sync with what's in the db.
-// with a whitelist:
-// - the whitelist is used for the insert columns
-// - the return columns are the result of (columns with default values - the whitelist)
-// without a whitelist:
-// - start with columns without a default as these always need to be inserted
-// - add all columns that have a default in the database but that are non-zero in the struct
-// - the return columns are the result of (columns with default values - the previous set)
-func (o *{{$tableNameSingular}}) generateInsertColumns(whitelist ...string) ([]string, []string) {
-  if len(whitelist) > 0 {
-    return whitelist, strmangle.SetComplement({{$varNameSingular}}ColumnsWithDefault, whitelist)
-  }
-
-  var wl []string
-
-  wl = append(wl, {{$varNameSingular}}ColumnsWithoutDefault...)
-
-  wl = strmangle.SetMerge(boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o), wl)
-  wl = strmangle.SortByKeys({{$varNameSingular}}Columns, wl)
-
-  // Only return the columns with default values that are not in the insert whitelist
-  rc := strmangle.SetComplement({{$varNameSingular}}ColumnsWithDefault, wl)
-
-  return wl, rc
 }

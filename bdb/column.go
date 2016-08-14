@@ -97,7 +97,7 @@ func FilterColumnsByValidated(columns []Column) []Column {
 	var cols []Column
 
 	for _, c := range columns {
-		if c.Validated == true {
+		if c.Validated {
 			cols = append(cols, c)
 		}
 	}
@@ -110,7 +110,7 @@ func FilterColumnsByUnique(columns []Column) []Column {
 	var cols []Column
 
 	for _, c := range columns {
-		if c.Unique == true {
+		if c.Unique {
 			cols = append(cols, c)
 		}
 	}

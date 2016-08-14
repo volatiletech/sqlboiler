@@ -41,7 +41,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   var query string
   var values []interface{}
 
-  wl := o.generateUpdateColumns(whitelist...)
+  wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
 
   if len(wl) == 0 {
     return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
@@ -144,16 +144,4 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
   }
 
   return nil
-}
-
-// generateUpdateColumns generates the whitelist columns for an update statement
-// if a whitelist is supplied, it's returned
-// if a whitelist is missing then we begin with all columns
-// then we remove the primary key columns
-func (o *{{$tableNameSingular}}) generateUpdateColumns(whitelist ...string) []string {
-  if len(whitelist) != 0 {
-    return whitelist
-  }
-
-  return strmangle.SetComplement({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns)
 }

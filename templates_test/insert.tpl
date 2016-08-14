@@ -20,8 +20,13 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} slice: %s", err)
   }
 
+  tx, err := boil.Begin()
+  if err != nil {
+    t.Fatal(err)
+  }
+
   for i := 0; i < len(o); i++ {
-    if err = o[i].InsertG(); err != nil {
+    if err = o[i].Insert(tx); err != nil {
       t.Errorf("Unable to insert {{$tableNameSingular}}:\n%#v\nErr: %s", o[i], err)
     }
   }
@@ -29,20 +34,25 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
   j := make({{$tableNameSingular}}Slice, 3)
   // Perform all Find queries and assign result objects to slice for comparison
   for i := 0; i < len(o); i++ {
-    j[i], err = {{$tableNameSingular}}FindG({{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
+    j[i], err = {{$tableNameSingular}}Find(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o[i]." | join ", "}})
     if err != nil {
       t.Errorf("Unable to find {{$tableNameSingular}} row: %s", err)
     }
-    err = {{$varNameSingular}}CompareVals(o[i], j[i], true); if err != nil { 
+    err = {{$varNameSingular}}CompareVals(o[i], j[i], true); if err != nil {
       t.Error(err)
     }
   }
 
-  {{$varNamePlural}}DeleteAllRows(t)
+  _ = tx.Rollback()
+  tx, err = boil.Begin()
+  if err != nil {
+    t.Fatal(err)
+  }
+  defer tx.Rollback()
 
   item := &{{$tableNameSingular}}{}
   boil.RandomizeValidatedStruct(item, {{$varNameSingular}}ValidatedColumns, {{$varNameSingular}}DBTypes)
-  if err = item.InsertG(); err != nil {
+  if err = item.Insert(tx); err != nil {
     t.Errorf("Unable to insert zero-value item {{$tableNameSingular}}:\n%#v\nErr: %s", item, err)
   }
 
@@ -87,30 +97,4 @@ func Test{{$tableNamePlural}}Insert(t *testing.T) {
       t.Errorf("Expected column %s to be zero value, got: %v, wanted: %v", c, fv, zv)
     }
   }
-
-  item = &{{$tableNameSingular}}{}
-
-  wl, rc := item.generateInsertColumns()
-  if !reflect.DeepEqual(rc, {{$varNameSingular}}ColumnsWithDefault) {
-    t.Errorf("Expected return columns to contain all columns with default values:\n\nGot: %v\nWanted: %v", rc, {{$varNameSingular}}ColumnsWithDefault)
-  }
-
-  if !reflect.DeepEqual(wl, {{$varNameSingular}}ColumnsWithoutDefault) {
-    t.Errorf("Expected whitelist to contain all columns without default values:\n\nGot: %v\nWanted: %v", wl, {{$varNameSingular}}ColumnsWithoutDefault)
-  }
-
-  if err = boil.RandomizeStruct(item, {{$varNameSingular}}DBTypes, false); err != nil {
-    t.Errorf("Unable to randomize item: %s", err)
-  }
-
-  wl, rc = item.generateInsertColumns()
-  if len(rc) > 0 {
-    t.Errorf("Expected return columns to contain no columns:\n\nGot: %v", rc)
-  }
-
-  if !reflect.DeepEqual(wl, {{$varNameSingular}}Columns) {
-    t.Errorf("Expected whitelist to contain all columns values:\n\nGot: %v\nWanted: %v", wl, {{$varNameSingular}}Columns)
-  }
-
-  {{$varNamePlural}}DeleteAllRows(t)
 }

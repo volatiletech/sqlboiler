@@ -320,7 +320,7 @@ func identifierMapping(q *Query) map[string]string {
 	return ids
 }
 
-// parseBits takes a set of tokens and looks for something of the form:
+// parseIdentifierClause takes a set of tokens and looks for something of the form:
 // a b
 // a as b
 // where 'a' and 'b' are valid SQL identifiers

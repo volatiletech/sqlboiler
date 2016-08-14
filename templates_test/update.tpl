@@ -31,16 +31,6 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
     t.Error(err)
   }
 
-  wl := item.generateUpdateColumns("test")
-  if len(wl) != 1 && wl[0] != "test" {
-    t.Errorf("Expected generateUpdateColumns whitelist to match expected whitelist")
-  }
-
-  wl = item.generateUpdateColumns()
-  if len(wl) == 0 && len({{$varNameSingular}}ColumnsWithoutDefault) > 0 {
-    t.Errorf("Expected generateUpdateColumns to build a whitelist for {{$tableNameSingular}}, but got 0 results")
-  }
-
   {{$varNamePlural}}DeleteAllRows(t)
 }
 

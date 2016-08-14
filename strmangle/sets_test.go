@@ -5,6 +5,86 @@ import (
 	"testing"
 )
 
+func TestUpdateColumnSet(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Cols      []string
+		PKeys     []string
+		Whitelist []string
+		Out       []string
+	}{
+		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Out: []string{"b"}},
+		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Whitelist: []string{"a"}, Out: []string{"a"}},
+		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Whitelist: []string{"a", "b"}, Out: []string{"a", "b"}},
+	}
+
+	for i, test := range tests {
+		set := UpdateColumnSet(test.Cols, test.PKeys, test.Whitelist)
+
+		if !reflect.DeepEqual(set, test.Out) {
+			t.Errorf("%d) set was wrong\nwant: %v\ngot:  %v", i, test.Out, set)
+		}
+	}
+}
+
+func TestInsertColumnSet(t *testing.T) {
+	t.Parallel()
+
+	columns := []string{"a", "b", "c"}
+	defaults := []string{"a", "c"}
+	nodefaults := []string{"b"}
+
+	tests := []struct {
+		Cols            []string
+		Defaults        []string
+		NoDefaults      []string
+		NonZeroDefaults []string
+		Whitelist       []string
+		Set             []string
+		Ret             []string
+	}{
+		// No whitelist
+		{Set: []string{"b"}, Ret: []string{"a", "c"}},
+		{Defaults: []string{}, NoDefaults: []string{"a", "b", "c"}, Set: []string{"a", "b", "c"}, Ret: []string{}},
+
+		// No whitelist + Nonzero defaults
+		{NonZeroDefaults: []string{"a"}, Set: []string{"a", "b"}, Ret: []string{"c"}},
+		{NonZeroDefaults: []string{"c"}, Set: []string{"b", "c"}, Ret: []string{"a"}},
+
+		// Whitelist
+		{Whitelist: []string{"a"}, Set: []string{"a"}, Ret: []string{"c"}},
+		{Whitelist: []string{"c"}, Set: []string{"c"}, Ret: []string{"a"}},
+		{Whitelist: []string{"a", "c"}, Set: []string{"a", "c"}, Ret: []string{}},
+		{Whitelist: []string{"a", "b", "c"}, Set: []string{"a", "b", "c"}, Ret: []string{}},
+
+		// Whitelist + Nonzero defaults (shouldn't care, same results as above)
+		{Whitelist: []string{"a"}, NonZeroDefaults: []string{"c"}, Set: []string{"a"}, Ret: []string{"c"}},
+		{Whitelist: []string{"c"}, NonZeroDefaults: []string{"b"}, Set: []string{"c"}, Ret: []string{"a"}},
+	}
+
+	for i, test := range tests {
+		if test.Cols == nil {
+			test.Cols = columns
+		}
+		if test.Defaults == nil {
+			test.Defaults = defaults
+		}
+		if test.NoDefaults == nil {
+			test.NoDefaults = nodefaults
+		}
+
+		set, ret := InsertColumnSet(test.Cols, test.Defaults, test.NoDefaults, test.NonZeroDefaults, test.Whitelist)
+
+		if !reflect.DeepEqual(set, test.Set) {
+			t.Errorf("%d) set was wrong\nwant: %v\ngot:  %v", i, test.Set, set)
+		}
+		if !reflect.DeepEqual(ret, test.Ret) {
+			t.Errorf("%d) ret was wrong\nwant: %v\ngot:  %v", i, test.Ret, ret)
+		}
+	}
+}
+
 func TestSetInclude(t *testing.T) {
 	t.Parallel()
 

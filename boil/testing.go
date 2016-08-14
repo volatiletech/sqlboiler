@@ -116,116 +116,117 @@ func randDate(sd int) time.Time {
 	return t
 }
 
-func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) error {
+func randomizeField(field reflect.Value, fieldType string, canBeNull bool) error {
 	kind := field.Kind()
 	typ := field.Type()
 
 	var newVal interface{}
 
 	if kind == reflect.Struct {
-		var b bool
-		if includeInvalid {
-			b = rand.Intn(2) == 1
+		var notNull bool
+		if canBeNull {
+			notNull = rand.Intn(2) == 1
 		} else {
-			b = true
+			notNull = false
 		}
+
 		switch typ {
 		case typeNullBool:
-			if b {
-				newVal = null.NewBool(sd.nextInt()%2 == 0, b)
+			if notNull {
+				newVal = null.NewBool(sd.nextInt()%2 == 0, true)
 			} else {
 				newVal = null.NewBool(false, false)
 			}
 		case typeNullString:
 			if fieldType == "uuid" {
 				newVal = null.NewString(uuid.NewV4().String(), true)
-			} else if b {
+			} else if notNull {
 				switch fieldType {
 				case "interval":
-					newVal = null.NewString(strconv.Itoa((sd.nextInt()%26)+2)+" days", b)
+					newVal = null.NewString(strconv.Itoa((sd.nextInt()%26)+2)+" days", true)
 				default:
-					newVal = null.NewString(randStr(1, sd.nextInt()), b)
+					newVal = null.NewString(randStr(1, sd.nextInt()), true)
 				}
 			} else {
 				newVal = null.NewString("", false)
 			}
 		case typeNullTime:
-			if b {
-				newVal = null.NewTime(randDate(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewTime(randDate(sd.nextInt()), true)
 			} else {
 				newVal = null.NewTime(time.Time{}, false)
 			}
 		case typeTime:
 			newVal = randDate(sd.nextInt())
 		case typeNullFloat32:
-			if b {
-				newVal = null.NewFloat32(float32(sd.nextInt()%10)/10.0+float32(sd.nextInt()%10), b)
+			if notNull {
+				newVal = null.NewFloat32(float32(sd.nextInt()%10)/10.0+float32(sd.nextInt()%10), true)
 			} else {
 				newVal = null.NewFloat32(0.0, false)
 			}
 		case typeNullFloat64:
-			if b {
-				newVal = null.NewFloat64(float64(sd.nextInt()%10)/10.0+float64(sd.nextInt()%10), b)
+			if notNull {
+				newVal = null.NewFloat64(float64(sd.nextInt()%10)/10.0+float64(sd.nextInt()%10), true)
 			} else {
 				newVal = null.NewFloat64(0.0, false)
 			}
 		case typeNullInt:
-			if b {
-				newVal = null.NewInt(sd.nextInt(), b)
+			if notNull {
+				newVal = null.NewInt(sd.nextInt(), true)
 			} else {
 				newVal = null.NewInt(0, false)
 			}
 		case typeNullInt8:
-			if b {
-				newVal = null.NewInt8(int8(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewInt8(int8(sd.nextInt()), true)
 			} else {
 				newVal = null.NewInt8(0, false)
 			}
 		case typeNullInt16:
-			if b {
-				newVal = null.NewInt16(int16(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewInt16(int16(sd.nextInt()), true)
 			} else {
 				newVal = null.NewInt16(0, false)
 			}
 		case typeNullInt32:
-			if b {
-				newVal = null.NewInt32(int32(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewInt32(int32(sd.nextInt()), true)
 			} else {
 				newVal = null.NewInt32(0, false)
 			}
 		case typeNullInt64:
-			if b {
-				newVal = null.NewInt64(int64(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewInt64(int64(sd.nextInt()), true)
 			} else {
 				newVal = null.NewInt64(0, false)
 			}
 		case typeNullUint:
-			if b {
-				newVal = null.NewUint(uint(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewUint(uint(sd.nextInt()), true)
 			} else {
 				newVal = null.NewUint(0, false)
 			}
 		case typeNullUint8:
-			if b {
-				newVal = null.NewUint8(uint8(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewUint8(uint8(sd.nextInt()), true)
 			} else {
 				newVal = null.NewUint8(0, false)
 			}
 		case typeNullUint16:
-			if b {
-				newVal = null.NewUint16(uint16(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewUint16(uint16(sd.nextInt()), true)
 			} else {
 				newVal = null.NewUint16(0, false)
 			}
 		case typeNullUint32:
-			if b {
-				newVal = null.NewUint32(uint32(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewUint32(uint32(sd.nextInt()), true)
 			} else {
 				newVal = null.NewUint32(0, false)
 			}
 		case typeNullUint64:
-			if b {
-				newVal = null.NewUint64(uint64(sd.nextInt()), b)
+			if notNull {
+				newVal = null.NewUint64(uint64(sd.nextInt()), true)
 			} else {
 				newVal = null.NewUint64(0, false)
 			}
@@ -257,13 +258,7 @@ func randomizeField(field reflect.Value, fieldType string, includeInvalid bool) 
 		case reflect.Uint64:
 			newVal = uint64(sd.nextInt())
 		case reflect.Bool:
-			var b bool
-			if includeInvalid {
-				b = sd.nextInt()%2 == 0
-			} else {
-				b = true
-			}
-			newVal = b
+			newVal = sd.nextInt()%2 == 0
 		case reflect.String:
 			switch fieldType {
 			case "interval":

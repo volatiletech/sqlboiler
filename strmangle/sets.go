@@ -69,26 +69,6 @@ func SetComplement(a []string, b []string) []string {
 	return c
 }
 
-// SetIntersect returns the elements that are common in a and b
-func SetIntersect(a []string, b []string) []string {
-	c := make([]string, 0, len(a))
-
-	for _, aVal := range a {
-		found := false
-		for _, bVal := range b {
-			if aVal == bVal {
-				found = true
-				break
-			}
-		}
-		if found {
-			c = append(c, aVal)
-		}
-	}
-
-	return c
-}
-
 // SetMerge will return a merged slice without duplicates
 func SetMerge(a []string, b []string) []string {
 	var x, merged []string

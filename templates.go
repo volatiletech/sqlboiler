@@ -111,13 +111,7 @@ var templateStringMappers = map[string]func(string) string{
 	// String ops
 	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
 
-	// Pluralization
-	"singular": strmangle.Singular,
-	"plural":   strmangle.Plural,
-
 	// Casing
-	"toLower":   strings.ToLower,
-	"toUpper":   strings.ToUpper,
 	"titleCase": strmangle.TitleCase,
 	"camelCase": strmangle.CamelCase,
 }
@@ -127,21 +121,14 @@ var templateStringMappers = map[string]func(string) string{
 // add a function pointer here.
 var templateFunctions = template.FuncMap{
 	// String ops
-	"trimPrefix": func(pre, str string) string { return strings.TrimPrefix(str, pre) },
-	"remove":     func(rem, str string) string { return strings.Replace(str, rem, "", -1) },
-	"replace":    func(rep, with, str string) string { return strings.Replace(str, rep, with, -1) },
-	"prefix":     func(add, str string) string { return fmt.Sprintf("%s%s", add, str) },
-	"quoteWrap":  func(a string) string { return fmt.Sprintf(`"%s"`, a) },
-	"substring":  strmangle.Substring,
-	"id":         strmangle.Identifier,
+	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"id":        strmangle.Identifier,
 
 	// Pluralization
 	"singular": strmangle.Singular,
 	"plural":   strmangle.Plural,
 
 	// Casing
-	"toLower":   strings.ToLower,
-	"toUpper":   strings.ToUpper,
 	"titleCase": strmangle.TitleCase,
 	"camelCase": strmangle.CamelCase,
 
@@ -155,13 +142,10 @@ var templateFunctions = template.FuncMap{
 	"makeStringMap": strmangle.MakeStringMap,
 
 	// Set operations
-	"setInclude":   strmangle.SetInclude,
-	"setIntersect": strmangle.SetIntersect,
+	"setInclude": strmangle.SetInclude,
 
 	// Database related mangling
-	"whereClause":     strmangle.WhereClause,
-	"identQuote":      strmangle.IdentQuote,
-	"identQuoteSlice": strmangle.IdentQuoteSlice,
+	"whereClause": strmangle.WhereClause,
 
 	// Text helpers
 	"textsFromForeignKey":           textsFromForeignKey,

@@ -295,12 +295,6 @@ func WhereClause(start int, cols []string) string {
 	return buf.String()
 }
 
-// Substring returns a substring of str starting at index start and going
-// to end-1.
-func Substring(start, end int, str string) string {
-	return str[start:end]
-}
-
 // JoinSlices merges two string slices of equal length
 func JoinSlices(sep string, a, b []string) []string {
 	lna, lnb := len(a), len(b)

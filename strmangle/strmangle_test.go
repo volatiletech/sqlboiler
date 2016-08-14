@@ -264,25 +264,6 @@ func TestWhereClause(t *testing.T) {
 	}
 }
 
-func TestSubstring(t *testing.T) {
-	t.Parallel()
-
-	str := "hello"
-
-	if got := Substring(0, 5, str); got != "hello" {
-		t.Errorf("substring was wrong: %q", got)
-	}
-	if got := Substring(1, 4, str); got != "ell" {
-		t.Errorf("substring was wrong: %q", got)
-	}
-	if got := Substring(2, 3, str); got != "l" {
-		t.Errorf("substring was wrong: %q", got)
-	}
-	if got := Substring(5, 5, str); got != "" {
-		t.Errorf("substring was wrong: %q", got)
-	}
-}
-
 func TestJoinSlices(t *testing.T) {
 	t.Parallel()
 

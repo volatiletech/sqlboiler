@@ -227,6 +227,9 @@ func GetStructValues(obj interface{}, columns ...string) []interface{} {
 
 	for i, c := range columns {
 		field := val.FieldByName(strmangle.TitleCase(c))
+		if !field.IsValid() {
+			panic(fmt.Sprintf("Unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+		}
 		ret[i] = field.Interface()
 	}
 

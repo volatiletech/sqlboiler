@@ -1,6 +1,6 @@
 # SQLBoiler
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/vattle/sqlboiler/blob/master/LICENSE.md)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/vattle/sqlboiler/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/pobri19/sqlboiler?status.svg)](https://godoc.org/github.com/pobri19/sqlboiler)
 [![CircleCI](https://circleci.com/gh/vattle/sqlboiler.svg?style=shield)](https://circleci.com/gh/vattle/sqlboiler)
 [![Go Report Card](https://goreportcard.com/badge/kubernetes/helm)](http://goreportcard.com/report/vattle/sqlboiler)

@@ -1,7 +1,5 @@
 {{- define "relationship_to_one_test_helper"}}
 func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
-  t.Parallel()
-
   tx := MustTx(boil.Begin())
   defer tx.Rollback()
 

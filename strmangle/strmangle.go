@@ -15,7 +15,7 @@ import (
 
 var (
 	idAlphabet     = []byte("abcdefghijklmnopqrstuvwxyz")
-	uppercaseWords = regexp.MustCompile(`^(?i)(id|uid|uuid|guid|ssn|tz)[0-9]*$`)
+	uppercaseWords = regexp.MustCompile(`^(?i)(id|uid|db|uuid|guid|ssn|tz)[0-9]*$`)
 	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
 )
 

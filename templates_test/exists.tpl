@@ -2,7 +2,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Exists(t *testing.T) {
+func test{{$tableNamePlural}}Exists(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()

@@ -2,7 +2,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Update(t *testing.T) {
+func test{{$tableNamePlural}}Update(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -36,7 +36,7 @@ func Test{{$tableNamePlural}}Update(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
+func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()

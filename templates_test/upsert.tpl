@@ -2,7 +2,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Upsert(t *testing.T) {
+func test{{$tableNamePlural}}Upsert(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()

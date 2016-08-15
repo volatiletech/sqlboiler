@@ -2,7 +2,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Bind(t *testing.T) {
+func test{{$tableNamePlural}}Bind(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -23,7 +23,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}One(t *testing.T) {
+func test{{$tableNamePlural}}One(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -46,7 +46,7 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}All(t *testing.T) {
+func test{{$tableNamePlural}}All(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -79,7 +79,7 @@ func Test{{$tableNamePlural}}All(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}Count(t *testing.T) {
+func test{{$tableNamePlural}}Count(t *testing.T) {
   t.Parallel()
 
   var err error

@@ -2,7 +2,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Reload(t *testing.T) {
+func test{{$tableNamePlural}}Reload(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -23,7 +23,7 @@ func Test{{$tableNamePlural}}Reload(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
+func test{{$tableNamePlural}}ReloadAll(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()

@@ -22,8 +22,9 @@ func {{$varNameSingular}}AfterUpdateHook(o *{{$tableNameSingular}}) error {
   return nil
 }
 
-func Test{{$tableNamePlural}}Hooks(t *testing.T) {
-  t.Skip("skipping for transactions")
+func test{{$tableNamePlural}}Hooks(t *testing.T) {
+  t.Parallel()
+
   var err error
 
   empty := &{{$tableNameSingular}}{}

@@ -4,7 +4,7 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 
-func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
+func test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
   t.Parallel()
 
   var err error
@@ -29,7 +29,7 @@ func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
   {{- end}}
 }
 
-func Test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
+func test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
   t.Parallel()
 
   var err error

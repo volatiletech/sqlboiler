@@ -208,6 +208,11 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"github.com/vattle/sqlboiler/boil"`,
 		},
 	},
+	"boil_test_suite": {
+		standard: importList{
+			`"testing"`,
+		},
+	},
 }
 
 var defaultTestMainImports = map[string]imports{

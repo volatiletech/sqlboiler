@@ -7,7 +7,7 @@
 {{- template "relationship_to_one_test_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
     {{- else -}}
     {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
+func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   t.Parallel()
 
   var err error

@@ -2,7 +2,7 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func Test{{$tableNamePlural}}Delete(t *testing.T) {
+func test{{$tableNamePlural}}Delete(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -32,7 +32,7 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
+func test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()
@@ -62,7 +62,7 @@ func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   }
 }
 
-func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
+func test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
   t.Parallel()
 
   seed := boil.NewSeed()

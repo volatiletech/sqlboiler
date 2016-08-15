@@ -21,8 +21,9 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
     t.Fatal(err)
   }
 
-  boil.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false, "{{.ForeignColumn}}")
-  boil.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false, "{{.ForeignColumn}}")
+  seed := new(boil.Seed)
+  seed.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false, "{{.ForeignColumn}}")
+  seed.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false, "{{.ForeignColumn}}")
   {{if .Nullable -}}
   a.{{.Column | titleCase}}.Valid = true
   {{- end}}

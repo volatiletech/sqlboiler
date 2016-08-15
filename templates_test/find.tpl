@@ -3,17 +3,17 @@
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func Test{{$tableNamePlural}}Find(t *testing.T) {
+  t.Parallel()
+
+  seed := new(boil.Seed)
+  var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
+  tx := MustTx(boil.Begin())
   defer tx.Rollback()
-
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }

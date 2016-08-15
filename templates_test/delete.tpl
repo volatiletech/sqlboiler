@@ -5,17 +5,15 @@
 func Test{{$tableNamePlural}}Delete(t *testing.T) {
   t.Parallel()
 
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
-  defer tx.Rollback()
-
+  seed := new(boil.Seed)
+  var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
+  tx := MustTx(boil.Begin())
+  defer tx.Rollback()
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }
@@ -37,17 +35,15 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
 func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   t.Parallel()
 
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
-  defer tx.Rollback()
-
+  seed := new(boil.Seed)
+  var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
+  tx := MustTx(boil.Begin())
+  defer tx.Rollback()
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }
@@ -69,17 +65,15 @@ func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
   t.Parallel()
 
-  tx, err := boil.Begin()
-  if err != nil {
-    t.Fatal(err)
-  }
-  defer tx.Rollback()
-
+  seed := new(boil.Seed)
+  var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err := boil.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
+  tx := MustTx(boil.Begin())
+  defer tx.Rollback()
   if err = {{$varNameSingular}}.Insert(tx); err != nil {
     t.Error(err)
   }

@@ -200,6 +200,72 @@ func TestFrom(t *testing.T) {
 	}
 }
 
+func TestSetCount(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetCount(q)
+
+	if q.modFunction != "COUNT" {
+		t.Errorf("Wrong modFunction, got %s", q.modFunction)
+	}
+}
+
+func TestSetAvg(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetAvg(q)
+
+	if q.modFunction != "AVG" {
+		t.Errorf("Wrong modFunction, got %s", q.modFunction)
+	}
+}
+
+func TestSetMax(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetMax(q)
+
+	if q.modFunction != "MAX" {
+		t.Errorf("Wrong modFunction, got %s", q.modFunction)
+	}
+}
+
+func TestSetMin(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetMin(q)
+
+	if q.modFunction != "MIN" {
+		t.Errorf("Wrong modFunction, got %s", q.modFunction)
+	}
+}
+
+func TestSetSum(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetSum(q)
+
+	if q.modFunction != "SUM" {
+		t.Errorf("Wrong modFunction, got %s", q.modFunction)
+	}
+}
+
+func TestSetUpdate(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetUpdate(q, map[string]interface{}{"test": 5})
+
+	if q.update["test"] != 5 {
+		t.Errorf("Wrong update, got %v", q.update)
+	}
+}
+
 func TestSetDelete(t *testing.T) {
 	t.Parallel()
 
@@ -223,7 +289,7 @@ func TestSetExecutor(t *testing.T) {
 	}
 }
 
-func TestSelect(t *testing.T) {
+func TestAppendSelect(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
@@ -244,6 +310,30 @@ func TestSelect(t *testing.T) {
 	SetSelect(q, "col1", "col2")
 	if q.selectCols[0] != `col1` && q.selectCols[1] != `col2` {
 		t.Errorf("select cols value mismatch: %#v", q.selectCols)
+	}
+}
+
+func TestSelect(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	q.selectCols = []string{"one"}
+
+	ret := Select(q)
+	if ret[0] != "one" {
+		t.Errorf("Expected %q, got %s", "one", ret[0])
+	}
+}
+
+func TestSQL(t *testing.T) {
+	t.Parallel()
+
+	q := SQL("thing", 5)
+	if q.plainSQL.sql != "thing" {
+		t.Errorf("Expected %q, got %s", "thing", q.plainSQL.sql)
+	}
+	if q.plainSQL.args[0].(int) != 5 {
+		t.Errorf("Expected 5, got %v", q.plainSQL.args[0])
 	}
 }
 

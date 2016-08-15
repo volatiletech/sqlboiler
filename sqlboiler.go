@@ -53,7 +53,7 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to connect to the database")
 	}
 
-	err = s.initTables(config.TableNames)
+	err = s.initTables()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -189,13 +189,10 @@ func (s *State) initDriver(driverName string) error {
 	return nil
 }
 
-// initTables will create a string slice out of the passed in table flag value
-// if one is provided. If no flag is provided, it will attempt to connect to the
-// database to retrieve all "public" table names, and build a slice out of that
-// result.
-func (s *State) initTables(tableNames []string) error {
+// initTables retrieves all "public" schema table names from the database.
+func (s *State) initTables() error {
 	var err error
-	s.Tables, err = bdb.Tables(s.Driver, tableNames...)
+	s.Tables, err = bdb.Tables(s.Driver)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}

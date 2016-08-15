@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
@@ -48,10 +47,10 @@ func main() {
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
 		Use:   "sqlboiler [flags] <driver>",
-		Short: "SQL Boiler generates boilerplate structs and statements",
-		Long: "SQL Boiler generates boilerplate structs and statements from template files.\n" +
+		Short: "SQL Boiler generates an ORM tailored to your database schema.",
+		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
 			`Complete documentation is available at http://github.com/vattle/sqlboiler`,
-		Example:       `sqlboiler -o models -p models postgres`,
+		Example:       `sqlboiler postgres`,
 		PreRunE:       preRun,
 		RunE:          run,
 		PostRunE:      postRun,
@@ -60,7 +59,6 @@ func main() {
 	}
 
 	// Set up the cobra root command flags
-	rootCmd.PersistentFlags().StringSliceP("tables", "t", nil, "Tables to generate models for, all tables if empty")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 
@@ -71,8 +69,7 @@ func main() {
 
 	if err := rootCmd.Execute(); err != nil {
 		if e, ok := err.(commandFailure); ok {
-			rootCmd.HelpFunc()
-			fmt.Printf("\n%s\n", string(e))
+			fmt.Printf("%s\n", string(e))
 			return
 		}
 
@@ -91,7 +88,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	var err error
 
 	if len(args) == 0 {
-		return commandFailure("must provide a driver name")
+		return commandFailure("Must provide a driver name.")
 	}
 
 	driverName := args[0]
@@ -100,18 +97,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		DriverName: driverName,
 		OutFolder:  viper.GetString("output"),
 		PkgName:    viper.GetString("pkgname"),
-	}
-
-	// BUG: https://github.com/spf13/viper/issues/200
-	// Look up the value of TableNames directly from PFlags in Cobra if we
-	// detect a malformed value coming out of viper.
-	// Once the bug is fixed we'll be able to move this into the init above
-	cmdConfig.TableNames = viper.GetStringSlice("tables")
-	if len(cmdConfig.TableNames) == 1 && strings.HasPrefix(cmdConfig.TableNames[0], "[") {
-		cmdConfig.TableNames, err = cmd.PersistentFlags().GetStringSlice("tables")
-		if err != nil {
-			return err
-		}
 	}
 
 	if viper.IsSet("postgres.dbname") {
@@ -142,7 +127,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			return commandFailure(err.Error())
 		}
 	} else if driverName == "postgres" {
-		return errors.New("postgres driver requires a postgres section in the config")
+		return errors.New("Postgres driver requires a postgres section in your config file.")
 	}
 
 	cmdState, err = New(cmdConfig)

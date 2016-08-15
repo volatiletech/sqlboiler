@@ -26,12 +26,12 @@ type Interface interface {
 
 // Tables returns the table metadata for the given tables, or all tables if
 // no tables are provided.
-func Tables(db Interface, names ...string) ([]Table, error) {
+func Tables(db Interface) ([]Table, error) {
 	var err error
-	if len(names) == 0 {
-		if names, err = db.TableNames(); err != nil {
-			return nil, errors.Wrap(err, "unable to get table names")
-		}
+
+	names, err := db.TableNames()
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get table names")
 	}
 
 	var tables []Table

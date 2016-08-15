@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	null "gopkg.in/nullbio/null.v4"
+	"gopkg.in/nullbio/null.v4"
 
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
@@ -194,7 +194,7 @@ func (s *Seed) randomizeField(field reflect.Value, fieldType string, canBeNull b
 		}
 	} else {
 		if isNull {
-			value = getVariableNullValue(kind)
+			value = getVariableZeroValue(kind)
 		} else {
 			value = s.getVariableRandValue(kind, typ)
 		}
@@ -205,6 +205,7 @@ func (s *Seed) randomizeField(field reflect.Value, fieldType string, canBeNull b
 	}
 
 	field.Set(reflect.ValueOf(value))
+
 	return nil
 }
 
@@ -290,8 +291,8 @@ func (s *Seed) getStructRandValue(typ reflect.Type) interface{} {
 	return nil
 }
 
-// getVariableNullValue for the matching type.
-func getVariableNullValue(kind reflect.Kind) interface{} {
+// getVariableZeroValue for the matching type.
+func getVariableZeroValue(kind reflect.Kind) interface{} {
 	switch kind {
 	case reflect.Float32:
 		return float32(0)

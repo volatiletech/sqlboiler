@@ -40,9 +40,10 @@ func main() {
 		viper.AddConfigPath(p)
 	}
 
-	// Find and read config, ignore errors because we'll fall back to defaults
-	// and other validation mechanisms
-	_ = viper.ReadInConfig()
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Printf("Cannot read or locate config file: %s\n", err)
+		os.Exit(1)
+	}
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{

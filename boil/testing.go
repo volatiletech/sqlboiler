@@ -35,19 +35,22 @@ var (
 	typeTime        = reflect.TypeOf(time.Time{})
 
 	rgxValidTime = regexp.MustCompile(`[2-9]+`)
+
+	validatedTypes = []string{"uuid", "interval"}
 )
 
-type seed int64
+// Seed is an atomic counter for pseudo-randomization structs. Using full
+// randomization leads to collisions in a domain where uniqueness is an
+// important factor.
+type Seed int64
 
-var sd = new(seed)
-
-func (s *seed) nextInt() int {
+func (s *Seed) nextInt() int {
 	return int(atomic.AddInt64((*int64)(s), 1))
 }
 
 // RandomizeStruct takes an object and fills it with random data.
 // It will ignore the fields in the blacklist.
-func RandomizeStruct(str interface{}, colTypes map[string]string, canBeNull bool, blacklist ...string) error {
+func (s *Seed) RandomizeStruct(str interface{}, colTypes map[string]string, canBeNull bool, blacklist ...string) error {
 	// Don't modify blacklist
 	copyBlacklist := make([]string, len(blacklist))
 	copy(copyBlacklist, blacklist)
@@ -90,7 +93,7 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, canBeNull bool
 		}
 
 		fieldDBType := colTypes[fieldTyp.Name]
-		if err := randomizeField(fieldVal, fieldDBType, canBeNull); err != nil {
+		if err := s.randomizeField(fieldVal, fieldDBType, canBeNull); err != nil {
 			return err
 		}
 	}
@@ -101,10 +104,10 @@ func RandomizeStruct(str interface{}, colTypes map[string]string, canBeNull bool
 // randDate generates a random time.Time between 1850 and 2050.
 // Only the Day/Month/Year columns are set so that Dates and DateTimes do
 // not cause mismatches in the test data comparisons.
-func randDate(sd int) time.Time {
+func (s *Seed) randDate() time.Time {
 	t := time.Date(
-		1850+rand.Intn(sd),
-		time.Month(1+rand.Intn(12)),
+		1850+s.nextInt(),
+		time.Month(1+s.nextInt()),
 		1+rand.Intn(25),
 		0,
 		0,
@@ -123,7 +126,7 @@ func randDate(sd int) time.Time {
 
 // If canBeNull is true:
 //  The value has the possibility of being null or non-zero at random.
-func randomizeField(field reflect.Value, fieldType string, canBeNull bool) error {
+func (s *Seed) randomizeField(field reflect.Value, fieldType string, canBeNull bool) error {
 	kind := field.Kind()
 	typ := field.Type()
 
@@ -132,22 +135,14 @@ func randomizeField(field reflect.Value, fieldType string, canBeNull bool) error
 
 	// Validated columns always need to be set regardless of canBeNull,
 	// and they have to adhere to a strict value format.
-	validatedTypes := []string{"uuid", "interval"}
-	var foundValidated bool
-
-	for _, validated := range validatedTypes {
-		if fieldType == validated {
-			foundValidated = true
-			break
-		}
-	}
+	foundValidated := strmangle.SetInclude(fieldType, validatedTypes)
 
 	if foundValidated {
 		if kind == reflect.Struct {
 			switch typ {
 			case typeNullString:
 				if fieldType == "interval" {
-					value = null.NewString(strconv.Itoa((sd.nextInt()%26)+2)+" days", true)
+					value = null.NewString(strconv.Itoa((s.nextInt()%26)+2)+" days", true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -161,7 +156,7 @@ func randomizeField(field reflect.Value, fieldType string, canBeNull bool) error
 			switch kind {
 			case reflect.String:
 				if fieldType == "interval" {
-					value = strconv.Itoa((sd.nextInt()%26)+2) + " days"
+					value = strconv.Itoa((s.nextInt()%26)+2) + " days"
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -189,13 +184,13 @@ func randomizeField(field reflect.Value, fieldType string, canBeNull bool) error
 		if isNull {
 			value = getStructNullValue(typ)
 		} else {
-			value = getStructRandValue(typ)
+			value = s.getStructRandValue(typ)
 		}
 	} else {
 		if isNull {
 			value = getVariableNullValue(kind)
 		} else {
-			value = getVariableRandValue(kind, typ)
+			value = s.getVariableRandValue(kind, typ)
 		}
 	}
 
@@ -250,40 +245,40 @@ func getStructNullValue(typ reflect.Type) interface{} {
 // getStructRandValue returns a "random" value for the matching type.
 // The randomness is really an incrementation of the global seed,
 // this is done to avoid duplicate key violations.
-func getStructRandValue(typ reflect.Type) interface{} {
+func (s *Seed) getStructRandValue(typ reflect.Type) interface{} {
 	switch typ {
 	case typeTime:
-		return randDate(sd.nextInt())
+		return s.randDate()
 	case typeNullBool:
-		return null.NewBool(sd.nextInt()%2 == 0, true)
+		return null.NewBool(s.nextInt()%2 == 0, true)
 	case typeNullString:
-		return null.NewString(randStr(1, sd.nextInt()), true)
+		return null.NewString(randStr(1, s.nextInt()), true)
 	case typeNullTime:
-		return null.NewTime(randDate(sd.nextInt()), true)
+		return null.NewTime(s.randDate(), true)
 	case typeNullFloat32:
-		return null.NewFloat32(float32(sd.nextInt()%10)/10.0+float32(sd.nextInt()%10), true)
+		return null.NewFloat32(float32(s.nextInt()%10)/10.0+float32(s.nextInt()%10), true)
 	case typeNullFloat64:
-		return null.NewFloat64(float64(sd.nextInt()%10)/10.0+float64(sd.nextInt()%10), true)
+		return null.NewFloat64(float64(s.nextInt()%10)/10.0+float64(s.nextInt()%10), true)
 	case typeNullInt:
-		return null.NewInt(sd.nextInt(), true)
+		return null.NewInt(s.nextInt(), true)
 	case typeNullInt8:
-		return null.NewInt8(int8(sd.nextInt()), true)
+		return null.NewInt8(int8(s.nextInt()), true)
 	case typeNullInt16:
-		return null.NewInt16(int16(sd.nextInt()), true)
+		return null.NewInt16(int16(s.nextInt()), true)
 	case typeNullInt32:
-		return null.NewInt32(int32(sd.nextInt()), true)
+		return null.NewInt32(int32(s.nextInt()), true)
 	case typeNullInt64:
-		return null.NewInt64(int64(sd.nextInt()), true)
+		return null.NewInt64(int64(s.nextInt()), true)
 	case typeNullUint:
-		return null.NewUint(uint(sd.nextInt()), true)
+		return null.NewUint(uint(s.nextInt()), true)
 	case typeNullUint8:
-		return null.NewUint8(uint8(sd.nextInt()), true)
+		return null.NewUint8(uint8(s.nextInt()), true)
 	case typeNullUint16:
-		return null.NewUint16(uint16(sd.nextInt()), true)
+		return null.NewUint16(uint16(s.nextInt()), true)
 	case typeNullUint32:
-		return null.NewUint32(uint32(sd.nextInt()), true)
+		return null.NewUint32(uint32(s.nextInt()), true)
 	case typeNullUint64:
-		return null.NewUint64(uint64(sd.nextInt()), true)
+		return null.NewUint64(uint64(s.nextInt()), true)
 	}
 
 	return nil
@@ -330,42 +325,42 @@ func getVariableNullValue(kind reflect.Kind) interface{} {
 // getVariableRandValue returns a "random" value for the matching kind.
 // The randomness is really an incrementation of the global seed,
 // this is done to avoid duplicate key violations.
-func getVariableRandValue(kind reflect.Kind, typ reflect.Type) interface{} {
+func (s *Seed) getVariableRandValue(kind reflect.Kind, typ reflect.Type) interface{} {
 	switch kind {
 	case reflect.Float32:
-		return float32(float32(sd.nextInt()%10)/10.0 + float32(sd.nextInt()%10))
+		return float32(float32(s.nextInt()%10)/10.0 + float32(s.nextInt()%10))
 	case reflect.Float64:
-		return float64(float64(sd.nextInt()%10)/10.0 + float64(sd.nextInt()%10))
+		return float64(float64(s.nextInt()%10)/10.0 + float64(s.nextInt()%10))
 	case reflect.Int:
-		return sd.nextInt()
+		return s.nextInt()
 	case reflect.Int8:
-		return int8(sd.nextInt())
+		return int8(s.nextInt())
 	case reflect.Int16:
-		return int16(sd.nextInt())
+		return int16(s.nextInt())
 	case reflect.Int32:
-		return int32(sd.nextInt())
+		return int32(s.nextInt())
 	case reflect.Int64:
-		return int64(sd.nextInt())
+		return int64(s.nextInt())
 	case reflect.Uint:
-		return uint(sd.nextInt())
+		return uint(s.nextInt())
 	case reflect.Uint8:
-		return uint8(sd.nextInt())
+		return uint8(s.nextInt())
 	case reflect.Uint16:
-		return uint16(sd.nextInt())
+		return uint16(s.nextInt())
 	case reflect.Uint32:
-		return uint32(sd.nextInt())
+		return uint32(s.nextInt())
 	case reflect.Uint64:
-		return uint64(sd.nextInt())
+		return uint64(s.nextInt())
 	case reflect.Bool:
 		return true
 	case reflect.String:
-		return randStr(1, sd.nextInt())
+		return randStr(1, s.nextInt())
 	case reflect.Slice:
 		sliceVal := typ.Elem()
 		if sliceVal.Kind() != reflect.Uint8 {
 			return errors.Errorf("unsupported slice type: %T, was expecting byte slice.", typ.String())
 		}
-		return randByteSlice(5+rand.Intn(20), sd.nextInt())
+		return randByteSlice(5+rand.Intn(20), s.nextInt())
 	}
 
 	return nil

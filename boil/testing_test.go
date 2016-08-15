@@ -10,6 +10,8 @@ import (
 func TestRandomizeStruct(t *testing.T) {
 	t.Parallel()
 
+	s := new(Seed)
+
 	var testStruct = struct {
 		Int       int
 		Int64     int64
@@ -48,7 +50,7 @@ func TestRandomizeStruct(t *testing.T) {
 		"NullInterval": "interval",
 	}
 
-	err := RandomizeStruct(&testStruct, fieldTypes, true, "Ignore")
+	err := s.RandomizeStruct(&testStruct, fieldTypes, true, "Ignore")
 	if err != nil {
 		t.Fatal(err)
 	}

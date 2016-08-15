@@ -1,7 +1,6 @@
 package boil
 
 import (
-	"math/rand"
 	"reflect"
 	"regexp"
 	"sort"
@@ -180,7 +179,7 @@ func (s *Seed) randomizeField(field reflect.Value, fieldType string, canBeNull b
 	// depending on the canBeNull flag.
 	if canBeNull {
 		// 1 in 3 chance of being null or zero value
-		isNull = rand.Intn(3) == 1
+		isNull = s.nextInt()%3 == 0
 	} else {
 		// if canBeNull is false, then never return null values.
 		isNull = false
@@ -259,7 +258,7 @@ func (s *Seed) getStructRandValue(typ reflect.Type) interface{} {
 	case typeNullBool:
 		return null.NewBool(s.nextInt()%2 == 0, true)
 	case typeNullString:
-		return null.NewString(randStr(1, s.nextInt()), true)
+		return null.NewString(s.randStr(1), true)
 	case typeNullTime:
 		return null.NewTime(s.randDate(), true)
 	case typeNullFloat32:
@@ -361,13 +360,13 @@ func (s *Seed) getVariableRandValue(kind reflect.Kind, typ reflect.Type) interfa
 	case reflect.Bool:
 		return true
 	case reflect.String:
-		return randStr(1, s.nextInt())
+		return s.randStr(1)
 	case reflect.Slice:
 		sliceVal := typ.Elem()
 		if sliceVal.Kind() != reflect.Uint8 {
 			return errors.Errorf("unsupported slice type: %T, was expecting byte slice.", typ.String())
 		}
-		return randByteSlice(5+rand.Intn(20), s.nextInt())
+		return s.randByteSlice(5 + s.nextInt()%20)
 	}
 
 	return nil
@@ -375,19 +374,19 @@ func (s *Seed) getVariableRandValue(kind reflect.Kind, typ reflect.Type) interfa
 
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-func randStr(ln int, s int) string {
+func (s *Seed) randStr(ln int) string {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(alphabet[s%len(alphabet)])
+		str[i] = byte(alphabet[s.nextInt()%len(alphabet)])
 	}
 
 	return string(str)
 }
 
-func randByteSlice(ln int, s int) []byte {
+func (s *Seed) randByteSlice(ln int) []byte {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(s % 256)
+		str[i] = byte(s.nextInt() % 256)
 	}
 
 	return str

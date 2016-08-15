@@ -163,6 +163,11 @@ func TestTitleCase(t *testing.T) {
 		{"guid_thing", "GUIDThing"},
 		{"thing_guid_thing", "ThingGUIDThing"},
 		{"id", "ID"},
+		{"gvzxc", "GVZXC"},
+		{"id_trgb_id", "IDTRGBID"},
+		{"vzxx_vxccb_nmx", "VZXXVXCCBNMX"},
+		{"thing_zxc_stuff_vxz", "ThingZXCStuffVXZ"},
+		{"zxc_thing_vxz_stuff", "ZXCThingVXZStuff"},
 	}
 
 	for i, test := range tests {

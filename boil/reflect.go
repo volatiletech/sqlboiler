@@ -91,6 +91,7 @@ func bind(q *Query, obj interface{}, structType, sliceType reflect.Type, singula
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
+	defer rows.Close()
 
 	cols, err := rows.Columns()
 	if err != nil {

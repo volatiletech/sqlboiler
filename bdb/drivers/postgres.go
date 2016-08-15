@@ -138,8 +138,8 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
+
 	for rows.Next() {
 		var colName, colType, colDefault, nullable string
 		var unique bool
@@ -195,6 +195,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 	if rows, err = p.dbConn.Query(queryColumns, pkey.Name); err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var columns []string
 	for rows.Next() {

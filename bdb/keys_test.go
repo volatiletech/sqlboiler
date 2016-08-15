@@ -30,3 +30,33 @@ func TestSQLColDefinitions(t *testing.T) {
 		t.Error("wrong def:", got)
 	}
 }
+
+func TestTypes(t *testing.T) {
+	defs := SQLColumnDefs{
+		{Type: "thing1"},
+		{Type: "thing2"},
+	}
+
+	ret := defs.Types()
+	if ret[0] != "thing1" {
+		t.Error("wrong type:", ret[0])
+	}
+	if ret[1] != "thing2" {
+		t.Error("wrong type:", ret[1])
+	}
+}
+
+func TestNames(t *testing.T) {
+	defs := SQLColumnDefs{
+		{Name: "thing1"},
+		{Name: "thing2"},
+	}
+
+	ret := defs.Names()
+	if ret[0] != "thing1" {
+		t.Error("wrong type:", ret[0])
+	}
+	if ret[1] != "thing2" {
+		t.Error("wrong type:", ret[1])
+	}
+}

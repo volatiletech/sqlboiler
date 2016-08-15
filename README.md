@@ -9,33 +9,48 @@ SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 #### Config
 
-config.toml
+Before you use SQLBoiler make sure you create a `sqlboiler.toml` configuration file containing your database details.
 
-````
+The configuration file loader checks the working directory, `$HOME/sqlboiler/.config` directory and `$XDG_CONFIG_HOME/sqlboiler` directory to locate your configuration file. The working directory takes precedence.
+
+`sqlboiler.toml` example file:
+
+```
 [postgres]
   host="localhost"
   port=5432
   user="dbusername"
   pass="dbpassword"
   dbname="dbname"
-````
+  sslmode="require"
+```
+
+The following config fields are optional, and default to:
+
+```
+postgres.port=5432
+postgres.sslmode="require"
+```
+
+To disable SSLMode, use `sslmode="disable"`.
+
 
 #### How
 
-SQLBoiler connects to your database (defined in your config.toml file) to ascertain the structure of your tables, and builds your Go ORM code using the templates defined in the ````/templates```` folder.
+SQLBoiler connects to your database (defined in your sqlboiler.toml file) to ascertain the structure of your tables, and builds your Go ORM code using the templates defined in the `/templates` and `/templates_test` folders.
 
-Running SQLBoiler without the ````--table```` flag will result in SQLBoiler building boilerplate code for every table in your database marked as ````public````.
+Running SQLBoiler without the `--table` flag will result in SQLBoiler building boilerplate code for every table in your database  the `public` schema. Tables created in Postgres will default to the `public` schema.
 
-Before you use SQLBoiler make sure you create a ````config.toml```` configuration file with your database details, and specify your database by using the ````--driver```` flag.
 
 
 ````
 Usage:
-  sqlboiler [flags]
+  sqlboiler [flags] <driver>
+
+Examples:
+sqlboiler postgres
 
 Flags:
-  -d, --driver string    The name of the driver in your config.toml (mandatory)
-  -f, --folder string    The name of the output folder (default "output")
-  -p, --pkgname string   The name you wish to assign to your generated package (default "model")
-  -t, --table string     A comma seperated list of table names (generates all tables if not provided)
+  -o, --output string    The name of the folder to output to (default "models")
+  -p, --pkgname string   The name you wish to assign to your generated package (default "models")
 ````

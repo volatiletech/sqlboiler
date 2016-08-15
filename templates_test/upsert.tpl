@@ -5,7 +5,7 @@
 func Test{{$tableNamePlural}}Upsert(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   // Attempt the INSERT side of an UPSERT
   {{$varNameSingular}} := {{$tableNameSingular}}{}

@@ -44,6 +44,13 @@ var (
 // important factor.
 type Seed int64
 
+// NewSeed creates a new seed for pseudo-randomization.
+func NewSeed() *Seed {
+	s := new(int64)
+	*s = time.Now().Unix()
+	return (*Seed)(s)
+}
+
 func (s *Seed) nextInt() int {
 	return int(atomic.AddInt64((*int64)(s), 1))
 }
@@ -106,9 +113,9 @@ func (s *Seed) RandomizeStruct(str interface{}, colTypes map[string]string, canB
 // not cause mismatches in the test data comparisons.
 func (s *Seed) randDate() time.Time {
 	t := time.Date(
-		1850+s.nextInt(),
-		time.Month(1+s.nextInt()),
-		1+rand.Intn(25),
+		1850+s.nextInt()%160,
+		time.Month(1+(s.nextInt()%12)),
+		1+(s.nextInt()%25),
 		0,
 		0,
 		0,

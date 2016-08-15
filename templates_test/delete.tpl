@@ -5,7 +5,7 @@
 func Test{{$tableNamePlural}}Delete(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
@@ -35,7 +35,7 @@ func Test{{$tableNamePlural}}Delete(t *testing.T) {
 func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
@@ -65,7 +65,7 @@ func Test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 func Test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {

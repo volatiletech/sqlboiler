@@ -11,7 +11,7 @@ func Test{{$tableNamePlural}}InPrimaryKeyArgs(t *testing.T) {
   var o {{$tableNameSingular}}
   o = {{$tableNameSingular}}{}
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   if err = seed.RandomizeStruct(&o, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Could not randomize struct: %s", err)
   }
@@ -35,7 +35,7 @@ func Test{{$tableNamePlural}}SliceInPrimaryKeyArgs(t *testing.T) {
   var err error
   o := make({{$tableNameSingular}}Slice, 3)
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   for i := range o {
     o[i] = &{{$tableNameSingular}}{}
     if err = seed.RandomizeStruct(o[i], {{$varNameSingular}}DBTypes, true); err != nil {

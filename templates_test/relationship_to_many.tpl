@@ -21,7 +21,7 @@ func Test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
     t.Fatal(err)
   }
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   seed.RandomizeStruct(&b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false, "{{.ForeignColumn}}")
   seed.RandomizeStruct(&c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false, "{{.ForeignColumn}}")
   {{if .Nullable -}}

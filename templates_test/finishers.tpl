@@ -5,7 +5,7 @@
 func Test{{$tableNamePlural}}Bind(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
@@ -26,7 +26,7 @@ func Test{{$tableNamePlural}}Bind(t *testing.T) {
 func Test{{$tableNamePlural}}One(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
@@ -49,7 +49,7 @@ func Test{{$tableNamePlural}}One(t *testing.T) {
 func Test{{$tableNamePlural}}All(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}}One := &{{$tableNameSingular}}{}
   {{$varNameSingular}}Two := &{{$tableNameSingular}}{}
@@ -83,7 +83,7 @@ func Test{{$tableNamePlural}}Count(t *testing.T) {
   t.Parallel()
 
   var err error
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   {{$varNameSingular}}One := &{{$tableNameSingular}}{}
   {{$varNameSingular}}Two := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {

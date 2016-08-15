@@ -5,7 +5,7 @@
 func Test{{$tableNamePlural}}Reload(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
@@ -26,7 +26,7 @@ func Test{{$tableNamePlural}}Reload(t *testing.T) {
 func Test{{$tableNamePlural}}ReloadAll(t *testing.T) {
   t.Parallel()
 
-  seed := new(boil.Seed)
+  seed := boil.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
   if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {

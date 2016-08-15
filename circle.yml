@@ -1,5 +1,11 @@
-test:
+machine:
+  environment:
+    GODIST: "go1.7rc3.linux-amd64.tar.gz"
   pre:
+    - mkdir -p download
+    - test -e download/$GODIST || curl -o download/$GODIST https://storage.googleapis.com/golang/$GODIST
+    - sudo rm -rf /usr/local/go
+    - sudo tar -C /usr/local -xzf download/$GODIST
     - go get github.com/jstemmer/go-junit-report
     - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
     - createdb -U ubuntu sqlboiler
@@ -9,3 +15,7 @@ test:
     - go test -v -race ./... > $CIRCLE_ARTIFACTS/gotest.txt
   post:
     - cat $CIRCLE_ARTIFACTS/gotest.txt | go-junit-report > $CIRCLE_TEST_REPORTS/junit.xml
+
+dependencies:
+  cache_directories:
+    - ~/download

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
@@ -40,10 +41,9 @@ func main() {
 		viper.AddConfigPath(p)
 	}
 
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Cannot read or locate config file: %s\n", err)
-		os.Exit(1)
-	}
+	// Ignore errors here, fallback to other validation methods.
+	// Users can use environment variables if a config is not found.
+	_ = viper.ReadInConfig()
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
@@ -62,6 +62,7 @@ func main() {
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
+	rootCmd.PersistentFlags().StringP("exclude", "x", "", "Tables to be excluded from the generated package")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
@@ -98,6 +99,18 @@ func preRun(cmd *cobra.Command, args []string) error {
 		DriverName: driverName,
 		OutFolder:  viper.GetString("output"),
 		PkgName:    viper.GetString("pkgname"),
+	}
+
+	// BUG: https://github.com/spf13/viper/issues/200
+	// Look up the value of ExcludeTables directly from PFlags in Cobra if we
+	// detect a malformed value coming out of viper.
+	// Once the bug is fixed we'll be able to move this into the init above
+	cmdConfig.ExcludeTables = viper.GetStringSlice("exclude")
+	if len(cmdConfig.ExcludeTables) == 1 && strings.HasPrefix(cmdConfig.ExcludeTables[0], "[") {
+		cmdConfig.ExcludeTables, err = cmd.PersistentFlags().GetStringSlice("exclude")
+		if err != nil {
+			return err
+		}
 	}
 
 	if viper.IsSet("postgres.dbname") {

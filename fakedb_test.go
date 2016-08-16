@@ -7,8 +7,9 @@ import (
 
 type fakeDB int
 
-func (fakeDB) TableNames() ([]string, error) {
-	return []string{"users", "videos", "contests", "notifications", "users_videos_tags"}, nil
+func (fakeDB) TableNames(exclude []string) ([]string, error) {
+	tables := []string{"users", "videos", "contests", "notifications", "users_videos_tags"}
+	return strmangle.SetComplement(tables, exclude), nil
 }
 func (fakeDB) Columns(tableName string) ([]bdb.Column, error) {
 	return map[string][]bdb.Column{

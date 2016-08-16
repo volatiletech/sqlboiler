@@ -7,7 +7,7 @@ import (
 
 type testInterface struct{}
 
-func (t testInterface) TableNames() ([]string, error) {
+func (t testInterface) TableNames(exclude []string) ([]string, error) {
 	return []string{"table1", "table2"}, nil
 }
 

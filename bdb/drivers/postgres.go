@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 // PostgresDriver holds the database connection string and a handle
@@ -83,13 +84,19 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 // retrieves all table names from the information_schema where the
 // table schema is public. It excludes common migration tool tables
 // such as gorp_migrations
-func (p *PostgresDriver) TableNames() ([]string, error) {
+func (p *PostgresDriver) TableNames(exclude []string) ([]string, error) {
 	var names []string
 
-	rows, err := p.dbConn.Query(`
-		select table_name from information_schema.tables
-		where table_schema = 'public' and table_name not like '%migrations%'
-	`)
+	query := `select table_name from information_schema.tables where table_schema = 'public'`
+	if len(exclude) > 0 {
+		quoteStr := func(x string) string {
+			return `'` + x + `'`
+		}
+		exclude = strmangle.StringMap(quoteStr, exclude)
+		query = query + fmt.Sprintf("and table_name not in (%s);", strings.Join(exclude, ","))
+	}
+
+	rows, err := p.dbConn.Query(query)
 
 	if err != nil {
 		return nil, err

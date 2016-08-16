@@ -1,16 +1,13 @@
-{{- define "relationship_to_one_eager_helper" -}}
-{{- end -}}
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 {{- $dot := . -}}
 {{- range .Table.ToManyRelationships -}}
-{{- if .ForeignColumnUnique -}}
+{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
   {{- template "relationship_to_one_eager_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table .) -}}
 {{- else -}}
   {{- $rel := textsFromRelationship $dot.Tables $dot.Table . -}}
   {{- $arg := printf "maybe%s" $rel.LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" $rel.LocalTable.NameGo}}
-  {{- $pkeySlice := printf "%sPrimaryKeyColumns" ($dot.Table.Name | singular | camelCase)}}
 // Load{{$rel.Function.Name}} allows an eager lookup of values, cached into the
 // relationships structs of the objects.
 func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -25,17 +22,26 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
     count = len(slice)
   }
 
-  var args []interface{}
+  args := make([]interface{}, count)
   if singular {
-    args = boil.GetStructValues(object, "{{.Column}}")
+    args[0] = object.{{.Column | titleCase}}
   } else {
-    args = boil.GetSliceValues(slice, "{{.Column}}")
+    for i, obj := range slice {
+      args[i] = obj.{{.Column | titleCase}}
+    }
   }
 
+    {{if .ToJoinTable -}}
+  query := fmt.Sprintf(
+    `select "{{id 0}}".* from "{{.ForeignTable}}" as {{id 0}} inner join "{{.JoinTable}}" as "{{id 1}}" on "{{id 1}}"."{{.JoinForeignColumn}}" = "{{id 0}}"."{{.ForeignColumn}}" where "{{.ForeignColumn}}" in (%s)`,
+    strmangle.Placeholders(count, 1, 1),
+  )
+    {{else -}}
   query := fmt.Sprintf(
     `select * from "{{.ForeignTable}}" where "{{.ForeignColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
+    {{end -}}
 
   results, err := e.Query(query, args...)
   if err != nil {

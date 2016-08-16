@@ -63,6 +63,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
+	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
@@ -71,11 +72,13 @@ func main() {
 
 	if err := rootCmd.Execute(); err != nil {
 		if e, ok := err.(commandFailure); ok {
-			fmt.Printf("%s\n", string(e))
-			return
+			fmt.Printf("%v\n", string(e))
+		} else if !viper.GetBool("debug") {
+			fmt.Printf("%v\n", err)
+		} else {
+			fmt.Printf("%+v\n", err)
 		}
 
-		fmt.Printf("%+v\n", err)
 		os.Exit(1)
 	}
 }

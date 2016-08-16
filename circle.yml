@@ -1,7 +1,7 @@
 test:
   pre:
     - mkdir -p /home/ubuntu/.go_workspace/src/github.com/jstemmer
-    - git clone git@github.com:nullbio/go-junit-report.git /home/ubuntu/.go_workspace/src/github.com/jstemmer
+    - git clone git@github.com:nullbio/go-junit-report.git /home/ubuntu/.go_workspace/src/github.com/jstemmer/go-junit-report
     - go install github.com/jstemmer/go-junit-report
     - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
     - createdb -U ubuntu sqlboiler

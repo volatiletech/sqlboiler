@@ -72,11 +72,12 @@ func main() {
 
 	if err := rootCmd.Execute(); err != nil {
 		if e, ok := err.(commandFailure); ok {
-			fmt.Printf("%v\n", string(e))
+			fmt.Printf("Error: %v\n\n", string(e))
+			rootCmd.Help()
 		} else if !viper.GetBool("debug") {
-			fmt.Printf("%v\n", err)
+			fmt.Printf("Error: %v\n", err)
 		} else {
-			fmt.Printf("%+v\n", err)
+			fmt.Printf("Error: %+v\n", err)
 		}
 
 		os.Exit(1)
@@ -93,7 +94,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	var err error
 
 	if len(args) == 0 {
-		return commandFailure("Must provide a driver name.")
+		return commandFailure("must provide a driver name")
 	}
 
 	driverName := args[0]
@@ -144,7 +145,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			return commandFailure(err.Error())
 		}
 	} else if driverName == "postgres" {
-		return errors.New("Postgres driver requires a postgres section in your config file.")
+		return errors.New("postgres driver requires a postgres section in your config file")
 	}
 
 	cmdState, err = New(cmdConfig)

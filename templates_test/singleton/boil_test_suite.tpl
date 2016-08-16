@@ -4,7 +4,7 @@
 // table1, table2 and table3 Insert in parallel, and so forth.
 // It does NOT run each operation group in parallel.
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
-func TestAll(t *testing.T) {
+func TestParent(t *testing.T) {
   {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
@@ -20,7 +20,25 @@ func TestDelete(t *testing.T) {
   {{- else -}}
   {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}Delete)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestQueryDeleteAll(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}QueryDeleteAll)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestSliceDeleteAll(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}SliceDeleteAll)
   {{end -}}
   {{- end -}}
@@ -46,14 +64,41 @@ func TestFind(t *testing.T) {
   {{- end -}}
 }
 
-func TestFinishers(t *testing.T) {
+func TestBind(t *testing.T) {
   {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
   {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}Bind)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestOne(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}One)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestAll(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}All)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestCount(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}Count)
   {{end -}}
   {{- end -}}
@@ -91,6 +136,8 @@ func TestInsert(t *testing.T) {
   {{- end -}}
 }
 
+// The relationship tests cannot be run in parallel
+// or postgres deadlocks will occur.
 func TestRelationships(t *testing.T) {
   {{- $dot := .}}
   {{- range $index, $table := .Tables}}
@@ -116,6 +163,15 @@ func TestReload(t *testing.T) {
   {{- else -}}
   {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}Reload)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestReloadAll(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}ReloadAll)
   {{end -}}
   {{- end -}}
@@ -137,6 +193,15 @@ func TestUpdate(t *testing.T) {
   {{- else -}}
   {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}Update)
+  {{end -}}
+  {{- end -}}
+}
+
+func TestSliceUpdateAll(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+  {{- $tableName := $table.Name | plural | titleCase -}}
   t.Run("{{$tableName}}", test{{$tableName}}SliceUpdateAll)
   {{end -}}
   {{- end -}}

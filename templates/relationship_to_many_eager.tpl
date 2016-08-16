@@ -1,3 +1,5 @@
+{{- define "relationship_to_one_eager_helper" -}}
+{{- end -}}
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 {{- $dot := . -}}
@@ -23,28 +25,23 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
     count = len(slice)
   }
 
-  query := fmt.Sprintf(
-    `select * from {{.ForeignTable}} where ({{$dot.Table.PKey.Columns | stringMap $dot.StringFuncs.quoteWrap | join ","}}) in (%s)`,
-    strmangle.Placeholders(count, 1, {{len $dot.Table.PKey.Columns}}),
-  )
-
-  args := make([]interface{}, count*{{len $dot.Table.PKey.Columns}})
+  var args []interface{}
   if singular {
-    {{range $i, $col := $dot.Table.PKey.Columns -}}
-    args[{{$i}}] = object.{{$col | titleCase}}
-    {{end -}}
+    args = boil.GetStructValues(object, "{{.Column}}")
   } else {
-    for i, obj := range slice {
-      {{range $i, $col := $dot.Table.PKey.Columns -}}
-      args[i*{{len $dot.Table.PKey.Columns}}+{{$i}}] = obj.{{$col | titleCase}}
-      {{end -}}
-    }
+    args = boil.GetSliceValues(slice, "{{.Column}}")
   }
+
+  query := fmt.Sprintf(
+    `select * from "{{.ForeignTable}}" where "{{.ForeignColumn}}" in (%s)`,
+    strmangle.Placeholders(count, 1, 1),
+  )
 
   results, err := e.Query(query, args...)
   if err != nil {
     return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
   }
+  defer results.Close()
 
   var resultSlice []*{{$rel.ForeignTable.NameGo}}
   if err = boil.Bind(results, &resultSlice); err != nil {

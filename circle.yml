@@ -1,6 +1,8 @@
 test:
   pre:
-    - go get github.com/jstemmer/go-junit-report
+    - mkdir -p $GOPATH/src/github.com/jstemmer
+    - git clone git@github.com:nullbio/go-junit-report.git $GOPATH/src/github.com/jstemmer
+    - go install github.com/jstemmer/go-junit-report
     - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
     - createdb -U ubuntu sqlboiler
     - psql -U ubuntu sqlboiler < ./testdata/test_schema.sql

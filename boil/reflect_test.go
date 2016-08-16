@@ -352,6 +352,36 @@ func TestGetStructValues(t *testing.T) {
 	}
 }
 
+func TestGetSliceValues(t *testing.T) {
+	t.Parallel()
+
+	o := []struct {
+		ID   int
+		Name string
+	}{
+		{5, "a"},
+		{6, "b"},
+	}
+
+	in := make([]interface{}, len(o))
+	in[0] = o[0]
+	in[1] = o[1]
+
+	vals := GetSliceValues(in, "id", "name")
+	if got := vals[0].(int); got != 5 {
+		t.Error(got)
+	}
+	if got := vals[1].(string); got != "a" {
+		t.Error(got)
+	}
+	if got := vals[2].(int); got != 6 {
+		t.Error(got)
+	}
+	if got := vals[3].(string); got != "b" {
+		t.Error(got)
+	}
+}
+
 func TestGetStructPointers(t *testing.T) {
 	t.Parallel()
 

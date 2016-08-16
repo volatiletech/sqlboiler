@@ -249,9 +249,27 @@ func GetStructValues(obj interface{}, columns ...string) []interface{} {
 	for i, c := range columns {
 		field := val.FieldByName(strmangle.TitleCase(c))
 		if !field.IsValid() {
-			panic(fmt.Sprintf("Unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+			panic(fmt.Sprintf("unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
 		}
 		ret[i] = field.Interface()
+	}
+
+	return ret
+}
+
+// GetSliceValues returns the values (as interface) of the matching columns in obj.
+func GetSliceValues(slice []interface{}, columns ...string) []interface{} {
+	ret := make([]interface{}, len(slice)*len(columns))
+
+	for i, obj := range slice {
+		val := reflect.Indirect(reflect.ValueOf(obj))
+		for j, c := range columns {
+			field := val.FieldByName(strmangle.TitleCase(c))
+			if !field.IsValid() {
+				panic(fmt.Sprintf("unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+			}
+			ret[i*len(columns)+j] = field.Interface()
+		}
 	}
 
 	return ret

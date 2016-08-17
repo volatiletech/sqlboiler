@@ -334,7 +334,178 @@ func TestWhereClause(t *testing.T) {
 	}
 }
 
+func TestInClause(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		q      Query
+		expect string
+	}{
+		// Or("a=?")
+		{
+			q: Query{
+				in: []in{{clause: "a in ?", args: []interface{}{1}, orSeparator: true}},
+			},
+			expect: " WHERE a IN ($1)",
+		},
+		{
+			q: Query{
+				in: []in{{clause: "a in ?", args: []interface{}{1, 2, 3}}},
+			},
+			expect: " WHERE a IN ($1,$2,$3)",
+		},
+		// // Where("a=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{where{clause: "a=?"}},
+		// 	},
+		// 	expect: " WHERE (a=$1)",
+		// },
+		// // Where("(a=?)")
+		// {
+		// 	q: Query{
+		// 		where: []where{where{clause: "(a=?)"}},
+		// 	},
+		// 	expect: " WHERE ((a=$1))",
+		// },
+		// // Where("((a=? OR b=?))")
+		// {
+		// 	q: Query{
+		// 		where: []where{where{clause: "((a=? OR b=?))"}},
+		// 	},
+		// 	expect: " WHERE (((a=$1 OR b=$2)))",
+		// },
+		// // Where("(a=?)", Or("(b=?)")
+		// {
+		// 	q: Query{
+		// 		where: []where{
+		// 			where{clause: "(a=?)", orSeparator: true},
+		// 			where{clause: "(b=?)"},
+		// 		},
+		// 	},
+		// 	expect: " WHERE ((a=$1)) OR ((b=$2))",
+		// },
+		// // Where("a=? OR b=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{where{clause: "a=? OR b=?"}},
+		// 	},
+		// 	expect: " WHERE (a=$1 OR b=$2)",
+		// },
+		// // Where("a=?"), Where("b=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{where{clause: "a=?"}, where{clause: "b=?"}},
+		// 	},
+		// 	expect: " WHERE (a=$1) AND (b=$2)",
+		// },
+		// // Where("(a=? AND b=?) OR c=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{where{clause: "(a=? AND b=?) OR c=?"}},
+		// 	},
+		// 	expect: " WHERE ((a=$1 AND b=$2) OR c=$3)",
+		// },
+		// // Where("a=? OR b=?"), Where("c=? OR d=? OR e=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{
+		// 			where{clause: "(a=? OR b=?)"},
+		// 			where{clause: "(c=? OR d=? OR e=?)"},
+		// 		},
+		// 	},
+		// 	expect: " WHERE ((a=$1 OR b=$2)) AND ((c=$3 OR d=$4 OR e=$5))",
+		// },
+		// // Where("(a=? AND b=?) OR (c=? AND d=? AND e=?) OR f=? OR f=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{
+		// 			where{clause: "(a=? AND b=?) OR (c=? AND d=? AND e=?) OR f=? OR g=?"},
+		// 		},
+		// 	},
+		// 	expect: " WHERE ((a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7)",
+		// },
+		// // Where("(a=? AND b=?) OR (c=? AND d=? OR e=?) OR f=? OR g=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{
+		// 			where{clause: "(a=? AND b=?) OR (c=? AND d=? OR e=?) OR f=? OR g=?"},
+		// 		},
+		// 	},
+		// 	expect: " WHERE ((a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7)",
+		// },
+		// // Where("a=? or b=?"), Or("c=? and d=?"), Or("e=? or f=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{
+		// 			where{clause: "a=? or b=?", orSeparator: true},
+		// 			where{clause: "c=? and d=?", orSeparator: true},
+		// 			where{clause: "e=? or f=?", orSeparator: true},
+		// 		},
+		// 	},
+		// 	expect: " WHERE (a=$1 or b=$2) OR (c=$3 and d=$4) OR (e=$5 or f=$6)",
+		// },
+		// // Where("a=? or b=?"), Or("c=? and d=?"), Or("e=? or f=?")
+		// {
+		// 	q: Query{
+		// 		where: []where{
+		// 			where{clause: "a=? or b=?"},
+		// 			where{clause: "c=? and d=?"},
+		// 			where{clause: "e=? or f=?"},
+		// 		},
+		// 	},
+		// 	expect: " WHERE (a=$1 or b=$2) AND (c=$3 and d=$4) AND (e=$5 or f=$6)",
+		// },
+	}
+
+	for i, test := range tests {
+		result, _ := inClause(&test.q, 1)
+		if result != test.expect {
+			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
+		}
+	}
+}
+
 func TestConvertQuestionMarks(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		clause string
+		start  int
+		expect string
+	}{
+		{clause: "hello friend", start: 1, expect: "hello friend"},
+		{clause: "thing=?", start: 2, expect: "thing=$2"},
+		{clause: "thing=? and stuff=? and happy=?", start: 2, expect: "thing=$2 and stuff=$3 and happy=$4"},
+		{clause: `thing \? stuff`, start: 2, expect: `thing ? stuff`},
+		{clause: `thing \? stuff and happy \? fun`, start: 2, expect: `thing ? stuff and happy ? fun`},
+		{
+			clause: `thing \? stuff ? happy \? and mad ? fun \? \? \?`,
+			start:  2,
+			expect: `thing ? stuff $2 happy ? and mad $3 fun ? ? ?`,
+		},
+		{
+			clause: `thing ? stuff ? happy \? fun \? ? ?`,
+			start:  1,
+			expect: `thing $1 stuff $2 happy ? fun ? $3 $4`,
+		},
+		{clause: `?`, start: 1, expect: `$1`},
+		{clause: `???`, start: 1, expect: `$1$2$3`},
+		{clause: `\?`, start: 1, expect: `?`},
+		{clause: `\?\?\?`, start: 1, expect: `???`},
+		{clause: `\??\??\??`, start: 1, expect: `?$1?$2?$3`},
+		{clause: `?\??\??\?`, start: 1, expect: `$1?$2?$3?`},
+	}
+
+	for i, test := range tests {
+		res := convertQuestionMarks(test.clause, test.start)
+		if res != test.expect {
+			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, res)
+		}
+	}
+}
+
+func TestConvertInQuestionMarks(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

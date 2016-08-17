@@ -27,6 +27,7 @@ type Query struct {
 	from        []string
 	joins       []join
 	where       []where
+	in          []in
 	groupBy     []string
 	orderBy     []string
 	having      []having
@@ -35,6 +36,12 @@ type Query struct {
 }
 
 type where struct {
+	clause      string
+	orSeparator bool
+	args        []interface{}
+}
+
+type in struct {
 	clause      string
 	orSeparator bool
 	args        []interface{}
@@ -96,6 +103,11 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 	return q.executor.Query(qs, args...)
 }
 
+// SetExecutor on the query.
+func SetExecutor(q *Query, exec Executor) {
+	q.executor = exec
+}
+
 // SetSQL on the query.
 func SetSQL(q *Query, sql string, args ...interface{}) {
 	q.plainSQL = plainSQL{sql: sql, args: args}
@@ -131,31 +143,24 @@ func SetDelete(q *Query) {
 	q.delete = true
 }
 
+// SetLimit on the query.
+func SetLimit(q *Query, limit int) {
+	q.limit = limit
+}
+
+// SetOffset on the query.
+func SetOffset(q *Query, offset int) {
+	q.offset = offset
+}
+
 // SetUpdate on the query.
 func SetUpdate(q *Query, cols map[string]interface{}) {
 	q.update = cols
 }
 
-// SetExecutor on the query.
-func SetExecutor(q *Query, exec Executor) {
-	q.executor = exec
-}
-
 // AppendSelect on the query.
 func AppendSelect(q *Query, columns ...string) {
 	q.selectCols = append(q.selectCols, columns...)
-}
-
-// SetSelect replaces the current select clause.
-func SetSelect(q *Query, columns ...string) {
-	q.selectCols = append([]string(nil), columns...)
-}
-
-// Select returns the select columns in the query.
-func Select(q *Query) []string {
-	cols := make([]string, len(q.selectCols))
-	copy(cols, q.selectCols)
-	return cols
 }
 
 // AppendFrom on the query.
@@ -173,9 +178,9 @@ func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
 }
 
-// SetInnerJoin on the query.
-func SetInnerJoin(q *Query, clause string, args ...interface{}) {
-	q.joins = append([]join(nil), join{clause: clause, kind: JoinInner, args: args})
+// AppendHaving on the query.
+func AppendHaving(q *Query, clause string, args ...interface{}) {
+	q.having = append(q.having, having{clause: clause, args: args})
 }
 
 // AppendWhere on the query.
@@ -183,12 +188,12 @@ func AppendWhere(q *Query, clause string, args ...interface{}) {
 	q.where = append(q.where, where{clause: clause, args: args})
 }
 
-// SetWhere on the query.
-func SetWhere(q *Query, clause string, args ...interface{}) {
-	q.where = append([]where(nil), where{clause: clause, args: args})
+// AppendIn on the query.
+func AppendIn(q *Query, clause string, args ...interface{}) {
+	q.in = append(q.in, in{clause: clause, args: args})
 }
 
-// SetLastWhereAsOr sets the or separator for the tail where in the slice
+// SetLastWhereAsOr sets the or separator for the tail "WHERE" in the slice
 func SetLastWhereAsOr(q *Query) {
 	if len(q.where) == 0 {
 		return
@@ -197,42 +202,21 @@ func SetLastWhereAsOr(q *Query) {
 	q.where[len(q.where)-1].orSeparator = true
 }
 
-// ApplyGroupBy on the query.
-func ApplyGroupBy(q *Query, clause string) {
+// SetLastInAsOr sets the or separator for the tail "IN" in the slice
+func SetLastInAsOr(q *Query) {
+	if len(q.in) == 0 {
+		return
+	}
+
+	q.in[len(q.in)-1].orSeparator = true
+}
+
+// AppendGroupBy on the query.
+func AppendGroupBy(q *Query, clause string) {
 	q.groupBy = append(q.groupBy, clause)
 }
 
-// SetGroupBy on the query.
-func SetGroupBy(q *Query, clause string) {
-	q.groupBy = append([]string(nil), clause)
-}
-
-// ApplyOrderBy on the query.
-func ApplyOrderBy(q *Query, clause string) {
+// AppendOrderBy on the query.
+func AppendOrderBy(q *Query, clause string) {
 	q.orderBy = append(q.orderBy, clause)
-}
-
-// SetOrderBy on the query.
-func SetOrderBy(q *Query, clause string) {
-	q.orderBy = append([]string(nil), clause)
-}
-
-// ApplyHaving on the query.
-func ApplyHaving(q *Query, clause string, args ...interface{}) {
-	q.having = append(q.having, having{clause: clause, args: args})
-}
-
-// SetHaving on the query.
-func SetHaving(q *Query, clause string, args ...interface{}) {
-	q.having = append([]having(nil), having{clause: clause, args: args})
-}
-
-// SetLimit on the query.
-func SetLimit(q *Query, limit int) {
-	q.limit = limit
-}
-
-// SetOffset on the query.
-func SetOffset(q *Query, offset int) {
-	q.offset = offset
 }

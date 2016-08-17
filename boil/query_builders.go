@@ -83,8 +83,16 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	where, whereArgs := whereClause(q, len(args)+1)
 	buf.WriteString(where)
+	if len(whereArgs) != 0 {
+		args = append(args, whereArgs...)
+	}
 
-	args = append(args, whereArgs...)
+	in, inArgs := inClause(q, len(args)+1)
+	buf.WriteString(in)
+	if len(inArgs) != 0 {
+		args = append(args, inArgs...)
+	}
+
 	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
@@ -92,13 +100,23 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
+	var args []interface{}
 	buf := strmangle.GetBuffer()
 
 	buf.WriteString("DELETE FROM ")
 	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
 
-	where, args := whereClause(q, 1)
+	where, whereArgs := whereClause(q, 1)
+	if len(whereArgs) != 0 {
+		args = append(args, whereArgs)
+	}
 	buf.WriteString(where)
+
+	in, inArgs := inClause(q, len(args)+1)
+	if len(inArgs) != 0 {
+		args = append(args, inArgs...)
+	}
+	buf.WriteString(in)
 
 	writeModifiers(q, buf, &args)
 
@@ -136,9 +154,17 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	)
 
 	where, whereArgs := whereClause(q, len(args)+1)
+	if len(whereArgs) != 0 {
+		args = append(args, whereArgs...)
+	}
 	buf.WriteString(where)
 
-	args = append(args, whereArgs...)
+	in, inArgs := inClause(q, len(args)+1)
+	if len(inArgs) != 0 {
+		args = append(args, inArgs...)
+	}
+	buf.WriteString(in)
+
 	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
@@ -260,6 +286,39 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 	return convertQuestionMarks(buf.String(), startAt), args
 }
 
+func inClause(q *Query, startAt int) (string, []interface{}) {
+	if len(q.in) == 0 {
+		return "", nil
+	}
+
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
+	var args []interface{}
+
+	if len(q.where) == 0 {
+		buf.WriteString(" WHERE ")
+	}
+	for i := 0; i < len(q.in); i++ {
+
+	}
+
+	// regexp split thing so we have left side and right side
+	// split on )IN( / \sIN\s, combine them
+
+	// buf.WriteString(convertQuestionMarks(leftSide, startAt))
+	// buf.WriteString(" IN ")
+	// buf.WriteString(convertInQuestionMarks(rightSide, total, group, startAt+offset))
+
+	return "", args
+}
+
+func convertInQuestionMarks(clause string, total, groupAt, startAt int) string {
+	return ""
+}
+
+// convertQuestionMarks converts each occurence of ? with $<number>
+// where <number> is an incrementing digit starting at startAt.
+// If question-mark (?) is escaped using back-slash (\), it will be ignored.
 func convertQuestionMarks(clause string, startAt int) string {
 	if startAt == 0 {
 		panic("Not a valid start number.")

@@ -19,6 +19,15 @@ var (
 	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
 )
 
+func init() {
+	// Override the uncountable inflections with an empty set.
+	// This way, people using words like Sheep will not have
+	// collisions with their model name (Sheep) and their
+	// function name (Sheep()). Instead, it will
+	// use the regular inflection rules: Sheep, Sheeps().
+	inflection.SetUncountable([]string{})
+}
+
 // IdentQuote attempts to quote simple identifiers in SQL tatements
 func IdentQuote(s string) string {
 	if strings.ToLower(s) == "null" {

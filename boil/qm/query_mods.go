@@ -71,24 +71,51 @@ func Or(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+// WhereIn allows you to specify a "x IN (set)" clause for your where statement
+// Example clauses: "column in ?", "(column1,column2) in ?"
+func WhereIn(clause string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.AppendIn(q, clause, args...)
+	}
+}
+
+// AndIn allows you to specify a "x IN (set)" clause separated by an AndIn
+// for your where statement. AndIn is a duplicate of the WhereIn function, but
+// allows for more natural looking query mod chains, for example:
+// (WhereIn("column1 in ?"), AndIn("column2 in ?"), OrIn("column3 in ?"))
+func AndIn(clause string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.AppendIn(q, clause, args...)
+	}
+}
+
+// OrIn allows you to specify an IN clause separated by
+// an OR for your where statement
+func OrIn(clause string, args ...interface{}) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetLastInAsOr(q)
+		boil.AppendIn(q, clause, args...)
+	}
+}
+
 // GroupBy allows you to specify a group by clause for your statement
 func GroupBy(clause string) QueryMod {
 	return func(q *boil.Query) {
-		boil.ApplyGroupBy(q, clause)
+		boil.AppendGroupBy(q, clause)
 	}
 }
 
 // OrderBy allows you to specify a order by clause for your statement
 func OrderBy(clause string) QueryMod {
 	return func(q *boil.Query) {
-		boil.ApplyOrderBy(q, clause)
+		boil.AppendOrderBy(q, clause)
 	}
 }
 
 // Having allows you to specify a having clause for your statement
 func Having(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.ApplyHaving(q, clause, args...)
+		boil.AppendHaving(q, clause, args...)
 	}
 }
 

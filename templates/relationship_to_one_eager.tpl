@@ -29,6 +29,10 @@ func (r *{{.LocalTable.NameGo}}Relationships) Load{{.Function.Name}}(e boil.Exec
     strmangle.Placeholders(count, 1, 1),
   )
 
+  if boil.DebugMode {
+    fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+  }
+
   results, err := e.Query(query, args...)
   if err != nil {
     return errors.Wrap(err, "failed to eager load {{.ForeignTable.NameGo}}")
@@ -41,9 +45,10 @@ func (r *{{.LocalTable.NameGo}}Relationships) Load{{.Function.Name}}(e boil.Exec
   }
 
   if singular && len(resultSlice) != 0 {
-    object.Relationships = &{{.LocalTable.NameGo}}Relationships{
-      {{.Function.Name}}: resultSlice[0],
+    if object.Relationships == nil {
+      object.Relationships = &{{.LocalTable.NameGo}}Relationships{}
     }
+    object.Relationships.{{.Function.Name}} = resultSlice[0]
     return nil
   }
 

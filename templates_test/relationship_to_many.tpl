@@ -75,18 +75,18 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   }
 
   if err = a.Relationships.Load{{$rel.Function.Name}}(tx, false, {{$rel.LocalTable.NameGo}}Slice{&a}); err != nil {
-    t.Error(err)
+    t.Fatal(err)
   }
-  if len(a.Relationships.{{$rel.Function.Name}}) != 2 {
-    t.Error("expected to be able to eager load 2 relationships")
+  if got := len(a.Relationships.{{$rel.Function.Name}}); got != 2 {
+    t.Error("number of eager loaded records wrong, got:", got)
   }
 
   a.Relationships.{{$rel.Function.Name}} = nil
   if err = a.Relationships.Load{{$rel.Function.Name}}(tx, true, &a); err != nil {
-    t.Error(err)
+    t.Fatal(err)
   }
-  if len(a.Relationships.{{$rel.Function.Name}}) != 2 {
-    t.Error("expected to be able to eager load 2 relationships")
+  if got := len(a.Relationships.{{$rel.Function.Name}}); got != 2 {
+    t.Error("number of eager loaded records wrong, got:", got)
   }
 
   if t.Failed() {

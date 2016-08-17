@@ -33,7 +33,7 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
 
     {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `select "{{id 0}}".* from "{{.ForeignTable}}" as {{id 0}} inner join "{{.JoinTable}}" as "{{id 1}}" on "{{id 1}}"."{{.JoinForeignColumn}}" = "{{id 0}}"."{{.ForeignColumn}}" where "{{.ForeignColumn}}" in (%s)`,
+    `select "{{id 0}}".* from "{{.ForeignTable}}" as "{{id 0}}" inner join "{{.JoinTable}}" as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
     {{else -}}
@@ -42,6 +42,10 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
     strmangle.Placeholders(count, 1, 1),
   )
     {{end -}}
+
+  if boil.DebugMode {
+    fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+  }
 
   results, err := e.Query(query, args...)
   if err != nil {
@@ -55,9 +59,10 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
   }
 
   if singular {
-    object.Relationships = &{{$rel.LocalTable.NameGo}}Relationships{
-      {{$rel.Function.Name}}: resultSlice,
+    if object.Relationships == nil {
+      object.Relationships = &{{$rel.LocalTable.NameGo}}Relationships{}
     }
+    object.Relationships.{{$rel.Function.Name}} = resultSlice
     return nil
   }
 

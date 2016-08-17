@@ -103,6 +103,55 @@ func TestBindSingular(t *testing.T) {
 	}
 }
 
+var loadFunctionCalled bool
+
+type testRelationshipsStruct struct{}
+
+func (r *testRelationshipsStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
+	loadFunctionCalled = true
+	return nil
+}
+
+func TestLoadRelationships(t *testing.T) {
+	t.Parallel()
+
+	testSingular := []*struct {
+		ID            int
+		Relationships *testRelationshipsStruct
+	}{}
+
+	testSlice := []*struct {
+		ID            int
+		Relationships *testRelationshipsStruct
+	}{}
+
+	exec, _, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	q := Query{
+		load:     []string{"TestOne"},
+		executor: exec,
+	}
+
+	if err := q.loadRelationships(testSlice, true); err != nil {
+		t.Error(err)
+	}
+
+	if loadFunctionCalled == false {
+		t.Errorf("Load function was not called for testSlice")
+	}
+
+	if err := q.loadRelationships(testSingular, false); err != nil {
+		t.Error(err)
+	}
+
+	if loadFunctionCalled == false {
+		t.Errorf("Load function was not called for testSlice")
+	}
+}
+
 func TestBind_InnerJoin(t *testing.T) {
 	t.Parallel()
 

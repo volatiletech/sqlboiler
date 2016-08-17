@@ -20,6 +20,7 @@ const (
 type Query struct {
 	executor    Executor
 	plainSQL    plainSQL
+	load        []string
 	delete      bool
 	update      map[string]interface{}
 	selectCols  []string
@@ -99,6 +100,11 @@ func ExecQueryAll(q *Query) (*sql.Rows, error) {
 // SetSQL on the query.
 func SetSQL(q *Query, sql string, args ...interface{}) {
 	q.plainSQL = plainSQL{sql: sql, args: args}
+}
+
+// SetLoad on the query.
+func SetLoad(q *Query, relationships ...string) {
+	q.load = append([]string(nil), relationships...)
 }
 
 // SetCount on the query.

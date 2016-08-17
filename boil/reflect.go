@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/strmangle"
 )
@@ -29,7 +30,8 @@ func (q *Query) BindP(obj interface{}) {
 // Bind rules:
 // - Struct tags control bind, in the form of: `boil:"name,bind"`
 // - If the "name" part of the struct tag is specified, that will be used
-// for binding instead of the snake_cased field name.
+// - f the "name" part of the tag is specified, it is used for binding
+// (the columns returned are title cased and matched).
 // - If the ",bind" option is specified on an struct field, it will be recursed
 // into to look for fields for binding.
 // - If the name of the struct tag is "-", this field will not be bound to
@@ -75,7 +77,55 @@ func (q *Query) Bind(obj interface{}) error {
 	}
 	defer rows.Close()
 
-	return bind(rows, obj, structType, sliceType, singular)
+	if res := bind(rows, obj, structType, sliceType, singular); res != nil {
+		return res
+	}
+
+	if len(q.load) == 0 {
+		return nil
+	}
+
+	return q.loadRelationships(obj, singular)
+}
+
+// loadRelationships calls the template generated eager load functions
+// (LoadTableName()) using reflection, to eager load the relationships
+// into the users Relationships struct attached to their object.
+func (q *Query) loadRelationships(obj interface{}, singular bool) error {
+	typ := reflect.TypeOf(obj).Elem().Elem()
+	if !singular {
+		typ = typ.Elem()
+	}
+
+	rel, found := typ.FieldByName("Relationships")
+	// If the users object has no Relationships struct, it must be
+	// a custom object and we should not attempt to load any relationships.
+	if !found {
+		return nil
+	}
+
+	for _, relationship := range q.load {
+		// Attempt to find the LoadRelationshipName function
+		loadMethod, found := rel.Type.MethodByName("Load" + relationship)
+		if !found {
+			return errors.Errorf("could not find Load%s method for eager loading", relationship)
+		}
+		spew.Dump(reflect.New(rel.Type).Interface().(**testRelationshipsStruct))
+		spew.Dump(reflect.Indirect(reflect.New(rel.Type)).Interface().(*testRelationshipsStruct))
+		methodArgs := []reflect.Value{
+			reflect.New(rel.Type),
+			reflect.ValueOf(q.executor),
+			reflect.ValueOf(singular),
+			reflect.ValueOf(obj),
+		}
+
+		resp := loadMethod.Func.Call(methodArgs)
+		if resp[0].Interface() != nil {
+			return resp[0].Interface().(error)
+		}
+	}
+
+	return nil
 }
 
 // bindChecks resolves information about the bind target, and errors if it's not an object

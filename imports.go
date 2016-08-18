@@ -156,7 +156,7 @@ var defaultTemplateImports = imports{
 }
 
 var defaultSingletonTemplateImports = map[string]imports{
-	"boil_helpers": {
+	"boil_queries": {
 		standard: importList{
 			`"fmt"`,
 			`"strings"`,
@@ -186,7 +186,7 @@ var defaultTestTemplateImports = imports{
 }
 
 var defaultSingletonTestTemplateImports = map[string]imports{
-	"boil_main_helpers": {
+	"boil_viper_test": {
 		standard: importList{
 			`"database/sql"`,
 			`"os"`,
@@ -196,7 +196,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"github.com/spf13/viper"`,
 		},
 	},
-	"boil_helpers": {
+	"boil_queries_test": {
 		standard: importList{
 			`"crypto/md5"`,
 			`"fmt"`,
@@ -208,7 +208,7 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 			`"github.com/vattle/sqlboiler/boil"`,
 		},
 	},
-	"boil_test_suite": {
+	"boil_suites_test": {
 		standard: importList{
 			`"testing"`,
 		},

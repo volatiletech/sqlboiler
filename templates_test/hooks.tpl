@@ -30,8 +30,8 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   empty := &{{$tableNameSingular}}{}
   o := &{{$tableNameSingular}}{}
 
-  seed := boil.NewSeed()
-  if err = seed.RandomizeStruct(o, {{$varNameSingular}}DBTypes, false); err != nil {
+  seed := randomize.NewSeed()
+  if err = randomize.Struct(seed, o, {{$varNameSingular}}DBTypes, false); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} object: %s", err)
   }
 

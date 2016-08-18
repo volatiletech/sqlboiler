@@ -5,10 +5,10 @@
 func test{{$tableNamePlural}}Update(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -27,7 +27,7 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
     t.Error("want one record, got:", count)
   }
 
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -39,10 +39,10 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -61,7 +61,7 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
     t.Error("want one record, got:", count)
   }
 
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 

@@ -5,10 +5,10 @@
 func test{{$tableNamePlural}}Bind(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -26,10 +26,10 @@ func test{{$tableNamePlural}}Bind(t *testing.T) {
 func test{{$tableNamePlural}}One(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -49,14 +49,14 @@ func test{{$tableNamePlural}}One(t *testing.T) {
 func test{{$tableNamePlural}}All(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}}One := &{{$tableNameSingular}}{}
   {{$varNameSingular}}Two := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
-  if err = seed.RandomizeStruct({{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -83,13 +83,13 @@ func test{{$tableNamePlural}}Count(t *testing.T) {
   t.Parallel()
 
   var err error
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   {{$varNameSingular}}One := &{{$tableNameSingular}}{}
   {{$varNameSingular}}Two := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}One, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
-  if err = seed.RandomizeStruct({{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}Two, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 

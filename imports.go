@@ -181,6 +181,7 @@ var defaultTestTemplateImports = imports{
 	},
 	thirdParty: importList{
 		`"github.com/vattle/sqlboiler/boil"`,
+		`"github.com/vattle/sqlboiler/boil/randomize"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }

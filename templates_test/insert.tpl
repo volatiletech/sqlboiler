@@ -6,10 +6,10 @@
 func test{{$tableNamePlural}}Insert(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
@@ -32,10 +32,10 @@ func test{{$tableNamePlural}}Insert(t *testing.T) {
 func test{{$tableNamePlural}}InsertWhitelist(t *testing.T) {
   t.Parallel()
 
-  seed := boil.NewSeed()
+  seed := randomize.NewSeed()
   var err error
   {{$varNameSingular}} := &{{$tableNameSingular}}{}
-  if err = seed.RandomizeStruct({{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+  if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 

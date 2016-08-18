@@ -12,6 +12,7 @@ import (
 
 var (
 	rgxIdentifier = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(?:\."?[_a-z][_a-z0-9]*"?)*$`)
+	rgxInClause   = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
 )
 
 func buildQuery(q *Query) (string, []interface{}) {
@@ -77,7 +78,8 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
 			args = append(args, j.args...)
 		}
-		fmt.Fprintf(buf, convertQuestionMarks(joinBuf.String(), argsLen+1))
+		resp, _ := convertQuestionMarks(joinBuf.String(), argsLen+1)
+		fmt.Fprintf(buf, resp)
 		strmangle.PutBuffer(joinBuf)
 	}
 
@@ -188,7 +190,8 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 			fmt.Fprintf(havingBuf, j.clause)
 			*args = append(*args, j.args...)
 		}
-		fmt.Fprintf(buf, convertQuestionMarks(havingBuf.String(), argsLen+1))
+		resp, _ := convertQuestionMarks(havingBuf.String(), argsLen+1)
+		fmt.Fprintf(buf, resp)
 		strmangle.PutBuffer(havingBuf)
 	}
 
@@ -267,25 +270,26 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 	var args []interface{}
 
 	buf.WriteString(" WHERE ")
-	for i := 0; i < len(q.where); i++ {
-		buf.WriteString(fmt.Sprintf("(%s)", q.where[i].clause))
-		args = append(args, q.where[i].args...)
-
-		// break on the last loop
-		if i == len(q.where)-1 {
-			break
+	for i, where := range q.where {
+		if i != 0 {
+			if where.orSeparator {
+				buf.WriteString(" OR ")
+			} else {
+				buf.WriteString(" AND ")
+			}
 		}
 
-		if q.where[i].orSeparator {
-			buf.WriteString(" OR ")
-		} else {
-			buf.WriteString(" AND ")
-		}
+		buf.WriteString(fmt.Sprintf("(%s)", where.clause))
+		args = append(args, where.args...)
 	}
 
-	return convertQuestionMarks(buf.String(), startAt), args
+	resp, _ := convertQuestionMarks(buf.String(), startAt)
+	return resp, args
 }
 
+// inClause parses an in slice and converts it into a
+// single IN clause, like:
+// WHERE ("a", "b") IN (($1,$2),($3,$4)).
 func inClause(q *Query, startAt int) (string, []interface{}) {
 	if len(q.in) == 0 {
 		return "", nil
@@ -298,28 +302,93 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 	if len(q.where) == 0 {
 		buf.WriteString(" WHERE ")
 	}
-	for i := 0; i < len(q.in); i++ {
 
+	for i, in := range q.in {
+		ln := len(in.args)
+		// We only prefix the OR and AND separators after the first
+		// clause has been generated UNLESS there is already a where
+		// clause that we have to add on to.
+		if i != 0 || len(q.where) > 0 {
+			if in.orSeparator {
+				buf.WriteString(" OR ")
+			} else {
+				buf.WriteString(" AND ")
+			}
+		}
+
+		matches := rgxInClause.FindStringSubmatch(in.clause)
+		// If we can't find any matches attempt a simple replace with 1 group.
+		// Clauses that fit this criteria will not be able to contain ? in their
+		// column name side, however if this case is being hit then the regexp
+		// probably needs adjustment, or the user is passing in invalid clauses.
+		if matches == nil {
+			clause, count := convertInQuestionMarks(in.clause, startAt, 1, ln)
+			buf.WriteString(clause)
+			startAt = startAt + count
+		} else {
+			leftSide := strings.TrimSpace(matches[1])
+			rightSide := strings.TrimSpace(matches[2])
+			// If matches are found, we have to parse the left side (column side)
+			// of the clause to determine how many columns they are using.
+			// This number determines the groupAt for the convert function.
+			cols := strings.Split(leftSide, ",")
+			cols = strmangle.IdentQuoteSlice(cols)
+			groupAt := len(cols)
+
+			leftClause, leftCount := convertQuestionMarks(strings.Join(cols, ","), startAt)
+			rightClause, rightCount := convertInQuestionMarks(rightSide, startAt+leftCount, groupAt, ln-leftCount)
+			buf.WriteString(leftClause)
+			buf.WriteString(" IN ")
+			buf.WriteString(rightClause)
+			startAt = startAt + leftCount + rightCount
+		}
+
+		args = append(args, in.args...)
 	}
 
-	// regexp split thing so we have left side and right side
-	// split on )IN( / \sIN\s, combine them
-
-	// buf.WriteString(convertQuestionMarks(leftSide, startAt))
-	// buf.WriteString(" IN ")
-	// buf.WriteString(convertInQuestionMarks(rightSide, total, group, startAt+offset))
-
-	return "", args
+	return buf.String(), args
 }
 
-func convertInQuestionMarks(clause string, total, groupAt, startAt int) string {
-	return ""
+// convertInQuestionMarks finds the first unescaped occurence of ? and swaps it
+// with a list of numbered placeholders, starting at startAt.
+// It uses groupAt to determine how many placeholders should be in each group,
+// for example, groupAt 2 would result in: (($1,$2),($3,$4))
+// and groupAt 1 would result in ($1,$2,$3,$4)
+func convertInQuestionMarks(clause string, startAt, groupAt, total int) (string, int) {
+	if startAt == 0 || len(clause) == 0 {
+		panic("Not a valid start number.")
+	}
+
+	paramBuf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(paramBuf)
+
+	foundAt := -1
+	for i := 0; i < len(clause); i++ {
+		if (clause[i] == '?' && i == 0) || (clause[i] == '?' && clause[i-1] != '\\') {
+			foundAt = i
+			break
+		}
+	}
+
+	if foundAt == -1 {
+		return strings.Replace(clause, `\?`, "?", -1), 0
+	}
+
+	paramBuf.WriteString(clause[:foundAt])
+	paramBuf.WriteByte('(')
+	paramBuf.WriteString(strmangle.Placeholders(total, startAt, groupAt))
+	paramBuf.WriteByte(')')
+	paramBuf.WriteString(clause[foundAt+1:])
+
+	// Remove all backslashes from escaped question-marks
+	ret := strings.Replace(paramBuf.String(), `\?`, "?", -1)
+	return ret, total
 }
 
 // convertQuestionMarks converts each occurence of ? with $<number>
 // where <number> is an incrementing digit starting at startAt.
 // If question-mark (?) is escaped using back-slash (\), it will be ignored.
-func convertQuestionMarks(clause string, startAt int) string {
+func convertQuestionMarks(clause string, startAt int) (string, int) {
 	if startAt == 0 {
 		panic("Not a valid start number.")
 	}
@@ -327,6 +396,7 @@ func convertQuestionMarks(clause string, startAt int) string {
 	paramBuf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(paramBuf)
 	paramIndex := 0
+	total := 0
 
 	for {
 		if paramIndex >= len(clause) {
@@ -349,11 +419,12 @@ func convertQuestionMarks(clause string, startAt int) string {
 		}
 
 		paramBuf.WriteString(clause[:paramIndex] + fmt.Sprintf("$%d", startAt))
+		total++
 		startAt++
 		paramIndex++
 	}
 
-	return paramBuf.String()
+	return paramBuf.String(), total
 }
 
 // identifierMapping creates a map of all identifiers to potential model names

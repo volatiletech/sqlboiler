@@ -63,8 +63,8 @@ func And(clause string, args ...interface{}) QueryMod {
 // Or allows you to specify a where clause seperated by an OR for your statement
 func Or(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetLastWhereAsOr(q)
 		boil.AppendWhere(q, clause, args...)
+		boil.SetLastWhereAsOr(q)
 	}
 }
 
@@ -90,8 +90,8 @@ func AndIn(clause string, args ...interface{}) QueryMod {
 // an OR for your where statement
 func OrIn(clause string, args ...interface{}) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetLastInAsOr(q)
 		boil.AppendIn(q, clause, args...)
+		boil.SetLastInAsOr(q)
 	}
 }
 

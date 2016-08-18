@@ -65,7 +65,7 @@ func generateSingletonTestOutput(state *State, data *templateData) error {
 		data:           data,
 		templates:      state.SingletonTestTemplates,
 		importNamedSet: defaultSingletonTestTemplateImports,
-		fileSuffix:     "_test.go",
+		fileSuffix:     ".go",
 	})
 }
 

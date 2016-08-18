@@ -112,43 +112,41 @@ func (r *testRelationshipsStruct) LoadTestOne(exec Executor, singular bool, obj 
 	return nil
 }
 
-func TestLoadRelationships(t *testing.T) {
-	t.Parallel()
-
-	testSingular := []*struct {
-		ID            int
-		Relationships *testRelationshipsStruct
-	}{}
+func TestLoadRelationshipsSlice(t *testing.T) {
+	// t.Parallel() Function uses globals
+	loadFunctionCalled = false
 
 	testSlice := []*struct {
 		ID            int
 		Relationships *testRelationshipsStruct
 	}{}
 
-	exec, _, err := sqlmock.New()
-	if err != nil {
+	q := Query{load: []string{"TestOne"}, executor: nil}
+	if err := q.loadRelationships(testSlice, false); err != nil {
 		t.Error(err)
 	}
 
-	q := Query{
-		load:     []string{"TestOne"},
-		executor: exec,
-	}
-
-	if err := q.loadRelationships(testSlice, true); err != nil {
-		t.Error(err)
-	}
-
-	if loadFunctionCalled == false {
+	if !loadFunctionCalled {
 		t.Errorf("Load function was not called for testSlice")
 	}
+}
 
-	if err := q.loadRelationships(testSingular, false); err != nil {
+func TestLoadRelationshipsSingular(t *testing.T) {
+	// t.Parallel() Function uses globals
+	loadFunctionCalled = false
+
+	testSingular := &struct {
+		ID            int
+		Relationships *testRelationshipsStruct
+	}{}
+
+	q := Query{load: []string{"TestOne"}, executor: nil}
+	if err := q.loadRelationships(testSingular, true); err != nil {
 		t.Error(err)
 	}
 
-	if loadFunctionCalled == false {
-		t.Errorf("Load function was not called for testSlice")
+	if !loadFunctionCalled {
+		t.Errorf("Load function was not called for singular")
 	}
 }
 

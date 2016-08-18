@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/strmangle"
 )
@@ -28,13 +27,13 @@ func (q *Query) BindP(obj interface{}) {
 // result into the passed in object pointer
 //
 // Bind rules:
-// - Struct tags control bind, in the form of: `boil:"name,bind"`
-// - If the "name" part of the struct tag is specified, that will be used
-// - f the "name" part of the tag is specified, it is used for binding
-// (the columns returned are title cased and matched).
-// - If the ",bind" option is specified on an struct field, it will be recursed
-// into to look for fields for binding.
-// - If the name of the struct tag is "-", this field will not be bound to
+//   - Struct tags control bind, in the form of: `boil:"name,bind"`
+//   - If the "name" part of the struct tag is specified, that will be used
+//   - f the "name" part of the tag is specified, it is used for binding
+//     (the columns returned are title cased and matched).
+//   - If the ",bind" option is specified on an struct field, it will be recursed
+//     into to look for fields for binding.
+//   - If the name of the struct tag is "-", this field will not be bound to
 //
 // Example Query:
 //
@@ -51,6 +50,9 @@ func (q *Query) BindP(obj interface{}) {
 //   }
 //
 //   models.Users(qm.InnerJoin("users as friend on users.friend_id = friend.id")).Bind(&joinStruct)
+//
+// For custom objects that want to use eager loading, please see the
+// loadRelationships function.
 func Bind(rows *sql.Rows, obj interface{}) error {
 	structType, sliceType, singular, err := bindChecks(obj)
 
@@ -88,11 +90,20 @@ func (q *Query) Bind(obj interface{}) error {
 	return q.loadRelationships(obj, singular)
 }
 
-// loadRelationships calls the template generated eager load functions
-// (LoadTableName()) using reflection, to eager load the relationships
-// into the users Relationships struct attached to their object.
+// loadRelationships dynamically calls the template generated eager load
+// functions of the form:
+//
+//   func (t *TableRelationships) LoadRelationshipName(exec Executor, singular bool, obj interface{})
+//
+// The arguments to this function are:
+//   - t is not considered here, and is always passed nil. The function exists on a relationships
+//     struct to avoid a circular dependency with boil, and the receiver is ignored.
+//   - exec is used to perform additional queries that might be required for loading the relationships.
+//   - singular is passed in to identify whether or not this was a single object
+//     or a slice that must be loaded into.
+//   - obj is the object or slice of objects, always of the type *obj or *[]*obj as per bind.
 func (q *Query) loadRelationships(obj interface{}, singular bool) error {
-	typ := reflect.TypeOf(obj).Elem().Elem()
+	typ := reflect.TypeOf(obj).Elem()
 	if !singular {
 		typ = typ.Elem()
 	}
@@ -101,7 +112,7 @@ func (q *Query) loadRelationships(obj interface{}, singular bool) error {
 	// If the users object has no Relationships struct, it must be
 	// a custom object and we should not attempt to load any relationships.
 	if !found {
-		return nil
+		return errors.New("load query mod was used but bound struct contained no relationship field")
 	}
 
 	for _, relationship := range q.load {
@@ -110,11 +121,15 @@ func (q *Query) loadRelationships(obj interface{}, singular bool) error {
 		if !found {
 			return errors.Errorf("could not find Load%s method for eager loading", relationship)
 		}
-		spew.Dump(reflect.New(rel.Type).Interface().(**testRelationshipsStruct))
-		spew.Dump(reflect.Indirect(reflect.New(rel.Type)).Interface().(*testRelationshipsStruct))
+
+		execArg := reflect.ValueOf(q.executor)
+		if !execArg.IsValid() {
+			execArg = reflect.ValueOf((*sql.DB)(nil))
+		}
+
 		methodArgs := []reflect.Value{
-			reflect.New(rel.Type),
-			reflect.ValueOf(q.executor),
+			reflect.Indirect(reflect.New(rel.Type)),
+			execArg,
 			reflect.ValueOf(singular),
 			reflect.ValueOf(obj),
 		}

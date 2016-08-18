@@ -19,17 +19,14 @@ func SQL(sql string, args ...interface{}) QueryMod {
 	}
 }
 
-// Limit the number of returned rows
-func Limit(limit int) QueryMod {
+// Load allows you to specify foreign key relationships to eager load
+// for your query. Passed in relationships need to be in the format
+// MyThing or MyThings.
+// Relationship name plurality is important, if your relationship is
+// singular, you need to specify the singular form and vice versa.
+func Load(relationships ...string) QueryMod {
 	return func(q *boil.Query) {
-		boil.SetLimit(q, limit)
-	}
-}
-
-// Offset into the results
-func Offset(offset int) QueryMod {
-	return func(q *boil.Query) {
-		boil.SetOffset(q, offset)
+		boil.SetLoad(q, relationships...)
 	}
 }
 
@@ -123,6 +120,20 @@ func Having(clause string, args ...interface{}) QueryMod {
 func From(from string) QueryMod {
 	return func(q *boil.Query) {
 		boil.AppendFrom(q, from)
+	}
+}
+
+// Limit the number of returned rows
+func Limit(limit int) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetLimit(q, limit)
+	}
+}
+
+// Offset into the results
+func Offset(offset int) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetOffset(q, offset)
 	}
 }
 

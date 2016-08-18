@@ -157,4 +157,5 @@ var templateFunctions = template.FuncMap{
 	"sqlColDefinitions":      bdb.SQLColDefinitions,
 	"columnNames":            bdb.ColumnNames,
 	"columnDBTypes":          bdb.ColumnDBTypes,
+	"getTable":               bdb.GetTable,
 }

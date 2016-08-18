@@ -98,6 +98,11 @@ func (s *Seed) RandomizeStruct(str interface{}, colTypes map[string]string, canB
 			continue
 		}
 
+		tagVal, _ := getBoilTag(fieldTyp)
+		if tagVal == "-" {
+			continue
+		}
+
 		fieldDBType := colTypes[fieldTyp.Name]
 		if err := s.randomizeField(fieldVal, fieldDBType, canBeNull); err != nil {
 			return err

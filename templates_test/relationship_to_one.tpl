@@ -32,7 +32,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   }
   {{end -}}
 
-  check, err := local.{{.Function.Name}}(tx)
+  check, err := local.{{.Function.Name}}(tx).One()
   if err != nil {
     t.Fatal(err)
   }

@@ -1,31 +1,12 @@
 {{- define "relationship_to_one_helper"}}
+{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 // {{.Function.Name}}G pointed to by the foreign key.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}G(mods ...qm.QueryMod) (*{{.ForeignTable.NameGo}}, error) {
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
   return {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), mods...)
 }
 
-// {{.Function.Name}}GP pointed to by the foreign key. Panics on error.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}GP(mods ...qm.QueryMod) *{{.ForeignTable.NameGo}} {
-  slice, err := {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), mods...)
-  if err != nil {
-    panic(boil.WrapErr(err))
-  }
-
-  return slice
-}
-
-// {{.Function.Name}}P pointed to by the foreign key with exeuctor. Panics on error.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}P(exec boil.Executor, mods ...qm.QueryMod) *{{.ForeignTable.NameGo}} {
-  slice, err := {{.Function.Receiver}}.{{.Function.Name}}(exec, mods...)
-  if err != nil {
-    panic(boil.WrapErr(err))
-  }
-
-  return slice
-}
-
 // {{.Function.Name}} pointed to by the foreign key.
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) (*{{.ForeignTable.NameGo}}, error) {
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) ({{$varNameSingular}}Query) {
   queryMods := []qm.QueryMod{
     qm.Where("{{.ForeignTable.ColumnName}}=$1", {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}),
   }
@@ -35,7 +16,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
   query := {{.ForeignTable.NamePluralGo}}(exec, queryMods...)
   boil.SetFrom(query.Query, "{{.ForeignTable.Name}}")
 
-  return query.One()
+  return query
 }
 
 {{end -}}

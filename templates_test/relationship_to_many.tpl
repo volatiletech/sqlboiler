@@ -52,7 +52,7 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   {{end}}
 
   {{$varname := .ForeignTable | singular | camelCase -}}
-  {{$varname}}, err := a.{{$rel.Function.Name}}(tx)
+  {{$varname}}, err := a.{{$rel.Function.Name}}(tx).All()
   if err != nil {
     t.Fatal(err)
   }

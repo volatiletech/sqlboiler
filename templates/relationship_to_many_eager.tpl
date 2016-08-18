@@ -33,7 +33,7 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
 
     {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `select "{{id 0}}".* from "{{.ForeignTable}}" as "{{id 0}}" inner join "{{.JoinTable}}" as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
+    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from "{{.ForeignTable}}" as "{{id 0}}" inner join "{{.JoinTable}}" as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
     {{else -}}
@@ -54,9 +54,32 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
   defer results.Close()
 
   var resultSlice []*{{$rel.ForeignTable.NameGo}}
+  {{if .ToJoinTable -}}
+  {{- $foreignTable := getTable $dot.Tables .ForeignTable -}}
+  {{- $joinTable := getTable $dot.Tables .JoinTable -}}
+  {{- $localCol := $joinTable.GetColumn .JoinLocalColumn}}
+  var localJoinCols []{{$localCol.Type}}
+  for results.Next() {
+    one := new({{$rel.ForeignTable.NameGo}})
+    var localJoinCol {{$localCol.Type}}
+
+    err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $dot.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
+    if err = results.Err(); err != nil {
+      return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
+    }
+
+    resultSlice = append(resultSlice, one)
+    localJoinCols = append(localJoinCols, localJoinCol)
+  }
+
+  if err = results.Err(); err != nil {
+    return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
+  }
+  {{else -}}
   if err = boil.Bind(results, &resultSlice); err != nil {
     return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
   }
+  {{end}}
 
   if singular {
     if object.Relationships == nil {
@@ -66,6 +89,20 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
     return nil
   }
 
+  {{if .ToJoinTable -}}
+  for i, foreign := range resultSlice {
+    localJoinCol := localJoinCols[i]
+    for _, local := range slice {
+      if local.{{$rel.Function.LocalAssignment}} == localJoinCol {
+        if local.Relationships == nil {
+          local.Relationships = &{{$rel.LocalTable.NameGo}}Relationships{}
+        }
+        local.Relationships.{{$rel.Function.Name}} = append(local.Relationships.{{$rel.Function.Name}}, foreign)
+        break
+      }
+    }
+  }
+  {{else -}}
   for _, foreign := range resultSlice {
     for _, local := range slice {
       if local.{{$rel.Function.LocalAssignment}} == foreign.{{$rel.Function.ForeignAssignment}} {
@@ -77,6 +114,7 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
       }
     }
   }
+  {{end}}
 
   return nil
 }

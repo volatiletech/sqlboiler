@@ -180,6 +180,8 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.Postgres.Port,
 			s.Config.Postgres.SSLMode,
 		)
+	case "mock":
+		s.Driver = &drivers.MockDriver{}
 	}
 
 	if s.Driver == nil {

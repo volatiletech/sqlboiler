@@ -12,7 +12,7 @@ import (
 func TestTextsFromForeignKey(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(drivers.MockDriver(0))
+	tables, err := bdb.Tables(&drivers.MockDriver{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 	expect.Function.Receiver = "j"
 	expect.Function.ReverseInserts = false
 
-	expect.Function.LocalAssignment = "PilotID.Int32"
+	expect.Function.LocalAssignment = "PilotID.Int"
 	expect.Function.ForeignAssignment = "ID"
 
 	if !reflect.DeepEqual(expect, texts) {
@@ -49,7 +49,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 func TestTextsFromOneToOneRelationship(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(drivers.MockDriver(0))
+	tables, err := bdb.Tables(&drivers.MockDriver{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 	expect.Function.ReverseInserts = true
 
 	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "PilotID.Int32"
+	expect.Function.ForeignAssignment = "PilotID.Int"
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -96,7 +96,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 func TestTextsFromRelationship(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(drivers.MockDriver(0))
+	tables, err := bdb.Tables(&drivers.MockDriver{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.Function.Name = "Jets"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "PilotID.Int32"
+	expect.Function.ForeignAssignment = "PilotID.Int"
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -156,7 +156,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.Function.Name = "SourceLicenses"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "SourceID.Int32"
+	expect.Function.ForeignAssignment = "SourceID.Int"
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))

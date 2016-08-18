@@ -6,7 +6,6 @@ type Config struct {
 	PkgName       string   `toml:"pkg_name"`
 	OutFolder     string   `toml:"out_folder"`
 	ExcludeTables []string `toml:"exclude"`
-	TableNames    []string
 
 	Postgres PostgresConfig `toml:"postgres"`
 }

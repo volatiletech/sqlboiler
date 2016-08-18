@@ -6,37 +6,51 @@ import (
 )
 
 // MockDriver is a mock implementation of the bdb driver Interface
-type MockDriver int
+type MockDriver struct{}
 
 // TableNames returns a list of mock table names
-func (MockDriver) TableNames(exclude []string) ([]string, error) {
-	tables := []string{"pilots", "jets", "airports", "licenses", "pilots_jets_tags"}
+func (m *MockDriver) TableNames(exclude []string) ([]string, error) {
+	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "pilots_jets_tags"}
 	return strmangle.SetComplement(tables, exclude), nil
 }
 
 // Columns returns a list of mock columns
-func (MockDriver) Columns(tableName string) ([]bdb.Column, error) {
+func (m *MockDriver) Columns(tableName string) ([]bdb.Column, error) {
 	return map[string][]bdb.Column{
-		"pilots":   {{Name: "id", Type: "int32"}},
-		"airports": {{Name: "id", Type: "int32", Nullable: true}},
+		"pilots": {{Name: "id", Type: "int", DBType: "integer"}},
+		"airports": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "size", Type: "null.Int", DBType: "integer", Nullable: true},
+		},
 		"jets": {
-			{Name: "id", Type: "int32"},
-			{Name: "pilot_id", Type: "int32", Nullable: true, Unique: true},
-			{Name: "airport_id", Type: "int32"},
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "pilot_id", Type: "int", DBType: "integer", Nullable: true, Unique: true},
+			{Name: "airport_id", Type: "int", DBType: "integer"},
+			{Name: "name", Type: "string", DBType: "character", Nullable: false},
+			{Name: "color", Type: "null.String", DBType: "character", Nullable: true},
+			{Name: "uuid", Type: "string", DBType: "uuid", Nullable: true},
+			{Name: "identifier", Type: "string", DBType: "uuid", Nullable: false},
+			{Name: "cargo", Type: "[]byte", DBType: "bytea", Nullable: false},
+			{Name: "manifest", Type: "[]byte", DBType: "bytea", Nullable: true, Unique: true},
 		},
 		"licenses": {
-			{Name: "pilot_id", Type: "int32"},
-			{Name: "source_id", Type: "int32", Nullable: true},
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "pilot_id", Type: "int", DBType: "integer"},
+			{Name: "source_id", Type: "int", DBType: "integer", Nullable: true},
+		},
+		"hangars": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "name", Type: "string", DBType: "character", Nullable: true, Unique: true},
 		},
 		"pilots_jets_tags": {
-			{Name: "pilot_id", Type: "int32"},
-			{Name: "jet_id", Type: "int32"},
+			{Name: "pilot_id", Type: "int", DBType: "integer"},
+			{Name: "jet_id", Type: "int", DBType: "integer"},
 		},
 	}[tableName], nil
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (MockDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
+func (m *MockDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
 	return map[string][]bdb.ForeignKey{
 		"jets": {
 			{Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
@@ -54,16 +68,34 @@ func (MockDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
 }
 
 // TranslateColumnType converts a column to its "null." form if it is nullable
-func (MockDriver) TranslateColumnType(c bdb.Column) bdb.Column {
-	if c.Nullable {
-		c.Type = "null." + strmangle.TitleCase(c.Type)
-	}
-	return c
+func (m *MockDriver) TranslateColumnType(c bdb.Column) bdb.Column {
+	p := &PostgresDriver{}
+	return p.TranslateColumnType(c)
 }
 
 // PrimaryKeyInfo returns mock primary key info for the passed in table name
-func (MockDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
+func (m *MockDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
 	return map[string]*bdb.PrimaryKey{
+		"pilots": {
+			Name:    "pilot_id_pkey",
+			Columns: []string{"id"},
+		},
+		"airports": {
+			Name:    "airport_id_pkey",
+			Columns: []string{"id"},
+		},
+		"jets": {
+			Name:    "jet_id_pkey",
+			Columns: []string{"id"},
+		},
+		"licenses": {
+			Name:    "license_id_pkey",
+			Columns: []string{"id"},
+		},
+		"hangars": {
+			Name:    "hangar_id_pkey",
+			Columns: []string{"id"},
+		},
 		"pilots_jets_tags": {
 			Name:    "pilot_jet_id_pkey",
 			Columns: []string{"pilot_id", "jet_id"},
@@ -72,10 +104,10 @@ func (MockDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
 }
 
 // UseLastInsertID returns a database mock LastInsertID compatability flag
-func (MockDriver) UseLastInsertID() bool { return false }
+func (m *MockDriver) UseLastInsertID() bool { return false }
 
 // Open mimics a database open call and returns nil for no error
-func (MockDriver) Open() error { return nil }
+func (m *MockDriver) Open() error { return nil }
 
 // Close mimics a database close call
-func (MockDriver) Close() {}
+func (m *MockDriver) Close() {}

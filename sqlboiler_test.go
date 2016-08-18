@@ -11,144 +11,45 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
-
-	"github.com/vattle/sqlboiler/bdb"
-	"github.com/vattle/sqlboiler/bdb/drivers"
 )
 
 var state *State
 var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
-func init() {
-	state = &State{
-		Driver: drivers.MockDriver(0),
-		Tables: []bdb.Table{
-			{
-				Name: "patrick_table",
-				Columns: []bdb.Column{
-					{Name: "patrick_column", Type: "string", Nullable: false},
-					{Name: "aaron_column", Type: "null.String", Nullable: true},
-					{Name: "id", Type: "null.Int", Nullable: true},
-					{Name: "fun_id", Type: "int64", Nullable: false},
-					{Name: "time", Type: "null.Time", Nullable: true},
-					{Name: "fun_time", Type: "time.Time", Nullable: false},
-					{Name: "cool_stuff_forever", Type: "[]byte", Nullable: false},
-				},
-				PKey: &bdb.PrimaryKey{
-					Name:    "pkey_thing",
-					Columns: []string{"id", "fun_id"},
-				},
-			},
-			{
-				Name: "spiderman",
-				Columns: []bdb.Column{
-					{Name: "id", Type: "int64", Nullable: false},
-				},
-				PKey: &bdb.PrimaryKey{
-					Name:    "pkey_id",
-					Columns: []string{"id"},
-				},
-			},
-			{
-				Name: "spiderman_table_two",
-				Columns: []bdb.Column{
-					{Name: "id", Type: "int64", Nullable: false},
-					{Name: "patrick", Type: "string", Nullable: false},
-				},
-				PKey: &bdb.PrimaryKey{
-					Name:    "pkey_id",
-					Columns: []string{"id"},
-				},
-			},
-		},
-		Config: &Config{
-			PkgName:    "patrick",
-			OutFolder:  "",
-			DriverName: "postgres",
-		},
-	}
-}
-
-func TestLoadTemplate(t *testing.T) {
-	t.Parallel()
-
-	template, err := loadTemplate("templates_test/main_test", "postgres_main.tpl")
-	if err != nil {
-		t.Fatalf("Unable to loadTemplate: %s", err)
-	}
-
-	if template == nil {
-		t.Fatal("Unable to load template.")
-	}
-}
-
-func TestTemplates(t *testing.T) {
+func TestNew(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
 
-	if err := checkPKeys(state.Tables); err != nil {
-		t.Fatalf("%s", err)
-	}
-
-	// Initialize the templates
 	var err error
-	state.Templates, err = loadTemplates("templates")
+	out, err := ioutil.TempDir("", "boil_templates")
 	if err != nil {
-		t.Fatalf("Unable to initialize templates: %s", err)
+		t.Fatalf("unable to create tempdir: %s", err)
 	}
 
-	if len(state.Templates.Templates()) == 0 {
-		t.Errorf("Templates is empty.")
-	}
-
-	state.SingletonTemplates, err = loadTemplates("templates/singleton")
-	if err != nil {
-		t.Fatalf("Unable to initialize singleton templates: %s", err)
-	}
-
-	if len(state.SingletonTemplates.Templates()) == 0 {
-		t.Errorf("SingletonTemplates is empty.")
-	}
-
-	state.TestTemplates, err = loadTemplates("templates_test")
-	if err != nil {
-		t.Fatalf("Unable to initialize templates: %s", err)
-	}
-
-	if len(state.Templates.Templates()) == 0 {
-		t.Errorf("Templates is empty.")
-	}
-
-	state.TestMainTemplate, err = loadTemplate("templates_test/main_test", "postgres_main.tpl")
-	if err != nil {
-		t.Fatalf("Unable to initialize templates: %s", err)
-	}
-
-	state.SingletonTestTemplates, err = loadTemplates("templates_test/singleton")
-	if err != nil {
-		t.Fatalf("Unable to initialize single test templates: %s", err)
-	}
-
-	if len(state.SingletonTestTemplates.Templates()) == 0 {
-		t.Errorf("SingleTestTemplates is empty.")
-	}
-
-	state.Config.OutFolder, err = ioutil.TempDir("", "templates")
-	if err != nil {
-		t.Fatalf("Unable to create tempdir: %s", err)
-	}
+	// Defer cleanup of the tmp folder
 	defer func() {
 		if t.Failed() {
 			t.Log("template test output:", state.Config.OutFolder)
 			return
 		}
-
 		os.RemoveAll(state.Config.OutFolder)
 	}()
 
-	if err = state.Run(true); err != nil {
-		t.Errorf("Unable to run SQLBoilerRun: %s", err)
+	config := &Config{
+		DriverName:    "mock",
+		PkgName:       "models",
+		OutFolder:     out,
+		ExcludeTables: []string{"hangars"},
+	}
+
+	state, err = New(config)
+	if err != nil {
+		t.Fatalf("Unable to create State using config: %s", err)
+	}
+
+	if err = state.Run(false); err != nil {
+		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 
 	buf := &bytes.Buffer{}

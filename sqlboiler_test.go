@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/bdb/drivers"
 )
 
 var state *State
@@ -20,7 +21,7 @@ var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 func init() {
 	state = &State{
-		Driver: fakeDB(0),
+		Driver: drivers.MockDriver(0),
 		Tables: []bdb.Table{
 			{
 				Name: "patrick_table",

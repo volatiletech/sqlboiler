@@ -32,6 +32,8 @@ func TestSQLColDefinitions(t *testing.T) {
 }
 
 func TestTypes(t *testing.T) {
+	t.Parallel()
+
 	defs := SQLColumnDefs{
 		{Type: "thing1"},
 		{Type: "thing2"},
@@ -47,6 +49,8 @@ func TestTypes(t *testing.T) {
 }
 
 func TestNames(t *testing.T) {
+	t.Parallel()
+
 	defs := SQLColumnDefs{
 		{Name: "thing1"},
 		{Name: "thing2"},

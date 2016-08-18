@@ -20,6 +20,8 @@ func nopCloser(w io.Writer) io.WriteCloser {
 }
 
 func TestOutHandler(t *testing.T) {
+	// t.Parallel() cannot be used
+
 	// set the function pointer back to its original value
 	// after we modify it for the test
 	saveTestHarnessFileOpen := testHarnessFileOpen
@@ -44,6 +46,8 @@ func TestOutHandler(t *testing.T) {
 }
 
 func TestOutHandlerFiles(t *testing.T) {
+	// t.Parallel() cannot be used
+
 	saveTestHarnessFileOpen := testHarnessFileOpen
 	defer func() {
 		testHarnessFileOpen = saveTestHarnessFileOpen

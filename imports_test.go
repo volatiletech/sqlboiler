@@ -55,6 +55,8 @@ func TestImportsSort(t *testing.T) {
 }
 
 func TestCombineTypeImports(t *testing.T) {
+	t.Parallel()
+
 	imports1 := imports{
 		standard: importList{
 			`"errors"`,

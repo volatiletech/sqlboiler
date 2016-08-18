@@ -358,6 +358,7 @@ func TestBindPtrs_Ignore(t *testing.T) {
 
 func TestGetStructValues(t *testing.T) {
 	t.Parallel()
+
 	timeThing := time.Now()
 	o := struct {
 		TitleThing string

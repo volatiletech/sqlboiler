@@ -103,6 +103,53 @@ func TestBindSingular(t *testing.T) {
 	}
 }
 
+var loadFunctionCalled bool
+
+type testRelationshipsStruct struct{}
+
+func (r *testRelationshipsStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
+	loadFunctionCalled = true
+	return nil
+}
+
+func TestLoadRelationshipsSlice(t *testing.T) {
+	// t.Parallel() Function uses globals
+	loadFunctionCalled = false
+
+	testSlice := []*struct {
+		ID            int
+		Relationships *testRelationshipsStruct
+	}{}
+
+	q := Query{load: []string{"TestOne"}, executor: nil}
+	if err := q.loadRelationships(testSlice, false); err != nil {
+		t.Error(err)
+	}
+
+	if !loadFunctionCalled {
+		t.Errorf("Load function was not called for testSlice")
+	}
+}
+
+func TestLoadRelationshipsSingular(t *testing.T) {
+	// t.Parallel() Function uses globals
+	loadFunctionCalled = false
+
+	testSingular := &struct {
+		ID            int
+		Relationships *testRelationshipsStruct
+	}{}
+
+	q := Query{load: []string{"TestOne"}, executor: nil}
+	if err := q.loadRelationships(testSingular, true); err != nil {
+		t.Error(err)
+	}
+
+	if !loadFunctionCalled {
+		t.Errorf("Load function was not called for singular")
+	}
+}
+
 func TestBind_InnerJoin(t *testing.T) {
 	t.Parallel()
 
@@ -349,6 +396,36 @@ func TestGetStructValues(t *testing.T) {
 	}
 	if !vals[6].(null.Bool).IsZero() {
 		t.Errorf("Want %v, got %v", o.NullBool, vals[6])
+	}
+}
+
+func TestGetSliceValues(t *testing.T) {
+	t.Parallel()
+
+	o := []struct {
+		ID   int
+		Name string
+	}{
+		{5, "a"},
+		{6, "b"},
+	}
+
+	in := make([]interface{}, len(o))
+	in[0] = o[0]
+	in[1] = o[1]
+
+	vals := GetSliceValues(in, "id", "name")
+	if got := vals[0].(int); got != 5 {
+		t.Error(got)
+	}
+	if got := vals[1].(string); got != "a" {
+		t.Error(got)
+	}
+	if got := vals[2].(int); got != 6 {
+		t.Error(got)
+	}
+	if got := vals[3].(string); got != "b" {
+		t.Error(got)
 	}
 }
 

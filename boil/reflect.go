@@ -16,7 +16,7 @@ var (
 
 // BindP executes the query and inserts the
 // result into the passed in object pointer.
-// It panics on error.
+// It panics on error. See boil.Bind() documentation.
 func (q *Query) BindP(obj interface{}) {
 	if err := q.Bind(obj); err != nil {
 		panic(WrapErr(err))
@@ -27,12 +27,13 @@ func (q *Query) BindP(obj interface{}) {
 // result into the passed in object pointer
 //
 // Bind rules:
-// - Struct tags control bind, in the form of: `boil:"name,bind"`
-// - If the "name" part of the struct tag is specified, that will be used
-// for binding instead of the snake_cased field name.
-// - If the ",bind" option is specified on an struct field, it will be recursed
-// into to look for fields for binding.
-// - If the name of the struct tag is "-", this field will not be bound to
+//   - Struct tags control bind, in the form of: `boil:"name,bind"`
+//   - If the "name" part of the struct tag is specified, that will be used
+//   - f the "name" part of the tag is specified, it is used for binding
+//     (the columns returned are title cased and matched).
+//   - If the ",bind" option is specified on an struct field, it will be recursed
+//     into to look for fields for binding.
+//   - If the name of the struct tag is "-", this field will not be bound to
 //
 // Example Query:
 //
@@ -49,13 +50,104 @@ func (q *Query) BindP(obj interface{}) {
 //   }
 //
 //   models.Users(qm.InnerJoin("users as friend on users.friend_id = friend.id")).Bind(&joinStruct)
+//
+// For custom objects that want to use eager loading, please see the
+// loadRelationships function.
+func Bind(rows *sql.Rows, obj interface{}) error {
+	structType, sliceType, singular, err := bindChecks(obj)
+
+	if err != nil {
+		return err
+	}
+
+	return bind(rows, obj, structType, sliceType, singular)
+}
+
+// Bind executes the query and inserts the
+// result into the passed in object pointer
+//
+// See documentation for boil.Bind()
 func (q *Query) Bind(obj interface{}) error {
+	structType, sliceType, singular, err := bindChecks(obj)
+	if err != nil {
+		return err
+	}
+
+	rows, err := ExecQueryAll(q)
+	if err != nil {
+		return errors.Wrap(err, "bind failed to execute query")
+	}
+	defer rows.Close()
+
+	if res := bind(rows, obj, structType, sliceType, singular); res != nil {
+		return res
+	}
+
+	if len(q.load) == 0 {
+		return nil
+	}
+
+	return q.loadRelationships(obj, singular)
+}
+
+// loadRelationships dynamically calls the template generated eager load
+// functions of the form:
+//
+//   func (t *TableRelationships) LoadRelationshipName(exec Executor, singular bool, obj interface{})
+//
+// The arguments to this function are:
+//   - t is not considered here, and is always passed nil. The function exists on a relationships
+//     struct to avoid a circular dependency with boil, and the receiver is ignored.
+//   - exec is used to perform additional queries that might be required for loading the relationships.
+//   - singular is passed in to identify whether or not this was a single object
+//     or a slice that must be loaded into.
+//   - obj is the object or slice of objects, always of the type *obj or *[]*obj as per bind.
+func (q *Query) loadRelationships(obj interface{}, singular bool) error {
+	typ := reflect.TypeOf(obj).Elem()
+	if !singular {
+		typ = typ.Elem()
+	}
+
+	rel, found := typ.FieldByName("Relationships")
+	// If the users object has no Relationships struct, it must be
+	// a custom object and we should not attempt to load any relationships.
+	if !found {
+		return errors.New("load query mod was used but bound struct contained no relationship field")
+	}
+
+	for _, relationship := range q.load {
+		// Attempt to find the LoadRelationshipName function
+		loadMethod, found := rel.Type.MethodByName("Load" + relationship)
+		if !found {
+			return errors.Errorf("could not find Load%s method for eager loading", relationship)
+		}
+
+		execArg := reflect.ValueOf(q.executor)
+		if !execArg.IsValid() {
+			execArg = reflect.ValueOf((*sql.DB)(nil))
+		}
+
+		methodArgs := []reflect.Value{
+			reflect.Indirect(reflect.New(rel.Type)),
+			execArg,
+			reflect.ValueOf(singular),
+			reflect.ValueOf(obj),
+		}
+
+		resp := loadMethod.Func.Call(methodArgs)
+		if resp[0].Interface() != nil {
+			return resp[0].Interface().(error)
+		}
+	}
+
+	return nil
+}
+
+// bindChecks resolves information about the bind target, and errors if it's not an object
+// we can bind to.
+func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Type, singular bool, err error) {
 	typ := reflect.TypeOf(obj)
 	kind := typ.Kind()
-
-	var structType reflect.Type
-	var sliceType reflect.Type
-	var singular bool
 
 	for i := 0; i < len(bindAccepts); i++ {
 		exp := bindAccepts[i]
@@ -72,7 +164,7 @@ func (q *Query) Bind(obj interface{}) error {
 				break
 			}
 
-			return errors.Errorf("obj type should be *[]*Type or *Type but was %q", reflect.TypeOf(obj).String())
+			return nil, nil, false, errors.Errorf("obj type should be *[]*Type or *Type but was %q", reflect.TypeOf(obj).String())
 		}
 
 		switch kind {
@@ -83,16 +175,10 @@ func (q *Query) Bind(obj interface{}) error {
 		}
 	}
 
-	return bind(q, obj, structType, sliceType, singular)
+	return structType, sliceType, singular, nil
 }
 
-func bind(q *Query, obj interface{}, structType, sliceType reflect.Type, singular bool) error {
-	rows, err := ExecQueryAll(q)
-	if err != nil {
-		return errors.Wrap(err, "bind failed to execute query")
-	}
-	defer rows.Close()
-
+func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool) error {
 	cols, err := rows.Columns()
 	if err != nil {
 		return errors.Wrap(err, "bind failed to get column names")
@@ -228,9 +314,27 @@ func GetStructValues(obj interface{}, columns ...string) []interface{} {
 	for i, c := range columns {
 		field := val.FieldByName(strmangle.TitleCase(c))
 		if !field.IsValid() {
-			panic(fmt.Sprintf("Unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+			panic(fmt.Sprintf("unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
 		}
 		ret[i] = field.Interface()
+	}
+
+	return ret
+}
+
+// GetSliceValues returns the values (as interface) of the matching columns in obj.
+func GetSliceValues(slice []interface{}, columns ...string) []interface{} {
+	ret := make([]interface{}, len(slice)*len(columns))
+
+	for i, obj := range slice {
+		val := reflect.Indirect(reflect.ValueOf(obj))
+		for j, c := range columns {
+			field := val.FieldByName(strmangle.TitleCase(c))
+			if !field.IsValid() {
+				panic(fmt.Sprintf("unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+			}
+			ret[i*len(columns)+j] = field.Interface()
+		}
 	}
 
 	return ret

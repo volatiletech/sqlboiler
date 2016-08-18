@@ -45,6 +45,21 @@ func TestSetSQL(t *testing.T) {
 	}
 }
 
+func TestSetLoad(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetLoad(q, "one", "two")
+
+	if len(q.load) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.load))
+	}
+
+	if q.load[0] != "one" || q.load[1] != "two" {
+		t.Errorf("Was not expected string, got %s", q.load)
+	}
+}
+
 func TestAppendWhere(t *testing.T) {
 	t.Parallel()
 

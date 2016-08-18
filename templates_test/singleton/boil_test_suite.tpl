@@ -136,9 +136,9 @@ func TestInsert(t *testing.T) {
   {{- end -}}
 }
 
-// The relationship tests cannot be run in parallel
+// TestToMany tests cannot be run in parallel
 // or postgres deadlocks will occur.
-func TestRelationships(t *testing.T) {
+func TestToMany(t *testing.T) {
   {{- $dot := .}}
   {{- range $index, $table := .Tables}}
     {{- $tableName := $table.Name | plural | titleCase -}}
@@ -147,14 +147,29 @@ func TestRelationships(t *testing.T) {
       {{- range $table.ToManyRelationships -}}
         {{- $rel := textsFromRelationship $dot.Tables $table . -}}
         {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-          {{- $funcName := $rel.LocalTable.NameGo -}}
-  t.Run("{{$rel.ForeignTable.NameGo}}ToOne", test{{$rel.ForeignTable.NameGo}}ToOne{{$rel.LocalTable.NameGo}}_{{$funcName}})
+          {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+  t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
         {{else -}}
-  t.Run("{{$rel.LocalTable.NameGo}}ToMany", test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}})
+  t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}})
         {{end -}}{{- /* if unique */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
+}
+
+// TestToOne tests cannot be run in parallel
+// or postgres deadlocks will occur.
+func TestToOne(t *testing.T) {
+  {{- $dot := . -}}
+{{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+    {{- range $table.FKeys -}}
+      {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
+  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+    {{end -}}{{- /* fkey range */ -}}
+  {{- end -}}{{- /* if join table */ -}}
+{{- end -}}{{- /* tables range */ -}}
 }
 
 func TestReload(t *testing.T) {

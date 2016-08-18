@@ -11,7 +11,7 @@ type {{$modelName}} struct {
   {{end -}}
   {{- if .Table.IsJoinTable -}}
   {{- else}}
-  //Relationships *{{$modelName}}Relationships `boil:"-" json:"-" toml:"-" yaml:"-"`
+  Relationships *{{$modelName}}Relationships `boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 

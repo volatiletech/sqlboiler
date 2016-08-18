@@ -1,4 +1,4 @@
-package boil
+package randomize
 
 import (
 	"reflect"
@@ -51,7 +51,7 @@ func TestRandomizeStruct(t *testing.T) {
 		"NullInterval": "interval",
 	}
 
-	err := s.RandomizeStruct(&testStruct, fieldTypes, true, "Ignore")
+	err := Struct(s, &testStruct, fieldTypes, true, "Ignore")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +134,7 @@ func TestRandomizeField(t *testing.T) {
 
 			// Make sure we never get back values that would be considered null
 			// by the boil whitelist generator, or by the database driver
-			if err := s.randomizeField(field, typ, false); err != nil {
+			if err := randomizeField(s, field, typ, false); err != nil {
 				t.Errorf("%d) %s", i, err)
 			}
 

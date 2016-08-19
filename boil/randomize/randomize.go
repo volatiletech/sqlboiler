@@ -207,7 +207,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 	}
 
 	if value == nil {
-		return errors.Errorf("unsupported type: %T", typ.String())
+		return errors.Errorf("unsupported type: %s", typ.String())
 	}
 
 	field.Set(reflect.ValueOf(value))

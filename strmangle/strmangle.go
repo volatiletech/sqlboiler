@@ -237,7 +237,7 @@ func PrefixStringSlice(str string, strs []string) []string {
 }
 
 // Placeholders generates the SQL statement placeholders for in queries.
-// For example, ($1,$2,$3),($4,$5,$6) etc.
+// For example, ($1,$2,$3),($4,$5, $6) etc.
 // It will start counting placeholders at "start".
 func Placeholders(count int, start int, group int) string {
 	buf := GetBuffer()

@@ -1,6 +1,6 @@
 {{- define "relationship_to_one_eager_helper" -}}
   {{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
-  {{- $slice := printf "%sSlice" .LocalTable.NameGo}}
+  {{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
 // relationships structs of the objects.
 func (r *{{.LocalTable.NameGo}}Relationships) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -66,12 +66,12 @@ func (r *{{.LocalTable.NameGo}}Relationships) Load{{.Function.Name}}(e boil.Exec
 
   return nil
 }
-{{- end -}}
+{{end -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
   {{- range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
 {{- template "relationship_to_one_eager_helper" $rel -}}
-{{end -}}
+{{- end -}}
 {{- end -}}

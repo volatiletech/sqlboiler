@@ -1,5 +1,5 @@
 {{- if .Table.IsJoinTable -}}
-{{- else}}
+{{- else -}}
 {{- $dot := . -}}
 {{- range .Table.ToManyRelationships -}}
 {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
@@ -7,7 +7,7 @@
 {{- else -}}
   {{- $rel := textsFromRelationship $dot.Tables $dot.Table . -}}
   {{- $arg := printf "maybe%s" $rel.LocalTable.NameGo -}}
-  {{- $slice := printf "%sSlice" $rel.LocalTable.NameGo}}
+  {{- $slice := printf "%sSlice" $rel.LocalTable.NameGo -}}
 // Load{{$rel.Function.Name}} allows an eager lookup of values, cached into the
 // relationships structs of the objects.
 func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {

@@ -3,7 +3,7 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
-{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
+{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 // {{$tableNameSingular}}FindG retrieves a single record by ID.
 func {{$tableNameSingular}}FindG({{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   return {{$tableNameSingular}}Find(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)

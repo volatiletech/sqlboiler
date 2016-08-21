@@ -2,7 +2,7 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
-{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
+{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) error {

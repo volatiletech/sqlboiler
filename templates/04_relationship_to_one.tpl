@@ -1,4 +1,4 @@
-{{- define "relationship_to_one_helper"}}
+{{- define "relationship_to_one_helper" -}}
 {{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 // {{.Function.Name}}G pointed to by the foreign key.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
@@ -26,5 +26,5 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
   {{- range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
 {{- template "relationship_to_one_helper" $rel -}}
-{{end -}}
+{{- end -}}
 {{- end -}}

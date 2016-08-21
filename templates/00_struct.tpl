@@ -34,5 +34,4 @@ type {{$modelName}}Relationships struct {
 {{end -}}{{/* if ForeignColumnUnique */}}
 {{- end -}}{{/* range tomany */}}
 }
-
 {{end -}}

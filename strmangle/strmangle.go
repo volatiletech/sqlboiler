@@ -9,8 +9,6 @@ import (
 	"math"
 	"regexp"
 	"strings"
-
-	"github.com/jinzhu/inflection"
 )
 
 var (
@@ -20,12 +18,12 @@ var (
 )
 
 func init() {
-	// Override the uncountable inflections with an empty set.
+	// Our Boil inflection Ruleset does not include uncountable inflections.
 	// This way, people using words like Sheep will not have
 	// collisions with their model name (Sheep) and their
 	// function name (Sheep()). Instead, it will
 	// use the regular inflection rules: Sheep, Sheeps().
-	inflection.SetUncountable([]string{})
+	boilRuleset = newBoilRuleset()
 }
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
@@ -113,7 +111,7 @@ func Plural(name string) string {
 		}
 
 		if i == len(splits)-1 {
-			buf.WriteString(inflection.Plural(splits[len(splits)-1]))
+			buf.WriteString(boilRuleset.Pluralize(splits[len(splits)-1]))
 			break
 		}
 
@@ -136,7 +134,7 @@ func Singular(name string) string {
 		}
 
 		if i == len(splits)-1 {
-			buf.WriteString(inflection.Singular(splits[len(splits)-1]))
+			buf.WriteString(boilRuleset.Singularize(splits[len(splits)-1]))
 			break
 		}
 

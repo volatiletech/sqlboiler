@@ -135,3 +135,29 @@ create table spider_toys (
   name character varying,
   primary key (spider_id)
 );
+
+/*
+  Test:
+  * Variations of capitalization
+  * Single value columns
+  * Primary key as only value
+*/
+create table pals (
+  pal character varying,
+  primary key (pal)
+);
+
+create table friend (
+  friend character varying,
+  primary key (friend)
+);
+
+create table bro (
+  bros character varying,
+  primary key (bros)
+);
+
+create table enemies (
+  enemies character varying,
+  primary key (enemies)
+);

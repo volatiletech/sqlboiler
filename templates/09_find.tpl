@@ -22,7 +22,7 @@ func {{$tableNameSingular}}FindGP({{$pkArgs}}, selectCols ...string) *{{$tableNa
 // {{$tableNameSingular}}Find retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
 func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-  {{$varNameSingular}} := &{{$tableNameSingular}}{}
+  {{$varNameSingular}}Obj := &{{$tableNameSingular}}{}
 
   sel := "*"
   if len(selectCols) > 0 {
@@ -35,7 +35,7 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
   q := boil.SQL(query, {{$pkNames | join ", "}})
   boil.SetExecutor(q, exec)
 
-  err := q.Bind({{$varNameSingular}})
+  err := q.Bind({{$varNameSingular}}Obj)
   if err != nil {
     if errors.Cause(err) == sql.ErrNoRows {
       return nil, sql.ErrNoRows
@@ -43,7 +43,7 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
     return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
   }
 
-  return {{$varNameSingular}}, nil
+  return {{$varNameSingular}}Obj, nil
 }
 
 // {{$tableNameSingular}}FindP retrieves a single record by ID with an executor, and panics on error.

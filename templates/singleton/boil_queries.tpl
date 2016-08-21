@@ -29,12 +29,12 @@ func generateUpsertQuery(tableName string, updateOnConflict bool, ret, update, c
     strmangle.Placeholders(len(whitelist), 1, 1),
   )
 
-  if !updateOnConflict {
+  if !updateOnConflict || len(update) == 0 {
     buf.WriteString("DO NOTHING")
   } else {
 		buf.WriteByte('(')
 		buf.WriteString(strings.Join(conflict, ", "))
-		buf.WriteString(") DO UPDATE SET")
+		buf.WriteString(") DO UPDATE SET ")
 
 	  for i, v := range update {
 			if i != 0 {

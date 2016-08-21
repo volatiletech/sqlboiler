@@ -297,3 +297,60 @@ func TestJoinSlicesFail(t *testing.T) {
 
 	JoinSlices("", nil, []string{"hello"})
 }
+
+func TestStringSliceMatch(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		a      []string
+		b      []string
+		expect bool
+	}{
+		{
+			a:      []string{},
+			b:      []string{},
+			expect: true,
+		},
+		{
+			a:      []string{"a"},
+			b:      []string{},
+			expect: false,
+		},
+		{
+			a:      []string{"a"},
+			b:      []string{"a"},
+			expect: true,
+		},
+		{
+			a:      []string{},
+			b:      []string{"b"},
+			expect: false,
+		},
+		{
+			a:      []string{"c", "d"},
+			b:      []string{"b", "d"},
+			expect: false,
+		},
+		{
+			a:      []string{"b", "d"},
+			b:      []string{"c", "d"},
+			expect: false,
+		},
+		{
+			a:      []string{"a", "b", "c"},
+			b:      []string{"c", "b", "a"},
+			expect: true,
+		},
+		{
+			a:      []string{"a", "b", "c"},
+			b:      []string{"a", "b", "c"},
+			expect: true,
+		},
+	}
+
+	for i, test := range tests {
+		if StringSliceMatch(test.a, test.b) != test.expect {
+			t.Errorf("%d) Expected match to return %v, but got %v", i, test.expect, !test.expect)
+		}
+	}
+}

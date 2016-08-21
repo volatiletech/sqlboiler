@@ -117,3 +117,21 @@ create table cat_toys (
   toy_id int not null references toys (id),
   primary key (cat_id, toy_id)
 );
+
+create table dog_toys (
+  dog_id int not null,
+  toy_id int not null,
+  primary key (dog_id, toy_id)
+);
+
+create table dragon_toys (
+  dragon_id uuid,
+  toy_id uuid,
+  primary key (dragon_id, toy_id)
+);
+
+create table spider_toys (
+  spider_id uuid,
+  name character varying,
+  primary key (spider_id)
+);

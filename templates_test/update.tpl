@@ -31,8 +31,18 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
   }
 
-  if err = {{$varNameSingular}}.Update(tx); err != nil {
-    t.Error(err)
+  // If table only contains primary key columns, we need to pass
+  // them into a whitelist to get a valid test result,
+  // otherwise the Update method will error because it will not be able to
+  // generate a whitelist (due to it excluding primary key columns).
+  if strmangle.StringSliceMatch({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns) {
+    if err = {{$varNameSingular}}.Update(tx, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+      t.Error(err)
+    }
+  } else {
+    if err = {{$varNameSingular}}.Update(tx); err != nil {
+      t.Error(err)
+    }
   }
 }
 
@@ -66,10 +76,15 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
   }
 
   // Remove Primary keys and unique columns from what we plan to update
-  fields := strmangle.SetComplement(
-    {{$varNameSingular}}Columns,
-    {{$varNameSingular}}PrimaryKeyColumns,
-  )
+  var fields []string
+  if strmangle.StringSliceMatch({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns) {
+    fields = {{$varNameSingular}}Columns
+  } else {
+    fields = strmangle.SetComplement(
+      {{$varNameSingular}}Columns,
+      {{$varNameSingular}}PrimaryKeyColumns,
+    )
+  }
 
 	value := reflect.Indirect(reflect.ValueOf({{$varNameSingular}}))
   updateMap := M{}

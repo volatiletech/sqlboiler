@@ -318,3 +318,27 @@ func JoinSlices(sep string, a, b []string) []string {
 
 	return ret
 }
+
+// StringSliceMatch returns true if the length of both
+// slices is the same, and the elements of both slices are the same.
+// The elements can be in any order.
+func StringSliceMatch(a []string, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for _, aval := range a {
+		found := false
+		for _, bval := range b {
+			if bval == aval {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	return true
+}

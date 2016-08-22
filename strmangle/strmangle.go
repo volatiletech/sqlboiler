@@ -12,10 +12,16 @@ import (
 )
 
 var (
-	idAlphabet     = []byte("abcdefghijklmnopqrstuvwxyz")
-	uppercaseWords = regexp.MustCompile(`^(?i)(id|uid|uuid|guid|[^aeiouy]*)[0-9]*$`)
-	smartQuoteRgx  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
+	idAlphabet    = []byte("abcdefghijklmnopqrstuvwxyz")
+	smartQuoteRgx = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
 )
+
+var uppercaseWords = map[string]struct{}{
+	"guid": struct{}{},
+	"id":   struct{}{},
+	"uid":  struct{}{},
+	"uuid": struct{}{},
+}
 
 func init() {
 	// Our Boil inflection Ruleset does not include uncountable inflections.
@@ -148,22 +154,106 @@ func Singular(name string) string {
 // into a go styled object variable name of "ColumnName".
 // titleCase also fully uppercases "ID" components of names, for example
 // "column_name_id" to "ColumnNameID".
-func TitleCase(name string) string {
+//
+// Note: This method is ugly because it has been highly optimized,
+// we found that it was a fairly large bottleneck when we were using regexp.
+func TitleCase(n string) string {
+	ln := len(n)
+	name := []byte(n)
 	buf := GetBuffer()
-	defer PutBuffer(buf)
 
-	splits := strings.Split(name, "_")
-
-	for _, split := range splits {
-		if uppercaseWords.MatchString(split) {
-			buf.WriteString(strings.ToUpper(split))
+	start := 0
+	end := 0
+	for start < ln {
+		// Find the start and end of the underscores to account
+		// for the possibility of being multiple underscores in a row.
+		if end < ln && name[start] == '_' {
+			start++
+			end++
 			continue
 		}
 
-		buf.WriteString(strings.Title(split))
+		// Once we have found the end of the underscores, we can
+		// find the end of the first full word.
+		if end < ln && name[end] != '_' {
+			end++
+			continue
+		}
+
+		word := name[start:end]
+		var vowels bool
+
+		numStart := -1
+		numBroken := false
+		for i, c := range word {
+			// If the word starts with digits, it does not
+			// fit the criteria for "uppercasedWords"
+			if i == 0 && c > 47 && c < 58 {
+				numBroken = true
+				break
+			}
+
+			if c > 47 && c < 58 && numStart == -1 {
+				numStart = i
+				continue
+			} else if c > 47 && c < 58 {
+				continue
+			}
+			// A letter inbetween numbers will set numBroken to true, eg: 9e9
+			if numStart != -1 {
+				numBroken = true
+				break
+			}
+
+			// If on the last loop and we have not found any digits, update
+			// numStart to len of word, so we can get the full word below
+			if i == len(word)-1 && numStart == -1 && !numBroken {
+				numStart = len(word)
+			}
+		}
+
+		var match bool
+		if !numBroken {
+			_, match = uppercaseWords[string(word[:numStart])]
+		}
+		if !match {
+			for _, c := range word {
+				if found := c == 97 || c == 101 || c == 105 || c == 111 || c == 117 || c == 121; found {
+					vowels = true
+					break
+				}
+			}
+		}
+
+		if match || !vowels {
+			// Uppercase all a-z characters
+			for _, c := range word {
+				if c > 96 && c < 123 {
+					buf.WriteByte(c - 32)
+				} else {
+					buf.WriteByte(c)
+				}
+			}
+		} else {
+			// If the first char is a-z, then uppercase it
+			// by subtracting 32, and append the rest of the word.
+			// Otherwise, it's probably a digit, so just append
+			// the whole word as is.
+			if word[0] > 96 && word[0] < 123 {
+				buf.WriteByte(word[0] - 32)
+				buf.Write(word[1:])
+			} else {
+				buf.Write(word)
+			}
+		}
+
+		start = end + 1
+		end = start
 	}
 
-	return buf.String()
+	ret := buf.String()
+	PutBuffer(buf)
+	return ret
 }
 
 // CamelCase takes a variable name in the format of "var_name" and converts
@@ -174,20 +264,33 @@ func CamelCase(name string) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
-	splits := strings.Split(name, "_")
-
-	for i, split := range splits {
-		if i == 0 {
-			buf.WriteString(split)
-			continue
+	index := -1
+	for i := 0; i < len(name); i++ {
+		if name[i] != '_' {
+			index = i
+			break
 		}
+	}
 
-		if uppercaseWords.MatchString(split) {
-			buf.WriteString(strings.ToUpper(split))
-			continue
+	if index != -1 {
+		name = name[index:]
+	} else {
+		return ""
+	}
+
+	index = -1
+	for i := 0; i < len(name); i++ {
+		if name[i] == '_' {
+			index = i
+			break
 		}
+	}
 
-		buf.WriteString(strings.Title(split))
+	if index == -1 {
+		buf.WriteString(name)
+	} else {
+		buf.WriteString(name[:index])
+		buf.WriteString(TitleCase(name[index+1:]))
 	}
 
 	return buf.String()

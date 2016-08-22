@@ -167,17 +167,17 @@ func TitleCase(n string) string {
 	for start < ln {
 		// Find the start and end of the underscores to account
 		// for the possibility of being multiple underscores in a row.
-		if end < ln && name[start] == '_' {
-			start++
-			end++
-			continue
-		}
-
-		// Once we have found the end of the underscores, we can
-		// find the end of the first full word.
-		if end < ln && name[end] != '_' {
-			end++
-			continue
+		if end < ln {
+			if name[start] == '_' {
+				start++
+				end++
+				continue
+				// Once we have found the end of the underscores, we can
+				// find the end of the first full word.
+			} else if name[end] != '_' {
+				end++
+				continue
+			}
 		}
 
 		word := name[start:end]

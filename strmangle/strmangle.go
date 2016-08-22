@@ -205,8 +205,12 @@ func TitleCase(n string) string {
 				}
 			}
 		} else {
-			buf.WriteByte(word[0] - 32)
-			buf.Write(word[1:])
+			if c := word[0]; c > 96 && c < 123 {
+				buf.WriteByte(word[0] - 32)
+				buf.Write(word[1:])
+			} else {
+				buf.Write(word)
+			}
 		}
 
 		start = end + 1

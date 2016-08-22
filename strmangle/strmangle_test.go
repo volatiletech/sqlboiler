@@ -177,6 +177,7 @@ func TestTitleCase(t *testing.T) {
 		{"zxc_vdf0c0_hello0", "ZXCVDF0C0Hello0"},
 		{"id0_uid000_guid0e0", "ID0UID000GUID0E0"},
 		{"ab_5zxc5d5", "Ab5ZXC5D5"},
+		{"Identifier", "Identifier"},
 	}
 
 	for i, test := range tests {

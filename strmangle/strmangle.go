@@ -181,49 +181,19 @@ func TitleCase(n string) string {
 		}
 
 		word := name[start:end]
+		wordLen := len(word)
 		var vowels bool
 
-		numStart := -1
-		numBroken := false
+		numStart := wordLen
 		for i, c := range word {
-			// If the word starts with digits, it does not
-			// fit the criteria for "uppercasedWords"
-			if i == 0 && c > 47 && c < 58 {
-				numBroken = true
-				break
-			}
+			vowels = vowels || (c == 97 || c == 101 || c == 105 || c == 111 || c == 117 || c == 121)
 
-			if c > 47 && c < 58 && numStart == -1 {
+			if c > 47 && c < 58 && numStart == wordLen {
 				numStart = i
-				continue
-			} else if c > 47 && c < 58 {
-				continue
-			}
-			// A letter inbetween numbers will set numBroken to true, eg: 9e9
-			if numStart != -1 {
-				numBroken = true
-				break
-			}
-
-			// If on the last loop and we have not found any digits, update
-			// numStart to len of word, so we can get the full word below
-			if i == len(word)-1 && numStart == -1 && !numBroken {
-				numStart = len(word)
 			}
 		}
 
-		var match bool
-		if !numBroken {
-			_, match = uppercaseWords[string(word[:numStart])]
-		}
-		if !match {
-			for _, c := range word {
-				if found := c == 97 || c == 101 || c == 105 || c == 111 || c == 117 || c == 121; found {
-					vowels = true
-					break
-				}
-			}
-		}
+		_, match := uppercaseWords[string(word[:numStart])]
 
 		if match || !vowels {
 			// Uppercase all a-z characters
@@ -235,16 +205,8 @@ func TitleCase(n string) string {
 				}
 			}
 		} else {
-			// If the first char is a-z, then uppercase it
-			// by subtracting 32, and append the rest of the word.
-			// Otherwise, it's probably a digit, so just append
-			// the whole word as is.
-			if word[0] > 96 && word[0] < 123 {
-				buf.WriteByte(word[0] - 32)
-				buf.Write(word[1:])
-			} else {
-				buf.Write(word)
-			}
+			buf.WriteByte(word[0] - 32)
+			buf.Write(word[1:])
 		}
 
 		start = end + 1

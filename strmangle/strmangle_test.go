@@ -173,12 +173,10 @@ func TestTitleCase(t *testing.T) {
 		{"thing_zxc_stuff_vxz", "ThingZXCStuffVXZ"},
 		{"zxc_thing_vxz_stuff", "ZXCThingVXZStuff"},
 		{"zxc_vdf9c9_hello9", "ZXCVDF9C9Hello9"},
-		{"id9_uid911_guid9e9", "ID9UID911Guid9e9"},
+		{"id9_uid911_guid9e9", "ID9UID911GUID9E9"},
 		{"zxc_vdf0c0_hello0", "ZXCVDF0C0Hello0"},
-		{"id0_uid000_guid0e0", "ID0UID000Guid0e0"},
-		{"9id_zxc9d9", "9idZXC9D9"},
-		{"0id_zxc0d0", "0idZXC0D0"},
-		{"5id_zxc5d5", "5idZXC5D5"},
+		{"id0_uid000_guid0e0", "ID0UID000GUID0E0"},
+		{"ab_5zxc5d5", "Ab5ZXC5D5"},
 	}
 
 	for i, test := range tests {

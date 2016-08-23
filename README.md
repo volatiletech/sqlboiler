@@ -1,49 +1,164 @@
 # SQLBoiler
 
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/vattle/sqlboiler/blob/master/LICENSE)
-[![GoDoc](https://godoc.org/github.com/pobri19/sqlboiler?status.svg)](https://godoc.org/github.com/pobri19/sqlboiler)
+[![GoDoc](https://godoc.org/github.com/vattle/sqlboiler?status.svg)](https://godoc.org/github.com/vattle/sqlboiler)
 [![CircleCI](https://circleci.com/gh/vattle/sqlboiler.svg?style=shield)](https://circleci.com/gh/vattle/sqlboiler)
-[![Go Report Card](https://goreportcard.com/badge/kubernetes/helm)](http://goreportcard.com/report/vattle/sqlboiler)
+[![Go Report Card](https://goreportcard.com/badge/vattle/sqlboiler)](http://goreportcard.com/report/vattle/sqlboiler)
 
-SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
+SQLBoiler is a tool to generate a Go data model tailored to your database schema.
 
-#### Config
+It is a "database-first" ORM as opposed to "code-first" (like gorm/gorp).
+That means you must first create your database schema. Please use something
+like goose or some other migration tool to manage this part of the database's
+lifecycle.
 
-Before you use SQLBoiler make sure you create a `sqlboiler.toml` configuration file containing your database details.
+## About SQL Boiler
 
-The configuration file loader checks the working directory, `$HOME/sqlboiler/.config` directory and `$XDG_CONFIG_HOME/sqlboiler` directory to locate your configuration file. The working directory takes precedence.
+#### Features
 
-`sqlboiler.toml` example file:
+- Full model generation
+- High performance through generation
+- Easy workflow (models can always be regenerated, full auto-complete)
+- Strongly typed querying (usually no converting or binding to pointers)
+- Hooks (Before/After Create/Update)
+- Relationships/Associations
+- Eager loading
+- Transactions
+- Raw SQL fallbacks
+- Compatibility tests (Run against your own DB schema)
+- Debug logging
 
+#### Missing Features
+
+- Automatic CreatedAt UpdatedAt (use Hooks instead)
+- Nested eager loading
+
+#### Supported Databases
+
+- PostgreSQL
+
+Note: Seeking contributors for other database engines.
+
+#### Example Queries
+
+```go
+import (
+  // Import this so we don't have to use qm.Limit etc.
+  . "github.com/vattle/sqlboiler/boil/qm"
+)
+
+// Open handle to database like normal
+db, err := sql.Open("postgres", "dbname=fun user=abc")
+if err != nil {
+  return err
+}
+
+// Query all users
+users, err := models.Users(db).All()
+
+// Panic-able if you like to code that way
+users := models.Users(db).AllP()
+
+// More complex query
+users, err := models.Users(db, Where("age > ?", 30), Limit(5), Offset(6)).All()
+
+// Ultra complex query
+users, err := models.Users(db,
+  Select("id", "name"),
+  InnerJoin("credit_cards c on c.user_id = users.id"),
+  Where("age > ?", 30),
+  AndIn("c.kind in ?", "visa", "mastercard"),
+  Or("email like ?", "%aol.com%"),
+  GroupBy("id", "name"),
+  Having("count(c.id) > ?", 2),
+  Limit(5),
+  Offset(6),
+).All()
+
+// Use any "boil.Executor" implementation (*sql.DB, *sql.Tx, data-dog mock db)
+// for any query.
+tx, err := db.Begin()
+if err != nil {
+  return err
+}
+users, err := models.Users(tx).All()
+
+// Relationships
+user, err := models.Users(db, Limit(1)).One()
+if err != nil {
+  return err
+}
+movies, err := user.FavoriteMovies(db).All()
+
+// Eager loading
+users, err := models.Users(db, Load("FavoriteMovies"))
+if err != nil {
+  return err
+}
+fmt.Println(len(users.Loaded.FavoriteMovies))
 ```
+
+## How to boil your database
+
+#### Download
+
+```shell
+go get -u -t github.com/vattle/sqlboiler
+```
+
+#### Configuration
+
+Create a configuration file. Because the project uses viper TOML, JSON, YAML
+are all supported. Environment variables are also able to be used.
+We will assume TOML for the rest of the documentation.
+
+The configuration file is searched for in the following directories in this
+order:
+
+- `./`
+- `$XDG_CONFIG_HOME/sqlboiler/`
+
+```shell
+vim ./sqlboiler.toml
+```
+
+Currently the only section in the configuration is `postgres`, and it takes
+configuration parameters that will be passed mostly directly to the
+[pq](github.com/lib/pq) driver. Here is a rundown of all the different
+values that can go in that section:
+
+| Name | Required | Default |
+| --- | --- | --- |
+| dbname  | yes       | none      |
+| host    | yes       | none      |
+| port    | no        | 5432      |
+| user    | yes       | none      |
+| pass    | no        | none      |
+| sslmode | no        | 'require' |
+
+Example:
+
+```toml
 [postgres]
-  host="localhost"
-  port=5432
-  user="dbusername"
-  pass="dbpassword"
-  dbname="dbname"
-  sslmode="require"
+dbname="dbname"
+host="localhost"
+port=5432
+user="dbusername"
+pass="dbpassword"
+sslmode="require"
 ```
 
-The following config fields are optional, and default to:
+## Usage
 
-```
-postgres.port=5432
-postgres.sslmode="require"
-```
+#### Initial Generation
 
-To disable SSLMode, use `sslmode="disable"`.
+After creating a configuration file that points at the database we want to
+generate models for, we can invoke the sqlboiler command line utility.
 
+```text
+SQL Boiler generates a Go ORM from template files, tailored to your database schema.
+Complete documentation is available at http://github.com/vattle/sqlboiler
 
-#### How
-
-SQLBoiler connects to your database (defined in your sqlboiler.toml file) to ascertain the structure of your tables, and builds your Go ORM code using the templates defined in the `/templates` and `/templates_test` folders.
-
-Running SQLBoiler without the `--table` flag will result in SQLBoiler building boilerplate code for every table in your database  the `public` schema. Tables created in Postgres will default to the `public` schema.
-
-
-
-````
 Usage:
   sqlboiler [flags] <driver>
 
@@ -51,6 +166,27 @@ Examples:
 sqlboiler postgres
 
 Flags:
-  -o, --output string    The name of the folder to output to (default "models")
-  -p, --pkgname string   The name you wish to assign to your generated package (default "models")
-````
+  -d, --debug                 Debug mode prints stack traces on error
+  -x, --exclude stringSlice   Tables to be excluded from the generated package
+  -o, --output string         The name of the folder to output to (default "models")
+  -p, --pkgname string        The name you wish to assign to your generated package (default "models")
+```
+
+Follow the steps below to do some basic model generation. Once we've generated
+our models, we can run the compatibility tests which will exercise the entirety
+of the generated code. This way we can ensure that our database is compatible
+with sqlboiler. If you find there are some failing tests, please check the
+[faq](#FAQ) section.
+
+```shell
+# Generate our models
+sqlboiler -x goose_migrations postgres
+
+# Run the generated tests
+go test ./models # This requires an administrator postgres user
+                 # because of some voodoo we do to disable triggers
+```
+
+## FAQ
+
+Work in Progress

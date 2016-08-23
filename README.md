@@ -84,7 +84,7 @@ if err != nil {
 users, err := models.Users(tx).All()
 
 // Relationships
-user, err := models.Users(db, Limit(1)).One()
+user, err := models.Users(db).One()
 if err != nil {
   return err
 }
@@ -108,7 +108,7 @@ go get -u -t github.com/vattle/sqlboiler
 
 #### Configuration
 
-Create a configuration file. Because the project uses viper TOML, JSON, YAML
+Create a configuration file. Because the project uses [viper](github.com/spf13/viper), TOML, JSON and YAML
 are all supported. Environment variables are also able to be used.
 We will assume TOML for the rest of the documentation.
 
@@ -117,6 +117,7 @@ order:
 
 - `./`
 - `$XDG_CONFIG_HOME/sqlboiler/`
+- `$HOME/.config/sqlboiler/`
 
 ```shell
 vim ./sqlboiler.toml
@@ -179,12 +180,12 @@ with sqlboiler. If you find there are some failing tests, please check the
 [faq](#FAQ) section.
 
 ```shell
-# Generate our models
+# Generate our models and exclude the migrations table
 sqlboiler -x goose_migrations postgres
 
 # Run the generated tests
-go test ./models # This requires an administrator postgres user
-                 # because of some voodoo we do to disable triggers
+go test ./models # This requires an administrator postgres user because of some
+                 # voodoo we do to disable triggers for the generated test db
 ```
 
 ## FAQ

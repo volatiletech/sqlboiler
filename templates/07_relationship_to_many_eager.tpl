@@ -9,8 +9,8 @@
   {{- $arg := printf "maybe%s" $rel.LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" $rel.LocalTable.NameGo -}}
 // Load{{$rel.Function.Name}} allows an eager lookup of values, cached into the
-// relationships structs of the objects.
-func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+// loaded structs of the objects.
+func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
   var slice []*{{$rel.LocalTable.NameGo}}
   var object *{{$rel.LocalTable.NameGo}}
 
@@ -82,10 +82,10 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
   {{end}}
 
   if singular {
-    if object.Relationships == nil {
-      object.Relationships = &{{$rel.LocalTable.NameGo}}Relationships{}
+    if object.Loaded == nil {
+      object.Loaded = &{{$rel.LocalTable.NameGo}}Loaded{}
     }
-    object.Relationships.{{$rel.Function.Name}} = resultSlice
+    object.Loaded.{{$rel.Function.Name}} = resultSlice
     return nil
   }
 
@@ -94,10 +94,10 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
     localJoinCol := localJoinCols[i]
     for _, local := range slice {
       if local.{{$rel.Function.LocalAssignment}} == localJoinCol {
-        if local.Relationships == nil {
-          local.Relationships = &{{$rel.LocalTable.NameGo}}Relationships{}
+        if local.Loaded == nil {
+          local.Loaded = &{{$rel.LocalTable.NameGo}}Loaded{}
         }
-        local.Relationships.{{$rel.Function.Name}} = append(local.Relationships.{{$rel.Function.Name}}, foreign)
+        local.Loaded.{{$rel.Function.Name}} = append(local.Loaded.{{$rel.Function.Name}}, foreign)
         break
       }
     }
@@ -106,10 +106,10 @@ func (r *{{$rel.LocalTable.NameGo}}Relationships) Load{{$rel.Function.Name}}(e b
   for _, foreign := range resultSlice {
     for _, local := range slice {
       if local.{{$rel.Function.LocalAssignment}} == foreign.{{$rel.Function.ForeignAssignment}} {
-        if local.Relationships == nil {
-          local.Relationships = &{{$rel.LocalTable.NameGo}}Relationships{}
+        if local.Loaded == nil {
+          local.Loaded = &{{$rel.LocalTable.NameGo}}Loaded{}
         }
-        local.Relationships.{{$rel.Function.Name}} = append(local.Relationships.{{$rel.Function.Name}}, foreign)
+        local.Loaded.{{$rel.Function.Name}} = append(local.Loaded.{{$rel.Function.Name}}, foreign)
         break
       }
     }

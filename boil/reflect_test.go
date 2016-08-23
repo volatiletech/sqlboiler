@@ -105,9 +105,9 @@ func TestBindSingular(t *testing.T) {
 
 var loadFunctionCalled bool
 
-type testRelationshipsStruct struct{}
+type testLoadedStruct struct{}
 
-func (r *testRelationshipsStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
+func (r *testLoadedStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
 	loadFunctionCalled = true
 	return nil
 }
@@ -117,8 +117,8 @@ func TestLoadRelationshipsSlice(t *testing.T) {
 	loadFunctionCalled = false
 
 	testSlice := []*struct {
-		ID            int
-		Relationships *testRelationshipsStruct
+		ID     int
+		Loaded *testLoadedStruct
 	}{}
 
 	q := Query{load: []string{"TestOne"}, executor: nil}
@@ -136,8 +136,8 @@ func TestLoadRelationshipsSingular(t *testing.T) {
 	loadFunctionCalled = false
 
 	testSingular := &struct {
-		ID            int
-		Relationships *testRelationshipsStruct
+		ID     int
+		Loaded *testLoadedStruct
 	}{}
 
 	q := Query{load: []string{"TestOne"}, executor: nil}

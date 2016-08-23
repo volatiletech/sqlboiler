@@ -11,16 +11,15 @@ type {{$modelName}} struct {
   {{end -}}
   {{- if .Table.IsJoinTable -}}
   {{- else}}
-  Relationships *{{$modelName}}Relationships `boil:"-" json:"-" toml:"-" yaml:"-"`
+  Loaded *{{$modelName}}Loaded `boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 
 {{- $dot := . -}}
 {{- if .Table.IsJoinTable -}}
 {{- else}}
-// {{$modelName}}Relationships are where relationships are both cached
-// and eagerly loaded.
-type {{$modelName}}Relationships struct {
+// {{$modelName}}Loaded are where relationships are eagerly loaded.
+type {{$modelName}}Loaded struct {
   {{range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
     {{- template "relationship_to_one_struct_helper" $rel}}

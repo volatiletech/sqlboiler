@@ -100,10 +100,10 @@ func (q *Query) Bind(obj interface{}) error {
 // loadRelationships dynamically calls the template generated eager load
 // functions of the form:
 //
-//   func (t *TableRelationships) LoadRelationshipName(exec Executor, singular bool, obj interface{})
+//   func (t *TableLoaded) LoadRelationshipName(exec Executor, singular bool, obj interface{})
 //
 // The arguments to this function are:
-//   - t is not considered here, and is always passed nil. The function exists on a relationships
+//   - t is not considered here, and is always passed nil. The function exists on a loaded
 //     struct to avoid a circular dependency with boil, and the receiver is ignored.
 //   - exec is used to perform additional queries that might be required for loading the relationships.
 //   - singular is passed in to identify whether or not this was a single object
@@ -115,11 +115,11 @@ func (q *Query) loadRelationships(obj interface{}, singular bool) error {
 		typ = typ.Elem()
 	}
 
-	rel, found := typ.FieldByName("Relationships")
-	// If the users object has no Relationships struct, it must be
+	rel, found := typ.FieldByName("Loaded")
+	// If the users object has no loaded struct, it must be
 	// a custom object and we should not attempt to load any relationships.
 	if !found {
-		return errors.New("load query mod was used but bound struct contained no relationship field")
+		return errors.New("load query mod was used but bound struct contained no Loaded field")
 	}
 
 	for _, relationship := range q.load {

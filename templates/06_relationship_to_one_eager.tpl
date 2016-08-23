@@ -2,8 +2,8 @@
   {{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
-// relationships structs of the objects.
-func (r *{{.LocalTable.NameGo}}Relationships) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+// loaded structs of the objects.
+func (r *{{.LocalTable.NameGo}}Loaded) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
   var slice []*{{.LocalTable.NameGo}}
   var object *{{.LocalTable.NameGo}}
 
@@ -45,20 +45,20 @@ func (r *{{.LocalTable.NameGo}}Relationships) Load{{.Function.Name}}(e boil.Exec
   }
 
   if singular && len(resultSlice) != 0 {
-    if object.Relationships == nil {
-      object.Relationships = &{{.LocalTable.NameGo}}Relationships{}
+    if object.Loaded == nil {
+      object.Loaded = &{{.LocalTable.NameGo}}Loaded{}
     }
-    object.Relationships.{{.Function.Name}} = resultSlice[0]
+    object.Loaded.{{.Function.Name}} = resultSlice[0]
     return nil
   }
 
   for _, foreign := range resultSlice {
     for _, local := range slice {
       if local.{{.Function.LocalAssignment}} == foreign.{{.Function.ForeignAssignment}} {
-        if local.Relationships == nil {
-          local.Relationships = &{{.LocalTable.NameGo}}Relationships{}
+        if local.Loaded == nil {
+          local.Loaded = &{{.LocalTable.NameGo}}Loaded{}
         }
-        local.Relationships.{{.Function.Name}} = foreign
+        local.Loaded.{{.Function.Name}} = foreign
         break
       }
     }

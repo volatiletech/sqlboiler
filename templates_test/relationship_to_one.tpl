@@ -41,18 +41,18 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
     t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, check.{{.Function.ForeignAssignment}})
   }
 
-  if err = local.Relationships.Load{{.Function.Name}}(tx, false, {{.LocalTable.NameGo}}Slice{&local}); err != nil {
+  if err = local.Loaded.Load{{.Function.Name}}(tx, false, {{.LocalTable.NameGo}}Slice{&local}); err != nil {
     t.Fatal(err)
   }
-  if local.Relationships.{{.Function.Name}} == nil {
+  if local.Loaded.{{.Function.Name}} == nil {
     t.Error("struct should have been eager loaded")
   }
 
-  local.Relationships.{{.Function.Name}} = nil
-  if err = local.Relationships.Load{{.Function.Name}}(tx, true, &local); err != nil {
+  local.Loaded.{{.Function.Name}} = nil
+  if err = local.Loaded.Load{{.Function.Name}}(tx, true, &local); err != nil {
     t.Fatal(err)
   }
-  if local.Relationships.{{.Function.Name}} == nil {
+  if local.Loaded.{{.Function.Name}} == nil {
     t.Error("struct should have been eager loaded")
   }
 }

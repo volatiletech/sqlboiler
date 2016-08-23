@@ -183,5 +183,6 @@ func newBoilRuleset() *inflect.Ruleset {
 	rs.AddIrregular("sex", "sexes")
 	rs.AddIrregular("move", "moves")
 	rs.AddIrregular("zombie", "zombies")
+	rs.AddIrregular("cookie", "cookies")
 	return rs
 }

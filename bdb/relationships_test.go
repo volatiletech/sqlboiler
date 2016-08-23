@@ -9,46 +9,71 @@ func TestToManyRelationships(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		{Name: "users", Columns: []Column{{Name: "id"}}},
-		{Name: "contests", Columns: []Column{{Name: "id"}}},
 		{
-			Name: "videos",
+			Name: "pilots",
 			Columns: []Column{
 				{Name: "id"},
-				{Name: "user_id"},
-				{Name: "contest_id"},
-			},
-			FKeys: []ForeignKey{
-				{Name: "videos_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id"},
-				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id"},
+				{Name: "name"},
 			},
 		},
 		{
-			Name: "notifications",
+			Name: "airports",
 			Columns: []Column{
-				{Name: "user_id"},
-				{Name: "source_id"},
-			},
-			FKeys: []ForeignKey{
-				{Name: "notifications_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id"},
-				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id"},
+				{Name: "id"},
+				{Name: "size"},
 			},
 		},
 		{
-			Name:        "users_video_tags",
+			Name: "jets",
+			Columns: []Column{
+				{Name: "id"},
+				{Name: "pilot_id"},
+				{Name: "airport_id"},
+			},
+			FKeys: []ForeignKey{
+				{Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+				{Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id"},
+			},
+		},
+		{
+			Name: "licenses",
+			Columns: []Column{
+				{Name: "id"},
+				{Name: "pilot_id"},
+			},
+			FKeys: []ForeignKey{
+				{Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+			},
+		},
+		{
+			Name: "hangars",
+			Columns: []Column{
+				{Name: "id"},
+				{Name: "name"},
+			},
+		},
+		{
+			Name: "languages",
+			Columns: []Column{
+				{Name: "id"},
+				{Name: "language"},
+			},
+		},
+		{
+			Name:        "pilot_languages",
 			IsJoinTable: true,
 			Columns: []Column{
-				{Name: "user_id"},
-				{Name: "video_id"},
+				{Name: "pilot_id"},
+				{Name: "language_id"},
 			},
 			FKeys: []ForeignKey{
-				{Name: "user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id"},
-				{Name: "video_id_fk", Column: "video_id", ForeignTable: "videos", ForeignColumn: "id"},
+				{Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+				{Name: "language_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id"},
 			},
 		},
 	}
 
-	relationships := ToManyRelationships("users", tables)
+	relationships := ToManyRelationships("pilots", tables)
 
 	expected := []ToManyRelationship{
 		{
@@ -56,8 +81,8 @@ func TestToManyRelationships(t *testing.T) {
 			Nullable: false,
 			Unique:   false,
 
-			ForeignTable:          "videos",
-			ForeignColumn:         "user_id",
+			ForeignTable:          "jets",
+			ForeignColumn:         "pilot_id",
 			ForeignColumnNullable: false,
 			ForeignColumnUnique:   false,
 
@@ -68,8 +93,8 @@ func TestToManyRelationships(t *testing.T) {
 			Nullable: false,
 			Unique:   false,
 
-			ForeignTable:          "notifications",
-			ForeignColumn:         "user_id",
+			ForeignTable:          "licenses",
+			ForeignColumn:         "pilot_id",
 			ForeignColumnNullable: false,
 			ForeignColumnUnique:   false,
 
@@ -80,37 +105,25 @@ func TestToManyRelationships(t *testing.T) {
 			Nullable: false,
 			Unique:   false,
 
-			ForeignTable:          "notifications",
-			ForeignColumn:         "source_id",
-			ForeignColumnNullable: false,
-			ForeignColumnUnique:   false,
-
-			ToJoinTable: false,
-		},
-		{
-			Column:   "id",
-			Nullable: false,
-			Unique:   false,
-
-			ForeignTable:          "videos",
+			ForeignTable:          "languages",
 			ForeignColumn:         "id",
 			ForeignColumnNullable: false,
 			ForeignColumnUnique:   false,
 
 			ToJoinTable: true,
-			JoinTable:   "users_video_tags",
+			JoinTable:   "pilot_languages",
 
-			JoinLocalColumn:         "user_id",
+			JoinLocalColumn:         "pilot_id",
 			JoinLocalColumnNullable: false,
 			JoinLocalColumnUnique:   false,
 
-			JoinForeignColumn:         "video_id",
+			JoinForeignColumn:         "language_id",
 			JoinForeignColumnNullable: false,
 			JoinForeignColumnUnique:   false,
 		},
 	}
 
-	if len(relationships) != 4 {
+	if len(relationships) != 3 {
 		t.Error("wrong # of relationships:", len(relationships))
 	}
 
@@ -125,47 +138,72 @@ func TestToManyRelationshipsNull(t *testing.T) {
 	t.Parallel()
 
 	tables := []Table{
-		{Name: "users", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
-		{Name: "contests", Columns: []Column{{Name: "id", Nullable: true, Unique: true}}},
 		{
-			Name: "videos",
+			Name: "pilots",
 			Columns: []Column{
 				{Name: "id", Nullable: true, Unique: true},
-				{Name: "user_id", Nullable: true, Unique: true},
-				{Name: "contest_id", Nullable: true, Unique: true},
-			},
-			FKeys: []ForeignKey{
-				{Name: "videos_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
-				{Name: "videos_contest_id_fk", Column: "contest_id", ForeignTable: "contests", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "name", Nullable: true, Unique: true},
 			},
 		},
 		{
-			Name: "notifications",
+			Name: "airports",
 			Columns: []Column{
-				{Name: "user_id", Nullable: true, Unique: true},
-				{Name: "source_id", Nullable: true, Unique: true},
-			},
-			FKeys: []ForeignKey{
-				{Name: "notifications_user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
-				{Name: "notifications_source_id_fk", Column: "source_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "id", Nullable: true, Unique: true},
+				{Name: "size", Nullable: true, Unique: true},
 			},
 		},
 		{
-			Name:        "users_video_tags",
+			Name: "jets",
+			Columns: []Column{
+				{Name: "id", Nullable: true, Unique: true},
+				{Name: "pilot_id", Nullable: true, Unique: true},
+				{Name: "airport_id", Nullable: true, Unique: true},
+			},
+			FKeys: []ForeignKey{
+				{Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id", Nullable: true, Unique: true},
+			},
+		},
+		{
+			Name: "licenses",
+			Columns: []Column{
+				{Name: "id", Nullable: true, Unique: true},
+				{Name: "pilot_id", Nullable: true, Unique: true},
+			},
+			FKeys: []ForeignKey{
+				{Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true, Unique: true},
+			},
+		},
+		{
+			Name: "hangars",
+			Columns: []Column{
+				{Name: "id", Nullable: true, Unique: true},
+				{Name: "name", Nullable: true, Unique: true},
+			},
+		},
+		{
+			Name: "languages",
+			Columns: []Column{
+				{Name: "id", Nullable: true, Unique: true},
+				{Name: "language", Nullable: true, Unique: true},
+			},
+		},
+		{
+			Name:        "pilot_languages",
 			IsJoinTable: true,
 			Columns: []Column{
-				{Name: "user_id", Nullable: true, Unique: true},
-				{Name: "video_id", Nullable: true, Unique: true},
+				{Name: "pilot_id", Nullable: true, Unique: true},
+				{Name: "language_id", Nullable: true, Unique: true},
 			},
 			FKeys: []ForeignKey{
-				{Name: "user_id_fk", Column: "user_id", ForeignTable: "users", ForeignColumn: "id", Nullable: true, Unique: true},
-				{Name: "video_id_fk", Column: "video_id", ForeignTable: "videos", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true, Unique: true},
+				{Name: "language_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id", Nullable: true, Unique: true},
 			},
 		},
 	}
 
-	relationships := ToManyRelationships("users", tables)
-	if len(relationships) != 4 {
+	relationships := ToManyRelationships("pilots", tables)
+	if len(relationships) != 3 {
 		t.Error("wrong # of relationships:", len(relationships))
 	}
 
@@ -175,8 +213,8 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			Nullable: true,
 			Unique:   true,
 
-			ForeignTable:          "videos",
-			ForeignColumn:         "user_id",
+			ForeignTable:          "jets",
+			ForeignColumn:         "pilot_id",
 			ForeignColumnNullable: true,
 			ForeignColumnUnique:   true,
 
@@ -187,8 +225,8 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			Nullable: true,
 			Unique:   true,
 
-			ForeignTable:          "notifications",
-			ForeignColumn:         "user_id",
+			ForeignTable:          "licenses",
+			ForeignColumn:         "pilot_id",
 			ForeignColumnNullable: true,
 			ForeignColumnUnique:   true,
 
@@ -199,31 +237,19 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			Nullable: true,
 			Unique:   true,
 
-			ForeignTable:          "notifications",
-			ForeignColumn:         "source_id",
-			ForeignColumnNullable: true,
-			ForeignColumnUnique:   true,
-
-			ToJoinTable: false,
-		},
-		{
-			Column:   "id",
-			Nullable: true,
-			Unique:   true,
-
-			ForeignTable:          "videos",
+			ForeignTable:          "languages",
 			ForeignColumn:         "id",
 			ForeignColumnNullable: true,
 			ForeignColumnUnique:   true,
 
 			ToJoinTable: true,
-			JoinTable:   "users_video_tags",
+			JoinTable:   "pilot_languages",
 
-			JoinLocalColumn:         "user_id",
+			JoinLocalColumn:         "pilot_id",
 			JoinLocalColumnNullable: true,
 			JoinLocalColumnUnique:   true,
 
-			JoinForeignColumn:         "video_id",
+			JoinForeignColumn:         "language_id",
 			JoinForeignColumnNullable: true,
 			JoinForeignColumnUnique:   true,
 		},

@@ -10,14 +10,17 @@ type MockDriver struct{}
 
 // TableNames returns a list of mock table names
 func (m *MockDriver) TableNames(exclude []string) ([]string, error) {
-	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "pilots_jets_tags"}
+	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
 	return strmangle.SetComplement(tables, exclude), nil
 }
 
 // Columns returns a list of mock columns
 func (m *MockDriver) Columns(tableName string) ([]bdb.Column, error) {
 	return map[string][]bdb.Column{
-		"pilots": {{Name: "id", Type: "int", DBType: "integer"}},
+		"pilots": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "name", Type: "string", DBType: "character"},
+		},
 		"airports": {
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "size", Type: "null.Int", DBType: "integer", Nullable: true},
@@ -36,15 +39,18 @@ func (m *MockDriver) Columns(tableName string) ([]bdb.Column, error) {
 		"licenses": {
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "pilot_id", Type: "int", DBType: "integer"},
-			{Name: "source_id", Type: "int", DBType: "integer", Nullable: true},
 		},
 		"hangars": {
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "name", Type: "string", DBType: "character", Nullable: true, Unique: true},
 		},
-		"pilots_jets_tags": {
+		"languages": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "language", Type: "string", DBType: "character", Nullable: false, Unique: true},
+		},
+		"pilot_languages": {
 			{Name: "pilot_id", Type: "int", DBType: "integer"},
-			{Name: "jet_id", Type: "int", DBType: "integer"},
+			{Name: "language_id", Type: "int", DBType: "integer"},
 		},
 	}[tableName], nil
 }
@@ -58,11 +64,10 @@ func (m *MockDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) 
 		},
 		"licenses": {
 			{Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
-			{Name: "licenses_source_id_fk", Column: "source_id", ForeignTable: "pilots", ForeignColumn: "id"},
 		},
-		"pilots_jets_tags": {
+		"pilot_languages": {
 			{Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
-			{Name: "jet_id_fk", Column: "jet_id", ForeignTable: "jets", ForeignColumn: "id"},
+			{Name: "jet_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id"},
 		},
 	}[tableName], nil
 }
@@ -96,9 +101,13 @@ func (m *MockDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
 			Name:    "hangar_id_pkey",
 			Columns: []string{"id"},
 		},
-		"pilots_jets_tags": {
-			Name:    "pilot_jet_id_pkey",
-			Columns: []string{"pilot_id", "jet_id"},
+		"languages": {
+			Name:    "language_id_pkey",
+			Columns: []string{"id"},
+		},
+		"pilot_languages": {
+			Name:    "pilot_languages_pkey",
+			Columns: []string{"pilot_id", "language_id"},
 		},
 	}[tableName], nil
 }

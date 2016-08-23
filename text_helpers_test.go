@@ -147,33 +147,13 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
 
-	expect.ForeignTable.NameGo = "License"
-	expect.ForeignTable.NameSingular = "license"
-	expect.ForeignTable.NamePluralGo = "Licenses"
-	expect.ForeignTable.NameHumanReadable = "licenses"
-	expect.ForeignTable.Slice = "LicenseSlice"
+	expect.ForeignTable.NameGo = "Language"
+	expect.ForeignTable.NameSingular = "language"
+	expect.ForeignTable.NamePluralGo = "Languages"
+	expect.ForeignTable.NameHumanReadable = "languages"
+	expect.ForeignTable.Slice = "LanguageSlice"
 
-	expect.Function.Name = "SourceLicenses"
-	expect.Function.Receiver = "p"
-	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "SourceID.Int"
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-
-	texts = textsFromRelationship(tables, pilots, pilots.ToManyRelationships[3])
-	expect = RelationshipToManyTexts{}
-	expect.LocalTable.NameGo = "Pilot"
-	expect.LocalTable.NameSingular = "pilot"
-
-	expect.ForeignTable.NameGo = "Jet"
-	expect.ForeignTable.NameSingular = "jet"
-	expect.ForeignTable.NamePluralGo = "Jets"
-	expect.ForeignTable.NameHumanReadable = "jets"
-	expect.ForeignTable.Slice = "JetSlice"
-
-	expect.Function.Name = "Jets"
+	expect.Function.Name = "Languages"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "ID"

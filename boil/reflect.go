@@ -28,17 +28,24 @@ func (q *Query) BindP(obj interface{}) {
 //
 // Bind rules:
 //   - Struct tags control bind, in the form of: `boil:"name,bind"`
-//   - If the "name" part of the struct tag is specified, that will be used
-//   - f the "name" part of the tag is specified, it is used for binding
-//     (the columns returned are title cased and matched).
-//   - If the ",bind" option is specified on an struct field, it will be recursed
-//     into to look for fields for binding.
-//   - If the name of the struct tag is "-", this field will not be bound to
+//   - If "name" is omitted the sql column names that come back are TitleCased
+//     and matched against the field name.
+//   - If the "name" part of the struct tag is specified, the given name will
+//     be used instead of the struct field name for binding.
+//   - If the "name" of the struct tag is "-", this field will not be bound to.
+//   - If the ",bind" option is specified on a struct field and that field
+//     is a struct itself, it will be recursed into to look for fields for binding.
 //
 // Example Query:
 //
 //   type JoinStruct struct {
+//     // User1 can have it's struct fields bound to since it specifies
+//     // ,bind in the struct tag, it will look specifically for
+//     // fields that are prefixed with "user." returning from the query.
+//     // For example "user.id" column name will bind to User1.ID
 //     User1      *models.User `boil:"user,bind"`
+//     // User2 will follow the same rules as noted above except it will use
+//     // "friend." as the prefix it's looking for.
 //     User2      *models.User `boil:"friend,bind"`
 //     // RandomData will not be recursed into to look for fields to
 //     // bind and will not be bound to because of the - for the name.

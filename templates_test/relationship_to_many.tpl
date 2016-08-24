@@ -74,7 +74,8 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
     t.Error("expected to find c")
   }
 
-  if err = a.Loaded.Load{{$rel.Function.Name}}(tx, false, {{$rel.LocalTable.NameGo}}Slice{&a}); err != nil {
+  slice := {{$rel.LocalTable.NameGo}}Slice{&a}
+  if err = a.Loaded.Load{{$rel.Function.Name}}(tx, false, &slice); err != nil {
     t.Fatal(err)
   }
   if got := len(a.Loaded.{{$rel.Function.Name}}); got != 2 {

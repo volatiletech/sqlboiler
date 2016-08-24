@@ -122,7 +122,7 @@ func TestLoadRelationshipsSlice(t *testing.T) {
 	}{}
 
 	q := Query{load: []string{"TestOne"}, executor: nil}
-	if err := q.loadRelationships(testSlice, false); err != nil {
+	if err := q.loadRelationships(&testSlice, false); err != nil {
 		t.Error(err)
 	}
 
@@ -135,13 +135,13 @@ func TestLoadRelationshipsSingular(t *testing.T) {
 	// t.Parallel() Function uses globals
 	loadFunctionCalled = false
 
-	testSingular := &struct {
+	testSingular := struct {
 		ID     int
 		Loaded *testLoadedStruct
 	}{}
 
 	q := Query{load: []string{"TestOne"}, executor: nil}
-	if err := q.loadRelationships(testSingular, true); err != nil {
+	if err := q.loadRelationships(&testSingular, true); err != nil {
 		t.Error(err)
 	}
 

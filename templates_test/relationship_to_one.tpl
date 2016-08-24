@@ -41,7 +41,8 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
     t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, check.{{.Function.ForeignAssignment}})
   }
 
-  if err = local.Loaded.Load{{.Function.Name}}(tx, false, {{.LocalTable.NameGo}}Slice{&local}); err != nil {
+  slice := {{.LocalTable.NameGo}}Slice{&local}
+  if err = local.Loaded.Load{{.Function.Name}}(tx, false, &slice); err != nil {
     t.Fatal(err)
   }
   if local.Loaded.{{.Function.Name}} == nil {

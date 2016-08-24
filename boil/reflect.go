@@ -112,7 +112,7 @@ func (q *Query) Bind(obj interface{}) error {
 func (q *Query) loadRelationships(obj interface{}, singular bool) error {
 	typ := reflect.TypeOf(obj).Elem()
 	if !singular {
-		typ = typ.Elem()
+		typ = typ.Elem().Elem()
 	}
 
 	rel, found := typ.FieldByName("Loaded")

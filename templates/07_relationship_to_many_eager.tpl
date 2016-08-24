@@ -18,7 +18,7 @@ func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Exe
   if singular {
     object = {{$arg}}.(*{{$rel.LocalTable.NameGo}})
   } else {
-    slice = {{$arg}}.({{$slice}})
+    slice = *{{$arg}}.(*{{$slice}})
     count = len(slice)
   }
 

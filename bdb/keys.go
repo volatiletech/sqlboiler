@@ -15,6 +15,7 @@ type PrimaryKey struct {
 
 // ForeignKey represents a foreign key constraint in a database
 type ForeignKey struct {
+	Table    string
 	Name     string
 	Column   string
 	Nullable bool

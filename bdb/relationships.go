@@ -4,6 +4,7 @@ package bdb
 // local table has no id, and the foreign table has an id that matches a column
 // in the local table.
 type ToManyRelationship struct {
+	Table    string
 	Column   string
 	Nullable bool
 	Unique   bool
@@ -57,6 +58,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 	if !foreignTable.IsJoinTable {
 		col := localTable.GetColumn(foreignKey.ForeignColumn)
 		return ToManyRelationship{
+			Table:                 foreignKey.Table,
 			Column:                foreignKey.ForeignColumn,
 			Nullable:              col.Nullable,
 			Unique:                col.Unique,
@@ -70,6 +72,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 
 	col := foreignTable.GetColumn(foreignKey.Column)
 	relationship := ToManyRelationship{
+		Table:       foreignKey.Table,
 		Column:      foreignKey.ForeignColumn,
 		Nullable:    col.Nullable,
 		Unique:      col.Unique,

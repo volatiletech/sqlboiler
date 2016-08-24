@@ -5,6 +5,11 @@ var (
   {{$varNameSingular}}ColumnsWithoutDefault     = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
   {{$varNameSingular}}ColumnsWithDefault        = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
   {{$varNameSingular}}PrimaryKeyColumns         = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+  {{$varNameSingular}}TitleCases                = map[string]string{
+    {{range $col := .Table.Columns | columnNames -}}
+    "{{$col}}": "{{titleCase $col}}",
+    {{end -}}
+  }
 )
 
 type (

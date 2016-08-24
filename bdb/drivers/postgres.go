@@ -251,6 +251,7 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 		var fkey bdb.ForeignKey
 		var sourceTable string
 
+		fkey.Table = tableName
 		err = rows.Scan(&fkey.Name, &sourceTable, &fkey.Column, &fkey.ForeignTable, &fkey.ForeignColumn)
 		if err != nil {
 			return nil, err

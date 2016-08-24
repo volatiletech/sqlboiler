@@ -270,7 +270,7 @@ func TestBindPtrs_Easy(t *testing.T) {
 	}{}
 
 	cols := []string{"identifier", "date"}
-	ptrs, err := bindPtrs(&testStruct, cols...)
+	ptrs, err := bindPtrs(&testStruct, nil, cols...)
 	if err != nil {
 		t.Error(err)
 	}
@@ -296,7 +296,7 @@ func TestBindPtrs_Recursive(t *testing.T) {
 	}{}
 
 	cols := []string{"id", "fun.id"}
-	ptrs, err := bindPtrs(&testStruct, cols...)
+	ptrs, err := bindPtrs(&testStruct, nil, cols...)
 	if err != nil {
 		t.Error(err)
 	}
@@ -322,7 +322,7 @@ func TestBindPtrs_RecursiveTags(t *testing.T) {
 	}{}
 
 	cols := []string{"happy.identifier", "fun.identification"}
-	ptrs, err := bindPtrs(&testStruct, cols...)
+	ptrs, err := bindPtrs(&testStruct, nil, cols...)
 	if err != nil {
 		t.Error(err)
 	}
@@ -346,7 +346,7 @@ func TestBindPtrs_Ignore(t *testing.T) {
 	}{}
 
 	cols := []string{"id"}
-	ptrs, err := bindPtrs(&testStruct, cols...)
+	ptrs, err := bindPtrs(&testStruct, nil, cols...)
 	if err != nil {
 		t.Error(err)
 	}
@@ -376,7 +376,7 @@ func TestGetStructValues(t *testing.T) {
 		NullBool:   null.NewBool(true, false),
 	}
 
-	vals := GetStructValues(&o, "title_thing", "name", "id", "stuff", "things", "time", "null_bool")
+	vals := GetStructValues(&o, nil, "title_thing", "name", "id", "stuff", "things", "time", "null_bool")
 	if vals[0].(string) != "patrick" {
 		t.Errorf("Want test, got %s", vals[0])
 	}
@@ -415,7 +415,7 @@ func TestGetSliceValues(t *testing.T) {
 	in[0] = o[0]
 	in[1] = o[1]
 
-	vals := GetSliceValues(in, "id", "name")
+	vals := GetSliceValues(in, nil, "id", "name")
 	if got := vals[0].(int); got != 5 {
 		t.Error(got)
 	}
@@ -440,7 +440,7 @@ func TestGetStructPointers(t *testing.T) {
 		Title: "patrick",
 	}
 
-	ptrs := GetStructPointers(&o, "title", "id")
+	ptrs := GetStructPointers(&o, nil, "title", "id")
 	*ptrs[0].(*string) = "test"
 	if o.Title != "test" {
 		t.Errorf("Expected test, got %s", o.Title)

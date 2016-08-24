@@ -76,7 +76,7 @@ func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Exe
     return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
   }
   {{else -}}
-  if err = boil.Bind(results, &resultSlice); err != nil {
+  if err = boil.BindFast(results, &resultSlice, {{$dot.Table.Name | singular | camelCase}}TitleCases); err != nil {
     return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
   }
   {{end}}

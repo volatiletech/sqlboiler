@@ -49,7 +49,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   }
 
   query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
-  values = boil.GetStructValues(o, wl...)
+  values = boil.GetStructValues(o, {{$varNameSingular}}TitleCases, wl...)
   values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
 
   if boil.DebugMode {

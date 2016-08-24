@@ -61,13 +61,18 @@ func (q *Query) BindP(obj interface{}) {
 // For custom objects that want to use eager loading, please see the
 // loadRelationships function.
 func Bind(rows *sql.Rows, obj interface{}) error {
+	return BindFast(rows, obj, nil)
+}
+
+// BindFast uses a lookup table for column_name to ColumnName to avoid TitleCase.
+func BindFast(rows *sql.Rows, obj interface{}, titleCases map[string]string) error {
 	structType, sliceType, singular, err := bindChecks(obj)
 
 	if err != nil {
 		return err
 	}
 
-	return bind(rows, obj, structType, sliceType, singular)
+	return bind(rows, obj, structType, sliceType, singular, titleCases)
 }
 
 // Bind executes the query and inserts the
@@ -75,6 +80,11 @@ func Bind(rows *sql.Rows, obj interface{}) error {
 //
 // See documentation for boil.Bind()
 func (q *Query) Bind(obj interface{}) error {
+	return q.BindFast(obj, nil)
+}
+
+// BindFast uses a lookup table for column_name to ColumnName to avoid TitleCase.
+func (q *Query) BindFast(obj interface{}, titleCases map[string]string) error {
 	structType, sliceType, singular, err := bindChecks(obj)
 	if err != nil {
 		return err
@@ -86,7 +96,7 @@ func (q *Query) Bind(obj interface{}) error {
 	}
 	defer rows.Close()
 
-	if res := bind(rows, obj, structType, sliceType, singular); res != nil {
+	if res := bind(rows, obj, structType, sliceType, singular, titleCases); res != nil {
 		return res
 	}
 
@@ -185,7 +195,7 @@ func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Typ
 	return structType, sliceType, singular, nil
 }
 
-func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool) error {
+func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool, titleCases map[string]string) error {
 	cols, err := rows.Columns()
 	if err != nil {
 		return errors.Wrap(err, "bind failed to get column names")
@@ -203,10 +213,10 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 		var pointers []interface{}
 
 		if singular {
-			pointers, err = bindPtrs(obj, cols...)
+			pointers, err = bindPtrs(obj, titleCases, cols...)
 		} else {
 			newStruct = reflect.New(structType)
-			pointers, err = bindPtrs(newStruct.Interface(), cols...)
+			pointers, err = bindPtrs(newStruct.Interface(), titleCases, cols...)
 		}
 		if err != nil {
 			return err
@@ -228,14 +238,14 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 	return nil
 }
 
-func bindPtrs(obj interface{}, cols ...string) ([]interface{}, error) {
+func bindPtrs(obj interface{}, titleCases map[string]string, cols ...string) ([]interface{}, error) {
 	v := reflect.ValueOf(obj)
 	ptrs := make([]interface{}, len(cols))
 
 	for i, c := range cols {
 		names := strings.Split(c, ".")
 
-		ptr, ok := findField(names, v)
+		ptr, ok := findField(names, titleCases, v)
 		if !ok {
 			return nil, errors.Errorf("bindPtrs failed to find field %s", c)
 		}
@@ -246,7 +256,7 @@ func bindPtrs(obj interface{}, cols ...string) ([]interface{}, error) {
 	return ptrs, nil
 }
 
-func findField(names []string, v reflect.Value) (interface{}, bool) {
+func findField(names []string, titleCases map[string]string, v reflect.Value) (interface{}, bool) {
 	if !v.IsValid() || len(names) == 0 {
 		return nil, false
 	}
@@ -262,13 +272,18 @@ func findField(names []string, v reflect.Value) (interface{}, bool) {
 		return nil, false
 	}
 
-	name := strmangle.TitleCase(names[0])
+	var name string
+	var ok bool
+	name, ok = titleCases[names[0]]
+	if !ok {
+		name = strmangle.TitleCase(names[0])
+	}
 	typ := v.Type()
 
 	n := typ.NumField()
 	for i := 0; i < n; i++ {
 		f := typ.Field(i)
-		fieldName, recurse := getBoilTag(f)
+		fieldName, recurse := getBoilTag(f, titleCases)
 
 		if fieldName == "-" {
 			continue
@@ -278,7 +293,7 @@ func findField(names []string, v reflect.Value) (interface{}, bool) {
 			if fieldName == name {
 				names = names[1:]
 			}
-			if ptr, ok := findField(names, v.Field(i)); ok {
+			if ptr, ok := findField(names, titleCases, v.Field(i)); ok {
 				return ptr, ok
 			}
 		}
@@ -297,12 +312,16 @@ func findField(names []string, v reflect.Value) (interface{}, bool) {
 	return nil, false
 }
 
-func getBoilTag(field reflect.StructField) (name string, recurse bool) {
+func getBoilTag(field reflect.StructField, titleCases map[string]string) (name string, recurse bool) {
 	tag := field.Tag.Get("boil")
 
 	if len(tag) != 0 {
 		tagTokens := strings.Split(tag, ",")
-		name = strmangle.TitleCase(tagTokens[0])
+		var ok bool
+		name, ok = titleCases[tagTokens[0]]
+		if !ok {
+			name = strmangle.TitleCase(tagTokens[0])
+		}
 		recurse = len(tagTokens) > 1 && tagTokens[1] == "bind"
 	}
 
@@ -314,14 +333,20 @@ func getBoilTag(field reflect.StructField) (name string, recurse bool) {
 }
 
 // GetStructValues returns the values (as interface) of the matching columns in obj
-func GetStructValues(obj interface{}, columns ...string) []interface{} {
+func GetStructValues(obj interface{}, titleCases map[string]string, columns ...string) []interface{} {
 	ret := make([]interface{}, len(columns))
 	val := reflect.Indirect(reflect.ValueOf(obj))
 
 	for i, c := range columns {
-		field := val.FieldByName(strmangle.TitleCase(c))
+		var fieldName string
+		if titleCases == nil {
+			fieldName = strmangle.TitleCase(c)
+		} else {
+			fieldName = titleCases[c]
+		}
+		field := val.FieldByName(fieldName)
 		if !field.IsValid() {
-			panic(fmt.Sprintf("unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+			panic(fmt.Sprintf("unable to find field with name: %s\n%#v", fieldName, obj))
 		}
 		ret[i] = field.Interface()
 	}
@@ -330,15 +355,22 @@ func GetStructValues(obj interface{}, columns ...string) []interface{} {
 }
 
 // GetSliceValues returns the values (as interface) of the matching columns in obj.
-func GetSliceValues(slice []interface{}, columns ...string) []interface{} {
+func GetSliceValues(slice []interface{}, titleCases map[string]string, columns ...string) []interface{} {
 	ret := make([]interface{}, len(slice)*len(columns))
 
 	for i, obj := range slice {
 		val := reflect.Indirect(reflect.ValueOf(obj))
 		for j, c := range columns {
-			field := val.FieldByName(strmangle.TitleCase(c))
+			var fieldName string
+			if titleCases == nil {
+				fieldName = strmangle.TitleCase(c)
+			} else {
+				fieldName = titleCases[c]
+			}
+
+			field := val.FieldByName(fieldName)
 			if !field.IsValid() {
-				panic(fmt.Sprintf("unable to find field with name: %s\n%#v", strmangle.TitleCase(c), obj))
+				panic(fmt.Sprintf("unable to find field with name: %s\n%#v", fieldName, obj))
 			}
 			ret[i*len(columns)+j] = field.Interface()
 		}
@@ -348,7 +380,7 @@ func GetSliceValues(slice []interface{}, columns ...string) []interface{} {
 }
 
 // GetStructPointers returns a slice of pointers to the matching columns in obj
-func GetStructPointers(obj interface{}, columns ...string) []interface{} {
+func GetStructPointers(obj interface{}, titleCases map[string]string, columns ...string) []interface{} {
 	val := reflect.ValueOf(obj).Elem()
 
 	var ln int
@@ -362,7 +394,14 @@ func GetStructPointers(obj interface{}, columns ...string) []interface{} {
 	} else {
 		ln = len(columns)
 		getField = func(v reflect.Value, i int) reflect.Value {
-			return v.FieldByName(strmangle.TitleCase(columns[i]))
+			var fieldName string
+			if titleCases == nil {
+				fieldName = strmangle.TitleCase(columns[i])
+			} else {
+				fieldName = titleCases[columns[i]]
+			}
+
+			return v.FieldByName(fieldName)
 		}
 	}
 

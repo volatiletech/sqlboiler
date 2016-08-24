@@ -77,6 +77,7 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 
 func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table bdb.Table, toMany bdb.ToManyRelationship) RelationshipToOneTexts {
 	fkey := bdb.ForeignKey{
+		Table:    toMany.Table,
 		Name:     "none",
 		Column:   toMany.Column,
 		Nullable: toMany.Nullable,

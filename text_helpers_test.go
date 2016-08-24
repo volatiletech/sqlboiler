@@ -59,6 +59,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 	expect := RelationshipToOneTexts{}
 
 	expect.ForeignKey = bdb.ForeignKey{
+		Table:    "jets",
 		Name:     "none",
 		Column:   "id",
 		Nullable: false,

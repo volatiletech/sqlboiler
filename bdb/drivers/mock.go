@@ -59,15 +59,15 @@ func (m *MockDriver) Columns(tableName string) ([]bdb.Column, error) {
 func (m *MockDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
 	return map[string][]bdb.ForeignKey{
 		"jets": {
-			{Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
-			{Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id"},
+			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+			{Table: "jets", Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id"},
 		},
 		"licenses": {
-			{Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+			{Table: "licenses", Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
 		},
 		"pilot_languages": {
-			{Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
-			{Name: "jet_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id"},
+			{Table: "pilot_languages", Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+			{Table: "pilot_languages", Name: "jet_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id"},
 		},
 	}[tableName], nil
 }

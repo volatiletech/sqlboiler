@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -73,12 +72,7 @@ func (t templateList) Templates() []string {
 
 // loadTemplates loads all of the template files in the specified directory.
 func loadTemplates(dir string) (*templateList, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	pattern := filepath.Join(wd, dir, "*.tpl")
+	pattern := filepath.Join(dir, "*.tpl")
 	tpl, err := template.New("").Funcs(templateFunctions).ParseGlob(pattern)
 
 	if err != nil {
@@ -90,12 +84,7 @@ func loadTemplates(dir string) (*templateList, error) {
 
 // loadTemplate loads a single template file.
 func loadTemplate(dir string, filename string) (*template.Template, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	pattern := filepath.Join(wd, dir, filename)
+	pattern := filepath.Join(dir, filename)
 	tpl, err := template.New("").Funcs(templateFunctions).ParseFiles(pattern)
 
 	if err != nil {

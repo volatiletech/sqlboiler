@@ -5,6 +5,7 @@ type Config struct {
 	DriverName    string   `toml:"driver_name"`
 	PkgName       string   `toml:"pkg_name"`
 	OutFolder     string   `toml:"out_folder"`
+	BaseDir       string   `toml:"base_dir"`
 	ExcludeTables []string `toml:"exclude"`
 
 	Postgres PostgresConfig `toml:"postgres"`

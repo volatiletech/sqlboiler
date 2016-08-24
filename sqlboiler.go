@@ -3,7 +3,9 @@
 package main
 
 import (
+	"go/build"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -138,32 +140,52 @@ func (s *State) Cleanup() error {
 func (s *State) initTemplates() error {
 	var err error
 
-	s.Templates, err = loadTemplates(templatesDirectory)
+	basePath, err := getBasePath(s.Config.BaseDir)
 	if err != nil {
 		return err
 	}
 
-	s.SingletonTemplates, err = loadTemplates(templatesSingletonDirectory)
+	s.Templates, err = loadTemplates(filepath.Join(basePath, templatesDirectory))
 	if err != nil {
 		return err
 	}
 
-	s.TestTemplates, err = loadTemplates(templatesTestDirectory)
+	s.SingletonTemplates, err = loadTemplates(filepath.Join(basePath, templatesSingletonDirectory))
 	if err != nil {
 		return err
 	}
 
-	s.SingletonTestTemplates, err = loadTemplates(templatesSingletonTestDirectory)
+	s.TestTemplates, err = loadTemplates(filepath.Join(basePath, templatesTestDirectory))
 	if err != nil {
 		return err
 	}
 
-	s.TestMainTemplate, err = loadTemplate(templatesTestMainDirectory, s.Config.DriverName+"_main.tpl")
+	s.SingletonTestTemplates, err = loadTemplates(filepath.Join(basePath, templatesSingletonTestDirectory))
+	if err != nil {
+		return err
+	}
+
+	s.TestMainTemplate, err = loadTemplate(filepath.Join(basePath, templatesTestMainDirectory), s.Config.DriverName+"_main.tpl")
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+var basePackage = "github.com/vattle/sqlboiler"
+
+func getBasePath(baseDirConfig string) (string, error) {
+	if len(baseDirConfig) > 0 {
+		return baseDirConfig, nil
+	}
+
+	p, _ := build.Default.Import(basePackage, "", build.FindOnly)
+	if p != nil && len(p.Dir) > 0 {
+		return p.Dir, nil
+	}
+
+	return os.Getwd()
 }
 
 // initDriver attempts to set the state Interface based off the passed in

@@ -41,15 +41,13 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	buf.WriteString("SELECT ")
 
-	// Wrap the select in the modifier function
-	hasModFunc := len(q.modFunction) != 0
-	if hasModFunc {
-		fmt.Fprintf(buf, "%s(", q.modFunction)
+	if q.count {
+		buf.WriteString("COUNT(")
 	}
 
 	hasSelectCols := len(q.selectCols) != 0
 	hasJoins := len(q.joins) != 0
-	if hasSelectCols && hasJoins && !hasModFunc {
+	if hasJoins && hasSelectCols && !q.count {
 		selectColsWithAs := writeAsStatements(q)
 		// Don't identQuoteSlice - writeAsStatements does this
 		buf.WriteString(strings.Join(selectColsWithAs, ", "))
@@ -62,7 +60,8 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteByte('*')
 	}
 
-	if hasModFunc {
+	// close SQL COUNT function
+	if q.count {
 		buf.WriteByte(')')
 	}
 

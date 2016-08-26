@@ -296,52 +296,8 @@ func TestSetCount(t *testing.T) {
 	q := &Query{}
 	SetCount(q)
 
-	if q.modFunction != "COUNT" {
-		t.Errorf("Wrong modFunction, got %s", q.modFunction)
-	}
-}
-
-func TestSetAvg(t *testing.T) {
-	t.Parallel()
-
-	q := &Query{}
-	SetAvg(q)
-
-	if q.modFunction != "AVG" {
-		t.Errorf("Wrong modFunction, got %s", q.modFunction)
-	}
-}
-
-func TestSetMax(t *testing.T) {
-	t.Parallel()
-
-	q := &Query{}
-	SetMax(q)
-
-	if q.modFunction != "MAX" {
-		t.Errorf("Wrong modFunction, got %s", q.modFunction)
-	}
-}
-
-func TestSetMin(t *testing.T) {
-	t.Parallel()
-
-	q := &Query{}
-	SetMin(q)
-
-	if q.modFunction != "MIN" {
-		t.Errorf("Wrong modFunction, got %s", q.modFunction)
-	}
-}
-
-func TestSetSum(t *testing.T) {
-	t.Parallel()
-
-	q := &Query{}
-	SetSum(q)
-
-	if q.modFunction != "SUM" {
-		t.Errorf("Wrong modFunction, got %s", q.modFunction)
+	if q.count != true {
+		t.Errorf("got false")
 	}
 }
 

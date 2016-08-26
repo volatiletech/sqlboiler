@@ -18,22 +18,22 @@ const (
 
 // Query holds the state for the built up query
 type Query struct {
-	executor    Executor
-	plainSQL    plainSQL
-	load        []string
-	delete      bool
-	update      map[string]interface{}
-	selectCols  []string
-	modFunction string
-	from        []string
-	joins       []join
-	where       []where
-	in          []in
-	groupBy     []string
-	orderBy     []string
-	having      []having
-	limit       int
-	offset      int
+	executor   Executor
+	plainSQL   plainSQL
+	load       []string
+	delete     bool
+	update     map[string]interface{}
+	selectCols []string
+	count      bool
+	from       []string
+	joins      []join
+	where      []where
+	in         []in
+	groupBy    []string
+	orderBy    []string
+	having     []having
+	limit      int
+	offset     int
 }
 
 type where struct {
@@ -121,27 +121,7 @@ func SetLoad(q *Query, relationships ...string) {
 
 // SetCount on the query.
 func SetCount(q *Query) {
-	q.modFunction = "COUNT"
-}
-
-// SetAvg on the query.
-func SetAvg(q *Query) {
-	q.modFunction = "AVG"
-}
-
-// SetMax on the query.
-func SetMax(q *Query) {
-	q.modFunction = "MAX"
-}
-
-// SetMin on the query.
-func SetMin(q *Query) {
-	q.modFunction = "MIN"
-}
-
-// SetSum on the query.
-func SetSum(q *Query) {
-	q.modFunction = "SUM"
+	q.count = true
 }
 
 // SetDelete on the query.

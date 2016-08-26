@@ -18,6 +18,7 @@ lifecycle.
 
 - Full model generation
 - High performance through generation
+- Uses boil.Executor (simple interface, sql.DB, sqlx.DB etc. compatible)
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Update)
@@ -91,7 +92,7 @@ if err != nil {
 movies, err := user.FavoriteMovies(db).All()
 
 // Eager loading
-users, err := models.Users(db, Load("FavoriteMovies"))
+users, err := models.Users(db, Load("FavoriteMovies")).All()
 if err != nil {
   return err
 }

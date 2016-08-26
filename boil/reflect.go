@@ -314,22 +314,30 @@ func findField(names []string, titleCases map[string]string, v reflect.Value) (i
 
 func getBoilTag(field reflect.StructField, titleCases map[string]string) (name string, recurse bool) {
 	tag := field.Tag.Get("boil")
+	name = field.Name
 
-	if len(tag) != 0 {
-		tagTokens := strings.Split(tag, ",")
-		var ok bool
-		name, ok = titleCases[tagTokens[0]]
+	if len(tag) == 0 {
+		return name, false
+	}
+
+	var ok bool
+	ind := strings.IndexByte(tag, ',')
+	if ind == -1 {
+		name, ok = titleCases[tag]
 		if !ok {
-			name = strmangle.TitleCase(tagTokens[0])
+			name = strmangle.TitleCase(tag)
 		}
-		recurse = len(tagTokens) > 1 && tagTokens[1] == "bind"
+		return name, false
+	} else if ind == 0 {
+		return name, true
 	}
 
-	if len(name) == 0 {
-		name = field.Name
+	nameFragment := tag[:ind]
+	name, ok = titleCases[nameFragment]
+	if !ok {
+		name = strmangle.TitleCase(nameFragment)
 	}
-
-	return name, recurse
+	return name, true
 }
 
 // GetStructValues returns the values (as interface) of the matching columns in obj

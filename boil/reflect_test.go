@@ -2,6 +2,7 @@ package boil
 
 import (
 	"database/sql/driver"
+	"reflect"
 	"testing"
 	"time"
 
@@ -61,6 +62,66 @@ func TestBind(t *testing.T) {
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestGetBoilTag(t *testing.T) {
+	type TestStruct struct {
+		FirstName   string `boil:"test_one,boil"`
+		LastName    string `boil:"test_two"`
+		MiddleName  string `boil:"middle_name,boil"`
+		AwesomeName string `boil:"awesome_name"`
+		Age         string `boil:",boil"`
+		Face        string `boil:"-"`
+		Nose        string
+	}
+
+	var testTitleCases = map[string]string{
+		"test_one":     "TestOne",
+		"test_two":     "TestTwo",
+		"middle_name":  "MiddleName",
+		"awesome_name": "AwesomeName",
+		"age":          "Age",
+		"face":         "Face",
+		"nose":         "Nose",
+	}
+
+	var structFields []reflect.StructField
+	typ := reflect.TypeOf(TestStruct{})
+	removeOk := func(thing reflect.StructField, ok bool) reflect.StructField {
+		if !ok {
+			panic("Exploded")
+		}
+		return thing
+	}
+	structFields = append(structFields, removeOk(typ.FieldByName("FirstName")))
+	structFields = append(structFields, removeOk(typ.FieldByName("LastName")))
+	structFields = append(structFields, removeOk(typ.FieldByName("MiddleName")))
+	structFields = append(structFields, removeOk(typ.FieldByName("AwesomeName")))
+	structFields = append(structFields, removeOk(typ.FieldByName("Age")))
+	structFields = append(structFields, removeOk(typ.FieldByName("Face")))
+	structFields = append(structFields, removeOk(typ.FieldByName("Nose")))
+
+	expect := []struct {
+		Name    string
+		Recurse bool
+	}{
+		{"TestOne", true},
+		{"TestTwo", false},
+		{"MiddleName", true},
+		{"AwesomeName", false},
+		{"Age", true},
+		{"-", false},
+		{"Nose", false},
+	}
+	for i, s := range structFields {
+		name, recurse := getBoilTag(s, testTitleCases)
+		if expect[i].Name != name {
+			t.Errorf("Invalid name, expect %q, got %q", expect[i].Name, name)
+		}
+		if expect[i].Recurse != recurse {
+			t.Errorf("Invalid recurse, expect %v, got %v", !recurse, recurse)
+		}
 	}
 }
 

@@ -7,7 +7,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
   var err error
   if insert {
     if err = related.Insert(exec); err != nil {
-      return err
+      return errors.Wrap(err, "failed to insert into foreign table")
     }
   }
 
@@ -15,7 +15,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
   {{.Function.Receiver}}.{{.Function.LocalAssignment}} = related.{{.Function.ForeignAssignment}}
   if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
     {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}} = oldVal
-    return err
+    return errors.Wrap(err, "failed to update local table")
   }
 
   if {{.Function.Receiver}}.R == nil {
@@ -41,7 +41,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
   {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = false
   if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
     {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = true
-    return err
+    return errors.Wrap(err, "failed to update local table")
   }
 
   {{.Function.Receiver}}.R.{{.Function.Name}} = nil

@@ -4,14 +4,28 @@
 // Set{{.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
 // Sets R.{{.Function.Name}} to related.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec boil.Executor, insert bool, related *{{.ForeignTable.NameGo}}) error {
-  //{{.Function.Receiver}}.R.{{.Function.Name}} = related
-  //{{.Function.Receiver}}.R.{{.Function.Name}}.{{.Function.ForeignAssignment}} = {{.Function.Receiver}}.{{.Function.LocalAssignment}}
-  //if insert {
-//    return related.Insert()
-//  }
+  var err error
+  if insert {
+    if err = related.Insert(exec); err != nil {
+      return err
+    }
+  }
 
-//  return exec.Exec(`update "{{.ForeignKey.Table}}" set "{{.ForeignKey.Column}}" = $1`, 5)
-return nil
+  _, err = exec.Exec(`update "{{.ForeignKey.Table}}" set "{{.ForeignKey.Column}}" = $1`, related.{{.Function.ForeignAssignment}})
+  if err != nil {
+    return err
+  }
+
+  if {{.Function.Receiver}}.R == nil {
+    {{.Function.Receiver}}.R = &{{.LocalTable.NameGo}}R{
+      {{.Function.Name}}: related,
+    }
+  } else {
+    {{.Function.Receiver}}.R.{{.Function.Name}} = related
+  }
+
+  {{.Function.Receiver}}.{{.Function.LocalAssignment}} = related.{{.Function.ForeignAssignment}}
+  return nil
 }
 {{- if .ForeignKey.Nullable}}
 

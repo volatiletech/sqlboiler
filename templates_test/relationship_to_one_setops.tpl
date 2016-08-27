@@ -9,11 +9,10 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
   var a {{.LocalTable.NameGo}}
   var b, c {{.ForeignTable.NameGo}}
 
-  if err := a.Insert(tx); err != nil {
+  seed := randomize.NewSeed()
+  if err = randomize.Struct(seed, &a, {{.ForeignKey.Table | singular | camelCase}}DBTypes, false); err != nil {
     t.Fatal(err)
   }
-
-  seed := randomize.NewSeed()
   if err = randomize.Struct(seed, &b, {{$varNameSingular}}DBTypes, false); err != nil {
     t.Fatal(err)
   }
@@ -21,12 +20,14 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
     t.Fatal(err)
   }
 
+  if err := a.Insert(tx); err != nil {
+    t.Fatal(err)
+  }
   if err = b.Insert(tx); err != nil {
     t.Fatal(err)
   }
 
   for i, x := range []*{{.ForeignTable.NameGo}}{&b, &c} {
-    t.Log(i)
     err = a.Set{{.Function.Name}}(tx, i != 0, x)
     if err != nil {
       t.Fatal(err)
@@ -40,14 +41,14 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
     }
 
     zero := reflect.Zero(reflect.TypeOf(a.{{.Function.LocalAssignment}}))
-    reflect.ValueOf(a.{{.Function.LocalAssignment}}).Set(zero)
+    reflect.Indirect(reflect.ValueOf(&a.{{.Function.LocalAssignment}})).Set(zero)
 
     if err = a.Reload(tx); err != nil {
       t.Fatal("failed to reload", err)
     }
 
     if a.{{.Function.LocalAssignment}} != x.{{.Function.ForeignAssignment}} {
-      t.Error("foreign key was wrong value", a.{{.Function.LocalAssignment}})
+      t.Error("foreign key was wrong value", a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}})
     }
   }
 }

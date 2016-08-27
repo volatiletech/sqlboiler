@@ -1,5 +1,6 @@
 {{- define "relationship_to_one_setops_test_helper" -}}
-{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
+{{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
+{{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
   var err error
 
@@ -10,13 +11,13 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
   var b, c {{.ForeignTable.NameGo}}
 
   seed := randomize.NewSeed()
-  if err = randomize.Struct(seed, &a, {{.ForeignKey.Table | singular | camelCase}}DBTypes, false); err != nil {
+  if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
     t.Fatal(err)
   }
-  if err = randomize.Struct(seed, &b, {{$varNameSingular}}DBTypes, false); err != nil {
+  if err = randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
     t.Fatal(err)
   }
-  if err = randomize.Struct(seed, &c, {{$varNameSingular}}DBTypes, false); err != nil {
+  if err = randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
     t.Fatal(err)
   }
 

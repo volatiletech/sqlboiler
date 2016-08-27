@@ -11,8 +11,10 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
     }
   }
 
-  _, err = exec.Exec(`update "{{.ForeignKey.Table}}" set "{{.ForeignKey.Column}}" = $1`, related.{{.Function.ForeignAssignment}})
-  if err != nil {
+  oldVal := {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}
+  {{.Function.Receiver}}.{{.Function.LocalAssignment}} = related.{{.Function.ForeignAssignment}}
+  if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
+    {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}} = oldVal
     return err
   }
 
@@ -24,7 +26,9 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
     {{.Function.Receiver}}.R.{{.Function.Name}} = related
   }
 
-  {{.Function.Receiver}}.{{.Function.LocalAssignment}} = related.{{.Function.ForeignAssignment}}
+  {{if .ForeignKey.Nullable}}
+  {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = true
+  {{end -}}
   return nil
 }
 {{- if .ForeignKey.Nullable}}
@@ -32,6 +36,15 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
 // Remove{{.Function.Name}} relationship.
 // Sets R.{{.Function.Name}} to nil.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(exec boil.Executor) error {
+  var err error
+
+  {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = false
+  if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
+    {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = true
+    return err
+  }
+
+  {{.Function.Receiver}}.R.{{.Function.Name}} = nil
   return nil
 }
 {{end -}}

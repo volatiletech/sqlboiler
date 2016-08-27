@@ -56,6 +56,49 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 {{- if .ForeignKey.Nullable}}
 
 func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
+  var err error
+
+  tx := MustTx(boil.Begin())
+  defer tx.Rollback()
+
+  var a {{.LocalTable.NameGo}}
+  var b {{.ForeignTable.NameGo}}
+
+  seed := randomize.NewSeed()
+  if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+    t.Fatal(err)
+  }
+  if err = randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+    t.Fatal(err)
+  }
+
+  if err = a.Insert(tx); err != nil {
+    t.Fatal(err)
+  }
+
+  if err = a.Set{{.Function.Name}}(tx, true, &b); err != nil {
+    t.Fatal(err)
+  }
+
+  if err = a.Remove{{.Function.Name}}(tx); err != nil {
+    t.Error("failed to remove relationship")
+  }
+
+  count, err := a.{{.Function.Name}}(tx).Count()
+  if err != nil {
+    t.Error(err)
+  }
+  if count != 0 {
+    t.Error("want no relationships remaining")
+  }
+
+  if a.R.{{.Function.Name}} != nil {
+    t.Error("R struct entry should be nil")
+  }
+
+  if a.{{.ForeignKey.Column | titleCase}}.Valid {
+    t.Error("R struct entry should be nil")
+  }
 }
 {{end -}}
 {{- end -}}

@@ -137,15 +137,7 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
 
 	r.Function.Receiver = strings.ToLower(table.Name[:1])
-
-	// Check to see if the foreign key name is the same as the local table name.
-	// Simple case: yes - we can name the function the same as the plural table name
-	// Not simple case: We have to name the function based off the foreign key and
-	if colName := strings.TrimSuffix(rel.ForeignColumn, "_id"); rel.ToJoinTable || r.LocalTable.NameSingular == colName {
-		r.Function.Name = r.ForeignTable.NamePluralGo
-	} else {
-		r.Function.Name = strmangle.TitleCase(colName) + r.ForeignTable.NamePluralGo
-	}
+	r.Function.Name = mkFunctionName(r.LocalTable.NameSingular, r.ForeignTable.NamePluralGo, rel.ForeignColumn, rel.ToJoinTable)
 
 	if rel.Nullable {
 		col := table.GetColumn(rel.Column)
@@ -163,4 +155,16 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 	}
 
 	return r
+}
+
+// mkFunctionName checks to see if the foreign key name is the same as the local table name (minus _id suffix)
+// Simple case: yes - we can name the function the same as the plural table name
+// Not simple case: We have to name the function based off the foreign key and the foreign table name
+func mkFunctionName(localTableSingular, foreignTablePluralGo, foreignColumn string, toJoinTable bool) string {
+	colName := strings.TrimSuffix(foreignColumn, "_id")
+	if toJoinTable || localTableSingular == colName {
+		return foreignTablePluralGo
+	}
+
+	return strmangle.TitleCase(colName) + foreignTablePluralGo
 }

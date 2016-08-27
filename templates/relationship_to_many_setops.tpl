@@ -12,7 +12,7 @@
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to R.{{$rel.Function.Name}}.
-func (r *{{$rel.LocalTable.NameGo}}Loaded) Add{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
   return nil
 }
 {{- if .ForeignColumnNullable}}
@@ -21,13 +21,13 @@ func (r *{{$rel.LocalTable.NameGo}}Loaded) Add{{$rel.Function.Name}}(exec boil.E
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
 // Replaces R.{{$rel.Function.Name}} with related.
-func (r *{{$rel.LocalTable.NameGo}}Loaded) Set{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
   return nil
 }
 
 // Remove{{$rel.Function.Name}} relationships from objects passed in.
 // Removes related items from R.{{$rel.Function.Name}}.
-func (r *{{$rel.LocalTable.NameGo}}Loaded) Remove{{$rel.Function.Name}}(exec boil.Executor, related ...*{{$rel.ForeignTable.NameGo}}) error {
+func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Function.Name}}(exec boil.Executor, related ...*{{$rel.ForeignTable.NameGo}}) error {
   return nil
 }
 {{end -}}

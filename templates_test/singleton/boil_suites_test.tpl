@@ -136,8 +136,23 @@ func TestInsert(t *testing.T) {
   {{- end -}}
 }
 
+// TestToOne tests cannot be run in parallel
+// or deadlocks can occur.
+func TestToOne(t *testing.T) {
+  {{- $dot := . -}}
+{{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+    {{- range $table.FKeys -}}
+      {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
+  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+    {{end -}}{{- /* fkey range */ -}}
+  {{- end -}}{{- /* if join table */ -}}
+{{- end -}}{{- /* tables range */ -}}
+}
+
 // TestToMany tests cannot be run in parallel
-// or postgres deadlocks will occur.
+// or deadlocks can occur.
 func TestToMany(t *testing.T) {
   {{- $dot := .}}
   {{- range $index, $table := .Tables}}
@@ -157,19 +172,103 @@ func TestToMany(t *testing.T) {
   {{- end -}}{{- /* outer tables range */ -}}
 }
 
-// TestToOne tests cannot be run in parallel
-// or postgres deadlocks will occur.
-func TestToOne(t *testing.T) {
+// TestToOneSet tests cannot be run in parallel
+// or deadlocks can occur.
+func TestToOneSet(t *testing.T) {
   {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
     {{- range $table.FKeys -}}
       {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
-  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOneSetOp{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
     {{end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
 {{- end -}}{{- /* tables range */ -}}
+}
+
+// TestToOneRemove tests cannot be run in parallel
+// or deadlocks can occur.
+func TestToOneRemove(t *testing.T) {
+  {{- $dot := . -}}
+{{- range $index, $table := .Tables}}
+  {{- if $table.IsJoinTable -}}
+  {{- else -}}
+    {{- range $table.FKeys -}}
+      {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
+      {{- if $rel.ForeignKey.Nullable -}}
+  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOneRemoveOp{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+      {{end -}}{{- /* if foreign key nullable */ -}}
+    {{- end -}}{{- /* fkey range */ -}}
+  {{- end -}}{{- /* if join table */ -}}
+{{- end -}}{{- /* tables range */ -}}
+}
+
+// TestToManyAdd tests cannot be run in parallel
+// or deadlocks can occur.
+func TestToManyAdd(t *testing.T) {
+  {{- $dot := .}}
+  {{- range $index, $table := .Tables}}
+    {{- $tableName := $table.Name | plural | titleCase -}}
+    {{- if $table.IsJoinTable -}}
+    {{- else -}}
+      {{- range $table.ToManyRelationships -}}
+        {{- $rel := textsFromRelationship $dot.Tables $table . -}}
+        {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
+        {{- else -}}
+  t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}})
+        {{end -}}{{- /* if unique */ -}}
+      {{- end -}}{{- /* range */ -}}
+    {{- end -}}{{- /* outer if join table */ -}}
+  {{- end -}}{{- /* outer tables range */ -}}
+}
+
+// TestToManySet tests cannot be run in parallel
+// or deadlocks can occur.
+func TestToManySet(t *testing.T) {
+  {{- $dot := .}}
+  {{- range $index, $table := .Tables}}
+    {{- $tableName := $table.Name | plural | titleCase -}}
+    {{- if $table.IsJoinTable -}}
+    {{- else -}}
+      {{- range $table.ToManyRelationships -}}
+        {{- if not .ForeignColumnNullable -}}
+        {{- else -}}
+          {{- $rel := textsFromRelationship $dot.Tables $table . -}}
+          {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
+            {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+    t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneSetOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
+          {{else -}}
+    t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}})
+          {{end -}}{{- /* if unique */ -}}
+        {{- end -}}{{- /* if foreign column nullable */ -}}
+      {{- end -}}{{- /* range */ -}}
+    {{- end -}}{{- /* outer if join table */ -}}
+  {{- end -}}{{- /* outer tables range */ -}}
+}
+
+// TestToManyRemove tests cannot be run in parallel
+// or deadlocks can occur.
+func TestToManyRemove(t *testing.T) {
+  {{- $dot := .}}
+  {{- range $index, $table := .Tables}}
+    {{- $tableName := $table.Name | plural | titleCase -}}
+    {{- if $table.IsJoinTable -}}
+    {{- else -}}
+      {{- range $table.ToManyRelationships -}}
+        {{- if not .ForeignColumnNullable -}}
+        {{- else -}}
+          {{- $rel := textsFromRelationship $dot.Tables $table . -}}
+          {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
+            {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+    t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneRemoveOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
+          {{else -}}
+    t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}})
+          {{end -}}{{- /* if unique */ -}}
+        {{- end -}}{{- /* if foreign column nullable */ -}}
+      {{- end -}}{{- /* range */ -}}
+    {{- end -}}{{- /* outer if join table */ -}}
+  {{- end -}}{{- /* outer tables range */ -}}
 }
 
 func TestReload(t *testing.T) {

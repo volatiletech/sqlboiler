@@ -72,7 +72,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 
 	col := foreignTable.GetColumn(foreignKey.Column)
 	relationship := ToManyRelationship{
-		Table:       foreignKey.Table,
+		Table:       foreignKey.ForeignTable,
 		Column:      foreignKey.ForeignColumn,
 		Nullable:    col.Nullable,
 		Unique:      col.Unique,

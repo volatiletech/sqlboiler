@@ -101,6 +101,7 @@ func TestToManyRelationships(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -233,6 +234,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,

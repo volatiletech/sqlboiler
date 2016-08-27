@@ -11,15 +11,15 @@ type {{$modelName}} struct {
   {{end -}}
   {{- if .Table.IsJoinTable -}}
   {{- else}}
-  Loaded *{{$modelName}}Loaded `boil:"-" json:"-" toml:"-" yaml:"-"`
+  R *{{$modelName}}R `boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 
 {{- $dot := . -}}
 {{- if .Table.IsJoinTable -}}
 {{- else}}
-// {{$modelName}}Loaded are where relationships are eagerly loaded.
-type {{$modelName}}Loaded struct {
+// {{$modelName}}R is where relationships are stored.
+type {{$modelName}}R struct {
   {{range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
     {{- template "relationship_to_one_struct_helper" $rel}}

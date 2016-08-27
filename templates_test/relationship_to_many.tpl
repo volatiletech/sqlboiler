@@ -75,18 +75,18 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   }
 
   slice := {{$rel.LocalTable.NameGo}}Slice{&a}
-  if err = a.Loaded.Load{{$rel.Function.Name}}(tx, false, &slice); err != nil {
+  if err = a.R.Load{{$rel.Function.Name}}(tx, false, &slice); err != nil {
     t.Fatal(err)
   }
-  if got := len(a.Loaded.{{$rel.Function.Name}}); got != 2 {
+  if got := len(a.R.{{$rel.Function.Name}}); got != 2 {
     t.Error("number of eager loaded records wrong, got:", got)
   }
 
-  a.Loaded.{{$rel.Function.Name}} = nil
-  if err = a.Loaded.Load{{$rel.Function.Name}}(tx, true, &a); err != nil {
+  a.R.{{$rel.Function.Name}} = nil
+  if err = a.R.Load{{$rel.Function.Name}}(tx, true, &a); err != nil {
     t.Fatal(err)
   }
-  if got := len(a.Loaded.{{$rel.Function.Name}}); got != 2 {
+  if got := len(a.R.{{$rel.Function.Name}}); got != 2 {
     t.Error("number of eager loaded records wrong, got:", got)
   }
 

@@ -110,7 +110,7 @@ func (q *Query) BindFast(obj interface{}, titleCases map[string]string) error {
 // loadRelationships dynamically calls the template generated eager load
 // functions of the form:
 //
-//   func (t *TableLoaded) LoadRelationshipName(exec Executor, singular bool, obj interface{})
+//   func (t *TableR) LoadRelationshipName(exec Executor, singular bool, obj interface{})
 //
 // The arguments to this function are:
 //   - t is not considered here, and is always passed nil. The function exists on a loaded
@@ -125,11 +125,11 @@ func (q *Query) loadRelationships(obj interface{}, singular bool) error {
 		typ = typ.Elem().Elem()
 	}
 
-	rel, found := typ.FieldByName("Loaded")
+	rel, found := typ.FieldByName("R")
 	// If the users object has no loaded struct, it must be
 	// a custom object and we should not attempt to load any relationships.
 	if !found {
-		return errors.New("load query mod was used but bound struct contained no Loaded field")
+		return errors.New("load query mod was used but bound struct contained no R field")
 	}
 
 	for _, relationship := range q.load {

@@ -10,7 +10,7 @@
   {{- $slice := printf "%sSlice" $rel.LocalTable.NameGo -}}
 // Load{{$rel.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+func (r *{{$rel.LocalTable.NameGo}}R) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
   var slice []*{{$rel.LocalTable.NameGo}}
   var object *{{$rel.LocalTable.NameGo}}
 
@@ -82,10 +82,10 @@ func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Exe
   {{end}}
 
   if singular {
-    if object.Loaded == nil {
-      object.Loaded = &{{$rel.LocalTable.NameGo}}Loaded{}
+    if object.R == nil {
+      object.R = &{{$rel.LocalTable.NameGo}}R{}
     }
-    object.Loaded.{{$rel.Function.Name}} = resultSlice
+    object.R.{{$rel.Function.Name}} = resultSlice
     return nil
   }
 
@@ -94,10 +94,10 @@ func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Exe
     localJoinCol := localJoinCols[i]
     for _, local := range slice {
       if local.{{$rel.Function.LocalAssignment}} == localJoinCol {
-        if local.Loaded == nil {
-          local.Loaded = &{{$rel.LocalTable.NameGo}}Loaded{}
+        if local.R == nil {
+          local.R = &{{$rel.LocalTable.NameGo}}R{}
         }
-        local.Loaded.{{$rel.Function.Name}} = append(local.Loaded.{{$rel.Function.Name}}, foreign)
+        local.R.{{$rel.Function.Name}} = append(local.R.{{$rel.Function.Name}}, foreign)
         break
       }
     }
@@ -106,10 +106,10 @@ func (r *{{$rel.LocalTable.NameGo}}Loaded) Load{{$rel.Function.Name}}(e boil.Exe
   for _, foreign := range resultSlice {
     for _, local := range slice {
       if local.{{$rel.Function.LocalAssignment}} == foreign.{{$rel.Function.ForeignAssignment}} {
-        if local.Loaded == nil {
-          local.Loaded = &{{$rel.LocalTable.NameGo}}Loaded{}
+        if local.R == nil {
+          local.R = &{{$rel.LocalTable.NameGo}}R{}
         }
-        local.Loaded.{{$rel.Function.Name}} = append(local.Loaded.{{$rel.Function.Name}}, foreign)
+        local.R.{{$rel.Function.Name}} = append(local.R.{{$rel.Function.Name}}, foreign)
         break
       }
     }

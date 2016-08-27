@@ -28,11 +28,11 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
     {{if .ToJoinTable -}}
   queryMods = append(queryMods,
     qm.InnerJoin(`"{{.JoinTable}}" as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}"`),
-    qm.Where(`"{{id 1}}"."{{.JoinLocalColumn}}"=$1`, {{.Column | titleCase | printf "%s.%s" $rel.Function.Receiver }}),
+    qm.Where(`"{{id 1}}"."{{.JoinLocalColumn}}"=$1`, {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
   )
     {{else -}}
   queryMods = append(queryMods,
-    qm.Where(`"{{id 0}}"."{{.ForeignColumn}}"=$1`, {{.Column | titleCase | printf "%s.%s" $rel.Function.Receiver }}),
+    qm.Where(`"{{id 0}}"."{{.ForeignColumn}}"=$1`, {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
   )
     {{end}}
 

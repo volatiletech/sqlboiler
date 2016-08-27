@@ -107,11 +107,13 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect := RelationshipToManyTexts{}
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
+	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "Jet"
 	expect.ForeignTable.NameSingular = "jet"
 	expect.ForeignTable.NamePluralGo = "Jets"
 	expect.ForeignTable.NameHumanReadable = "jets"
+	expect.ForeignTable.ColumnNameGo = "PilotID"
 	expect.ForeignTable.Slice = "JetSlice"
 
 	expect.Function.Name = "Jets"
@@ -127,11 +129,13 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect = RelationshipToManyTexts{}
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
+	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "License"
 	expect.ForeignTable.NameSingular = "license"
 	expect.ForeignTable.NamePluralGo = "Licenses"
 	expect.ForeignTable.NameHumanReadable = "licenses"
+	expect.ForeignTable.ColumnNameGo = "PilotID"
 	expect.ForeignTable.Slice = "LicenseSlice"
 
 	expect.Function.Name = "Licenses"
@@ -147,11 +151,13 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect = RelationshipToManyTexts{}
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
+	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "Language"
 	expect.ForeignTable.NameSingular = "language"
 	expect.ForeignTable.NamePluralGo = "Languages"
 	expect.ForeignTable.NameHumanReadable = "languages"
+	expect.ForeignTable.ColumnNameGo = "ID"
 	expect.ForeignTable.Slice = "LanguageSlice"
 
 	expect.Function.Name = "Languages"

@@ -100,6 +100,7 @@ type RelationshipToManyTexts struct {
 	LocalTable struct {
 		NameGo       string
 		NameSingular string
+		ColumnNameGo string
 	}
 
 	ForeignTable struct {
@@ -107,6 +108,7 @@ type RelationshipToManyTexts struct {
 		NameSingular      string
 		NamePluralGo      string
 		NameHumanReadable string
+		ColumnNameGo      string
 		Slice             string
 	}
 
@@ -125,10 +127,12 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 	r := RelationshipToManyTexts{}
 	r.LocalTable.NameSingular = strmangle.Singular(table.Name)
 	r.LocalTable.NameGo = strmangle.TitleCase(r.LocalTable.NameSingular)
+	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
 
 	r.ForeignTable.NameSingular = strmangle.Singular(rel.ForeignTable)
 	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(rel.ForeignTable))
 	r.ForeignTable.NameGo = strmangle.TitleCase(r.ForeignTable.NameSingular)
+	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(rel.ForeignColumn)
 	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(r.ForeignTable.NameSingular))
 	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
 

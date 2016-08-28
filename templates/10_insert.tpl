@@ -31,6 +31,13 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
   }
 
+  var err error
+  {{if eq .NoHooks false -}}
+  if err := o.doBeforeInsertHooks(); err != nil {
+    return err
+  }
+  {{- end}}
+
   wl, returnColumns := strmangle.InsertColumnSet(
     {{$varNameSingular}}Columns,
     {{$varNameSingular}}ColumnsWithDefault,
@@ -38,13 +45,6 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, {{$varNameSingular}}TitleCases, o),
     whitelist,
   )
-
-  var err error
-  {{if eq .NoHooks false -}}
-  if err := o.doBeforeInsertHooks(); err != nil {
-    return err
-  }
-  {{- end}}
 
   ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
 

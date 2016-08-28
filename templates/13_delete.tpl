@@ -35,6 +35,12 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
     return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for delete")
   }
 
+  {{if eq .NoHooks false -}}
+  if err := o.doBeforeDeleteHooks(); err != nil {
+    return err
+  }
+  {{- end}}
+
   args := o.inPrimaryKeyArgs()
 
   sql := `DELETE FROM {{.Table.Name}} WHERE {{whereClause 1 .Table.PKey.Columns}}`
@@ -48,6 +54,12 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to delete from {{.Table.Name}}")
   }
+
+  {{if eq .NoHooks false -}}
+  if err := o.doAfterDeleteHooks(); err != nil {
+    return err
+  }
+  {{- end}}
 
   return nil
 }
@@ -107,6 +119,16 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
     return nil
   }
 
+  {{if eq .NoHooks false -}}
+  if len({{$varNameSingular}}BeforeDeleteHooks) != 0 {
+    for _, obj := range o {
+      if err := obj.doBeforeDeleteHooks(); err != nil {
+        return err
+      }
+    }
+  }
+  {{- end}}
+
   args := o.inPrimaryKeyArgs()
 
   sql := fmt.Sprintf(
@@ -124,6 +146,16 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice")
   }
+
+  {{if eq .NoHooks false -}}
+  if len({{$varNameSingular}}AfterDeleteHooks) != 0 {
+    for _, obj := range o {
+      if err := obj.doAfterDeleteHooks(); err != nil {
+        return err
+      }
+    }
+  }
+  {{- end}}
 
   return nil
 }

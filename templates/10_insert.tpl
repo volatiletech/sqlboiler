@@ -41,7 +41,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
   var err error
   {{if eq .NoHooks false -}}
-  if err := o.doBeforeCreateHooks(); err != nil {
+  if err := o.doBeforeInsertHooks(); err != nil {
     return err
   }
   {{- end}}
@@ -61,7 +61,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
   {{if eq .NoHooks false -}}
   if len(returnColumns) == 0 {
-      return o.doAfterCreateHooks()
+      return o.doAfterInsertHooks()
   }
   {{- end}}
 
@@ -94,7 +94,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   {{end}}
 
   {{if eq .NoHooks false -}}
-  return o.doAfterCreateHooks()
+  return o.doAfterInsertHooks()
   {{- else -}}
   return nil
   {{- end}}

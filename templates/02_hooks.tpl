@@ -1,16 +1,16 @@
 {{- if eq .NoHooks false -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-var {{$varNameSingular}}BeforeCreateHooks []{{$tableNameSingular}}Hook
+var {{$varNameSingular}}BeforeInsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpsertHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}AfterCreateHooks []{{$tableNameSingular}}Hook
+var {{$varNameSingular}}AfterInsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
 
-// doBeforeCreateHooks executes all "before create" hooks.
-func (o *{{$tableNameSingular}}) doBeforeCreateHooks() (err error) {
-  for _, hook := range {{$varNameSingular}}BeforeCreateHooks {
+// doBeforeInsertHooks executes all "before insert" hooks.
+func (o *{{$tableNameSingular}}) doBeforeInsertHooks() (err error) {
+  for _, hook := range {{$varNameSingular}}BeforeInsertHooks {
     if err := hook(o); err != nil {
       return err
     }
@@ -41,9 +41,9 @@ func (o *{{$tableNameSingular}}) doBeforeUpsertHooks() (err error) {
   return nil
 }
 
-// doAfterCreateHooks executes all "after create" hooks.
-func (o *{{$tableNameSingular}}) doAfterCreateHooks() (err error) {
-  for _, hook := range {{$varNameSingular}}AfterCreateHooks {
+// doAfterInsertHooks executes all "after Insert" hooks.
+func (o *{{$tableNameSingular}}) doAfterInsertHooks() (err error) {
+  for _, hook := range {{$varNameSingular}}AfterInsertHooks {
     if err := hook(o); err != nil {
       return err
     }
@@ -76,14 +76,14 @@ func (o *{{$tableNameSingular}}) doAfterUpsertHooks() (err error) {
 
 func {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
   switch hookPoint {
-    case boil.HookBeforeCreate:
-      {{$varNameSingular}}BeforeCreateHooks = append({{$varNameSingular}}BeforeCreateHooks, {{$varNameSingular}}Hook)
+    case boil.HookBeforeInsert:
+      {{$varNameSingular}}BeforeInsertHooks = append({{$varNameSingular}}BeforeInsertHooks, {{$varNameSingular}}Hook)
     case boil.HookBeforeUpdate:
       {{$varNameSingular}}BeforeUpdateHooks = append({{$varNameSingular}}BeforeUpdateHooks, {{$varNameSingular}}Hook)
     case boil.HookBeforeUpsert:
       {{$varNameSingular}}BeforeUpsertHooks = append({{$varNameSingular}}BeforeUpsertHooks, {{$varNameSingular}}Hook)
-    case boil.HookAfterCreate:
-      {{$varNameSingular}}AfterCreateHooks = append({{$varNameSingular}}AfterCreateHooks, {{$varNameSingular}}Hook)
+    case boil.HookAfterInsert:
+      {{$varNameSingular}}AfterInsertHooks = append({{$varNameSingular}}AfterInsertHooks, {{$varNameSingular}}Hook)
     case boil.HookAfterUpdate:
       {{$varNameSingular}}AfterUpdateHooks = append({{$varNameSingular}}AfterUpdateHooks, {{$varNameSingular}}Hook)
     case boil.HookAfterUpsert:

@@ -32,6 +32,8 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
 
   var err error
+  {{- template "timestamp_insert_helper" . }}
+
   {{if eq .NoHooks false -}}
   if err := o.doBeforeInsertHooks(); err != nil {
     return err

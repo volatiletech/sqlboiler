@@ -411,3 +411,17 @@ func StringSliceMatch(a []string, b []string) bool {
 
 	return true
 }
+
+// ContainsAny returns true if any of the passed in strings are
+// found in the passed in string slice
+func ContainsAny(a []string, finds ...string) bool {
+	for _, s := range a {
+		for _, find := range finds {
+			if s == find {
+				return true
+			}
+		}
+	}
+
+	return false
+}

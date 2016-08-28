@@ -22,3 +22,6 @@ type (
     *boil.Query
   }
 )
+
+// Force time package dependency for automated UpdatedAt/CreatedAt.
+var _ = time.Second

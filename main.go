@@ -66,6 +66,7 @@ func main() {
 	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
+	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
@@ -102,10 +103,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 	driverName := args[0]
 
 	cmdConfig = &Config{
-		DriverName: driverName,
-		OutFolder:  viper.GetString("output"),
-		PkgName:    viper.GetString("pkgname"),
-		NoHooks:    viper.GetBool("no-hooks"),
+		DriverName:       driverName,
+		OutFolder:        viper.GetString("output"),
+		PkgName:          viper.GetString("pkgname"),
+		NoHooks:          viper.GetBool("no-hooks"),
+		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200

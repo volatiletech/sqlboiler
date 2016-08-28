@@ -378,3 +378,32 @@ func TestStringSliceMatch(t *testing.T) {
 		}
 	}
 }
+
+func TestContainsAny(t *testing.T) {
+	t.Parallel()
+
+	a := []string{"hello", "friend"}
+	if ContainsAny([]string{}, "x") {
+		t.Errorf("Should not contain x")
+	}
+
+	if ContainsAny(a, "x") {
+		t.Errorf("Should not contain x")
+	}
+
+	if !ContainsAny(a, "hello") {
+		t.Errorf("Should contain hello")
+	}
+
+	if !ContainsAny(a, "friend") {
+		t.Errorf("Should contain friend")
+	}
+
+	if !ContainsAny(a, "hello", "friend") {
+		t.Errorf("Should contain hello and friend")
+	}
+
+	if ContainsAny(a) {
+		t.Errorf("Should not return true")
+	}
+}

@@ -22,6 +22,7 @@ lifecycle.
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Update)
+- Automatic CreatedAt/UpdatedAt
 - Relationships/Associations
 - Eager loading
 - Transactions
@@ -29,16 +30,19 @@ lifecycle.
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
 
-#### Missing Features
-
-- Automatic CreatedAt UpdatedAt (use Hooks instead)
-- Nested eager loading
-
 #### Supported Databases
 
 - PostgreSQL
 
 Note: Seeking contributors for other database engines.
+
+#### Automatic CreatedAt/UpdatedAt
+
+If your generated SQLBoiler models package can find columns with the
+names `created_at` or `updated_at` it will automatically set them
+to `time.Now()` in your database, and update your object appropriately.
+
+Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 
 #### Example Queries
 

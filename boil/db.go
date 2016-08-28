@@ -1,14 +1,6 @@
 package boil
 
-import (
-	"database/sql"
-	"os"
-)
-
-var (
-	// currentDB is a global database handle for the package
-	currentDB Executor
-)
+import "database/sql"
 
 // Executor can perform SQL queries.
 type Executor interface {
@@ -30,15 +22,6 @@ type Beginner interface {
 	Begin() (*sql.Tx, error)
 }
 
-// DebugMode is a flag controlling whether generated sql statements and
-// debug information is outputted to the DebugWriter handle
-//
-// NOTE: This should be disabled in production to avoid leaking sensitive data
-var DebugMode = false
-
-// DebugWriter is where the debug output will be sent if DebugMode is true
-var DebugWriter = os.Stdout
-
 // Begin a transaction
 func Begin() (Transactor, error) {
 	creator, ok := currentDB.(Beginner)
@@ -47,14 +30,4 @@ func Begin() (Transactor, error) {
 	}
 
 	return creator.Begin()
-}
-
-// SetDB initializes the database handle for all template db interactions
-func SetDB(db Executor) {
-	currentDB = db
-}
-
-// GetDB retrieves the global state database handle
-func GetDB() Executor {
-	return currentDB
 }

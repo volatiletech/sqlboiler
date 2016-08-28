@@ -146,6 +146,7 @@ var defaultTemplateImports = imports{
 		`"fmt"`,
 		`"strings"`,
 		`"database/sql"`,
+		`"time"`,
 	},
 	thirdParty: importList{
 		`"github.com/pkg/errors"`,

@@ -13,12 +13,13 @@ import (
 
 // templateData for sqlboiler templates
 type templateData struct {
-	Tables          []bdb.Table
-	Table           bdb.Table
-	DriverName      string
-	UseLastInsertID bool
-	PkgName         string
-	NoHooks         bool
+	Tables           []bdb.Table
+	Table            bdb.Table
+	DriverName       string
+	UseLastInsertID  bool
+	PkgName          string
+	NoHooks          bool
+	NoAutoTimestamps bool
 
 	StringFuncs map[string]func(string) string
 }
@@ -127,6 +128,7 @@ var templateFunctions = template.FuncMap{
 	"joinSlices":        strmangle.JoinSlices,
 	"stringMap":         strmangle.StringMap,
 	"prefixStringSlice": strmangle.PrefixStringSlice,
+	"containsAny":       strmangle.ContainsAny,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,

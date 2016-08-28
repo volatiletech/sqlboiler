@@ -24,11 +24,11 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
       if err = rel.Insert(exec); err != nil {
         return errors.Wrap(err, "failed to insert into foreign table")
       }
-    } else {
+    }{{if not .ToJoinTable}} else {
       if err = rel.Update(exec, "{{.ForeignColumn}}"); err != nil {
         return errors.Wrap(err, "failed to update foreign table")
       }
-    }
+    }{{end -}}
   }
 
   {{if .ToJoinTable -}}
@@ -55,6 +55,28 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
   } else {
     {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = append({{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}, related...)
   }
+
+  {{if .ToJoinTable -}}
+  for _, rel := range related {
+    if rel.R == nil {
+      rel.R = &{{$rel.ForeignTable.NameGo}}R{
+        {{$rel.Function.ForeignName}}: {{$rel.LocalTable.NameGo}}Slice{{"{"}}{{$rel.Function.Receiver}}{{"}"}},
+      }
+    } else {
+      rel.R.{{$rel.Function.ForeignName}} = append(rel.R.{{$rel.Function.ForeignName}}, {{$rel.Function.Receiver}})
+    }
+  }
+  {{else -}}
+  for _, rel := range related {
+    if rel.R == nil {
+      rel.R = &{{$rel.ForeignTable.NameGo}}R{
+        {{$rel.Function.ForeignName}}: {{$rel.Function.Receiver}},
+      }
+    } else {
+      rel.R.{{$rel.Function.ForeignName}} = {{$rel.Function.Receiver}}
+    }
+  }
+  {{end -}}
 
   return nil
 }

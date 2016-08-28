@@ -1,3 +1,4 @@
+{{- if eq .NoHooks false -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
@@ -45,3 +46,4 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
 
   {{$varNameSingular}}BeforeCreateHooks = []{{$tableNameSingular}}Hook{}
 }
+{{- end}}

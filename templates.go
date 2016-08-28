@@ -18,6 +18,7 @@ type templateData struct {
 	DriverName      string
 	UseLastInsertID bool
 	PkgName         string
+	NoHooks         bool
 
 	StringFuncs map[string]func(string) string
 }

@@ -1,3 +1,4 @@
+{{- if eq .NoHooks false -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}BeforeCreateHooks []{{$tableNameSingular}}Hook
@@ -89,3 +90,4 @@ func {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}
       {{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
   }
 }
+{{- end}}

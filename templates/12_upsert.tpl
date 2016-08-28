@@ -48,9 +48,11 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
   query := generateUpsertQuery("{{.Table.Name}}", updateOnConflict, ret, update, conflict, whitelist)
 
   var err error
+  {{if eq .NoHooks false -}}
   if err := o.doBeforeUpsertHooks(); err != nil {
     return err
   }
+  {{- end}}
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, query)
@@ -71,9 +73,11 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
     return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
   }
 
+  {{if eq .NoHooks false -}}
   if err := o.doAfterUpsertHooks(); err != nil {
     return err
   }
+  {{- end}}
 
   return nil
 }

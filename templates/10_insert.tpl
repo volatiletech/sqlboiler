@@ -40,9 +40,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   )
 
   var err error
+  {{if eq .NoHooks false -}}
   if err := o.doBeforeCreateHooks(); err != nil {
     return err
   }
+  {{- end}}
 
   ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
 
@@ -57,9 +59,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
 
+  {{if eq .NoHooks false -}}
   if len(returnColumns) == 0 {
       return o.doAfterCreateHooks()
   }
+  {{- end}}
 
   lastID, err := result.LastInsertId()
   if err != nil || lastID == 0 || len({{$varNameSingular}}AutoIncPrimaryKeys) != 1 {
@@ -89,5 +93,9 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
   {{end}}
 
+  {{if eq .NoHooks false -}}
   return o.doAfterCreateHooks()
+  {{- else -}}
+  return nil
+  {{- end}}
 }

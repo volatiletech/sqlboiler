@@ -35,9 +35,11 @@ func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... strin
 // Update does not automatically update the record in case of default values. Use .Reload()
 // to refresh the records.
 func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
+  {{if eq .NoHooks false -}}
   if err := o.doBeforeUpdateHooks(); err != nil {
     return err
   }
+  {{- end}}
 
   var err error
   var query string
@@ -66,7 +68,11 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
     return errors.Errorf("failed to update single row, updated %d rows", r)
   }
 
+  {{if eq .NoHooks false -}}
   return o.doAfterUpdateHooks()
+  {{- else -}}
+  return nil
+  {{- end}}
 }
 
 // UpdateAllP updates all rows with matching column names, and panics on error.

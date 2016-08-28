@@ -65,6 +65,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("basedir", "b", "", "The base directory templates and templates_test folders are")
 	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
+	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
@@ -104,6 +105,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		DriverName: driverName,
 		OutFolder:  viper.GetString("output"),
 		PkgName:    viper.GetString("pkgname"),
+		NoHooks:    viper.GetBool("no-hooks"),
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200

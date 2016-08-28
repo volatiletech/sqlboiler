@@ -81,6 +81,7 @@ func (s *State) Run(includeTests bool) error {
 		DriverName:      s.Config.DriverName,
 		UseLastInsertID: s.Driver.UseLastInsertID(),
 		PkgName:         s.Config.PkgName,
+		NoHooks:         s.Config.NoHooks,
 
 		StringFuncs: templateStringMappers,
 	}
@@ -110,6 +111,7 @@ func (s *State) Run(includeTests bool) error {
 			DriverName:      s.Config.DriverName,
 			UseLastInsertID: s.Driver.UseLastInsertID(),
 			PkgName:         s.Config.PkgName,
+			NoHooks:         s.Config.NoHooks,
 
 			StringFuncs: templateStringMappers,
 		}

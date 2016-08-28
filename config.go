@@ -7,6 +7,7 @@ type Config struct {
 	OutFolder     string   `toml:"out_folder"`
 	BaseDir       string   `toml:"base_dir"`
 	ExcludeTables []string `toml:"exclude"`
+	NoHooks       bool     `toml:"no_hooks"`
 
 	Postgres PostgresConfig `toml:"postgres"`
 }

@@ -115,6 +115,7 @@ func TestHelpers(t *testing.T) {
   {{- end -}}
 }
 
+{{if eq .NoHooks false -}}
 func TestHooks(t *testing.T) {
   {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
@@ -124,6 +125,7 @@ func TestHooks(t *testing.T) {
   {{end -}}
   {{- end -}}
 }
+{{- end}}
 
 func TestInsert(t *testing.T) {
   {{- range $index, $table := .Tables}}

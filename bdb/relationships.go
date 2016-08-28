@@ -58,7 +58,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 	if !foreignTable.IsJoinTable {
 		col := localTable.GetColumn(foreignKey.ForeignColumn)
 		return ToManyRelationship{
-			Table:                 foreignKey.Table,
+			Table:                 localTable.Name,
 			Column:                foreignKey.ForeignColumn,
 			Nullable:              col.Nullable,
 			Unique:                col.Unique,
@@ -72,7 +72,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 
 	col := foreignTable.GetColumn(foreignKey.Column)
 	relationship := ToManyRelationship{
-		Table:       foreignKey.ForeignTable,
+		Table:       localTable.Name,
 		Column:      foreignKey.ForeignColumn,
 		Nullable:    col.Nullable,
 		Unique:      col.Unique,

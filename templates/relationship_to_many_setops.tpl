@@ -16,9 +16,11 @@
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
   var err error
   for _, rel := range related {
+    {{if not .ToJoinTable -}}
     rel.{{$rel.Function.ForeignAssignment}} = {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}}
-    {{if .ForeignColumnNullable -}}
+      {{if .ForeignColumnNullable -}}
     rel.{{$rel.ForeignTable.ColumnNameGo}}.Valid = true
+      {{end -}}
     {{end -}}
     if insert {
       if err = rel.Insert(exec); err != nil {

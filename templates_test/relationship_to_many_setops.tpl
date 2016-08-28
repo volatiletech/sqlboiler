@@ -55,10 +55,10 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
     second := x[1]
     {{- if .ToJoinTable}}
 
-    if first.R.{{$rel.Function.ForeignName}}[i] != &a {
+    if first.R.{{$rel.Function.ForeignName}}[0] != &a {
       t.Error("relationship was not added properly to the slice")
     }
-    if second.R.{{$rel.Function.ForeignName}}[i+1] != &a {
+    if second.R.{{$rel.Function.ForeignName}}[0] != &a {
       t.Error("relationship was not added properly to the slice")
     }
     {{- else}}

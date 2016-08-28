@@ -51,6 +51,16 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
     if a.{{.Function.LocalAssignment}} != x.{{.Function.ForeignAssignment}} {
       t.Error("foreign key was wrong value", a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}})
     }
+
+    {{if .ForeignKey.Unique -}}
+    if x.R.{{.Function.ForeignName}} != &a {
+      t.Error("failed to append to foreign relationship struct")
+    }
+    {{else -}}
+    if x.R.{{.Function.ForeignName}}[0] != &a {
+      t.Error("failed to append to foreign relationship struct")
+    }
+    {{end -}}
   }
 }
 {{- if .ForeignKey.Nullable}}

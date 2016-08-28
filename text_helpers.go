@@ -55,7 +55,11 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 
 	r.Function.PackageName = packageName
 	r.Function.Name = strmangle.TitleCase(strmangle.Singular(strings.TrimSuffix(fkey.Column, "_id")))
-	r.Function.ForeignName = mkFunctionName(strmangle.Singular(fkey.ForeignTable), strmangle.TitleCase(strmangle.Plural(fkey.Table)), fkey.Column, false)
+	plurality := strmangle.Plural
+	if fkey.Unique {
+		plurality = strmangle.Singular
+	}
+	r.Function.ForeignName = mkFunctionName(strmangle.Singular(fkey.ForeignTable), strmangle.TitleCase(plurality(fkey.Table)), fkey.Column, false)
 	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
 	r.Function.Receiver = strings.ToLower(table.Name[:1])
 

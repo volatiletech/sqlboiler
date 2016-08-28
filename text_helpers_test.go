@@ -34,13 +34,44 @@ func TestTextsFromForeignKey(t *testing.T) {
 
 	expect.Function.PackageName = "models"
 	expect.Function.Name = "Pilot"
-	expect.Function.ForeignName = "Jets"
+	expect.Function.ForeignName = "Jet"
 	expect.Function.Varname = "pilot"
 	expect.Function.Receiver = "j"
 	expect.Function.ReverseInserts = false
 
 	expect.Function.LocalAssignment = "PilotID.Int"
 	expect.Function.ForeignAssignment = "ID"
+
+	if !reflect.DeepEqual(expect, texts) {
+		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
+	}
+
+	texts = textsFromForeignKey("models", tables, jets, jets.FKeys[1])
+	expect = RelationshipToOneTexts{}
+	expect.ForeignKey = jets.FKeys[1]
+
+	expect.LocalTable.NameGo = "Jet"
+	expect.LocalTable.ColumnNameGo = "AirportID"
+
+	expect.ForeignTable.Name = "airports"
+	expect.ForeignTable.NameGo = "Airport"
+	expect.ForeignTable.NamePluralGo = "Airports"
+	expect.ForeignTable.ColumnName = "id"
+	expect.ForeignTable.ColumnNameGo = "ID"
+
+	expect.Function.PackageName = "models"
+	expect.Function.Name = "Airport"
+	expect.Function.ForeignName = "Jets"
+	expect.Function.Varname = "airport"
+	expect.Function.Receiver = "j"
+	expect.Function.ReverseInserts = false
+
+	expect.Function.LocalAssignment = "AirportID"
+	expect.Function.ForeignAssignment = "ID"
+
+	if !reflect.DeepEqual(expect, texts) {
+		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
+	}
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))

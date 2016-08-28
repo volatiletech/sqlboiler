@@ -13,11 +13,6 @@ func {{$varNameSingular}}AfterInsertHook(o *{{$tableNameSingular}}) error {
   return nil
 }
 
-func {{$varNameSingular}}BeforeSelectHook(o *{{$tableNameSingular}}) error {
-  *o = {{$tableNameSingular}}{}
-  return nil
-}
-
 func {{$varNameSingular}}AfterSelectHook(o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
@@ -83,15 +78,6 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
     t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
   }
   {{$varNameSingular}}AfterInsertHooks = []{{$tableNameSingular}}Hook{}
-
-  {{$tableNameSingular}}AddHook(boil.HookBeforeSelect, {{$varNameSingular}}BeforeSelectHook)
-  if err = o.doBeforeSelectHooks(); err != nil {
-    t.Errorf("Unable to execute doBeforeSelectHooks: %s", err)
-  }
-  if !reflect.DeepEqual(o, empty) {
-    t.Errorf("Expected BeforeSelectHook function to empty object, but got: %#v", o)
-  }
-  {{$varNameSingular}}BeforeSelectHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookAfterSelect, {{$varNameSingular}}AfterSelectHook)
   if err = o.doAfterSelectHooks(); err != nil {

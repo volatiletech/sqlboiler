@@ -2,7 +2,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}BeforeInsertHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}BeforeSelectHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeDeleteHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpsertHooks []{{$tableNameSingular}}Hook
@@ -16,17 +15,6 @@ var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
 // doBeforeInsertHooks executes all "before insert" hooks.
 func (o *{{$tableNameSingular}}) doBeforeInsertHooks() (err error) {
   for _, hook := range {{$varNameSingular}}BeforeInsertHooks {
-    if err := hook(o); err != nil {
-      return err
-    }
-  }
-
-  return nil
-}
-
-// doBeforeSelectHooks executes all "before Select" hooks.
-func (o *{{$tableNameSingular}}) doBeforeSelectHooks() (err error) {
-  for _, hook := range {{$varNameSingular}}BeforeSelectHooks {
     if err := hook(o); err != nil {
       return err
     }
@@ -127,8 +115,6 @@ func {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}
   switch hookPoint {
     case boil.HookBeforeInsert:
       {{$varNameSingular}}BeforeInsertHooks = append({{$varNameSingular}}BeforeInsertHooks, {{$varNameSingular}}Hook)
-    case boil.HookBeforeSelect:
-      {{$varNameSingular}}BeforeSelectHooks = append({{$varNameSingular}}BeforeSelectHooks, {{$varNameSingular}}Hook)
     case boil.HookBeforeUpdate:
       {{$varNameSingular}}BeforeUpdateHooks = append({{$varNameSingular}}BeforeUpdateHooks, {{$varNameSingular}}Hook)
     case boil.HookBeforeDelete:

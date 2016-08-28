@@ -28,6 +28,7 @@ type RelationshipToOneTexts struct {
 	Function struct {
 		PackageName string
 		Name        string
+		ForeignName string
 
 		Varname        string
 		Receiver       string
@@ -54,6 +55,7 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 
 	r.Function.PackageName = packageName
 	r.Function.Name = strmangle.TitleCase(strmangle.Singular(strings.TrimSuffix(fkey.Column, "_id")))
+	r.Function.ForeignName = mkFunctionName(strmangle.Singular(fkey.ForeignTable), strmangle.TitleCase(strmangle.Plural(fkey.Table)), fkey.Column, false)
 	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
 	r.Function.Receiver = strings.ToLower(table.Name[:1])
 
@@ -91,6 +93,7 @@ func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table
 
 	rel := textsFromForeignKey(packageName, tables, table, fkey)
 	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(toMany.ForeignTable))
+	rel.Function.ForeignName = mkFunctionName(strmangle.Singular(toMany.Table), strmangle.TitleCase(strmangle.Singular(toMany.Table)), toMany.ForeignColumn, false)
 	rel.Function.ReverseInserts = true
 	return rel
 }
@@ -113,8 +116,9 @@ type RelationshipToManyTexts struct {
 	}
 
 	Function struct {
-		Name     string
-		Receiver string
+		Name        string
+		ForeignName string
+		Receiver    string
 
 		LocalAssignment   string
 		ForeignAssignment string
@@ -138,6 +142,7 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 
 	r.Function.Receiver = strings.ToLower(table.Name[:1])
 	r.Function.Name = mkFunctionName(r.LocalTable.NameSingular, r.ForeignTable.NamePluralGo, rel.ForeignColumn, rel.ToJoinTable)
+	r.Function.ForeignName = strmangle.TitleCase(strmangle.Plural(table.Name))
 
 	if rel.Nullable {
 		col := table.GetColumn(rel.Column)
@@ -160,9 +165,9 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 // mkFunctionName checks to see if the foreign key name is the same as the local table name (minus _id suffix)
 // Simple case: yes - we can name the function the same as the plural table name
 // Not simple case: We have to name the function based off the foreign key and the foreign table name
-func mkFunctionName(localTableSingular, foreignTablePluralGo, foreignColumn string, toJoinTable bool) string {
-	colName := strings.TrimSuffix(foreignColumn, "_id")
-	if toJoinTable || localTableSingular == colName {
+func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, toJoinTable bool) string {
+	colName := strings.TrimSuffix(fkeyColumn, "_id")
+	if toJoinTable || fkeyTableSingular == colName {
 		return foreignTablePluralGo
 	}
 

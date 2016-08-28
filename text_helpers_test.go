@@ -34,6 +34,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 
 	expect.Function.PackageName = "models"
 	expect.Function.Name = "Pilot"
+	expect.Function.ForeignName = "Jets"
 	expect.Function.Varname = "pilot"
 	expect.Function.Receiver = "j"
 	expect.Function.ReverseInserts = false
@@ -59,7 +60,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 	expect := RelationshipToOneTexts{}
 
 	expect.ForeignKey = bdb.ForeignKey{
-		Table:    "jets",
+		Table:    "pilots",
 		Name:     "none",
 		Column:   "id",
 		Nullable: false,
@@ -82,6 +83,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 
 	expect.Function.PackageName = "models"
 	expect.Function.Name = "Jet"
+	expect.Function.ForeignName = "Pilot"
 	expect.Function.Varname = "jet"
 	expect.Function.Receiver = "p"
 	expect.Function.ReverseInserts = true
@@ -117,6 +119,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.Slice = "JetSlice"
 
 	expect.Function.Name = "Jets"
+	expect.Function.ForeignName = "Pilots"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"
@@ -139,6 +142,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.Slice = "LicenseSlice"
 
 	expect.Function.Name = "Licenses"
+	expect.Function.ForeignName = "Pilots"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID"
@@ -161,6 +165,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.Slice = "LanguageSlice"
 
 	expect.Function.Name = "Languages"
+	expect.Function.ForeignName = "Pilots"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "ID"

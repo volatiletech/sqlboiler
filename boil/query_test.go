@@ -362,7 +362,19 @@ func TestAppendSelect(t *testing.T) {
 func TestSQL(t *testing.T) {
 	t.Parallel()
 
-	q := SQL("thing", 5)
+	q := SQL(&sql.DB{}, "thing", 5)
+	if q.plainSQL.sql != "thing" {
+		t.Errorf("Expected %q, got %s", "thing", q.plainSQL.sql)
+	}
+	if q.plainSQL.args[0].(int) != 5 {
+		t.Errorf("Expected 5, got %v", q.plainSQL.args[0])
+	}
+}
+
+func TestSQLG(t *testing.T) {
+	t.Parallel()
+
+	q := SQLG("thing", 5)
 	if q.plainSQL.sql != "thing" {
 		t.Errorf("Expected %q, got %s", "thing", q.plainSQL.sql)
 	}

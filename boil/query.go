@@ -65,13 +65,19 @@ type join struct {
 }
 
 // SQL makes a plainSQL query, usually for use with bind
-func SQL(query string, args ...interface{}) *Query {
+func SQL(exec Executor, query string, args ...interface{}) *Query {
 	return &Query{
+		executor: exec,
 		plainSQL: plainSQL{
 			sql:  query,
 			args: args,
 		},
 	}
+}
+
+// SQLG makes a plainSQL query using the global Executor, usually for use with bind
+func SQLG(query string, args ...interface{}) *Query {
+	return SQL(GetDB(), query, args...)
 }
 
 // ExecQuery executes a query that does not need a row returned

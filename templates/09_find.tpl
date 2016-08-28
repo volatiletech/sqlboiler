@@ -32,8 +32,7 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
     `select %s from "{{.Table.Name}}" where {{whereClause 1 .Table.PKey.Columns}}`, sel,
   )
 
-  q := boil.SQL(query, {{$pkNames | join ", "}})
-  boil.SetExecutor(q, exec)
+  q := boil.SQL(exec, query, {{$pkNames | join ", "}})
 
   err := q.BindFast({{$varNameSingular}}Obj, {{$varNameSingular}}TitleCases)
   if err != nil {

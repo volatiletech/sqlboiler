@@ -12,7 +12,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
   {{end}}
 
-  {{if not .Function.ReverseInserts -}}
+  {{if not .Function.OneToOne -}}
   if err := foreign.Insert(tx); err != nil {
     t.Fatal(err)
   }

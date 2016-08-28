@@ -27,7 +27,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
     {{.Function.Receiver}}.R.{{.Function.Name}} = related
   }
 
-  {{if .ForeignKey.Unique -}}
+  {{if (or .ForeignKey.Unique .Function.OneToOne) -}}
   if related.R == nil {
     related.R = &{{.ForeignTable.NameGo}}R{
       {{.Function.ForeignName}}: {{.Function.Receiver}},

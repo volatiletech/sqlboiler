@@ -11,6 +11,7 @@
     {{- $rel := textsFromRelationship $dot.Tables $table .}}
 
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
+  t.Skip("WIP")
   var err error
 
   tx := MustTx(boil.Begin())

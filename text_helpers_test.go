@@ -37,7 +37,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 	expect.Function.ForeignName = "Jet"
 	expect.Function.Varname = "pilot"
 	expect.Function.Receiver = "j"
-	expect.Function.ReverseInserts = false
+	expect.Function.OneToOne = false
 
 	expect.Function.LocalAssignment = "PilotID.Int"
 	expect.Function.ForeignAssignment = "ID"
@@ -64,7 +64,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 	expect.Function.ForeignName = "Jets"
 	expect.Function.Varname = "airport"
 	expect.Function.Receiver = "j"
-	expect.Function.ReverseInserts = false
+	expect.Function.OneToOne = false
 
 	expect.Function.LocalAssignment = "AirportID"
 	expect.Function.ForeignAssignment = "ID"
@@ -117,7 +117,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 	expect.Function.ForeignName = "Pilot"
 	expect.Function.Varname = "jet"
 	expect.Function.Receiver = "p"
-	expect.Function.ReverseInserts = true
+	expect.Function.OneToOne = true
 
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"

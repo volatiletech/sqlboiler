@@ -30,9 +30,9 @@ type RelationshipToOneTexts struct {
 		Name        string
 		ForeignName string
 
-		Varname        string
-		Receiver       string
-		ReverseInserts bool
+		Varname  string
+		Receiver string
+		OneToOne bool
 
 		LocalAssignment   string
 		ForeignAssignment string
@@ -98,7 +98,7 @@ func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table
 	rel := textsFromForeignKey(packageName, tables, table, fkey)
 	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(toMany.ForeignTable))
 	rel.Function.ForeignName = mkFunctionName(strmangle.Singular(toMany.Table), strmangle.TitleCase(strmangle.Singular(toMany.Table)), toMany.ForeignColumn, false)
-	rel.Function.ReverseInserts = true
+	rel.Function.OneToOne = true
 	return rel
 }
 

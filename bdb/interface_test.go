@@ -1,98 +1,140 @@
 package bdb
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
-type testInterface struct{}
+type mockDriver struct{}
 
-func (t testInterface) TableNames(exclude []string) ([]string, error) {
-	return []string{"table1", "table2"}, nil
+func (m mockDriver) TranslateColumnType(c Column) Column { return c }
+func (m mockDriver) UseLastInsertID() bool               { return false }
+func (m mockDriver) Open() error                         { return nil }
+func (m mockDriver) Close()                              {}
+
+func (m mockDriver) TableNames(exclude []string) ([]string, error) {
+	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
+	return strmangle.SetComplement(tables, exclude), nil
 }
 
-var testCols = []Column{
-	{Name: "col1", Type: "character varying"},
-	{Name: "col2", Type: "character varying", Nullable: true},
+// Columns returns a list of mock columns
+func (m mockDriver) Columns(tableName string) ([]Column, error) {
+	return map[string][]Column{
+		"pilots": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "name", Type: "string", DBType: "character"},
+		},
+		"airports": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "size", Type: "null.Int", DBType: "integer", Nullable: true},
+		},
+		"jets": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "pilot_id", Type: "int", DBType: "integer", Nullable: true, Unique: true},
+			{Name: "airport_id", Type: "int", DBType: "integer"},
+			{Name: "name", Type: "string", DBType: "character", Nullable: false},
+			{Name: "color", Type: "null.String", DBType: "character", Nullable: true},
+			{Name: "uuid", Type: "string", DBType: "uuid", Nullable: true},
+			{Name: "identifier", Type: "string", DBType: "uuid", Nullable: false},
+			{Name: "cargo", Type: "[]byte", DBType: "bytea", Nullable: false},
+			{Name: "manifest", Type: "[]byte", DBType: "bytea", Nullable: true, Unique: true},
+		},
+		"licenses": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "pilot_id", Type: "int", DBType: "integer"},
+		},
+		"hangars": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "name", Type: "string", DBType: "character", Nullable: true, Unique: true},
+			{Name: "hangar_id", Type: "int", DBType: "integer", Nullable: true},
+		},
+		"languages": {
+			{Name: "id", Type: "int", DBType: "integer"},
+			{Name: "language", Type: "string", DBType: "character", Nullable: false, Unique: true},
+		},
+		"pilot_languages": {
+			{Name: "pilot_id", Type: "int", DBType: "integer"},
+			{Name: "language_id", Type: "int", DBType: "integer"},
+		},
+	}[tableName], nil
 }
 
-func (t testInterface) Columns(tableName string) ([]Column, error) {
-	return testCols, nil
+// ForeignKeyInfo returns a list of mock foreignkeys
+func (m mockDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) {
+	return map[string][]ForeignKey{
+		"jets": {
+			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},
+			{Table: "jets", Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id"},
+		},
+		"licenses": {
+			{Table: "licenses", Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+		},
+		"pilot_languages": {
+			{Table: "pilot_languages", Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id"},
+			{Table: "pilot_languages", Name: "jet_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id"},
+		},
+		"hangars": {
+			{Table: "hangars", Name: "hangar_fk_id", Column: "hangar_id", ForeignTable: "hangars", ForeignColumn: "id"},
+		},
+	}[tableName], nil
 }
 
-func (t testInterface) UseLastInsertID() bool {
-	return false
+// PrimaryKeyInfo returns mock primary key info for the passed in table name
+func (m mockDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
+	return map[string]*PrimaryKey{
+		"pilots":          {Name: "pilot_id_pkey", Columns: []string{"id"}},
+		"airports":        {Name: "airport_id_pkey", Columns: []string{"id"}},
+		"jets":            {Name: "jet_id_pkey", Columns: []string{"id"}},
+		"licenses":        {Name: "license_id_pkey", Columns: []string{"id"}},
+		"hangars":         {Name: "hangar_id_pkey", Columns: []string{"id"}},
+		"languages":       {Name: "language_id_pkey", Columns: []string{"id"}},
+		"pilot_languages": {Name: "pilot_languages_pkey", Columns: []string{"pilot_id", "language_id"}},
+	}[tableName], nil
 }
-
-var testPkey = &PrimaryKey{Name: "pkey1", Columns: []string{"col1", "col2"}}
-
-func (t testInterface) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
-	return testPkey, nil
-}
-
-var testFkeys = []ForeignKey{
-	{
-		Name:          "fkey1",
-		Column:        "col1",
-		ForeignTable:  "table2",
-		ForeignColumn: "col2",
-	},
-	{
-		Name:          "fkey2",
-		Column:        "col2",
-		ForeignTable:  "table1",
-		ForeignColumn: "col1",
-	},
-}
-
-func (t testInterface) ForeignKeyInfo(tableName string) ([]ForeignKey, error) {
-	return testFkeys, nil
-}
-
-func (t testInterface) TranslateColumnType(column Column) Column {
-	column.Type = "string"
-	return column
-}
-
-func (t testInterface) Open() error {
-	return nil
-}
-
-func (t testInterface) Close() {}
 
 func TestTables(t *testing.T) {
 	t.Parallel()
 
-	tables, err := Tables(testInterface{})
+	tables, err := Tables(mockDriver{})
 	if err != nil {
 		t.Error(err)
 	}
 
-	if len(tables) != 2 {
-		t.Errorf("Expected len 2, got: %d\n", len(tables))
+	if len(tables) != 7 {
+		t.Errorf("Expected len 7, got: %d\n", len(tables))
 	}
 
-	if !reflect.DeepEqual(tables[0].Columns, testCols) {
-		t.Errorf("Did not get expected columns, got:\n%#v\n%#v", tables[0].Columns, testCols)
+	pilots := GetTable(tables, "pilots")
+	if len(pilots.Columns) != 2 {
+		t.Error()
+	}
+	if pilots.ToManyRelationships[0].ForeignTable != "jets" {
+		t.Error("want a to many to jets")
+	}
+	if pilots.ToManyRelationships[1].ForeignTable != "licenses" {
+		t.Error("want a to many to languages")
+	}
+	if pilots.ToManyRelationships[2].ForeignTable != "languages" {
+		t.Error("want a to many to languages")
 	}
 
-	if !tables[0].IsJoinTable || !tables[1].IsJoinTable {
-		t.Errorf("Expected IsJoinTable to be true")
+	jets := GetTable(tables, "jets")
+	if len(jets.ToManyRelationships) != 0 {
+		t.Error("want no to many relationships")
 	}
 
-	if !reflect.DeepEqual(tables[0].PKey, testPkey) {
-		t.Errorf("Did not get expected PKey, got:\n#%v\n%#v", tables[0].PKey, testPkey)
+	languages := GetTable(tables, "pilot_languages")
+	if !languages.IsJoinTable {
+		t.Error("languages is a join table")
 	}
 
-	if !reflect.DeepEqual(tables[0].FKeys, testFkeys) {
-		t.Errorf("Did not get expected Fkey, got:\n%#v\n%#v", tables[0].FKeys, testFkeys)
+	hangars := GetTable(tables, "hangars")
+	if len(hangars.ToManyRelationships) != 1 || hangars.ToManyRelationships[0].ForeignTable != "hangars" {
+		t.Error("want 1 to many relationships")
 	}
-
-	if len(tables[0].ToManyRelationships) != 1 {
-		t.Error("wanted a to many relationship")
-	}
-	if len(tables[1].ToManyRelationships) != 1 {
-		t.Error("wanted a to many relationship")
+	if len(hangars.FKeys) != 1 || hangars.FKeys[0].ForeignTable != "hangars" {
+		t.Error("want one hangar foreign key to itself")
 	}
 }
 

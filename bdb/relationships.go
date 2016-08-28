@@ -38,10 +38,6 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 	var relationships []ToManyRelationship
 
 	for _, t := range tables {
-		if t.Name == table.Name {
-			continue
-		}
-
 		for _, f := range t.FKeys {
 			if f.ForeignTable != table.Name {
 				continue

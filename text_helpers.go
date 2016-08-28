@@ -146,7 +146,13 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 
 	r.Function.Receiver = strings.ToLower(table.Name[:1])
 	r.Function.Name = mkFunctionName(r.LocalTable.NameSingular, r.ForeignTable.NamePluralGo, rel.ForeignColumn, rel.ToJoinTable)
-	r.Function.ForeignName = strmangle.TitleCase(strmangle.Plural(table.Name))
+	plurality := strmangle.Singular
+	foreignNamingColumn := rel.ForeignColumn
+	if rel.ToJoinTable {
+		plurality = strmangle.Plural
+		foreignNamingColumn = rel.JoinLocalColumn
+	}
+	r.Function.ForeignName = strmangle.TitleCase(plurality(strings.TrimSuffix(foreignNamingColumn, "_id")))
 
 	if rel.Nullable {
 		col := table.GetColumn(rel.Column)

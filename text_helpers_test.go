@@ -150,7 +150,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.Slice = "JetSlice"
 
 	expect.Function.Name = "Jets"
-	expect.Function.ForeignName = "Pilots"
+	expect.Function.ForeignName = "Pilot"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"
@@ -173,7 +173,7 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect.ForeignTable.Slice = "LicenseSlice"
 
 	expect.Function.Name = "Licenses"
-	expect.Function.ForeignName = "Pilots"
+	expect.Function.ForeignName = "Pilot"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID"

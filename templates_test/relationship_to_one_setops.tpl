@@ -90,7 +90,7 @@ func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function
     t.Fatal(err)
   }
 
-  if err = a.Remove{{.Function.Name}}(tx); err != nil {
+  if err = a.Remove{{.Function.Name}}(tx, &b); err != nil {
     t.Error("failed to remove relationship")
   }
 
@@ -106,9 +106,19 @@ func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function
     t.Error("R struct entry should be nil")
   }
 
-  if a.{{.ForeignKey.Column | titleCase}}.Valid {
+  if a.{{.LocalTable.ColumnNameGo}}.Valid {
     t.Error("R struct entry should be nil")
   }
+
+  {{if .ForeignKey.Unique -}}
+  if b.R.{{.Function.ForeignName}} != nil {
+    t.Error("failed to remove a from b's relationships")
+  }
+  {{else -}}
+  if len(b.R.{{.Function.ForeignName}}) != 0 {
+    t.Error("failed to remove a from b's relationships")
+  }
+  {{end -}}
 }
 {{end -}}
 {{- end -}}

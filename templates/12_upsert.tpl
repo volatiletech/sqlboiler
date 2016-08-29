@@ -26,6 +26,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
   }
 
+  {{- template "timestamp_upsert_helper" . }}
+
   {{if not .NoHooks -}}
   if err := o.doBeforeUpsertHooks(exec); err != nil {
     return err

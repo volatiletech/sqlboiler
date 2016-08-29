@@ -1,5 +1,5 @@
 {{- define "timestamp_insert_helper" -}}
-  {{- if eq .NoAutoTimestamps false -}}
+  {{- if not .NoAutoTimestamps -}}
   {{- $colNames := .Table.Columns | columnNames -}}
   {{if containsAny $colNames "created_at" "updated_at"}}
   loc := boil.GetLocation()
@@ -31,7 +31,7 @@
   {{- end}}
 {{- end -}}
 {{- define "timestamp_update_helper" -}}
-  {{- if eq .NoAutoTimestamps false -}}
+  {{- if not .NoAutoTimestamps -}}
   {{- $colNames := .Table.Columns | columnNames -}}
   {{if containsAny $colNames "updated_at"}}
   loc := boil.GetLocation()

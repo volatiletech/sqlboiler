@@ -26,8 +26,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
   }
 
-  {{if eq .NoHooks false -}}
-  if err := o.doBeforeUpsertHooks(); err != nil {
+  {{if not .NoHooks -}}
+  if err := o.doBeforeUpsertHooks(exec); err != nil {
     return err
   }
   {{- end}}
@@ -73,8 +73,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
     return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
   }
 
-  {{if eq .NoHooks false -}}
-  if err := o.doAfterUpsertHooks(); err != nil {
+  {{if not .NoHooks -}}
+  if err := o.doAfterUpsertHooks(exec); err != nil {
     return err
   }
   {{- end}}

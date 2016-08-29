@@ -3,47 +3,47 @@
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func {{$varNameSingular}}BeforeInsertHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}BeforeInsertHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}AfterInsertHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}AfterInsertHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}AfterSelectHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}AfterSelectHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}BeforeUpdateHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}BeforeUpdateHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}AfterUpdateHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}AfterUpdateHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}BeforeDeleteHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}BeforeDeleteHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}AfterDeleteHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}AfterDeleteHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}BeforeUpsertHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}BeforeUpsertHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
 
-func {{$varNameSingular}}AfterUpsertHook(o *{{$tableNameSingular}}) error {
+func {{$varNameSingular}}AfterUpsertHook(e boil.Executor, o *{{$tableNameSingular}}) error {
   *o = {{$tableNameSingular}}{}
   return nil
 }
@@ -62,7 +62,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
 
   {{$tableNameSingular}}AddHook(boil.HookBeforeInsert, {{$varNameSingular}}BeforeInsertHook)
-  if err = o.doBeforeInsertHooks(); err != nil {
+  if err = o.doBeforeInsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -71,7 +71,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}BeforeInsertHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookAfterInsert, {{$varNameSingular}}AfterInsertHook)
-  if err = o.doAfterInsertHooks(); err != nil {
+  if err = o.doAfterInsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -80,7 +80,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}AfterInsertHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookAfterSelect, {{$varNameSingular}}AfterSelectHook)
-  if err = o.doAfterSelectHooks(); err != nil {
+  if err = o.doAfterSelectHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -89,7 +89,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}AfterSelectHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookBeforeUpdate, {{$varNameSingular}}BeforeUpdateHook)
-  if err = o.doBeforeUpdateHooks(); err != nil {
+  if err = o.doBeforeUpdateHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -98,7 +98,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}BeforeUpdateHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookAfterUpdate, {{$varNameSingular}}AfterUpdateHook)
-  if err = o.doAfterUpdateHooks(); err != nil {
+  if err = o.doAfterUpdateHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -107,7 +107,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}AfterUpdateHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookBeforeDelete, {{$varNameSingular}}BeforeDeleteHook)
-  if err = o.doBeforeDeleteHooks(); err != nil {
+  if err = o.doBeforeDeleteHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -116,7 +116,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}BeforeDeleteHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookAfterDelete, {{$varNameSingular}}AfterDeleteHook)
-  if err = o.doAfterDeleteHooks(); err != nil {
+  if err = o.doAfterDeleteHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -125,7 +125,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}AfterDeleteHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookBeforeUpsert, {{$varNameSingular}}BeforeUpsertHook)
-  if err = o.doBeforeUpsertHooks(); err != nil {
+  if err = o.doBeforeUpsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {
@@ -134,7 +134,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   {{$varNameSingular}}BeforeUpsertHooks = []{{$tableNameSingular}}Hook{}
 
   {{$tableNameSingular}}AddHook(boil.HookAfterUpsert, {{$varNameSingular}}AfterUpsertHook)
-  if err = o.doAfterUpsertHooks(); err != nil {
+  if err = o.doAfterUpsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
   }
   if !reflect.DeepEqual(o, empty) {

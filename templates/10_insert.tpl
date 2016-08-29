@@ -34,8 +34,8 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   var err error
   {{- template "timestamp_insert_helper" . }}
 
-  {{if eq .NoHooks false -}}
-  if err := o.doBeforeInsertHooks(); err != nil {
+  {{if not .NoHooks -}}
+  if err := o.doBeforeInsertHooks(exec); err != nil {
     return err
   }
   {{- end}}
@@ -61,9 +61,13 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
 
-  {{if eq .NoHooks false -}}
+  {{if not .NoHooks -}}
   if len(returnColumns) == 0 {
-      return o.doAfterInsertHooks()
+      return o.doAfterInsertHooks(exec)
+  }
+  {{- else -}}
+  if len(returnColumns) == 0 {
+    return nil
   }
   {{- end}}
 
@@ -95,8 +99,8 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
   {{end}}
 
-  {{if eq .NoHooks false -}}
-  return o.doAfterInsertHooks()
+  {{if not .NoHooks -}}
+  return o.doAfterInsertHooks(exec)
   {{- else -}}
   return nil
   {{- end}}

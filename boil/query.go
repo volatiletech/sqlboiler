@@ -115,6 +115,11 @@ func SetExecutor(q *Query, exec Executor) {
 	q.executor = exec
 }
 
+// GetExecutor on the query.
+func GetExecutor(q *Query) Executor {
+	return q.executor
+}
+
 // SetSQL on the query.
 func SetSQL(q *Query, sql string, args ...interface{}) {
 	q.plainSQL = plainSQL{sql: sql, args: args}

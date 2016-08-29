@@ -24,8 +24,8 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
     return nil, errors.Wrap(err, "{{.PkgName}}: failed to execute a one query for {{.Table.Name}}")
   }
 
-  {{if eq .NoHooks false -}}
-  if err := o.doAfterSelectHooks(); err != nil {
+  {{if not .NoHooks -}}
+  if err := o.doAfterSelectHooks(boil.GetExecutor(q.Query)); err != nil {
     return o, err
   }
   {{- end}}
@@ -52,10 +52,10 @@ func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
     return nil, errors.Wrap(err, "{{.PkgName}}: failed to assign all query results to {{$tableNameSingular}} slice")
   }
 
-  {{if eq .NoHooks false -}}
+  {{if not .NoHooks -}}
   if len({{$varNameSingular}}AfterSelectHooks) != 0 {
     for _, obj := range o {
-      if err := obj.doAfterSelectHooks(); err != nil {
+      if err := obj.doAfterSelectHooks(boil.GetExecutor(q.Query)); err != nil {
         return o, err
       }
     }

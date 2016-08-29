@@ -37,8 +37,8 @@ func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... strin
 func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
   {{- template "timestamp_update_helper" . -}}
 
-  {{if eq .NoHooks false -}}
-  if err := o.doBeforeUpdateHooks(); err != nil {
+  {{if not .NoHooks -}}
+  if err := o.doBeforeUpdateHooks(exec); err != nil {
     return err
   }
   {{- end}}
@@ -70,8 +70,8 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
     return errors.Errorf("failed to update single row, updated %d rows", r)
   }
 
-  {{if eq .NoHooks false -}}
-  return o.doAfterUpdateHooks()
+  {{if not .NoHooks -}}
+  return o.doAfterUpdateHooks(exec)
   {{- else -}}
   return nil
   {{- end}}

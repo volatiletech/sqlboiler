@@ -15,7 +15,7 @@ var (
 type (
   {{$tableNameSingular}}Slice []*{{$tableNameSingular}}
   {{if eq .NoHooks false -}}
-  {{$tableNameSingular}}Hook func(*{{$tableNameSingular}}) error
+  {{$tableNameSingular}}Hook func(boil.Executor, *{{$tableNameSingular}}) error
   {{- end}}
 
   {{$varNameSingular}}Query struct {

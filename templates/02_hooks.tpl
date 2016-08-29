@@ -13,9 +13,9 @@ var {{$varNameSingular}}AfterDeleteHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
 
 // doBeforeInsertHooks executes all "before insert" hooks.
-func (o *{{$tableNameSingular}}) doBeforeInsertHooks() (err error) {
+func (o *{{$tableNameSingular}}) doBeforeInsertHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}BeforeInsertHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -24,9 +24,9 @@ func (o *{{$tableNameSingular}}) doBeforeInsertHooks() (err error) {
 }
 
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *{{$tableNameSingular}}) doBeforeUpdateHooks() (err error) {
+func (o *{{$tableNameSingular}}) doBeforeUpdateHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}BeforeUpdateHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -35,9 +35,9 @@ func (o *{{$tableNameSingular}}) doBeforeUpdateHooks() (err error) {
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *{{$tableNameSingular}}) doBeforeDeleteHooks() (err error) {
+func (o *{{$tableNameSingular}}) doBeforeDeleteHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}BeforeDeleteHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -46,9 +46,9 @@ func (o *{{$tableNameSingular}}) doBeforeDeleteHooks() (err error) {
 }
 
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *{{$tableNameSingular}}) doBeforeUpsertHooks() (err error) {
+func (o *{{$tableNameSingular}}) doBeforeUpsertHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}BeforeUpsertHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -57,9 +57,9 @@ func (o *{{$tableNameSingular}}) doBeforeUpsertHooks() (err error) {
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *{{$tableNameSingular}}) doAfterInsertHooks() (err error) {
+func (o *{{$tableNameSingular}}) doAfterInsertHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}AfterInsertHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -68,9 +68,9 @@ func (o *{{$tableNameSingular}}) doAfterInsertHooks() (err error) {
 }
 
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *{{$tableNameSingular}}) doAfterSelectHooks() (err error) {
+func (o *{{$tableNameSingular}}) doAfterSelectHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}AfterSelectHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -79,9 +79,9 @@ func (o *{{$tableNameSingular}}) doAfterSelectHooks() (err error) {
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *{{$tableNameSingular}}) doAfterUpdateHooks() (err error) {
+func (o *{{$tableNameSingular}}) doAfterUpdateHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}AfterUpdateHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -90,9 +90,9 @@ func (o *{{$tableNameSingular}}) doAfterUpdateHooks() (err error) {
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *{{$tableNameSingular}}) doAfterDeleteHooks() (err error) {
+func (o *{{$tableNameSingular}}) doAfterDeleteHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}AfterDeleteHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }
@@ -101,9 +101,9 @@ func (o *{{$tableNameSingular}}) doAfterDeleteHooks() (err error) {
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *{{$tableNameSingular}}) doAfterUpsertHooks() (err error) {
+func (o *{{$tableNameSingular}}) doAfterUpsertHooks(exec boil.Executor) (err error) {
   for _, hook := range {{$varNameSingular}}AfterUpsertHooks {
-    if err := hook(o); err != nil {
+    if err := hook(exec, o); err != nil {
       return err
     }
   }

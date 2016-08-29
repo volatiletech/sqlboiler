@@ -100,7 +100,7 @@ users, err := models.Users(db, Load("FavoriteMovies")).All()
 if err != nil {
   return err
 }
-fmt.Println(len(users.Loaded.FavoriteMovies))
+fmt.Println(len(users.R.FavoriteMovies))
 ```
 
 ## How to boil your database

@@ -12,7 +12,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
   {{end}}
 
-  {{if not .Function.ReverseInserts -}}
+  {{if not .Function.OneToOne -}}
   if err := foreign.Insert(tx); err != nil {
     t.Fatal(err)
   }
@@ -42,18 +42,18 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   }
 
   slice := {{.LocalTable.NameGo}}Slice{&local}
-  if err = local.Loaded.Load{{.Function.Name}}(tx, false, &slice); err != nil {
+  if err = local.R.Load{{.Function.Name}}(tx, false, &slice); err != nil {
     t.Fatal(err)
   }
-  if local.Loaded.{{.Function.Name}} == nil {
+  if local.R.{{.Function.Name}} == nil {
     t.Error("struct should have been eager loaded")
   }
 
-  local.Loaded.{{.Function.Name}} = nil
-  if err = local.Loaded.Load{{.Function.Name}}(tx, true, &local); err != nil {
+  local.R.{{.Function.Name}} = nil
+  if err = local.R.Load{{.Function.Name}}(tx, true, &local); err != nil {
     t.Fatal(err)
   }
-  if local.Loaded.{{.Function.Name}} == nil {
+  if local.R.{{.Function.Name}} == nil {
     t.Error("struct should have been eager loaded")
   }
 }

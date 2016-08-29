@@ -34,12 +34,44 @@ func TestTextsFromForeignKey(t *testing.T) {
 
 	expect.Function.PackageName = "models"
 	expect.Function.Name = "Pilot"
+	expect.Function.ForeignName = "Jet"
 	expect.Function.Varname = "pilot"
 	expect.Function.Receiver = "j"
-	expect.Function.ReverseInserts = false
+	expect.Function.OneToOne = false
 
 	expect.Function.LocalAssignment = "PilotID.Int"
 	expect.Function.ForeignAssignment = "ID"
+
+	if !reflect.DeepEqual(expect, texts) {
+		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
+	}
+
+	texts = textsFromForeignKey("models", tables, jets, jets.FKeys[1])
+	expect = RelationshipToOneTexts{}
+	expect.ForeignKey = jets.FKeys[1]
+
+	expect.LocalTable.NameGo = "Jet"
+	expect.LocalTable.ColumnNameGo = "AirportID"
+
+	expect.ForeignTable.Name = "airports"
+	expect.ForeignTable.NameGo = "Airport"
+	expect.ForeignTable.NamePluralGo = "Airports"
+	expect.ForeignTable.ColumnName = "id"
+	expect.ForeignTable.ColumnNameGo = "ID"
+
+	expect.Function.PackageName = "models"
+	expect.Function.Name = "Airport"
+	expect.Function.ForeignName = "Jets"
+	expect.Function.Varname = "airport"
+	expect.Function.Receiver = "j"
+	expect.Function.OneToOne = false
+
+	expect.Function.LocalAssignment = "AirportID"
+	expect.Function.ForeignAssignment = "ID"
+
+	if !reflect.DeepEqual(expect, texts) {
+		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
+	}
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -59,7 +91,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 	expect := RelationshipToOneTexts{}
 
 	expect.ForeignKey = bdb.ForeignKey{
-		Table:    "jets",
+		Table:    "pilots",
 		Name:     "none",
 		Column:   "id",
 		Nullable: false,
@@ -82,9 +114,10 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 
 	expect.Function.PackageName = "models"
 	expect.Function.Name = "Jet"
+	expect.Function.ForeignName = "Pilot"
 	expect.Function.Varname = "jet"
 	expect.Function.Receiver = "p"
-	expect.Function.ReverseInserts = true
+	expect.Function.OneToOne = true
 
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"
@@ -107,14 +140,17 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect := RelationshipToManyTexts{}
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
+	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "Jet"
 	expect.ForeignTable.NameSingular = "jet"
 	expect.ForeignTable.NamePluralGo = "Jets"
 	expect.ForeignTable.NameHumanReadable = "jets"
+	expect.ForeignTable.ColumnNameGo = "PilotID"
 	expect.ForeignTable.Slice = "JetSlice"
 
 	expect.Function.Name = "Jets"
+	expect.Function.ForeignName = "Pilot"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"
@@ -127,14 +163,17 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect = RelationshipToManyTexts{}
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
+	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "License"
 	expect.ForeignTable.NameSingular = "license"
 	expect.ForeignTable.NamePluralGo = "Licenses"
 	expect.ForeignTable.NameHumanReadable = "licenses"
+	expect.ForeignTable.ColumnNameGo = "PilotID"
 	expect.ForeignTable.Slice = "LicenseSlice"
 
 	expect.Function.Name = "Licenses"
+	expect.Function.ForeignName = "Pilot"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID"
@@ -147,14 +186,17 @@ func TestTextsFromRelationship(t *testing.T) {
 	expect = RelationshipToManyTexts{}
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
+	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "Language"
 	expect.ForeignTable.NameSingular = "language"
 	expect.ForeignTable.NamePluralGo = "Languages"
 	expect.ForeignTable.NameHumanReadable = "languages"
+	expect.ForeignTable.ColumnNameGo = "ID"
 	expect.ForeignTable.Slice = "LanguageSlice"
 
 	expect.Function.Name = "Languages"
+	expect.Function.ForeignName = "Pilots"
 	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "ID"

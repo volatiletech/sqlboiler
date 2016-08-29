@@ -38,10 +38,6 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 	var relationships []ToManyRelationship
 
 	for _, t := range tables {
-		if t.Name == table.Name {
-			continue
-		}
-
 		for _, f := range t.FKeys {
 			if f.ForeignTable != table.Name {
 				continue
@@ -58,7 +54,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 	if !foreignTable.IsJoinTable {
 		col := localTable.GetColumn(foreignKey.ForeignColumn)
 		return ToManyRelationship{
-			Table:                 foreignKey.Table,
+			Table:                 localTable.Name,
 			Column:                foreignKey.ForeignColumn,
 			Nullable:              col.Nullable,
 			Unique:                col.Unique,
@@ -72,7 +68,7 @@ func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Tab
 
 	col := foreignTable.GetColumn(foreignKey.Column)
 	relationship := ToManyRelationship{
-		Table:       foreignKey.Table,
+		Table:       localTable.Name,
 		Column:      foreignKey.ForeignColumn,
 		Nullable:    col.Nullable,
 		Unique:      col.Unique,

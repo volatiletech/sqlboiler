@@ -77,6 +77,7 @@ func TestToManyRelationships(t *testing.T) {
 
 	expected := []ToManyRelationship{
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -89,6 +90,7 @@ func TestToManyRelationships(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -101,6 +103,7 @@ func TestToManyRelationships(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
 			Unique:   false,
@@ -209,6 +212,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 
 	expected := []ToManyRelationship{
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,
@@ -221,6 +225,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,
@@ -233,6 +238,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Table:    "pilots",
 			Column:   "id",
 			Nullable: true,
 			Unique:   true,

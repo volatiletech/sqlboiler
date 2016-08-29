@@ -109,25 +109,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function
   }
 
   {{if .ToJoinTable -}}
-  for _, rel := range related {
-    if rel.R == nil {
-      continue
-    }
-    for i, ri := range rel.R.{{$rel.Function.ForeignName}} {
-      if {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}} != ri.{{$rel.Function.LocalAssignment}} {
-        continue
-      }
-
-      ln := len(rel.R.{{$rel.Function.ForeignName}})
-      if ln > 1 && i < ln-1 {
-        rel.R.{{$rel.Function.ForeignName}}[i], rel.R.{{$rel.Function.ForeignName}}[ln-1] =
-          rel.R.{{$rel.Function.ForeignName}}[ln-1], rel.R.{{$rel.Function.ForeignName}}[i]
-      }
-      rel.R.{{$rel.Function.ForeignName}} = rel.R.{{$rel.Function.ForeignName}}[:ln-1]
-      break
-    }
-  }
-
+  remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}}, related)
   {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = nil
   {{else -}}
   if {{$rel.Function.Receiver}}.R != nil {
@@ -148,12 +130,87 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function
 }
 
 // Remove{{$rel.Function.Name}} relationships from objects passed in.
-// Removes related items from R.{{$rel.Function.Name}}.
-// Sets related.R.{{$rel.Function.ForeignName}}
+// Removes related items from R.{{$rel.Function.Name}} (uses pointer comparison, removal does not keep order)
+// Sets related.R.{{$rel.Function.ForeignName}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Function.Name}}(exec boil.Executor, related ...*{{$rel.ForeignTable.NameGo}}) error {
+  var err error
+  {{if .ToJoinTable -}}
+  query := fmt.Sprintf(
+    `delete from "{{.JoinTable}}" where "{{.JoinLocalColumn}}" = $1 and "{{.JoinForeignColumn}}" in (%s)`,
+    strmangle.Placeholders(len(related), 1, 1),
+  )
+  values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
+
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, values)
+  }
+
+  _, err = exec.Exec(query, values...)
+  if err != nil {
+    return errors.Wrap(err, "failed to remove relationships before set")
+  }
+  {{else -}}
+  for _, rel := range related {
+    rel.{{$rel.ForeignTable.ColumnNameGo}}.Valid = false
+    {{if not .ToJoinTable -}}
+    if rel.R != nil {
+      rel.R.{{$rel.Function.ForeignName}} = nil
+    }
+    {{end -}}
+    if err = rel.Update(exec, "{{.ForeignColumn}}"); err != nil {
+      return err
+    }
+  }
+  {{end -}}
+
+  {{if .ToJoinTable -}}
+  remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}}, related)
+  {{end -}}
+  if {{$rel.Function.Receiver}}.R == nil {
+    return nil
+  }
+
+  for _, rel := range related {
+    for i, ri := range {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} {
+      if rel != ri {
+        continue
+      }
+
+      ln := len({{$rel.Function.Receiver}}.R.{{$rel.Function.Name}})
+      if ln > 1 && i < ln-1 {
+        {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}[i] = {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}[ln-1]
+      }
+      {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}[:ln-1]
+      break
+    }
+  }
+
   return nil
 }
-{{end -}}
+
+{{if .ToJoinTable -}}
+func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}, related []*{{$rel.ForeignTable.NameGo}}) {
+  for _, rel := range related {
+    if rel.R == nil {
+      continue
+    }
+    for i, ri := range rel.R.{{$rel.Function.ForeignName}} {
+      if {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}} != ri.{{$rel.Function.LocalAssignment}} {
+        continue
+      }
+
+      ln := len(rel.R.{{$rel.Function.ForeignName}})
+      if ln > 1 && i < ln-1 {
+        rel.R.{{$rel.Function.ForeignName}}[i] = rel.R.{{$rel.Function.ForeignName}}[ln-1]
+      }
+      rel.R.{{$rel.Function.ForeignName}} = rel.R.{{$rel.Function.ForeignName}}[:ln-1]
+      break
+    }
+  }
+}
+{{end -}}{{- /* if join table */ -}}
+{{- end -}}{{- /* if nullable foreign key */ -}}
 {{- end -}}{{- /* if unique foreign key */ -}}
 {{- end -}}{{- /* range relationships */ -}}
 {{- end -}}{{- /* outer if join table */ -}}

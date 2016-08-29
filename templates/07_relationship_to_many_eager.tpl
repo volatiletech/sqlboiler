@@ -3,20 +3,21 @@
 {{- $dot := . -}}
 {{- range .Table.ToManyRelationships -}}
 {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-  {{- template "relationship_to_one_eager_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table .) -}}
+  {{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table . -}}
+  {{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
 {{- else -}}
-  {{- $rel := textsFromRelationship $dot.Tables $dot.Table . -}}
-  {{- $arg := printf "maybe%s" $rel.LocalTable.NameGo -}}
-  {{- $slice := printf "%sSlice" $rel.LocalTable.NameGo -}}
-// Load{{$rel.Function.Name}} allows an eager lookup of values, cached into the
+  {{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
+  {{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
+  {{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
+// Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (r *{{$rel.LocalTable.NameGo}}R) Load{{$rel.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
-  var slice []*{{$rel.LocalTable.NameGo}}
-  var object *{{$rel.LocalTable.NameGo}}
+func (r *{{$txt.LocalTable.NameGo}}R) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+  var slice []*{{$txt.LocalTable.NameGo}}
+  var object *{{$txt.LocalTable.NameGo}}
 
   count := 1
   if singular {
-    object = {{$arg}}.(*{{$rel.LocalTable.NameGo}})
+    object = {{$arg}}.(*{{$txt.LocalTable.NameGo}})
   } else {
     slice = *{{$arg}}.(*{{$slice}})
     count = len(slice)
@@ -53,14 +54,14 @@ func (r *{{$rel.LocalTable.NameGo}}R) Load{{$rel.Function.Name}}(e boil.Executor
   }
   defer results.Close()
 
-  var resultSlice []*{{$rel.ForeignTable.NameGo}}
+  var resultSlice []*{{$txt.ForeignTable.NameGo}}
   {{if .ToJoinTable -}}
   {{- $foreignTable := getTable $dot.Tables .ForeignTable -}}
   {{- $joinTable := getTable $dot.Tables .JoinTable -}}
   {{- $localCol := $joinTable.GetColumn .JoinLocalColumn}}
   var localJoinCols []{{$localCol.Type}}
   for results.Next() {
-    one := new({{$rel.ForeignTable.NameGo}})
+    one := new({{$txt.ForeignTable.NameGo}})
     var localJoinCol {{$localCol.Type}}
 
     err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $dot.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
@@ -76,16 +77,26 @@ func (r *{{$rel.LocalTable.NameGo}}R) Load{{$rel.Function.Name}}(e boil.Executor
     return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
   }
   {{else -}}
-  if err = boil.BindFast(results, &resultSlice, {{$dot.Table.Name | singular | camelCase}}TitleCases); err != nil {
+  if err = boil.BindFast(results, &resultSlice, {{.ForeignTable | singular | camelCase}}TitleCases); err != nil {
     return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
   }
   {{end}}
 
+  {{if not $dot.NoHooks -}}
+  if len({{.ForeignTable | singular | camelCase}}AfterSelectHooks) != 0 {
+    for _, obj := range resultSlice {
+      if err := obj.doAfterSelectHooks(e); err != nil {
+        return err
+      }
+    }
+  }
+
+  {{- end}}
   if singular {
     if object.R == nil {
-      object.R = &{{$rel.LocalTable.NameGo}}R{}
+      object.R = &{{$txt.LocalTable.NameGo}}R{}
     }
-    object.R.{{$rel.Function.Name}} = resultSlice
+    object.R.{{$txt.Function.Name}} = resultSlice
     return nil
   }
 
@@ -93,11 +104,11 @@ func (r *{{$rel.LocalTable.NameGo}}R) Load{{$rel.Function.Name}}(e boil.Executor
   for i, foreign := range resultSlice {
     localJoinCol := localJoinCols[i]
     for _, local := range slice {
-      if local.{{$rel.Function.LocalAssignment}} == localJoinCol {
+      if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
         if local.R == nil {
-          local.R = &{{$rel.LocalTable.NameGo}}R{}
+          local.R = &{{$txt.LocalTable.NameGo}}R{}
         }
-        local.R.{{$rel.Function.Name}} = append(local.R.{{$rel.Function.Name}}, foreign)
+        local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
         break
       }
     }
@@ -105,11 +116,11 @@ func (r *{{$rel.LocalTable.NameGo}}R) Load{{$rel.Function.Name}}(e boil.Executor
   {{else -}}
   for _, foreign := range resultSlice {
     for _, local := range slice {
-      if local.{{$rel.Function.LocalAssignment}} == foreign.{{$rel.Function.ForeignAssignment}} {
+      if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
         if local.R == nil {
-          local.R = &{{$rel.LocalTable.NameGo}}R{}
+          local.R = &{{$txt.LocalTable.NameGo}}R{}
         }
-        local.R.{{$rel.Function.Name}} = append(local.R.{{$rel.Function.Name}}, foreign)
+        local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
         break
       }
     }

@@ -143,6 +143,7 @@ var templateFunctions = template.FuncMap{
 	"textsFromForeignKey":           textsFromForeignKey,
 	"textsFromOneToOneRelationship": textsFromOneToOneRelationship,
 	"textsFromRelationship":         textsFromRelationship,
+	"preserveDot":                   preserveDot,
 
 	// dbdrivers ops
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,

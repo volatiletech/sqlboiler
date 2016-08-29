@@ -1,4 +1,6 @@
 {{- define "relationship_to_one_eager_helper" -}}
+  {{- $noHooks := .Dot.NoHooks -}}
+  {{- with .Rel -}}
   {{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
@@ -40,9 +42,19 @@ func (r *{{.LocalTable.NameGo}}R) Load{{.Function.Name}}(e boil.Executor, singul
   defer results.Close()
 
   var resultSlice []*{{.ForeignTable.NameGo}}
-  if err = boil.BindFast(results, &resultSlice, {{.ForeignKey.Table | singular | camelCase}}TitleCases); err != nil {
-    return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
+  if err = boil.BindFast(results, &resultSlice, {{.ForeignTable.Name | singular | camelCase}}TitleCases); err != nil {
+    return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable.NameGo}}")
   }
+
+  {{if not $noHooks -}}
+  if len({{.ForeignTable.Name | singular | camelCase}}AfterSelectHooks) != 0 {
+    for _, obj := range resultSlice {
+      if err := obj.doAfterSelectHooks(e); err != nil {
+        return err
+      }
+    }
+  }
+  {{- end}}
 
   if singular && len(resultSlice) != 0 {
     if object.R == nil {
@@ -66,12 +78,13 @@ func (r *{{.LocalTable.NameGo}}R) Load{{.Function.Name}}(e boil.Executor, singul
 
   return nil
 }
+  {{- end -}}
 {{end -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
   {{- range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-{{- template "relationship_to_one_eager_helper" $rel -}}
+{{- template "relationship_to_one_eager_helper" (preserveDot $dot $rel) -}}
 {{- end -}}
-{{- end -}}
+{{end}}

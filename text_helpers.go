@@ -183,3 +183,15 @@ func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, 
 
 	return strmangle.TitleCase(colName) + foreignTablePluralGo
 }
+
+type PreserveDot struct {
+	Dot templateData
+	Rel RelationshipToOneTexts
+}
+
+func preserveDot(data templateData, obj RelationshipToOneTexts) PreserveDot {
+	return PreserveDot{
+		Dot: data,
+		Rel: obj,
+	}
+}

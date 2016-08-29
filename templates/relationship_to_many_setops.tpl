@@ -91,7 +91,60 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 // Replaces {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} with related.
 // Sets related.R.{{$rel.Function.ForeignName}}'s {{$rel.Function.Name}} accordingly.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
-  return nil
+  {{if .ToJoinTable -}}
+  query := `delete from "{{.JoinTable}}" where "{{.JoinLocalColumn}}" = $1`
+  values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
+  {{else -}}
+  query := `update "{{.ForeignTable}}" set "{{.ForeignColumn}}" = null where "{{.ForeignColumn}}" = $1`
+  values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
+  {{end -}}
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, values)
+  }
+
+  _, err := exec.Exec(query, values...)
+  if err != nil {
+    return errors.Wrap(err, "failed to remove relationships before set")
+  }
+
+  {{if .ToJoinTable -}}
+  for _, rel := range related {
+    if rel.R == nil {
+      continue
+    }
+    for i, ri := range rel.R.{{$rel.Function.ForeignName}} {
+      if {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}} != ri.{{$rel.Function.LocalAssignment}} {
+        continue
+      }
+
+      ln := len(rel.R.{{$rel.Function.ForeignName}})
+      if ln > 1 && i < ln-1 {
+        rel.R.{{$rel.Function.ForeignName}}[i], rel.R.{{$rel.Function.ForeignName}}[ln-1] =
+          rel.R.{{$rel.Function.ForeignName}}[ln-1], rel.R.{{$rel.Function.ForeignName}}[i]
+      }
+      rel.R.{{$rel.Function.ForeignName}} = rel.R.{{$rel.Function.ForeignName}}[:ln-1]
+      break
+    }
+  }
+
+  {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = nil
+  {{else -}}
+  if {{$rel.Function.Receiver}}.R != nil {
+    for _, rel := range {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} {
+      rel.{{$rel.ForeignTable.ColumnNameGo}}.Valid = false
+      if rel.R == nil {
+        continue
+      }
+
+      rel.R.{{$rel.Function.ForeignName}} = nil
+    }
+
+    {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = nil
+  }
+  {{end -}}
+
+  return {{$rel.Function.Receiver}}.Add{{$rel.Function.Name}}(exec, insert, related...)
 }
 
 // Remove{{$rel.Function.Name}} relationships from objects passed in.

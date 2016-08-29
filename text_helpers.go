@@ -184,6 +184,8 @@ func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, 
 	return strmangle.TitleCase(colName) + foreignTablePluralGo
 }
 
+// PreserveDot allows us to pass in templateData to relationship templates
+// called with the template function.
 type PreserveDot struct {
 	Dot templateData
 	Rel RelationshipToOneTexts

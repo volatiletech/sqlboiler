@@ -205,6 +205,10 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if q.offset != 0 {
 		fmt.Fprintf(buf, " OFFSET %d", q.offset)
 	}
+
+	if len(q.forlock) != 0 {
+		fmt.Fprintf(buf, " FOR %s", q.forlock)
+	}
 }
 
 func writeStars(q *Query) []string {

@@ -34,6 +34,7 @@ type Query struct {
 	having     []having
 	limit      int
 	offset     int
+	forlock    string
 }
 
 type where struct {
@@ -148,6 +149,11 @@ func SetLimit(q *Query, limit int) {
 // SetOffset on the query.
 func SetOffset(q *Query, offset int) {
 	q.offset = offset
+}
+
+// SetFor on the query.
+func SetFor(q *Query, clause string) {
+	q.forlock = clause
 }
 
 // SetUpdate on the query.

@@ -136,3 +136,10 @@ func Offset(offset int) QueryMod {
 		boil.SetOffset(q, offset)
 	}
 }
+
+// For inserts a concurrency locking clause at the end of your statement
+func For(clause string) QueryMod {
+	return func(q *boil.Query) {
+		boil.SetFor(q, clause)
+	}
+}

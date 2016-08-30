@@ -36,13 +36,24 @@ lifecycle.
 
 Note: Seeking contributors for other database engines.
 
-#### Automatic CreatedAt/UpdatedAt
+#### Requirements & Recommendations
 
-If your generated SQLBoiler models package can find columns with the
-names `created_at` or `updated_at` it will automatically set them
-to `time.Now()` in your database, and update your object appropriately.
+###### Required
 
-Note: You can set the timezone for this feature by calling `boil.SetLocation()`
+* Table names and column names should use `snake_case` format.
+  * At the moment we only support `snake_case` table names and column names. This
+  is a recommended default in Postgres, we can reassess this for future database drivers.
+* Join tables should use a *composite primary key*.
+  * For join tables to be used transparently for relationships your join table must have
+  a *composite primary key* that encompasses both foreign table foreign keys. For example, on a
+  join table named `user_videos` you should have: `primary key(user_id, video_id)`, with both `user_id`
+  and `video_id` being foreign key columns to the users and videos tables respectively.
+
+###### Optional
+* Foreign key column names should end with `_id`.
+  * Foreign key column names in the format `x_id` will generate clearer method names.
+  This is not a strict requirement, but it is advisable to use this naming convention whenever it
+  makes sense for your database schema.
 
 #### Example Queries
 
@@ -102,6 +113,30 @@ if err != nil {
 }
 fmt.Println(len(users.R.FavoriteMovies))
 ```
+
+### Automatic CreatedAt/UpdatedAt
+
+If your generated SQLBoiler models package can find columns with the
+names `created_at` or `updated_at` it will automatically set them
+to `time.Now()` in your database, and update your object appropriately.
+To disable this feature use `--no-auto-timestamps`.
+
+Note: You can set the timezone for this feature by calling `boil.SetLocation()`
+
+#### Overriding Automatic Timestamps
+
+* **Insert**
+  * Timestamps for both `updated_at` and `created_at` that are zero values will be set automatically.
+  * To set the timestamp to null, set `Valid` to false and `Time` to a non-zero value.
+  This is somewhat of a work around until we can devise a better solution in a later version.
+* **Update**
+  * The `updated_at` column will always be set to `time.Now()`. If you need to override
+  this value you will need to fall back to another method in the meantime: `boil.SQL()`,
+  overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
+* **Upsert**
+  * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
+  will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
+  * The `updated_at` column will always be set to `time.Now()`.
 
 ## How to boil your database
 

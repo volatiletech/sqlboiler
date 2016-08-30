@@ -175,7 +175,17 @@ values that can go in that section:
 | port    | no        | 5432      |
 | user    | yes       | none      |
 | pass    | no        | none      |
-| sslmode | no        | 'require' |
+| sslmode | no        | "require" |
+
+You can also pass in these optional configuration values as well if you would prefer
+not to pass them through the command line or environment variables:
+
+| Name | Default |
+| --- | --- |
+| base_dir  | none      |
+| pkg_name  | "models"  |
+| out_folder| "models"  |
+| exclude   | []        |
 
 Example:
 

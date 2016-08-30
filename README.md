@@ -36,25 +36,6 @@ lifecycle.
 
 Note: Seeking contributors for other database engines.
 
-#### Requirements & Recommendations
-
-###### Required
-
-* Table names and column names should use `snake_case` format.
-  * At the moment we only support `snake_case` table names and column names. This
-  is a recommended default in Postgres, we can reassess this for future database drivers.
-* Join tables should use a *composite primary key*.
-  * For join tables to be used transparently for relationships your join table must have
-  a *composite primary key* that encompasses both foreign table foreign keys. For example, on a
-  join table named `user_videos` you should have: `primary key(user_id, video_id)`, with both `user_id`
-  and `video_id` being foreign key columns to the users and videos tables respectively.
-
-###### Optional
-* Foreign key column names should end with `_id`.
-  * Foreign key column names in the format `x_id` will generate clearer method names.
-  This is not a strict requirement, but it is advisable to use this naming convention whenever it
-  makes sense for your database schema.
-
 #### Example Queries
 
 ```go
@@ -113,8 +94,26 @@ if err != nil {
 }
 fmt.Println(len(users.R.FavoriteMovies))
 ```
+#### Requirements & Recommendations
 
-### Automatic CreatedAt/UpdatedAt
+###### Required
+
+* Table names and column names should use `snake_case` format.
+  * At the moment we only support `snake_case` table names and column names. This
+  is a recommended default in Postgres, we can reassess this for future database drivers.
+* Join tables should use a *composite primary key*.
+  * For join tables to be used transparently for relationships your join table must have
+  a *composite primary key* that encompasses both foreign table foreign keys. For example, on a
+  join table named `user_videos` you should have: `primary key(user_id, video_id)`, with both `user_id`
+  and `video_id` being foreign key columns to the users and videos tables respectively.
+
+###### Optional
+* Foreign key column names should end with `_id`.
+  * Foreign key column names in the format `x_id` will generate clearer method names.
+  This is not a strict requirement, but it is advisable to use this naming convention whenever it
+  makes sense for your database schema.
+
+## Automatic CreatedAt/UpdatedAt
 
 If your generated SQLBoiler models package can find columns with the
 names `created_at` or `updated_at` it will automatically set them
@@ -137,67 +136,6 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
   * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
   will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
   * The `updated_at` column will always be set to `time.Now()`.
-
-## How to boil your database
-
-#### Download
-
-```shell
-go get -u -t github.com/vattle/sqlboiler
-```
-
-#### Configuration
-
-Create a configuration file. Because the project uses [viper](github.com/spf13/viper), TOML, JSON and YAML
-are all supported. Environment variables are also able to be used.
-We will assume TOML for the rest of the documentation.
-
-The configuration file is searched for in the following directories in this
-order:
-
-- `./`
-- `$XDG_CONFIG_HOME/sqlboiler/`
-- `$HOME/.config/sqlboiler/`
-
-```shell
-vim ./sqlboiler.toml
-```
-
-Currently the only section in the configuration is `postgres`, and it takes
-configuration parameters that will be passed mostly directly to the
-[pq](github.com/lib/pq) driver. Here is a rundown of all the different
-values that can go in that section:
-
-| Name | Required | Default |
-| --- | --- | --- |
-| dbname  | yes       | none      |
-| host    | yes       | none      |
-| port    | no        | 5432      |
-| user    | yes       | none      |
-| pass    | no        | none      |
-| sslmode | no        | "require" |
-
-You can also pass in these optional configuration values as well if you would prefer
-not to pass them through the command line or environment variables:
-
-| Name | Default |
-| --- | --- |
-| base_dir  | none      |
-| pkg_name  | "models"  |
-| out_folder| "models"  |
-| exclude   | []        |
-
-Example:
-
-```toml
-[postgres]
-dbname="dbname"
-host="localhost"
-port=5432
-user="dbusername"
-pass="dbpassword"
-sslmode="require"
-```
 
 ## Usage
 
@@ -239,6 +177,67 @@ sqlboiler -x goose_migrations postgres
 # Run the generated tests
 go test ./models # This requires an administrator postgres user because of some
                  # voodoo we do to disable triggers for the generated test db
+```
+
+## How to boil your database
+
+#### Download
+
+```shell
+go get -u -t github.com/vattle/sqlboiler
+```
+
+#### Configuration
+
+Create a configuration file. Because the project uses [viper](github.com/spf13/viper), TOML, JSON and YAML
+are all supported. Environment variables are also able to be used.
+We will assume TOML for the rest of the documentation.
+
+The configuration file is searched for in the following directories in this
+order:
+
+- `./`
+- `$XDG_CONFIG_HOME/sqlboiler/`
+- `$HOME/.config/sqlboiler/`
+
+```shell
+vim ./sqlboiler.toml
+```
+
+We recommend you pass in the `postgres` configuration via the configuration file rather than env vars.
+There is no command line argument support for database configuration. Values given under the `postgres`
+block are passed directly to the [pq](github.com/lib/pq) driver. Here is a rundown of all the different
+values that can go in that section:
+
+| Name | Required | Default |
+| --- | --- | --- |
+| dbname  | yes       | none      |
+| host    | yes       | none      |
+| port    | no        | 5432      |
+| user    | yes       | none      |
+| pass    | no        | none      |
+| sslmode | no        | "require" |
+
+You can also pass in these top level configuration values if you would prefer
+not to pass them through the command line or environment variables:
+
+| Name | Default |
+| --- | --- |
+| base_dir  | none      |
+| pkg_name  | "models"  |
+| out_folder| "models"  |
+| exclude   | []        |
+
+Example:
+
+```toml
+[postgres]
+dbname="dbname"
+host="localhost"
+port=5432
+user="dbusername"
+pass="dbpassword"
+sslmode="require"
 ```
 
 ## FAQ

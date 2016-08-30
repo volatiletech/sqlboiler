@@ -21,7 +21,7 @@ lifecycle.
 - Uses boil.Executor (simple interface, sql.DB, sqlx.DB etc. compatible)
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
-- Hooks (Before/After Create/Update)
+- Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
 - Relationships/Associations
 - Eager loading
@@ -207,8 +207,11 @@ Examples:
 sqlboiler postgres
 
 Flags:
+  -b, --basedir string        The base directory templates and templates_test folders are
   -d, --debug                 Debug mode prints stack traces on error
-  -x, --exclude stringSlice   Tables to be excluded from the generated package
+  -x, --exclude stringSlice   Tables to be excluded from the generated package (default [])
+      --no-auto-timestamps    Disable automatic timestamps for created_at/updated_at
+      --no-hooks              Disable hooks feature for your models
   -o, --output string         The name of the folder to output to (default "models")
   -p, --pkgname string        The name you wish to assign to your generated package (default "models")
 ```

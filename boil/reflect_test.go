@@ -165,11 +165,61 @@ func TestBindSingular(t *testing.T) {
 }
 
 var loadFunctionCalled bool
+var loadFunctionNestedCalled int
 
-type testRStruct struct{}
+type testRStruct struct {
+}
+type testNestedStruct struct {
+	ID int
+	R  *testNestedRStruct
+}
+type testNestedRStruct struct {
+	ToEagerLoad *testNestedStruct
+}
+
+type testNestedSlice struct {
+	ID int
+	R  *testNestedRSlice
+}
+type testNestedRSlice struct {
+	ToEagerLoad *[]*testNestedSlice
+}
 
 func (r *testRStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
 	loadFunctionCalled = true
+	return nil
+}
+
+func (r *testNestedRStruct) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
+	switch x := obj.(type) {
+	case *testNestedStruct:
+		x.R = &testNestedRStruct{
+			&testNestedStruct{ID: 5},
+		}
+	case *[]*testNestedStruct:
+		for _, r := range *x {
+			r.R = &testNestedRStruct{
+				&testNestedStruct{ID: 5},
+			}
+		}
+	}
+	loadFunctionNestedCalled++
+	return nil
+}
+
+func (r *testNestedRSlice) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
+
+	switch x := obj.(type) {
+	case *testNestedSlice:
+		newSlice := []*testNestedSlice{&testNestedSlice{ID: 5}}
+		x.R = &testNestedRSlice{&newSlice}
+	case *[]*testNestedSlice:
+		newSlice := []*testNestedSlice{&testNestedSlice{ID: 5}}
+		for _, r := range *x {
+			r.R = &testNestedRSlice{&newSlice}
+		}
+	}
+	loadFunctionNestedCalled++
 	return nil
 }
 
@@ -178,12 +228,11 @@ func TestLoadRelationshipsSlice(t *testing.T) {
 	loadFunctionCalled = false
 
 	testSlice := []*struct {
-		ID     int
-		R *testRStruct
+		ID int
+		R  *testRStruct
 	}{}
 
-	q := Query{load: []string{"TestOne"}, executor: nil}
-	if err := q.loadRelationships(&testSlice, false); err != nil {
+	if err := loadRelationships(nil, []string{"TestOne"}, &testSlice, false); err != nil {
 		t.Error(err)
 	}
 
@@ -197,17 +246,70 @@ func TestLoadRelationshipsSingular(t *testing.T) {
 	loadFunctionCalled = false
 
 	testSingular := struct {
-		ID     int
-		R *testRStruct
+		ID int
+		R  *testRStruct
 	}{}
 
-	q := Query{load: []string{"TestOne"}, executor: nil}
-	if err := q.loadRelationships(&testSingular, true); err != nil {
+	if err := loadRelationships(nil, []string{"TestOne"}, &testSingular, true); err != nil {
 		t.Error(err)
 	}
 
 	if !loadFunctionCalled {
 		t.Errorf("Load function was not called for singular")
+	}
+}
+
+func TestLoadRelationshipsSliceNested(t *testing.T) {
+	// t.Parallel() Function uses globals
+	testSlice := []*testNestedStruct{
+		{
+			ID: 5,
+		},
+	}
+	loadFunctionNestedCalled = 0
+	if err := loadRelationships(nil, []string{"ToEagerLoad", "ToEagerLoad", "ToEagerLoad"}, &testSlice, false); err != nil {
+		t.Error(err)
+	}
+	if loadFunctionNestedCalled != 3 {
+		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
+	}
+
+	testSliceSlice := []*testNestedSlice{
+		{
+			ID: 5,
+		},
+	}
+	loadFunctionNestedCalled = 0
+	if err := loadRelationships(nil, []string{"ToEagerLoad", "ToEagerLoad", "ToEagerLoad"}, &testSliceSlice, false); err != nil {
+		t.Error(err)
+	}
+	if loadFunctionNestedCalled != 3 {
+		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
+	}
+}
+
+func TestLoadRelationshipsSingularNested(t *testing.T) {
+	// t.Parallel() Function uses globals
+	testSingular := testNestedStruct{
+		ID: 5,
+	}
+	loadFunctionNestedCalled = 0
+	if err := loadRelationships(nil, []string{"ToEagerLoad", "ToEagerLoad", "ToEagerLoad"}, &testSingular, true); err != nil {
+		t.Error(err)
+	}
+	if loadFunctionNestedCalled != 3 {
+		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
+	}
+
+	testSingularSlice := testNestedSlice{
+		ID: 5,
+	}
+	loadFunctionNestedCalled = 0
+	if err := loadRelationships(nil, []string{"ToEagerLoad", "ToEagerLoad", "ToEagerLoad"}, &testSingularSlice, true); err != nil {
+		t.Error(err)
+	}
+	if loadFunctionNestedCalled != 3 {
+		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
 	}
 }
 

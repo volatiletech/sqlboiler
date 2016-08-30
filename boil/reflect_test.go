@@ -182,7 +182,7 @@ type testNestedSlice struct {
 	R  *testNestedRSlice
 }
 type testNestedRSlice struct {
-	ToEagerLoad *[]*testNestedSlice
+	ToEagerLoad []*testNestedSlice
 }
 
 func (r *testRStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
@@ -211,12 +211,14 @@ func (r *testNestedRSlice) LoadToEagerLoad(exec Executor, singular bool, obj int
 
 	switch x := obj.(type) {
 	case *testNestedSlice:
-		newSlice := []*testNestedSlice{&testNestedSlice{ID: 5}}
-		x.R = &testNestedRSlice{&newSlice}
+		x.R = &testNestedRSlice{
+			[]*testNestedSlice{&testNestedSlice{ID: 5}},
+		}
 	case *[]*testNestedSlice:
-		newSlice := []*testNestedSlice{&testNestedSlice{ID: 5}}
 		for _, r := range *x {
-			r.R = &testNestedRSlice{&newSlice}
+			r.R = &testNestedRSlice{
+				[]*testNestedSlice{&testNestedSlice{ID: 5}},
+			}
 		}
 	}
 	loadFunctionNestedCalled++

@@ -176,7 +176,7 @@ func loadRelationships(exec Executor, toLoad []string, obj interface{}, singular
 	if loadedObject.IsNil() {
 		return nil
 	}
-	loadedObject = loadedObject.Elem()
+	loadedObject = reflect.Indirect(loadedObject)
 
 	// If it's singular we can just immediately call without looping
 	if singular {
@@ -205,8 +205,11 @@ func loadRelationshipsRecurse(exec Executor, current string, toLoad []string, si
 	if !r.IsValid() || r.IsNil() {
 		return errors.Errorf("could not traverse into loaded %s relationship to load more things", current)
 	}
-	newObj := r.Elem().FieldByName(current)
-	singular = newObj.Elem().Kind() == reflect.Struct
+	newObj := reflect.Indirect(r).FieldByName(current)
+	singular = reflect.Indirect(newObj).Kind() == reflect.Struct
+	if !singular {
+		newObj = newObj.Addr()
+	}
 	return loadRelationships(exec, toLoad, newObj.Interface(), singular)
 }
 

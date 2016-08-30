@@ -16,12 +16,9 @@ lifecycle.
 ## Why?
 Well...
 
-
----
-
 ## About SQL Boiler
 
-#### Features
+### Features
 
 - Full model generation
 - High performance through generation
@@ -38,15 +35,15 @@ Well...
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
 
-#### Supported Databases
+### Supported Databases
 
 - PostgreSQL
 
-**Note:** Seeking contributors for other database engines.
+*Note: Seeking contributors for other database engines.*
 
-#### Small Taste
+### A Small Taste
 
-For a comprehensive list of available operations and examples please see [Features & Examples](#features-examples).
+For a comprehensive list of available operations and examples please see [Features & Examples](#features--examples).
 
 ```go
 import (
@@ -105,8 +102,6 @@ if err != nil {
 fmt.Println(len(users.R.FavoriteMovies))
 ```
 
----
-
 ## Requirements & Pro Tips
 
 ### Requirements
@@ -126,8 +121,6 @@ fmt.Println(len(users.R.FavoriteMovies))
   It is advisable to use this naming convention whenever it makes sense for your database schema.
 * If you never plan on using the hooks functionality you can disable generation of this 
   feature using the `--no-hooks` flag. This will save you some binary size.
-
----
 
 ## Getting started
 
@@ -174,7 +167,7 @@ not to pass them through the command line or environment variables:
 | out_folder| "models"  |
 | exclude   | [ ]       |
 
-**Example:**
+Example:
 
 ```toml
 [postgres]
@@ -184,7 +177,6 @@ port=5432
 user="dbusername"
 pass="dbpassword"
 ```
-
 
 #### Initial Generation
 
@@ -226,8 +218,6 @@ go test ./models # This requires an administrator postgres user because of some
                  # voodoo we do to disable triggers for the generated test db
 ```
 
----
-
 ## Diagnosing Problems
 
 The most common causes of problems and panics are:
@@ -246,8 +236,6 @@ Setting `boil.DebugMode` to `true` can help with this. You can change the output
 
 If you're still stuck and/or you think you've found a bug, feel free to leave an issue and we'll do our best to help you.
 
----
-
 ## Features & Examples
 
 ### Function Variations
@@ -259,7 +247,7 @@ names `created_at` or `updated_at` it will automatically set them
 to `time.Now()` in your database, and update your object appropriately.
 To disable this feature use `--no-auto-timestamps`.
 
-**Note:** You can set the timezone for this feature by calling `boil.SetLocation()`
+Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 
 #### Overriding Automatic Timestamps
 
@@ -312,11 +300,7 @@ relationships to one and to many
 relationship set ops (to one: set, remove, tomany: add, set, remove)
 eager loading (nested and flat)
 
----
-
 ## Benchmarks
-
----
 
 ## FAQ
 

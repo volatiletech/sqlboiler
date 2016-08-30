@@ -18,13 +18,14 @@ lifecycle.
 
 - Full model generation
 - High performance through generation
+- Extremely fast code generation
 - Uses boil.Executor (simple interface, sql.DB, sqlx.DB etc. compatible)
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
 - Relationships/Associations
-- Eager loading
+- Eager loading (recursive)
 - Transactions
 - Raw SQL fallbacks
 - Compatibility tests (Run against your own DB schema)
@@ -34,7 +35,7 @@ lifecycle.
 
 - PostgreSQL
 
-Note: Seeking contributors for other database engines.
+**Note:** Seeking contributors for other database engines.
 
 #### Example Queries
 
@@ -120,7 +121,7 @@ names `created_at` or `updated_at` it will automatically set them
 to `time.Now()` in your database, and update your object appropriately.
 To disable this feature use `--no-auto-timestamps`.
 
-Note: You can set the timezone for this feature by calling `boil.SetLocation()`
+**Note:** You can set the timezone for this feature by calling `boil.SetLocation()`
 
 #### Overriding Automatic Timestamps
 
@@ -226,7 +227,7 @@ not to pass them through the command line or environment variables:
 | base_dir  | none      |
 | pkg_name  | "models"  |
 | out_folder| "models"  |
-| exclude   | []        |
+| exclude   | [ ]       |
 
 Example:
 
@@ -240,6 +241,39 @@ pass="dbpassword"
 sslmode="require"
 ```
 
+## Compatibility Tests
+
+Once you've generated your models package, we **highly** recommend you run `go test` in your generated folder.
+This should give a very clear indication of any potential database misconfiguration or schema incompatibilities.
+Successful test run means you're ready to start hacking!
+
+**Note:** If you find the tests do not pass we do not recommend using your generated package unless you know exactly why.
+If you find any incompatibilities not mentioned in this readme please let us know.
+
+## Diagnosing Problems
+
+The most common causes of problems and panics are:
+
+- Forgetting to exclude tables you do not want included in your generation, like migration tables.
+- Tables without a primary key. All tables require one.
+- Forgetting foreign key constraints on your columns that reference other tables.
+- A nil or closed database handle. Ensure your passed in `boil.Executor` is not nil.
+  - If you decide to use the `G` variant of functions instead, make sure you've initialized your
+    global database handle using `boil.SetDB()`.
+- The compatibility tests that run against your own DB schema require a superuser, ensure the user
+  supplied in your config has adequate privileges.
+
+For errors with other causes, it may be simple to debug yourself by looking at the generated code.
+Setting `boil.DebugMode` to `true` can help with this. You can change the output using `boil.DebugWriter` (defaults to `os.Stdout`).
+
+If you're still stuck and/or you think you've found a bug, feel free to leave an issue and we'll do our best to help you.
+
 ## FAQ
 
-Work in Progress
+### Won't compiling models for a huge database be very slow?
+
+No, because Go's toolchain - unlike traditional toolchains - makes the compiler do most of the work
+instead of the linker. This means that when the first `go install` is done it can take
+a little bit of time because there is a lot of code that is generated. However, because of this
+work balance between the compiler and linker in Go, linking to that code afterwards in the subsequent
+compiles is extremely fast.

@@ -209,7 +209,7 @@ of the generated code. This way we can ensure that our database is compatible
 with sqlboiler. If you find there are some failing tests, please check the
 [Diagnosing Problems](#diagnosing-problems) section.
 
-```shell
+```sh
 # Generate our models and exclude the migrations table
 sqlboiler -x goose_migrations postgres
 
@@ -238,7 +238,115 @@ If you're still stuck and/or you think you've found a bug, feel free to leave an
 
 ## Features & Examples
 
+All examples in this section will be demonstrated using the following schema, structs and variables:
+
+```sql
+CREATE TABLE pilots (
+  id integer NOT NULL,
+  name text NOT NULL,
+);
+
+ALTER TABLE pilots ADD CONSTRAINT pilot_pkey PRIMARY KEY (id);
+
+CREATE TABLE jets (
+  id integer NOT NULL,
+  pilot_id integer NOT NULL,
+  name text NOT NULL,
+);
+
+ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);
+ALTER TABLE jets ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+
+CREATE TABLE languages (
+  id integer NOT NULL,
+  language text NOT NULL
+);
+
+ALTER TABLE languages ADD CONSTRAINT language_pkey PRIMARY KEY (id);
+
+-- Join table
+CREATE TABLE pilot_languages (
+  pilot_id integer NOT NULL,
+  language_id integer NOT NULL
+);
+
+-- Composite primary key
+ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilot_id, language_id);
+ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
+```
+
+The generated model structs for this schema look like the following:
+
+```go
+type Pilot struct {
+  ID   int    `boil:"id" json:"id" toml:"id" yaml:"id"`
+  Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
+
+  R *PilotR `boil:"-" json:"-" toml:"-" yaml:"-"`
+}
+
+type PilotR struct {
+  Licenses  LicenseSlice
+  Languages LanguageSlice
+  Jets      JetSlice
+}
+
+type Jet struct {
+  ID      int    `boil:"id" json:"id" toml:"id" yaml:"id"`
+  PilotID int    `boil:"pilot_id" json:"pilot_id" toml:"pilot_id" yaml:"pilot_id"`
+  Name    string `boil:"name" json:"name" toml:"name" yaml:"name"`
+
+  R *JetR `boil:"-" json:"-" toml:"-" yaml:"-"`
+}
+
+type JetR struct {
+  Pilot *Pilot
+}
+
+type Language struct {
+  ID       int    `boil:"id" json:"id" toml:"id" yaml:"id"`
+  Language string `boil:"language" json:"language" toml:"language" yaml:"language"`
+
+  R *LanguageR `boil:"-" json:"-" toml:"-" yaml:"-"`
+}
+
+type LanguageR struct {
+  Pilots PilotSlice
+}
+```
+
+```go
+// Open handle to database like normal
+db, err := sql.Open("postgres", "dbname=fun user=abc")
+if err != nil {
+  return err
+}
+```
+
+### Query Building
+
+We generate "Opener" methods for you (..eg in the form Videos())
+### Query Mod System
+
 ### Function Variations
+
+You will find that most functions have the following variations. We've used the
+```Delete``` method to demonstrate:
+
+```go
+// Set the global db handle for G method variants.
+boil.SetDB(db)
+
+pilot, _ := models.PilotFind(db, 1)
+
+err := pilot.Delete(db) // Regular variant, takes a db handle (boil.Executor interface).
+pilot.DeleteP(db)       // Panic variant, takes a db handle and panics on error. 
+err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil.SetDB()).
+pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
+```
+
+Note that it's slightly different for the query building openers----...
 
 ### Automatic CreatedAt/UpdatedAt
 
@@ -266,7 +374,6 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 
 ### Hooks
 
-### Query Mod System
 
 ### Finishers
 
@@ -304,7 +411,7 @@ eager loading (nested and flat)
 
 ## FAQ
 
-### Won't compiling models for a huge database be very slow?
+#### Won't compiling models for a huge database be very slow?
 
 No, because Go's toolchain - unlike traditional toolchains - makes the compiler do most of the work
 instead of the linker. This means that when the first `go install` is done it can take

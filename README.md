@@ -680,8 +680,8 @@ Select is done through [Query Building](#query-building) and [Find](#find). Here
 // Select one pilot
 pilot, err := models.Pilots(db, qm.Where("name=?", "Tim")).One()
 
-// Select many jets
-jets, err := models.Jets(db, qm.Where("age > ?", 20)).All()
+// Select specific columns of many jets
+jets, err := models.Jets(db, qm.Select("age", "name")).All()
 ```
 
 ### Find

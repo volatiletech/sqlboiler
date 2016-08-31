@@ -254,7 +254,9 @@ ALTER TABLE pilots ADD CONSTRAINT pilot_pkey PRIMARY KEY (id);
 CREATE TABLE jets (
   id integer NOT NULL,
   pilot_id integer NOT NULL,
+  age integer NOT NULL,
   name text NOT NULL,
+  color text NOT NULL,
 );
 
 ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);
@@ -300,7 +302,9 @@ type pilotR struct {
 type Jet struct {
   ID      int    `boil:"id" json:"id" toml:"id" yaml:"id"`
   PilotID int    `boil:"pilot_id" json:"pilot_id" toml:"pilot_id" yaml:"pilot_id"`
+  Age     int    `boil:"age" json:"age" toml:"age" yaml:"age"`
   Name    string `boil:"name" json:"name" toml:"name" yaml:"name"`
+  Color   string `boil:"color" json:"color" toml:"color" yaml:"color"`
 
   R *jetR `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
@@ -440,8 +444,6 @@ For("update nowait")
 // Eager Loading -- Load takes the relationship name, ie the struct field name of the 
 // Relationship struct field you want to load.
 Load("Languages") // If it's a ToOne relationship it's in singular form, ToMany is plural.
-
-
 ```
 
 Note: We don't force you to break queries apart like this if you don't want to, the following
@@ -475,8 +477,8 @@ Note that it's slightly different for query building.
 Here are a list of all of the finishers that can be used in combination with 
 [Query Building](#query-building).
 
-Finishers all have `P` (panic) [method variations](#function-variations). If you wish to
-use a global database handle you can call the `G` variation on the [Starter](#query-building) method.
+Finishers all have `P` (panic) [method variations](#function-variations). To specify
+your db handle use the `G` or regular variation of the [Starter](#query-building) method.
 
 ```go
 // These are called like the following:
@@ -507,25 +509,193 @@ a single object for single row queries and a slice of objects for multiple row q
 
 ### Hooks
 
-We support the creation of hooks for Before and After query execution. Our 
+We support the use of hooks for Before and After query execution. Every generated package
+that includes hooks has the following `HookPoints` defined: 
+
+```go
+const (
+  BeforeInsertHook HookPoint = iota + 1
+  BeforeUpdateHook
+  BeforeDeleteHook
+  BeforeUpsertHook
+  AfterInsertHook
+  AfterSelectHook
+  AfterUpdateHook
+  AfterDeleteHook
+  AfterUpsertHook
+)
+```
+
+To register a hook for your model you will need to create the hook function, and attach
+it with the `AddModelHook` method. Here is an example of a before insert hook:
+
+```go
+// Define my hook function
+func myHook(exec boil.Executor, p *Pilot) {
+  // Do stuff
+}
+
+// Register my before insert hook for pilots
+models.AddPilotHook(boil.BeforeInsertHook, myHook)
+```
+
+Your `ModelHook` will always be defined as `func(boil.Executor, *Model)`
+
+Please be aware that if your project has no need for hooks they can be disabled on generation
+using the `--no-hooks` flag. Doing so will save you some binary size on compilation.
 
 ### Transactions
 
 ### Debug Logging
 
+Debug logging will print your generated SQL statement and the arguments it is using.
+Debug logging can be toggled on globally by setting the following global variable to `true`:
+
+```go
+boil.DebugMode = true
+
+// Optionally set the writer as well. Defaults to os.Stdout
+fh, _ := os.Open("debug.txt")
+boil.DebugWriter = fh
+```
+
+Note: Debug output is messy at the moment. This is something we want to address.
+
 ### Select
+
+Select is done through [Query Building](#query-building) and [Find](#find). Here's a short example:
+
+```go
+// Select one pilot
+pilot, err := models.Pilots(db, qm.Where("name=?", "Tim")).One()
+
+// Select many jets
+jets, err := models.Jets(db, qm.Where("age > ?", 20)).All()
+```
 
 ### Find
 
+Find is used to find a single row by primary key:
+
+```go
+// Retrieve pilot with all columns filled
+pilot, err := models.PilotFind(db, 1)
+
+// Retrieve a subset of column values
+jet, err := models.JetFind(db, 1, "name", "color")
+```
+
 ### Insert
 
+The main thing to be aware of with `Insert` is how the `whitelist` operates. If no whitelist 
+argument is provided, `Insert` will abide by the following rules:
+
+- Insert all columns **without** a default value in the database.
+- Insert all columns with a non-zero value in the struct that have a default value in the database.
+
+On the other hand, if a whitelist is provided, we will only insert the columns specified in the whitelist.
+
+Also note that your object will automatically be updated with any missing default values from the 
+database after the `Insert` is finished executing. This includes auto-incrementing column values.
+
+```go
+var p1 models.Pilot
+p1.Name = "Larry"
+err := p1.Insert(db) // Insert the first pilot with name "Larry"
+// p1 now has an ID field set to 1
+
+var p2 models.Pilot
+p2.Name "Borris"
+err := p2.Insert(db) // Insert the second pilot with name "Borris"
+// p2 now has an ID field set to 2
+
+var p3 models.Pilot
+p3.ID = 25
+p3.Name = "Rupert"
+err := p3.Insert(db) // Insert the third pilot with a specific ID
+// The id for this row was inserted as 25 in the database.
+
+var p4 models.Pilot
+p4.ID = 0
+p4.Name = "Nigel"
+err := p4.Insert(db, "id", "name") // Insert the fourth pilot with a zero value ID
+// The id for this row was inserted as 0 in the database.
+// Note: We had to use the whitelist for this, otherwise
+// SQLBoiler would presume you wanted to auto-increment
+```
+
 ### Update
-updateall slice and query
+`Update` can be performed on a single object, a slice of objects or as a [Finisher](#finishers)
+for a collection of rows.
+
+`Update` on a single object optionally takes a `whitelist`. The purpose of the
+whitelist is to specify which columns in your object should be updated in the database.
+
+If no `whitelist` argument is provided, `Update` will update every column except for
+`primary key` columns.
+
+If a `whitelist` argument is provided, `update` will only update the columns specified.
+
+```go
+// Find a pilot and update his name
+pilot, _ := models.FindPilot(db, 1)
+pilot.Name = "Neo"
+err := pilot.Update(db)
+
+// Update a slice of pilots to have the name "Smith"
+pilots, _ := models.Pilots(db).All()
+err := pilots.UpdateAll(db, models.M{"name": "Smith"})
+
+// Update all pilots in the database to to have the name "Smith"
+err := models.Pilots(db).UpdateAll(models.M{"name", "Smith"})
+```
 
 ### Delete
-deleteall slice and query
+
+```go
+pilot, _ := models.FindPilot(db, 1)
+// Delete the pilot from the database
+err := pilot.Delete(db)
+
+// Delete all pilots from the database
+err := models.Pilots(db).DeleteAll()
+
+// Delete a slice of pilots from the database
+pilots, _ := models.Pilots(db).All()
+err := pilots.DeleteAll(db)
+```
 
 ### Upsert
+
+The [Upsert](https://www.postgresql.org/docs/9.5/static/sql-insert.html) allows you to perform an insert
+that optionally performs an update when a conflict is found against existing row values.
+
+The `whitelist` operates in the same fashion that it does for [Insert](#insert).
+
+If an insert is performed, your object will be updated with any missing default values from the database,
+such as auto-incrementing column values.
+
+```go
+var p1 models.Pilot
+p1.ID = 5
+p1.Name = "Gaben"
+
+// INSERT INTO pilots ("id", "name") VALUES($1, $2) 
+// ON CONFLICT DO NOTHING
+err := p1.Upsert(db, false, nil, nil)
+
+// INSERT INTO pilots ("id", "name") VALUES ($1, $2) 
+// ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
+err := p1.Upsert(db, true, []string{"id"}, []string{"name"})
+
+// Set p1.ID to a zero value. We will have to use the whitelist now.
+p1.ID = 0
+p1.Name = "Hogan"
+
+// INSERT INTO pilots ("id", "name") VALUES ($1, $2) 
+// ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
+err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
+```
 
 ### Reload
 reloadall slice

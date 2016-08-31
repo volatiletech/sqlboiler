@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/strmangle"
@@ -249,6 +250,9 @@ func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Typ
 	return structType, sliceType, singular, nil
 }
 
+var mut sync.RWMutex
+var mappingThings = map[string][]uint64{}
+
 func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool, titleCases map[string]string) error {
 	cols, err := rows.Columns()
 	if err != nil {
@@ -261,9 +265,30 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 	}
 
 	var mapping []uint64
-	mapping, err = bindMapping(structType, titleCases, cols)
-	if err != nil {
-		return err
+	var ok bool
+
+	buf := strmangle.GetBuffer()
+
+	buf.WriteString(structType.String())
+	for _, s := range cols {
+		buf.WriteString(s)
+	}
+	mapKey := buf.String()
+	strmangle.PutBuffer(buf)
+
+	mut.RLock()
+	mapping, ok = mappingThings[mapKey]
+	mut.RUnlock()
+
+	if !ok {
+		mapping, err = bindMapping(structType, titleCases, cols)
+		if err != nil {
+			return err
+		}
+
+		mut.Lock()
+		mappingThings[mapKey] = mapping
+		mut.Unlock()
 	}
 
 	foundOne := false

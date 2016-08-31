@@ -162,10 +162,13 @@ not to pass them through the command line or environment variables:
 
 | Name | Default |
 | --- | --- |
-| base_dir  | none      |
-| pkg_name  | "models"  |
-| out_folder| "models"  |
-| exclude   | [ ]       |
+| basedir            | none      |
+| pkgname            | "models"  |
+| output             | "models"  |
+| exclude            | [ ]       |
+| debug              | false     |
+| no-hooks           | false     |
+| no-auto-timestamps | false     |
 
 Example:
 
@@ -238,7 +241,7 @@ If you're still stuck and/or you think you've found a bug, feel free to leave an
 
 ## Features & Examples
 
-All examples in this section will be demonstrated using the following schema, structs and variables:
+Most examples in this section will be demonstrated using the following schema, structs and variables:
 
 ```sql
 CREATE TABLE pilots (
@@ -276,17 +279,19 @@ ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) RE
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
 ```
 
-The generated model structs for this schema look like the following:
+The generated model structs for this schema look like the following. Note that I've included the relationship
+structs as well so you can see how it all pieces together, but these are unexported and not something you should
+ever need to touch directly:
 
 ```go
 type Pilot struct {
   ID   int    `boil:"id" json:"id" toml:"id" yaml:"id"`
   Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
 
-  R *PilotR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  R *pilotR `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-type PilotR struct {
+type pilotR struct {
   Licenses  LicenseSlice
   Languages LanguageSlice
   Jets      JetSlice
@@ -297,10 +302,10 @@ type Jet struct {
   PilotID int    `boil:"pilot_id" json:"pilot_id" toml:"pilot_id" yaml:"pilot_id"`
   Name    string `boil:"name" json:"name" toml:"name" yaml:"name"`
 
-  R *JetR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  R *jetR `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-type JetR struct {
+type jetR struct {
   Pilot *Pilot
 }
 
@@ -308,10 +313,10 @@ type Language struct {
   ID       int    `boil:"id" json:"id" toml:"id" yaml:"id"`
   Language string `boil:"language" json:"language" toml:"language" yaml:"language"`
 
-  R *LanguageR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  R *languageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-type LanguageR struct {
+type languageR struct {
   Pilots PilotSlice
 }
 ```
@@ -326,8 +331,81 @@ if err != nil {
 
 ### Query Building
 
-We generate "Opener" methods for you (..eg in the form Videos())
+We generate "Starter" methods for you. These methods are named as the plural versions of your model,
+for example: `models.Jets()`. Starter methods are used to build queries using our 
+[Query Mod System](#query-mod-system). They take a collection of [Query Mods](#query-mod-system) 
+as parameters, and end with a call to a [Finisher](#finishers) method.
+
+Here are a few examples:
+
+```go
+// SELECT COUNT(*) FROM pilots;
+count, err := models.Pilots().Count()
+
+// SELECT * FROM "pilots" LIMIT 5;
+pilots, err := models.Pilots(qm.Limit(5)).All()
+
+// DELETE FROM "pilots" WHERE "id"=$1;
+err := models.Pilots(qm.Where("id=?", 1)).DeleteAll() 
+```
+
+As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers) 
+allow you to execute the final action.
+
 ### Query Mod System
+
+The query mod system allows you to modify queries created with [Starter](#query-building) methods 
+when performing query building. Here is a list of all of your generated query mods using examples:
+
+```go
+// Dot import so we can access query mods directly instead of prefixing with "qm."
+import . "github.com/vattle/sqlboiler/boil/qm"
+
+// Use a raw query against a generated struct (Pilot in this example)
+// If this query mod exists in your call, it will override the others.
+// "?" placeholders are not supported here, use "$1, $2" etc.
+SQL("select * from pilots where id=$1", 10)
+models.Pilots(SQL("select * from pilots where id=$1", 10)).All()
+
+Select("id", "name") // Select specific columns.
+From("pilots as p") // Specify the FROM table manually, can be useful for doing complex queries.
+
+// WHERE clause building
+Where("name=?", "John")
+And("age=?", 24)
+Or("height=?", 183)
+
+// WHERE IN clause building
+WhereIn("name, age in ?", "John" 24, "Tim", 33) // Generates: WHERE ("name","age") IN (($1,$2),($3,$4))
+AndIn("weight in ?", 84)
+OrIn("height in ?", 183, 177, 204)
+
+InnerJoin("pilots p on jets.pilot_id=?", 10)
+
+GroupBy("name")
+OrderBy("age, height")
+
+Having("count(jets) > 2")
+
+Limit(15)
+Offset(5)
+
+// Explicit locking
+For("update nowait")
+
+// Eager Loading -- Load takes the relationship name, ie the struct field name of the 
+// Relationship struct field you want to load.
+Load("Languages") // If it's a ToOne relationship it's in singular form, ToMany is plural.
+
+
+```
+
+Note: We don't force you to break queries apart like this if you don't want to, the following
+is also valid and supported by query mods that take a clause:
+
+```go
+Where("(name=? OR age=?) AND height=?", "John", 24, 183)
+```
 
 ### Function Variations
 
@@ -346,7 +424,7 @@ err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil
 pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
 ```
 
-Note that it's slightly different for the query building openers----...
+Note that it's slightly different for the query building starters----...
 
 ### Automatic CreatedAt/UpdatedAt
 

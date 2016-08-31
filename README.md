@@ -13,7 +13,7 @@ like goose or some other migration tool to manage this part of the database's
 lifecycle.
 
 
-## Why?
+## Why another ORM
 Well...
 
 ## About SQL Boiler
@@ -507,6 +507,57 @@ a single object for single row queries and a slice of objects for multiple row q
 
 ### Binding
 
+The `Bind()` [Finisher](#finisher) allows the results of a query built with 
+the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
+to your generated struct objects, or your own custom struct objects.
+
+This can be useful for complex queries, queries that only require a small subset of data
+and have no need for the rest of the object variables, or custom join struct objects like
+the following:
+
+```go
+// Custom object using two generated structs
+type PilotAndJet struct {
+  models.Pilot `boil:",bind"`
+  models.Jet   `boil:",bind"`
+}
+
+var paj PilotAndJet
+boil.SQL("select pilots.*, jets.* from pilots inner join jets on jets.pilot_id=?", 1).Bind(&paj)
+```
+
+```go
+// Custom object to select subset of data
+type JetInfo struct {
+  AgeSum int `boil:"age_sum"`
+  Count int `boil:"juicy_count"`
+}
+
+var info JetInfo
+boil.SQL("select sum(age) as "age_sum", count(*) as "juicy_count" from jets").Bind(&info)
+```
+
+We support the following struct tag modes for `Bind()` control:
+
+```go
+type CoolObject struct {
+  // Don't specify a name, Bind will attempt snake_case conversion.
+  Frog int
+  
+  // Specify an alternative db column name, can be whatever you like.
+  Cat int  `boil:"kitten"`
+  
+  // Attempt to bind to members inside Dog if they 
+  // cannot be found on this outer layer first.
+  Dog      `boil:"bind"`
+
+  // Ignore this member, do not attempt to bind it.
+  Bird     `boil:"-"`
+}
+```
+
+Note that structs take either `bind` or `-`, and regular members take an optional alternative column name.
+
 ### Hooks
 
 We support the use of hooks for Before and After query execution. Every generated package
@@ -545,6 +596,23 @@ Please be aware that if your project has no need for hooks they can be disabled 
 using the `--no-hooks` flag. Doing so will save you some binary size on compilation.
 
 ### Transactions
+
+The `boil.Executor` interface implements `sql.Tx`, as well as most other database driver
+implementations. This makes using transactions very simple:
+
+```go
+tx, err := db.Begin()
+if err != nil {
+  return err
+}
+
+users, _ := models.Pilots(tx).All()
+users.DeleteAll(tx)
+
+// Rollback or commit
+tx.Commit()
+tx.Rollback()
+```
 
 ### Debug Logging
 
@@ -699,6 +767,9 @@ p1.Name = "Hogan"
 err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
 ```
 
+Note: Passing a different set of column values to the update component is not currently supported.
+If this feature is important to you let us know and we can consider adding something for this.
+
 ### Reload
 In the event that your objects get out of sync with the database for whatever reason,
 you can use `Reload` and `ReloadAll` to reload the objects using the primary key values
@@ -716,7 +787,6 @@ err := pilot.Reload(db)
 pilots, _ := models.Pilots(db).All()
 err := pilots.ReloadAll(db)
 ```
-
 
 ### Relationships
 relationships to one and to many

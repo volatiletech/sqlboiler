@@ -329,6 +329,30 @@ if err != nil {
 }
 ```
 
+### Automatic CreatedAt/UpdatedAt
+
+If your generated SQLBoiler models package can find columns with the
+names `created_at` or `updated_at` it will automatically set them
+to `time.Now()` in your database, and update your object appropriately.
+To disable this feature use `--no-auto-timestamps`.
+
+Note: You can set the timezone for this feature by calling `boil.SetLocation()`
+
+#### Overriding Automatic Timestamps
+
+* **Insert**
+  * Timestamps for both `updated_at` and `created_at` that are zero values will be set automatically.
+  * To set the timestamp to null, set `Valid` to false and `Time` to a non-zero value.
+  This is somewhat of a work around until we can devise a better solution in a later version.
+* **Update**
+  * The `updated_at` column will always be set to `time.Now()`. If you need to override
+  this value you will need to fall back to another method in the meantime: `boil.SQL()`,
+  overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
+* **Upsert**
+  * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
+  will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
+  * The `updated_at` column will always be set to `time.Now()`.
+
 ### Query Building
 
 We generate "Starter" methods for you. These methods are named as the plural versions of your model,
@@ -351,6 +375,26 @@ err := models.Pilots(qm.Where("id=?", 1)).DeleteAll()
 
 As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers) 
 allow you to execute the final action.
+
+If you plan on executing the same query with the same values using the query builder,
+you should do so like the following to utilize caching:
+
+```go
+// Instead of this:
+for i := 0; i < 10; i++ {
+   pilots := models.Pilots(qm.Where("id > ?", 5), qm.Limit(5)).All()
+}
+
+// You should do this
+query := models.Pilots(qm.Where("id > ?", 5), qm.Limit(5))
+for i := 0; i < 10; i++ {
+   pilots := query.All()
+}
+
+// Every execution of All() after the first will use a cached version of
+// the built query that short circuits the query builder all together.
+// This allows you to save on performance.
+```
 
 ### Query Mod System
 
@@ -416,7 +460,7 @@ You will find that most functions have the following variations. We've used the
 // Set the global db handle for G method variants.
 boil.SetDB(db)
 
-pilot, _ := models.PilotFind(db, 1)
+pilot, _ := models.FindPilot(db, 1)
 
 err := pilot.Delete(db) // Regular variant, takes a db handle (boil.Executor interface).
 pilot.DeleteP(db)       // Panic variant, takes a db handle and panics on error. 
@@ -424,40 +468,46 @@ err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil
 pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
 ```
 
-Note that it's slightly different for the query building starters----...
-
-### Automatic CreatedAt/UpdatedAt
-
-If your generated SQLBoiler models package can find columns with the
-names `created_at` or `updated_at` it will automatically set them
-to `time.Now()` in your database, and update your object appropriately.
-To disable this feature use `--no-auto-timestamps`.
-
-Note: You can set the timezone for this feature by calling `boil.SetLocation()`
-
-#### Overriding Automatic Timestamps
-
-* **Insert**
-  * Timestamps for both `updated_at` and `created_at` that are zero values will be set automatically.
-  * To set the timestamp to null, set `Valid` to false and `Time` to a non-zero value.
-  This is somewhat of a work around until we can devise a better solution in a later version.
-* **Update**
-  * The `updated_at` column will always be set to `time.Now()`. If you need to override
-  this value you will need to fall back to another method in the meantime: `boil.SQL()`,
-  overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
-* **Upsert**
-  * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
-  will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
-  * The `updated_at` column will always be set to `time.Now()`.
-
-### Hooks
-
+Note that it's slightly different for query building.
 
 ### Finishers
 
+Here are a list of all of the finishers that can be used in combination with 
+[Query Building](#query-building).
+
+Finishers all have `P` (panic) [method variations](#function-variations). If you wish to
+use a global database handle you can call the `G` variation on the [Starter](#query-building) method.
+
+```go
+// These are called like the following:
+models.Pilots(db).All()
+
+One() // Retrieve one row as object (same as LIMIT(1))
+All() // Retrieve all rows as objects (same as SELECT * FROM)
+Count() // Number of rows (same as COUNT(*))
+UpdateAll(models.M{"name": "John", "age": 23}) // Update all rows matching the built query. 
+DeleteAll() // Delete all rows matching the built query.
+Exists() // Returns a bool indicating whether the row(s) for the built query exists.
+Bind(&myObj) // Bind the results of a query to your own struct object.
+```
+
 ### Raw Query
 
+We provide `boil.SQL()` for executing raw queries. Generally you will want to use `Bind()` with
+this, like the following:
+
+```go
+boil.SQL(db, "select * from pilots where id=$1", 5).Bind(&obj)
+```
+
+You can use your own structs or a generated struct as a parameter to Bind. Bind supports both
+a single object for single row queries and a slice of objects for multiple row queries.
+
 ### Binding
+
+### Hooks
+
+We support the creation of hooks for Before and After query execution. Our 
 
 ### Transactions
 

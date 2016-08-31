@@ -652,6 +652,8 @@ err := models.Pilots(db).UpdateAll(models.M{"name", "Smith"})
 
 ### Delete
 
+Delete a single object, a slice of objects or specific objects through [Query Building](#query-building).
+
 ```go
 pilot, _ := models.FindPilot(db, 1)
 // Delete the pilot from the database
@@ -667,7 +669,7 @@ err := pilots.DeleteAll(db)
 
 ### Upsert
 
-The [Upsert](https://www.postgresql.org/docs/9.5/static/sql-insert.html) allows you to perform an insert
+[Upsert](https://www.postgresql.org/docs/9.5/static/sql-insert.html) allows you to perform an insert
 that optionally performs an update when a conflict is found against existing row values.
 
 The `whitelist` operates in the same fashion that it does for [Insert](#insert).
@@ -698,7 +700,23 @@ err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
 ```
 
 ### Reload
-reloadall slice
+In the event that your objects get out of sync with the database for whatever reason,
+you can use `Reload` and `ReloadAll` to reload the objects using the primary key values
+attached to the objects.
+
+```go
+pilot, _ := models.FindPilot(db, 1)
+
+// > Object becomes out of sync for some reason
+
+// Refresh the object with the latest data from the db
+err := pilot.Reload(db) 
+
+// Reload all objects in a slice
+pilots, _ := models.Pilots(db).All()
+err := pilots.ReloadAll(db)
+```
+
 
 ### Relationships
 relationships to one and to many

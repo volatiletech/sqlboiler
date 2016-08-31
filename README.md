@@ -788,6 +788,9 @@ pilots, _ := models.Pilots(db).All()
 err := pilots.ReloadAll(db)
 ```
 
+Note: `Reload` and `ReloadAll` are not recursive, if you need your relationships reloaded
+you will need to call the `Reload` methods on those yourself.
+
 ### Relationships
 relationships to one and to many
 relationship set ops (to one: set, remove, tomany: add, set, remove)

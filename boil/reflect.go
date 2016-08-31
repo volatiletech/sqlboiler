@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -259,6 +260,12 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
+	var mapping []uint64
+	mapping, err = bindMapping(structType, titleCases, cols)
+	if err != nil {
+		return err
+	}
+
 	foundOne := false
 	for rows.Next() {
 		foundOne = true
@@ -266,10 +273,10 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 		var pointers []interface{}
 
 		if singular {
-			pointers, err = bindPtrs(obj, titleCases, cols...)
+			pointers = ptrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
 		} else {
 			newStruct = reflect.New(structType)
-			pointers, err = bindPtrs(newStruct.Interface(), titleCases, cols...)
+			pointers = ptrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
 		if err != nil {
 			return err
@@ -291,22 +298,128 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 	return nil
 }
 
-func bindPtrs(obj interface{}, titleCases map[string]string, cols ...string) ([]interface{}, error) {
-	v := reflect.ValueOf(obj)
-	ptrs := make([]interface{}, len(cols))
+func bindMapping(typ reflect.Type, titleCases map[string]string, cols []string) ([]uint64, error) {
+	ptrs := make([]uint64, len(cols))
+	mapping := makeStructMapping(typ, titleCases)
 
+ColLoop:
 	for i, c := range cols {
 		names := strings.Split(c, ".")
+		for j, n := range names {
+			t, ok := titleCases[n]
+			if ok {
+				names[j] = t
+				continue
+			}
+			names[j] = strmangle.TitleCase(n)
+		}
+		name := strings.Join(names, ".")
 
-		ptr, ok := findField(names, titleCases, v)
-		if !ok {
-			return nil, errors.Errorf("bindPtrs failed to find field %s", c)
+		ptrMap, ok := mapping[name]
+		if ok {
+			ptrs[i] = ptrMap
+			continue
 		}
 
-		ptrs[i] = ptr
+		suffix := "." + name
+		for maybeMatch, mapping := range mapping {
+			if strings.HasSuffix(maybeMatch, suffix) {
+				ptrs[i] = mapping
+				continue ColLoop
+			}
+		}
+
+		return nil, errors.Errorf("could not find struct field name in mapping: %s", name)
 	}
 
 	return ptrs, nil
+}
+
+// ptrsFromMapping expects to be passed an addressable struct that it's looking
+// for things on
+func ptrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
+	ptrs := make([]interface{}, len(mapping))
+	for i, m := range mapping {
+		ptrs[i] = ptrFromMapping(val, m).Interface()
+	}
+	return ptrs
+}
+
+var sentinel = uint64(255)
+
+// ptrFromMapping expects to be passed an addressable struct that it's looking
+// for things on.
+func ptrFromMapping(val reflect.Value, mapping uint64) reflect.Value {
+	for i := 0; i < 8; i++ {
+		v := (mapping >> uint(i*8)) & sentinel
+
+		if v == sentinel {
+			if val.Kind() != reflect.Ptr {
+				return val.Addr()
+			}
+			return val
+		}
+
+		val = val.Field(int(v))
+		if val.Kind() == reflect.Ptr {
+			val = reflect.Indirect(val)
+		}
+	}
+
+	panic("could not find pointer from mapping")
+}
+
+func makeStructMapping(typ reflect.Type, titleCases map[string]string) map[string]uint64 {
+	fieldMaps := make(map[string]uint64)
+	makeStructMappingHelper(typ, "", 0, 0, fieldMaps, titleCases)
+	return fieldMaps
+}
+
+func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, depth uint, fieldMaps map[string]uint64, titleCases map[string]string) {
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+
+	n := typ.NumField()
+	for i := 0; i < n; i++ {
+		f := typ.Field(i)
+
+		tag, recurse := getBoilTag(f, titleCases)
+		if len(tag) == 0 {
+			tag = f.Name
+		} else if tag[0] == '-' {
+			continue
+		}
+
+		if len(prefix) != 0 {
+			tag = fmt.Sprintf("%s.%s", prefix, tag)
+		}
+
+		if recurse {
+			makeStructMappingHelper(f.Type, tag, current|uint64(i)<<depth, depth+8, fieldMaps, titleCases)
+			continue
+		}
+
+		fieldMaps[tag] = current | (sentinel << (depth + 8)) | (uint64(i) << depth)
+	}
+}
+
+func bin64(i uint64) string {
+	str := strconv.FormatUint(i, 2)
+	pad := 64 - len(str)
+	if pad > 0 {
+		str = strings.Repeat("0", pad) + str
+	}
+
+	var newStr string
+	for i := 0; i < len(str); i += 8 {
+		if i != 0 {
+			newStr += " "
+		}
+		newStr += str[i : i+8]
+	}
+
+	return newStr
 }
 
 func findField(names []string, titleCases map[string]string, v reflect.Value) (interface{}, bool) {

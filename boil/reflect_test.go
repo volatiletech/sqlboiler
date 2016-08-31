@@ -65,13 +65,106 @@ func TestBind(t *testing.T) {
 	}
 }
 
-func TestGetBoilTag(t *testing.T) {
-	type TestStruct struct {
-		FirstName   string `boil:"test_one,boil"`
-		LastName    string `boil:"test_two"`
-		MiddleName  string `boil:"middle_name,boil"`
+func testMakeMapping(byt ...byte) uint64 {
+	var x uint64
+	for i, b := range byt {
+		x |= uint64(b) << (uint(i) * 8)
+	}
+	x |= uint64(255) << uint(len(byt)*8)
+	return x
+}
+
+func TestMakeStructMapping(t *testing.T) {
+	t.Parallel()
+
+	var testStruct = struct {
+		LastName    string `boil:"different"`
 		AwesomeName string `boil:"awesome_name"`
-		Age         string `boil:",boil"`
+		Face        string `boil:"-"`
+		Nose        string
+
+		Nested struct {
+			LastName    string `boil:"different"`
+			AwesomeName string `boil:"awesome_name"`
+			Face        string `boil:"-"`
+			Nose        string
+
+			Nested2 struct {
+				Nose string
+			} `boil:",bind"`
+		} `boil:",bind"`
+	}{}
+
+	got := makeStructMapping(reflect.TypeOf(testStruct), nil)
+
+	expectMap := map[string]uint64{
+		"Different":           testMakeMapping(0),
+		"AwesomeName":         testMakeMapping(1),
+		"Nose":                testMakeMapping(3),
+		"Nested.Different":    testMakeMapping(4, 0),
+		"Nested.AwesomeName":  testMakeMapping(4, 1),
+		"Nested.Nose":         testMakeMapping(4, 3),
+		"Nested.Nested2.Nose": testMakeMapping(4, 4, 0),
+	}
+
+	for expName, expVal := range expectMap {
+		gotVal, ok := got[expName]
+		if !ok {
+			t.Errorf("%s) had no value", expName)
+			continue
+		}
+
+		if gotVal != expVal {
+			t.Errorf("%s) wrong value,\nwant: %x (%s)\ngot:  %x (%s)", expName, expVal, bin64(expVal), gotVal, bin64(gotVal))
+		}
+	}
+}
+
+func TestPtrFromMapping(t *testing.T) {
+	t.Parallel()
+
+	type NestedPtrs struct {
+		Int         int
+		IntP        *int
+		NestedPtrsP *NestedPtrs
+	}
+
+	val := &NestedPtrs{
+		Int:  5,
+		IntP: new(int),
+		NestedPtrsP: &NestedPtrs{
+			Int:  6,
+			IntP: new(int),
+		},
+	}
+
+	v := ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(0))
+	if got := *v.Interface().(*int); got != 5 {
+		t.Error("flat int was wrong:", got)
+	}
+	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(1))
+	if got := *v.Interface().(*int); got != 0 {
+		t.Error("flat pointer was wrong:", got)
+	}
+	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 0))
+	if got := *v.Interface().(*int); got != 6 {
+		t.Error("nested int was wrong:", got)
+	}
+	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 1))
+	if got := *v.Interface().(*int); got != 0 {
+		t.Error("nested pointer was wrong:", got)
+	}
+}
+
+func TestGetBoilTag(t *testing.T) {
+	t.Parallel()
+
+	type TestStruct struct {
+		FirstName   string `boil:"test_one,bind"`
+		LastName    string `boil:"test_two"`
+		MiddleName  string `boil:"middle_name,bind"`
+		AwesomeName string `boil:"awesome_name"`
+		Age         string `boil:",bind"`
 		Face        string `boil:"-"`
 		Nose        string
 	}
@@ -370,156 +463,156 @@ func TestBind_InnerJoin(t *testing.T) {
 	}
 }
 
-func TestBind_InnerJoinSelect(t *testing.T) {
-	t.Parallel()
+// func TestBind_InnerJoinSelect(t *testing.T) {
+// 	t.Parallel()
+//
+// 	testResults := []*struct {
+// 		Happy struct {
+// 			ID int
+// 		} `boil:"h,bind"`
+// 		Fun struct {
+// 			ID int
+// 		} `boil:",bind"`
+// 	}{}
+//
+// 	query := &Query{
+// 		selectCols: []string{"fun.id", "h.id"},
+// 		from:       []string{"fun"},
+// 		joins:      []join{{kind: JoinInner, clause: "happy as h on fun.happy_id = h.id"}},
+// 	}
+//
+// 	db, mock, err := sqlmock.New()
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	ret := sqlmock.NewRows([]string{"fun.id", "h.id"})
+// 	ret.AddRow(driver.Value(int64(10)), driver.Value(int64(11)))
+// 	ret.AddRow(driver.Value(int64(12)), driver.Value(int64(13)))
+// 	mock.ExpectQuery(`SELECT "fun"."id" as "fun.id", "h"."id" as "h.id" FROM "fun" INNER JOIN happy as h on fun.happy_id = h.id;`).WillReturnRows(ret)
+//
+// 	SetExecutor(query, db)
+// 	err = query.Bind(&testResults)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	if len(testResults) != 2 {
+// 		t.Fatal("wrong number of results:", len(testResults))
+// 	}
+// 	if id := testResults[0].Happy.ID; id != 11 {
+// 		t.Error("wrong ID:", id)
+// 	}
+// 	if id := testResults[0].Fun.ID; id != 10 {
+// 		t.Error("wrong ID:", id)
+// 	}
+//
+// 	if id := testResults[1].Happy.ID; id != 13 {
+// 		t.Error("wrong ID:", id)
+// 	}
+// 	if id := testResults[1].Fun.ID; id != 12 {
+// 		t.Error("wrong ID:", id)
+// 	}
+//
+// 	if err := mock.ExpectationsWereMet(); err != nil {
+// 		t.Error(err)
+// 	}
+// }
 
-	testResults := []*struct {
-		Happy struct {
-			ID int
-		} `boil:"h,bind"`
-		Fun struct {
-			ID int
-		} `boil:",bind"`
-	}{}
-
-	query := &Query{
-		selectCols: []string{"fun.id", "h.id"},
-		from:       []string{"fun"},
-		joins:      []join{{kind: JoinInner, clause: "happy as h on fun.happy_id = h.id"}},
-	}
-
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Error(err)
-	}
-
-	ret := sqlmock.NewRows([]string{"fun.id", "h.id"})
-	ret.AddRow(driver.Value(int64(10)), driver.Value(int64(11)))
-	ret.AddRow(driver.Value(int64(12)), driver.Value(int64(13)))
-	mock.ExpectQuery(`SELECT "fun"."id" as "fun.id", "h"."id" as "h.id" FROM "fun" INNER JOIN happy as h on fun.happy_id = h.id;`).WillReturnRows(ret)
-
-	SetExecutor(query, db)
-	err = query.Bind(&testResults)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(testResults) != 2 {
-		t.Fatal("wrong number of results:", len(testResults))
-	}
-	if id := testResults[0].Happy.ID; id != 11 {
-		t.Error("wrong ID:", id)
-	}
-	if id := testResults[0].Fun.ID; id != 10 {
-		t.Error("wrong ID:", id)
-	}
-
-	if id := testResults[1].Happy.ID; id != 13 {
-		t.Error("wrong ID:", id)
-	}
-	if id := testResults[1].Fun.ID; id != 12 {
-		t.Error("wrong ID:", id)
-	}
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestBindPtrs_Easy(t *testing.T) {
-	t.Parallel()
-
-	testStruct := struct {
-		ID   int `boil:"identifier"`
-		Date time.Time
-	}{}
-
-	cols := []string{"identifier", "date"}
-	ptrs, err := bindPtrs(&testStruct, nil, cols...)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if ptrs[0].(*int) != &testStruct.ID {
-		t.Error("id is the wrong pointer")
-	}
-	if ptrs[1].(*time.Time) != &testStruct.Date {
-		t.Error("id is the wrong pointer")
-	}
-}
-
-func TestBindPtrs_Recursive(t *testing.T) {
-	t.Parallel()
-
-	testStruct := struct {
-		Happy struct {
-			ID int `boil:"identifier"`
-		}
-		Fun struct {
-			ID int
-		} `boil:",bind"`
-	}{}
-
-	cols := []string{"id", "fun.id"}
-	ptrs, err := bindPtrs(&testStruct, nil, cols...)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if ptrs[0].(*int) != &testStruct.Fun.ID {
-		t.Error("id is the wrong pointer")
-	}
-	if ptrs[1].(*int) != &testStruct.Fun.ID {
-		t.Error("id is the wrong pointer")
-	}
-}
-
-func TestBindPtrs_RecursiveTags(t *testing.T) {
-	t.Parallel()
-
-	testStruct := struct {
-		Happy struct {
-			ID int `boil:"identifier"`
-		} `boil:",bind"`
-		Fun struct {
-			ID int `boil:"identification"`
-		} `boil:",bind"`
-	}{}
-
-	cols := []string{"happy.identifier", "fun.identification"}
-	ptrs, err := bindPtrs(&testStruct, nil, cols...)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if ptrs[0].(*int) != &testStruct.Happy.ID {
-		t.Error("id is the wrong pointer")
-	}
-	if ptrs[1].(*int) != &testStruct.Fun.ID {
-		t.Error("id is the wrong pointer")
-	}
-}
-
-func TestBindPtrs_Ignore(t *testing.T) {
-	t.Parallel()
-
-	testStruct := struct {
-		ID    int `boil:"-"`
-		Happy struct {
-			ID int
-		} `boil:",bind"`
-	}{}
-
-	cols := []string{"id"}
-	ptrs, err := bindPtrs(&testStruct, nil, cols...)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if ptrs[0].(*int) != &testStruct.Happy.ID {
-		t.Error("id is the wrong pointer")
-	}
-}
+// func TestBindPtrs_Easy(t *testing.T) {
+// 	t.Parallel()
+//
+// 	testStruct := struct {
+// 		ID   int `boil:"identifier"`
+// 		Date time.Time
+// 	}{}
+//
+// 	cols := []string{"identifier", "date"}
+// 	ptrs, err := bindPtrs(&testStruct, nil, cols...)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	if ptrs[0].(*int) != &testStruct.ID {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// 	if ptrs[1].(*time.Time) != &testStruct.Date {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// }
+//
+// func TestBindPtrs_Recursive(t *testing.T) {
+// 	t.Parallel()
+//
+// 	testStruct := struct {
+// 		Happy struct {
+// 			ID int `boil:"identifier"`
+// 		}
+// 		Fun struct {
+// 			ID int
+// 		} `boil:",bind"`
+// 	}{}
+//
+// 	cols := []string{"id", "fun.id"}
+// 	ptrs, err := bindPtrs(&testStruct, nil, cols...)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	if ptrs[0].(*int) != &testStruct.Fun.ID {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// 	if ptrs[1].(*int) != &testStruct.Fun.ID {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// }
+//
+// func TestBindPtrs_RecursiveTags(t *testing.T) {
+// 	t.Parallel()
+//
+// 	testStruct := struct {
+// 		Happy struct {
+// 			ID int `boil:"identifier"`
+// 		} `boil:",bind"`
+// 		Fun struct {
+// 			ID int `boil:"identification"`
+// 		} `boil:",bind"`
+// 	}{}
+//
+// 	cols := []string{"happy.identifier", "fun.identification"}
+// 	ptrs, err := bindPtrs(&testStruct, nil, cols...)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	if ptrs[0].(*int) != &testStruct.Happy.ID {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// 	if ptrs[1].(*int) != &testStruct.Fun.ID {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// }
+//
+// func TestBindPtrs_Ignore(t *testing.T) {
+// 	t.Parallel()
+//
+// 	testStruct := struct {
+// 		ID    int `boil:"-"`
+// 		Happy struct {
+// 			ID int
+// 		} `boil:",bind"`
+// 	}{}
+//
+// 	cols := []string{"id"}
+// 	ptrs, err := bindPtrs(&testStruct, nil, cols...)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+//
+// 	if ptrs[0].(*int) != &testStruct.Happy.ID {
+// 		t.Error("id is the wrong pointer")
+// 	}
+// }
 
 func TestGetStructValues(t *testing.T) {
 	t.Parallel()

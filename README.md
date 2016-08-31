@@ -9,8 +9,8 @@ SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 It is a "database-first" ORM as opposed to "code-first" (like gorm/gorp).
 That means you must first create your database schema. Please use something
-like goose or some other migration tool to manage this part of the database's
-lifecycle.
+like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate) 
+or some other migration tool to manage this part of the database's life-cycle.
 
 
 ## Why another ORM
@@ -31,7 +31,7 @@ Well...
 - Relationships/Associations
 - Eager loading (recursive)
 - Transactions
-- Raw SQL fallbacks
+- Raw SQL fallback
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
 
@@ -406,10 +406,19 @@ for i := 0; i < 10; i++ {
 // Every execution of All() after the first will use a cached version of
 // the built query that short circuits the query builder all together.
 // This allows you to save on performance.
+
+// Just something to be aware of: query mods don't store pointers, so if 
+// your passed in variable's value changes, your generated query will not change.
 ```
+
+Note: You will see exported `boil.SetX` methods in the boil package. These should not be used on query
+objects because they will break caching. Unfortunately these had to be exported due to some circular
+dependency issues, but they're not functionality we want exposed. If you want a different 
+query object, generate a new one.
 
 Take a look at our [Relationships Query Building](#relationships) section for some additional query
 building information.
+
 
 ### Query Mod System
 
@@ -910,7 +919,57 @@ We provide the following methods for managing relationships on objects:
 **To Many**
 - `AddX()`: Add more relationships to the existing set of related Xs: pilot.AddLanguages(...)
 - `SetX()`: Remove all existing relationships, and replace them with the provided set: pilot.SetLanguages(...)
-- `RemoveX()`: Remove all provided relationships: pilot.RemoveVideos(...)
+- `RemoveX()`: Remove all provided relationships: pilot.RemoveLanguages(...)
+
+**To One** code examples:
+
+```go
+  jet, _ := models.FindJet(db, 1)
+  pilot, _ := models.FindPilot(db, 1)
+  
+  // Set the pilot to an existing pilot
+  err := jet.SetPilot(db, false, &pilot)
+
+  pilot = models.Pilot{
+    Name: "Erlich",
+  }
+
+  // Insert the pilot into the database and assign it to a jet
+  err := jet.SetPilot(db, true, &pilot)
+
+  // Remove a relationship. This method only exists for foreign keys that can be NULL.
+  err := jet.RemovePilot(db, &pilot)
+```
+
+**To Many** code examples:
+
+```go
+  pilots, _ := models.Pilots(db).All()
+  languages, _ := models.Languages(db).All()
+
+  // Set a group of language relationships
+  err := pilots.SetLanguages(db, false, &languages)
+
+  languages := []*models.Language{
+    {Language: "Strayan"},
+    {Language: "Yupik"},
+    {Language: "Pawnee"},
+  }
+
+  // Insert new a group of languages and assign them to a pilot
+  err := pilots.SetLanguages(db, true, languages...)
+
+  // Add another language relationship to the existing set of relationships
+  err := pilots.AddLanguages(db, false, &someOtherLanguage)
+  
+  anotherLanguage := models.Language{Language: "Archi"}
+  
+  // Insert and then add another language relationship
+  err := pilots.AddLanguages(db, true, &anotherLanguage)
+
+
+
+```
 
 ## Benchmarks
 

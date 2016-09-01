@@ -32,7 +32,12 @@ func buildQuery(q *Query) (string, []interface{}) {
 
 	defer strmangle.PutBuffer(buf)
 
-	return buf.String(), args
+	// Cache the generated query for query object re-use
+	bufStr := buf.String()
+	q.plainSQL.sql = bufStr
+	q.plainSQL.args = args
+
+	return bufStr, args
 }
 
 func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {

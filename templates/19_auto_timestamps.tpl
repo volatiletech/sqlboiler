@@ -2,13 +2,7 @@
   {{- if not .NoAutoTimestamps -}}
   {{- $colNames := .Table.Columns | columnNames -}}
   {{if containsAny $colNames "created_at" "updated_at"}}
-  loc := boil.GetLocation()
-  currTime := time.Time{}
-  if loc != nil {
-    currTime = time.Now().In(boil.GetLocation())
-  } else {
-    currTime = time.Now()
-  }
+  currTime := time.Now().In(boil.GetLocation())
     {{range $ind, $col := .Table.Columns}}
       {{- if eq $col.Name "created_at" -}}
         {{- if $col.Nullable}}
@@ -42,13 +36,7 @@
   {{- if not .NoAutoTimestamps -}}
   {{- $colNames := .Table.Columns | columnNames -}}
   {{if containsAny $colNames "updated_at"}}
-  loc := boil.GetLocation()
-  currTime := time.Time{}
-  if loc != nil {
-    currTime = time.Now().In(boil.GetLocation())
-  } else {
-    currTime = time.Now()
-  }
+  currTime := time.Now().In(boil.GetLocation())
     {{range $ind, $col := .Table.Columns}}
       {{- if eq $col.Name "updated_at" -}}
         {{- if $col.Nullable}}
@@ -66,13 +54,7 @@
   {{- if not .NoAutoTimestamps -}}
   {{- $colNames := .Table.Columns | columnNames -}}
   {{if containsAny $colNames "created_at" "updated_at"}}
-  loc := boil.GetLocation()
-  currTime := time.Time{}
-  if loc != nil {
-    currTime = time.Now().In(boil.GetLocation())
-  } else {
-    currTime = time.Now()
-  }
+  currTime := time.Now().In(boil.GetLocation())
     {{range $ind, $col := .Table.Columns}}
       {{- if eq $col.Name "created_at" -}}
         {{- if $col.Nullable}}

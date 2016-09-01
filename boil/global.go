@@ -10,7 +10,7 @@ var (
 	currentDB Executor
 	// timestampLocation is the timezone used for the
 	// automated setting of created_at/updated_at columns
-	timestampLocation *time.Location
+	timestampLocation = time.UTC
 )
 
 // DebugMode is a flag controlling whether generated sql statements and

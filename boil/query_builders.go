@@ -479,48 +479,10 @@ func convertQuestionMarks(clause string, startAt int) (string, int) {
 	return paramBuf.String(), total
 }
 
-// identifierMapping creates a map of all identifiers to potential model names
-func identifierMapping(q *Query) map[string]string {
-	var ids map[string]string
-	setID := func(alias, name string) {
-		if ids == nil {
-			ids = make(map[string]string)
-		}
-		ids[alias] = name
-	}
-
-	for _, from := range q.from {
-		tokens := strings.Split(from, " ")
-		parseIdentifierClause(tokens, setID)
-	}
-
-	for _, join := range q.joins {
-		tokens := strings.Split(join.clause, " ")
-		parseIdentifierClause(tokens, setID)
-	}
-
-	return ids
-}
-
-// parseIdentifierClause takes a set of tokens and looks for something of the form:
+// parseFromClause will parse something that looks like
+// a
 // a b
 // a as b
-// where 'a' and 'b' are valid SQL identifiers
-// It only evaluates the first 3 tokens (anything past that is superfluous)
-// It stops parsing when it finds "on" or an invalid identifier
-func parseIdentifierClause(tokens []string, setID func(string, string)) {
-	alias, name, ok := parseFromClause(tokens)
-	if !ok {
-		panic("could not parse from statement")
-	}
-
-	if len(alias) > 0 {
-		setID(alias, name)
-	} else {
-		setID(name, name)
-	}
-}
-
 func parseFromClause(toks []string) (alias, name string, ok bool) {
 	if len(toks) > 3 {
 		toks = toks[:3]

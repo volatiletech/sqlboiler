@@ -5,13 +5,13 @@ type HookPoint int
 
 // the hook point constants
 const (
-	HookBeforeInsert HookPoint = iota + 1
-	HookBeforeUpdate
-	HookBeforeDelete
-	HookBeforeUpsert
-	HookAfterInsert
-	HookAfterSelect
-	HookAfterUpdate
-	HookAfterDelete
-	HookAfterUpsert
+	BeforeInsertHook HookPoint = iota + 1
+	BeforeUpdateHook
+	BeforeDeleteHook
+	BeforeUpsertHook
+	AfterInsertHook
+	AfterSelectHook
+	AfterUpdateHook
+	AfterDeleteHook
+	AfterUpsertHook
 )

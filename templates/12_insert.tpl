@@ -24,8 +24,8 @@ func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... strin
 // Insert a single record using an executor.
 // Whitelist behavior: If a whitelist is provided, only those columns supplied are inserted
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
-// - All columns without a default value are inferred (i.e. name, age)
-// - All columns with a default, but non-zero are inferred (i.e. health = 75)
+// - All columns without a default value are included (i.e. name, age)
+// - All columns with a default, but non-zero are included (i.e. health = 75)
 func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string) error {
   if o == nil {
     return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")

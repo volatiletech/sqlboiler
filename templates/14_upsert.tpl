@@ -1,21 +1,21 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG(update bool, conflictColumns []string, updateColumns []string,  whitelist ...string) error {
-  return o.Upsert(boil.GetDB(), update, conflictColumns, updateColumns, whitelist...)
+func (o *{{$tableNameSingular}}) UpsertG(updateOnConflict bool, conflictColumns []string, updateColumns []string,  whitelist ...string) error {
+  return o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...)
 }
 
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP(update bool, conflictColumns []string, updateColumns []string,  whitelist ...string) {
-  if err := o.Upsert(boil.GetDB(), update, conflictColumns, updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertGP(updateOnConflict bool, conflictColumns []string, updateColumns []string,  whitelist ...string) {
+  if err := o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
     panic(boil.WrapErr(err))
   }
 }
 
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, update bool, conflictColumns []string, updateColumns []string,  whitelist ...string) {
-  if err := o.Upsert(exec, update, conflictColumns, updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string,  whitelist ...string) {
+  if err := o.Upsert(exec, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
     panic(boil.WrapErr(err))
   }
 }

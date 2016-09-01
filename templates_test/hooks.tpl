@@ -61,7 +61,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
     t.Errorf("Unable to randomize {{$tableNameSingular}} object: %s", err)
   }
 
-  {{$tableNameSingular}}AddHook(boil.HookBeforeInsert, {{$varNameSingular}}BeforeInsertHook)
+  Add{{$tableNameSingular}}Hook(boil.BeforeInsertHook, {{$varNameSingular}}BeforeInsertHook)
   if err = o.doBeforeInsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
   }
@@ -70,7 +70,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}BeforeInsertHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookAfterInsert, {{$varNameSingular}}AfterInsertHook)
+  Add{{$tableNameSingular}}Hook(boil.AfterInsertHook, {{$varNameSingular}}AfterInsertHook)
   if err = o.doAfterInsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
   }
@@ -79,7 +79,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}AfterInsertHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookAfterSelect, {{$varNameSingular}}AfterSelectHook)
+  Add{{$tableNameSingular}}Hook(boil.AfterSelectHook, {{$varNameSingular}}AfterSelectHook)
   if err = o.doAfterSelectHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
   }
@@ -88,7 +88,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}AfterSelectHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookBeforeUpdate, {{$varNameSingular}}BeforeUpdateHook)
+  Add{{$tableNameSingular}}Hook(boil.BeforeUpdateHook, {{$varNameSingular}}BeforeUpdateHook)
   if err = o.doBeforeUpdateHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
   }
@@ -97,7 +97,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}BeforeUpdateHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookAfterUpdate, {{$varNameSingular}}AfterUpdateHook)
+  Add{{$tableNameSingular}}Hook(boil.AfterUpdateHook, {{$varNameSingular}}AfterUpdateHook)
   if err = o.doAfterUpdateHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
   }
@@ -106,7 +106,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}AfterUpdateHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookBeforeDelete, {{$varNameSingular}}BeforeDeleteHook)
+  Add{{$tableNameSingular}}Hook(boil.BeforeDeleteHook, {{$varNameSingular}}BeforeDeleteHook)
   if err = o.doBeforeDeleteHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
   }
@@ -115,7 +115,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}BeforeDeleteHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookAfterDelete, {{$varNameSingular}}AfterDeleteHook)
+  Add{{$tableNameSingular}}Hook(boil.AfterDeleteHook, {{$varNameSingular}}AfterDeleteHook)
   if err = o.doAfterDeleteHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
   }
@@ -124,7 +124,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}AfterDeleteHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookBeforeUpsert, {{$varNameSingular}}BeforeUpsertHook)
+  Add{{$tableNameSingular}}Hook(boil.BeforeUpsertHook, {{$varNameSingular}}BeforeUpsertHook)
   if err = o.doBeforeUpsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
   }
@@ -133,7 +133,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
   }
   {{$varNameSingular}}BeforeUpsertHooks = []{{$tableNameSingular}}Hook{}
 
-  {{$tableNameSingular}}AddHook(boil.HookAfterUpsert, {{$varNameSingular}}AfterUpsertHook)
+  Add{{$tableNameSingular}}Hook(boil.AfterUpsertHook, {{$varNameSingular}}AfterUpsertHook)
   if err = o.doAfterUpsertHooks(nil); err != nil {
     t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
   }

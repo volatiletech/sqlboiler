@@ -111,25 +111,25 @@ func (o *{{$tableNameSingular}}) doAfterUpsertHooks(exec boil.Executor) (err err
   return nil
 }
 
-func {{$tableNameSingular}}AddHook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
+func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
   switch hookPoint {
-    case boil.HookBeforeInsert:
+    case boil.BeforeInsertHook:
       {{$varNameSingular}}BeforeInsertHooks = append({{$varNameSingular}}BeforeInsertHooks, {{$varNameSingular}}Hook)
-    case boil.HookBeforeUpdate:
+    case boil.BeforeUpdateHook:
       {{$varNameSingular}}BeforeUpdateHooks = append({{$varNameSingular}}BeforeUpdateHooks, {{$varNameSingular}}Hook)
-    case boil.HookBeforeDelete:
+    case boil.BeforeDeleteHook:
       {{$varNameSingular}}BeforeDeleteHooks = append({{$varNameSingular}}BeforeDeleteHooks, {{$varNameSingular}}Hook)
-    case boil.HookBeforeUpsert:
+    case boil.BeforeUpsertHook:
       {{$varNameSingular}}BeforeUpsertHooks = append({{$varNameSingular}}BeforeUpsertHooks, {{$varNameSingular}}Hook)
-    case boil.HookAfterInsert:
+    case boil.AfterInsertHook:
       {{$varNameSingular}}AfterInsertHooks = append({{$varNameSingular}}AfterInsertHooks, {{$varNameSingular}}Hook)
-    case boil.HookAfterSelect:
+    case boil.AfterSelectHook:
       {{$varNameSingular}}AfterSelectHooks = append({{$varNameSingular}}AfterSelectHooks, {{$varNameSingular}}Hook)
-    case boil.HookAfterUpdate:
+    case boil.AfterUpdateHook:
       {{$varNameSingular}}AfterUpdateHooks = append({{$varNameSingular}}AfterUpdateHooks, {{$varNameSingular}}Hook)
-    case boil.HookAfterDelete:
+    case boil.AfterDeleteHook:
       {{$varNameSingular}}AfterDeleteHooks = append({{$varNameSingular}}AfterDeleteHooks, {{$varNameSingular}}Hook)
-    case boil.HookAfterUpsert:
+    case boil.AfterUpsertHook:
       {{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
   }
 }

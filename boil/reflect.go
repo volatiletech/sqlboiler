@@ -15,6 +15,11 @@ var (
 	bindAccepts = []reflect.Kind{reflect.Ptr, reflect.Slice, reflect.Ptr, reflect.Struct}
 )
 
+var (
+	mut         sync.RWMutex
+	bindingMaps = make(map[string][]uint64)
+)
+
 const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
@@ -250,9 +255,6 @@ func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Typ
 	return structType, sliceType, singular, nil
 }
 
-var mut sync.RWMutex
-var mappingThings = map[string][]uint64{}
-
 func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool, titleCases map[string]string) error {
 	cols, err := rows.Columns()
 	if err != nil {
@@ -267,17 +269,9 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 	var mapping []uint64
 	var ok bool
 
-	buf := strmangle.GetBuffer()
-
-	buf.WriteString(structType.String())
-	for _, s := range cols {
-		buf.WriteString(s)
-	}
-	mapKey := buf.String()
-	strmangle.PutBuffer(buf)
-
+	mapKey := makeCacheKey(structType.String(), cols)
 	mut.RLock()
-	mapping, ok = mappingThings[mapKey]
+	mapping, ok = bindingMaps[mapKey]
 	mut.RUnlock()
 
 	if !ok {
@@ -287,7 +281,7 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 		}
 
 		mut.Lock()
-		mappingThings[mapKey] = mapping
+		bindingMaps[mapKey] = mapping
 		mut.Unlock()
 	}
 
@@ -443,6 +437,18 @@ func getBoilTag(field reflect.StructField, titleCases map[string]string) (name s
 		name = strmangle.TitleCase(nameFragment)
 	}
 	return name, true
+}
+
+func makeCacheKey(typ string, cols []string) string {
+	buf := strmangle.GetBuffer()
+	buf.WriteString(typ)
+	for _, s := range cols {
+		buf.WriteString(s)
+	}
+	mapKey := buf.String()
+	strmangle.PutBuffer(buf)
+
+	return mapKey
 }
 
 // GetStructValues returns the values (as interface) of the matching columns in obj

@@ -9,12 +9,28 @@ SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 It is a "database-first" ORM as opposed to "code-first" (like gorm/gorp).
 That means you must first create your database schema. Please use something
-like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate) 
+like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate)
 or some other migration tool to manage this part of the database's life-cycle.
 
 
 ## Why another ORM
-Well...
+
+Whilst using the standard SQL library is efficient (cpu/mem wise), it can be cumbersome. We found ourselves remaking the
+same SQL helpers and wrappers for every project we were creating, but did not want to deal in the existing ORM options out
+there that utilize the "code-first" approach. `SQLX` is a great project, but very minimalistic and still requires a
+considerable amount of boilerplate for every project. Originally this project started as a SQL boilerplate generator (hence the name)
+that generated simple helper functions, but we found that we could accomplish the same task by turning it into a
+(mostly) fully fledged ORM, without any sacrifice in performance or congruency, but generous gains in flexibility.
+
+The approach we've taken has afforded us the following benefits:
+
+* Thorough relationship story. No unnecessary struct tags, no unnecessary configuration.
+* High performance and memory efficiency by minimizing run-time reflection.
+* The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for any type assertions.
+* Our types closely correlate to your database column types. This is expanded by our extended null package which supports nearly all Go data types.
+* Extensive auto-completion provides work-flow efficiency gains.
+* A system that is easier to debug. Your ORM is tailored to your schema, the code paths are easy to trace and generally very lucid.
+* An API you would write for yourself (we hope), that is compatible with most-any database schema.
 
 ## About SQL Boiler
 
@@ -119,7 +135,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 * Foreign key column names should end with `_id`.
   * Foreign key column names in the format `x_id` will generate clearer method names.
   It is advisable to use this naming convention whenever it makes sense for your database schema.
-* If you never plan on using the hooks functionality you can disable generation of this 
+* If you never plan on using the hooks functionality you can disable generation of this
   feature using the `--no-hooks` flag. This will save you some binary size.
 
 ## Getting started
@@ -209,7 +225,7 @@ Flags:
 Follow the steps below to do some basic model generation. Once we've generated
 our models, we can run the compatibility tests which will exercise the entirety
 of the generated code. This way we can ensure that our database is compatible
-with sqlboiler. If you find there are some failing tests, please check the
+with SQLBoiler. If you find there are some failing tests, please check the
 [Diagnosing Problems](#diagnosing-problems) section.
 
 ```sh
@@ -360,8 +376,8 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 ### Query Building
 
 We generate "Starter" methods for you. These methods are named as the plural versions of your model,
-for example: `models.Jets()`. Starter methods are used to build queries using our 
-[Query Mod System](#query-mod-system). They take a slice of [Query Mods](#query-mod-system) 
+for example: `models.Jets()`. Starter methods are used to build queries using our
+[Query Mod System](#query-mod-system). They take a slice of [Query Mods](#query-mod-system)
 as parameters, and end with a call to a [Finisher](#finishers) method.
 
 Here are a few examples:
@@ -374,7 +390,7 @@ count, err := models.Pilots().Count()
 pilots, err := models.Pilots(qm.Limit(5)).All()
 
 // DELETE FROM "pilots" WHERE "id"=$1;
-err := models.Pilots(qm.Where("id=?", 1)).DeleteAll() 
+err := models.Pilots(qm.Where("id=?", 1)).DeleteAll()
 ```
 
 In the event that you would like to build a query and specify the table yourself, you
@@ -385,7 +401,7 @@ can do so using `models.NewQuery()`:
 err := models.NewQuery(db, From("pilots")).All()
 ```
 
-As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers) 
+As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
 allow you to execute the final action.
 
 If you plan on executing the same query with the same values using the query builder,
@@ -407,13 +423,13 @@ for i := 0; i < 10; i++ {
 // the built query that short circuits the query builder all together.
 // This allows you to save on performance.
 
-// Just something to be aware of: query mods don't store pointers, so if 
+// Just something to be aware of: query mods don't store pointers, so if
 // your passed in variable's value changes, your generated query will not change.
 ```
 
 Note: You will see exported `boil.SetX` methods in the boil package. These should not be used on query
 objects because they will break caching. Unfortunately these had to be exported due to some circular
-dependency issues, but they're not functionality we want exposed. If you want a different 
+dependency issues, but they're not functionality we want exposed. If you want a different
 query object, generate a new one.
 
 Take a look at our [Relationships Query Building](#relationships) section for some additional query
@@ -422,7 +438,7 @@ building information.
 
 ### Query Mod System
 
-The query mod system allows you to modify queries created with [Starter](#query-building) methods 
+The query mod system allows you to modify queries created with [Starter](#query-building) methods
 when performing query building. Here is a list of all of your generated query mods using examples:
 
 ```go
@@ -461,7 +477,7 @@ Offset(5)
 // Explicit locking
 For("update nowait")
 
-// Eager Loading -- Load takes the relationship name, ie the struct field name of the 
+// Eager Loading -- Load takes the relationship name, ie the struct field name of the
 // Relationship struct field you want to load.
 Load("Languages") // If it's a ToOne relationship it's in singular form, ToMany is plural.
 ```
@@ -485,7 +501,7 @@ boil.SetDB(db)
 pilot, _ := models.FindPilot(db, 1)
 
 err := pilot.Delete(db) // Regular variant, takes a db handle (boil.Executor interface).
-pilot.DeleteP(db)       // Panic variant, takes a db handle and panics on error. 
+pilot.DeleteP(db)       // Panic variant, takes a db handle and panics on error.
 err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil.SetDB()).
 pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
 ```
@@ -494,7 +510,7 @@ Note that it's slightly different for query building.
 
 ### Finishers
 
-Here are a list of all of the finishers that can be used in combination with 
+Here are a list of all of the finishers that can be used in combination with
 [Query Building](#query-building).
 
 Finishers all have `P` (panic) [method variations](#function-variations). To specify
@@ -507,7 +523,7 @@ models.Pilots(db).All()
 One() // Retrieve one row as object (same as LIMIT(1))
 All() // Retrieve all rows as objects (same as SELECT * FROM)
 Count() // Number of rows (same as COUNT(*))
-UpdateAll(models.M{"name": "John", "age": 23}) // Update all rows matching the built query. 
+UpdateAll(models.M{"name": "John", "age": 23}) // Update all rows matching the built query.
 DeleteAll() // Delete all rows matching the built query.
 Exists() // Returns a bool indicating whether the row(s) for the built query exists.
 Bind(&myObj) // Bind the results of a query to your own struct object.
@@ -532,7 +548,7 @@ but would like to build against a non-generated model.
 
 For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/vattle/sqlboiler/boil#Bind).
 
-The `Bind()` [Finisher](#finisher) allows the results of a query built with 
+The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
 to your generated struct objects, or your own custom struct objects.
 
@@ -584,19 +600,19 @@ We support the following struct tag modes for `Bind()` control:
 
 ```go
 type CoolObject struct {
-  // Don't specify a name, Bind will TitleCase the column 
+  // Don't specify a name, Bind will TitleCase the column
   // name, and try to match against this.
   Frog int
-  
-  // Specify an alternative name for the column, it will 
+
+  // Specify an alternative name for the column, it will
   // be titlecased for matching, can be whatever you like.
   Cat int  `boil:"kitten"`
 
   // Ignore this struct field, do not attempt to bind it.
   Pig int  `boil:"-"`
 
-  // Instead of binding to this as a regular struct field 
-  // (like other sql-able structs eg. time.Time) 
+  // Instead of binding to this as a regular struct field
+  // (like other sql-able structs eg. time.Time)
   // Recursively search inside the Dog struct for field names from the query.
   Dog      `boil:",bind"`
 
@@ -608,12 +624,128 @@ type CoolObject struct {
 }
 ```
 
+### Relationships
+
+Helper methods will be generated for every to one and to many relationship structure
+you have defined in your database by using foreign keys.
+
+We attach these helpers directly to your model struct, for example:
+
+```go
+jet, _ := models.FindJet(db, 1)
+
+// "to one" relationship helper method.
+// This will retrieve the pilot for the jet.
+pilot, err := jet.Pilot(db).One()
+
+// "to many" relationship helper method.
+// This will retrieve all languages for the pilot.
+languages, err := pilot.Languages(db).All()
+```
+
+If your relationship involves a join table SQLBoiler will figure it out for you transparently.
+
+It is important to note that you should use `Eager Loading` if you plan
+on loading large collections of rows, to avoid N+1 performance problems.
+
+For example, take the following:
+
+```go
+// Avoid this loop query pattern, it is slow.
+jets, _ := models.Jets(db).All()
+pilots := make([]models.Pilot, len(jets))
+for i := 0; i < len(jets); i++ {
+  pilots[i] = jets[i].Pilot(db).OneP()
+}
+
+// Instead, use Eager Loading!
+jets, _ := models.Jets(db, Load("Pilot")).All()
+```
+
+Eager loading can be combined with other query mods, and it can also eager load recursively.
+
+```go
+// Example of a nested load.
+// Each jet will have its pilot loaded, and each pilot will have its languages loaded.
+jets, _ := models.Jets(db, Load("Pilot.Languages")).All()
+// Note that each level of a nested Load call will be loaded. No need to call Load() multiple times.
+
+// A larger, random example
+users, _ := models.Users(db,
+  Load("Pets.Vets"),
+  Load("Pets.Toys"),
+  Load("Property"),
+  Where("age > ?", 23),
+).All()
+```
+
+We provide the following methods for managing relationships on objects:
+
+**To One**
+- `SetX()`: Set the foreign key to point to something else: jet.SetPilot(...)
+- `RemoveX()`: Null out the foreign key, effectively removing the relationship between these two objects: jet.RemovePilot(...)
+
+**To Many**
+- `AddX()`: Add more relationships to the existing set of related Xs: pilot.AddLanguages(...)
+- `SetX()`: Remove all existing relationships, and replace them with the provided set: pilot.SetLanguages(...)
+- `RemoveX()`: Remove all provided relationships: pilot.RemoveLanguages(...)
+
+**To One** code examples:
+
+```go
+  jet, _ := models.FindJet(db, 1)
+  pilot, _ := models.FindPilot(db, 1)
+
+  // Set the pilot to an existing pilot
+  err := jet.SetPilot(db, false, &pilot)
+
+  pilot = models.Pilot{
+    Name: "Erlich",
+  }
+
+  // Insert the pilot into the database and assign it to a jet
+  err := jet.SetPilot(db, true, &pilot)
+
+  // Remove a relationship. This method only exists for foreign keys that can be NULL.
+  err := jet.RemovePilot(db, &pilot)
+```
+
+**To Many** code examples:
+
+```go
+  pilots, _ := models.Pilots(db).All()
+  languages, _ := models.Languages(db).All()
+
+  // Set a group of language relationships
+  err := pilots.SetLanguages(db, false, &languages)
+
+  languages := []*models.Language{
+    {Language: "Strayan"},
+    {Language: "Yupik"},
+    {Language: "Pawnee"},
+  }
+
+  // Insert new a group of languages and assign them to a pilot
+  err := pilots.SetLanguages(db, true, languages...)
+
+  // Add another language relationship to the existing set of relationships
+  err := pilots.AddLanguages(db, false, &someOtherLanguage)
+
+  anotherLanguage := models.Language{Language: "Archi"}
+
+  // Insert and then add another language relationship
+  err := pilots.AddLanguages(db, true, &anotherLanguage)
+
+  // Remove a group of relationships
+  err := pilots.RemoveLanguages(db, languages...)
+```
+
 ### Hooks
 
-Before and After hooks are available for most operations. If you don't need them you can 
+Before and After hooks are available for most operations. If you don't need them you can
 shrink the size of the generated code by disabling them with the `--no-hooks` flag.
 
-Every generated package that includes hooks has the following `HookPoints` defined: 
+Every generated package that includes hooks has the following `HookPoints` defined:
 
 ```go
 const (
@@ -646,9 +778,9 @@ Your `ModelHook` will always be defined as `func(boil.Executor, *Model)`
 
 ### Transactions
 
-The boil.Executor interface powers all of SQLBoiler. This means anything that conforms 
-to the three `Exec/Query/QueryRow` methods can be used. `sql.DB`, `sql.Tx` as well as other 
-libraries (`sqlx`) conform to this interface, and therefore any of these things may be 
+The boil.Executor interface powers all of SQLBoiler. This means anything that conforms
+to the three `Exec/Query/QueryRow` methods can be used. `sql.DB`, `sql.Tx` as well as other
+libraries (`sqlx`) conform to this interface, and therefore any of these things may be
 used as an executor for any query in the system. This makes using transactions very simple:
 
 
@@ -707,7 +839,7 @@ jet, err := models.JetFind(db, 1, "name", "color")
 
 ### Insert
 
-The main thing to be aware of with `Insert` is how the `whitelist` operates. If no whitelist 
+The main thing to be aware of with `Insert` is how the `whitelist` operates. If no whitelist
 argument is provided, `Insert` will abide by the following rules:
 
 - Insert all columns **without** a database default value.
@@ -715,7 +847,7 @@ argument is provided, `Insert` will abide by the following rules:
 
 On the other hand, if a whitelist is provided, we will only insert the columns specified in the whitelist.
 
-Also note that your object will automatically be updated with any missing default values from the 
+Also note that your object will automatically be updated with any missing default values from the
 database after the `Insert` is finished executing. This includes auto-incrementing column values.
 
 ```go
@@ -802,11 +934,11 @@ var p1 models.Pilot
 p1.ID = 5
 p1.Name = "Gaben"
 
-// INSERT INTO pilots ("id", "name") VALUES($1, $2) 
+// INSERT INTO pilots ("id", "name") VALUES($1, $2)
 // ON CONFLICT DO NOTHING
 err := p1.Upsert(db, false, nil, nil)
 
-// INSERT INTO pilots ("id", "name") VALUES ($1, $2) 
+// INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
 err := p1.Upsert(db, true, []string{"id"}, []string{"name"})
 
@@ -814,7 +946,7 @@ err := p1.Upsert(db, true, []string{"id"}, []string{"name"})
 p1.ID = 0
 p1.Name = "Hogan"
 
-// INSERT INTO pilots ("id", "name") VALUES ($1, $2) 
+// INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
 err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
 ```
@@ -833,7 +965,7 @@ pilot, _ := models.FindPilot(db, 1)
 // > Object becomes out of sync for some reason
 
 // Refresh the object with the latest data from the db
-err := pilot.Reload(db) 
+err := pilot.Reload(db)
 
 // Reload all objects in a slice
 pilots, _ := models.Pilots(db).All()
@@ -852,123 +984,7 @@ jet, err := models.FindJet(db, 1)
 exists := jet.Pilot(db).Exists()
 
 // Check if the pilot with ID 5 exists
-exists := models.Pilots(db, Where("id=?", 5)).Exists() 
-```
-
-### Relationships
-
-Helper methods will be generated for every to one and to many relationship structure 
-you have defined in your database by using foreign keys.
-
-We attach these helpers directly to your model struct, for example:
-
-```go
-jet, _ := models.FindJet(db, 1)
-
-// "to one" relationship helper method.
-// This will retrieve the pilot for the jet.
-pilot, err := jet.Pilot(db).One()
-
-// "to many" relationship helper method.
-// This will retrieve all languages for the pilot.
-languages, err := pilot.Languages(db).All()
-```
-
-If your relationship involves a join table SQLBoiler will figure it out for you transparently.
-
-It is important to note that you should use `Eager Loading` if you plan
-on loading large collections of rows, to avoid N+1 performance problems.
-
-For example, take the following:
-
-```go
-// Avoid this loop query pattern, it is slow.
-jets, _ := models.Jets(db).All()
-pilots := make([]models.Pilot, len(jets))
-for i := 0; i < len(jets); i++ {
-  pilots[i] = jets[i].Pilot(db).OneP()
-}
-
-// Instead, use Eager Loading!
-jets, _ := models.Jets(db, Load("Pilot")).All() 
-```
-
-Eager loading can be combined with other query mods, and it can also eager load recursively.
-
-```go
-// Example of a nested load.
-// Each jet will have its pilot loaded, and each pilot will have its languages loaded.
-jets, _ := models.Jets(db, Load("Pilot.Languages")).All()
-// Note that each level of a nested Load call will be loaded. No need to call Load() multiple times.
-
-// A larger, random example
-users, _ := models.Users(db, 
-  Load("Pets.Vets"), 
-  Load("Pets.Toys"), 
-  Load("Property"), 
-  Where("age > ?", 23),
-).All()
-```
-
-We provide the following methods for managing relationships on objects:
-
-**To One**
-- `SetX()`: Set the foreign key to point to something else: jet.SetPilot(...)
-- `RemoveX()`: Null out the foreign key, effectively removing the relationship between these two objects: jet.RemovePilot(...)
-
-**To Many**
-- `AddX()`: Add more relationships to the existing set of related Xs: pilot.AddLanguages(...)
-- `SetX()`: Remove all existing relationships, and replace them with the provided set: pilot.SetLanguages(...)
-- `RemoveX()`: Remove all provided relationships: pilot.RemoveLanguages(...)
-
-**To One** code examples:
-
-```go
-  jet, _ := models.FindJet(db, 1)
-  pilot, _ := models.FindPilot(db, 1)
-  
-  // Set the pilot to an existing pilot
-  err := jet.SetPilot(db, false, &pilot)
-
-  pilot = models.Pilot{
-    Name: "Erlich",
-  }
-
-  // Insert the pilot into the database and assign it to a jet
-  err := jet.SetPilot(db, true, &pilot)
-
-  // Remove a relationship. This method only exists for foreign keys that can be NULL.
-  err := jet.RemovePilot(db, &pilot)
-```
-
-**To Many** code examples:
-
-```go
-  pilots, _ := models.Pilots(db).All()
-  languages, _ := models.Languages(db).All()
-
-  // Set a group of language relationships
-  err := pilots.SetLanguages(db, false, &languages)
-
-  languages := []*models.Language{
-    {Language: "Strayan"},
-    {Language: "Yupik"},
-    {Language: "Pawnee"},
-  }
-
-  // Insert new a group of languages and assign them to a pilot
-  err := pilots.SetLanguages(db, true, languages...)
-
-  // Add another language relationship to the existing set of relationships
-  err := pilots.AddLanguages(db, false, &someOtherLanguage)
-  
-  anotherLanguage := models.Language{Language: "Archi"}
-  
-  // Insert and then add another language relationship
-  err := pilots.AddLanguages(db, true, &anotherLanguage)
-
-
-
+exists := models.Pilots(db, Where("id=?", 5)).Exists()
 ```
 
 ## Benchmarks

@@ -54,7 +54,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
     copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
   }
 
-  query := generateUpsertQuery("{{.Table.Name}}", updateOnConflict, ret, update, conflict, whitelist)
+  query := boil.BuildUpsertQuery("{{.Table.Name}}", updateOnConflict, ret, update, conflict, whitelist)
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, query)

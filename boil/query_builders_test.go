@@ -89,6 +89,10 @@ func TestBuildQuery(t *testing.T) {
 			},
 			limit: 5,
 		}, []interface{}{2, 3, 1, 4, 5, 6, 7, 8, 9, 10}},
+		{&Query{from: []string{"cats"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 	}
 
 	for i, test := range tests {

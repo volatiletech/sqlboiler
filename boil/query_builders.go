@@ -260,22 +260,23 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 }
 
 func writeStars(q *Query) []string {
-	cols := make([]string, 0, len(q.from))
-	for _, f := range q.from {
+	cols := make([]string, len(q.from))
+	for i, f := range q.from {
 		toks := strings.Split(f, " ")
 		if len(toks) == 1 {
-			cols = append(cols, fmt.Sprintf(`%s.*`, strmangle.IdentQuote(toks[0])))
+			cols[i] = fmt.Sprintf(`%s.*`, strmangle.IdentQuote(toks[0]))
 			continue
 		}
 
 		alias, name, ok := parseFromClause(toks)
 		if !ok {
+			return nil
 		}
 
 		if len(alias) != 0 {
 			name = alias
 		}
-		cols = append(cols, fmt.Sprintf(`%s.*`, strmangle.IdentQuote(name)))
+		cols[i] = fmt.Sprintf(`%s.*`, strmangle.IdentQuote(name))
 	}
 
 	return cols

@@ -6,12 +6,13 @@
   {{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table . -}}
   {{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
 {{- else -}}
+  {{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
   {{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
   {{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (r *{{$txt.LocalTable.NameGo}}R) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+func (r *{{$varNameSingular}}R) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
   var slice []*{{$txt.LocalTable.NameGo}}
   var object *{{$txt.LocalTable.NameGo}}
 
@@ -94,7 +95,7 @@ func (r *{{$txt.LocalTable.NameGo}}R) Load{{$txt.Function.Name}}(e boil.Executor
   {{- end}}
   if singular {
     if object.R == nil {
-      object.R = &{{$txt.LocalTable.NameGo}}R{}
+      object.R = &{{$varNameSingular}}R{}
     }
     object.R.{{$txt.Function.Name}} = resultSlice
     return nil
@@ -106,7 +107,7 @@ func (r *{{$txt.LocalTable.NameGo}}R) Load{{$txt.Function.Name}}(e boil.Executor
     for _, local := range slice {
       if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
         if local.R == nil {
-          local.R = &{{$txt.LocalTable.NameGo}}R{}
+          local.R = &{{$varNameSingular}}R{}
         }
         local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
         break
@@ -118,7 +119,7 @@ func (r *{{$txt.LocalTable.NameGo}}R) Load{{$txt.Function.Name}}(e boil.Executor
     for _, local := range slice {
       if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
         if local.R == nil {
-          local.R = &{{$txt.LocalTable.NameGo}}R{}
+          local.R = &{{$varNameSingular}}R{}
         }
         local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
         break

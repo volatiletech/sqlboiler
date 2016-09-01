@@ -4,6 +4,7 @@
 
 {{- $tableNameSingular := .Table.Name | singular -}}
 {{- $modelName := $tableNameSingular | titleCase -}}
+{{- $modelNameCamel := $tableNameSingular | camelCase -}}
 // {{$modelName}} is an object representing the database table.
 type {{$modelName}} struct {
   {{range $column := .Table.Columns -}}
@@ -11,15 +12,15 @@ type {{$modelName}} struct {
   {{end -}}
   {{- if .Table.IsJoinTable -}}
   {{- else}}
-  R *{{$modelName}}R `boil:"-" json:"-" toml:"-" yaml:"-"`
+  R *{{$modelNameCamel}}R `boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 
 {{- $dot := . -}}
 {{- if .Table.IsJoinTable -}}
 {{- else}}
-// {{$modelName}}R is where relationships are stored.
-type {{$modelName}}R struct {
+// {{$modelNameCamel}}R is where relationships are stored.
+type {{$modelNameCamel}}R struct {
   {{range .Table.FKeys -}}
     {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
     {{- template "relationship_to_one_struct_helper" $rel}}

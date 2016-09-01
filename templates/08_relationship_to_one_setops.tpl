@@ -1,5 +1,6 @@
 {{- define "relationship_to_one_setops_helper" -}}
-{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
+{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
+{{- $localNameSingular := .ForeignKey.Table | singular | camelCase -}}
 
 // Set{{.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to related.
@@ -20,7 +21,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
   }
 
   if {{.Function.Receiver}}.R == nil {
-    {{.Function.Receiver}}.R = &{{.LocalTable.NameGo}}R{
+    {{.Function.Receiver}}.R = &{{$localNameSingular}}R{
       {{.Function.Name}}: related,
     }
   } else {
@@ -29,7 +30,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
 
   {{if (or .ForeignKey.Unique .Function.OneToOne) -}}
   if related.R == nil {
-    related.R = &{{.ForeignTable.NameGo}}R{
+    related.R = &{{$varNameSingular}}R{
       {{.Function.ForeignName}}: {{.Function.Receiver}},
     }
   } else {
@@ -37,7 +38,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
   }
   {{else -}}
   if related.R == nil {
-    related.R = &{{.ForeignTable.NameGo}}R{
+    related.R = &{{$varNameSingular}}R{
       {{.Function.ForeignName}}: {{.LocalTable.NameGo}}Slice{{"{"}}{{.Function.Receiver}}{{"}"}},
     }
   } else {

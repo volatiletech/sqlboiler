@@ -8,6 +8,8 @@
 {{- template "relationship_to_one_setops_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
     {{- else -}}
     {{- $rel := textsFromRelationship $dot.Tables $table .}}
+    {{- $localNameSingular := .Table | singular | camelCase -}}
+    {{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
@@ -51,7 +53,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
   {{end -}}
 
   if {{$rel.Function.Receiver}}.R == nil {
-    {{$rel.Function.Receiver}}.R = &{{$rel.LocalTable.NameGo}}R{
+    {{$rel.Function.Receiver}}.R = &{{$localNameSingular}}R{
       {{$rel.Function.Name}}: related,
     }
   } else {
@@ -61,7 +63,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
   {{if .ToJoinTable -}}
   for _, rel := range related {
     if rel.R == nil {
-      rel.R = &{{$rel.ForeignTable.NameGo}}R{
+      rel.R = &{{$foreignNameSingular}}R{
         {{$rel.Function.ForeignName}}: {{$rel.LocalTable.NameGo}}Slice{{"{"}}{{$rel.Function.Receiver}}{{"}"}},
       }
     } else {
@@ -71,7 +73,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
   {{else -}}
   for _, rel := range related {
     if rel.R == nil {
-      rel.R = &{{$rel.ForeignTable.NameGo}}R{
+      rel.R = &{{$foreignNameSingular}}R{
         {{$rel.Function.ForeignName}}: {{$rel.Function.Receiver}},
       }
     } else {

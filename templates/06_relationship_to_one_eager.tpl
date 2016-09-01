@@ -1,11 +1,12 @@
 {{- define "relationship_to_one_eager_helper" -}}
+  {{- $varNameSingular := .Dot.Table.Name | singular | camelCase -}}
   {{- $noHooks := .Dot.NoHooks -}}
   {{- with .Rel -}}
   {{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (r *{{.LocalTable.NameGo}}R) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+func (r *{{$varNameSingular}}R) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
   var slice []*{{.LocalTable.NameGo}}
   var object *{{.LocalTable.NameGo}}
 
@@ -58,7 +59,7 @@ func (r *{{.LocalTable.NameGo}}R) Load{{.Function.Name}}(e boil.Executor, singul
 
   if singular && len(resultSlice) != 0 {
     if object.R == nil {
-      object.R = &{{.LocalTable.NameGo}}R{}
+      object.R = &{{$varNameSingular}}R{}
     }
     object.R.{{.Function.Name}} = resultSlice[0]
     return nil
@@ -68,7 +69,7 @@ func (r *{{.LocalTable.NameGo}}R) Load{{.Function.Name}}(e boil.Executor, singul
     for _, local := range slice {
       if local.{{.Function.LocalAssignment}} == foreign.{{.Function.ForeignAssignment}} {
         if local.R == nil {
-          local.R = &{{.LocalTable.NameGo}}R{}
+          local.R = &{{$varNameSingular}}R{}
         }
         local.R.{{.Function.Name}} = foreign
         break

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -19,6 +18,7 @@ var (
 const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
+	sentinel               = uint64(255)
 )
 
 // BindP executes the query and inserts the
@@ -329,17 +329,7 @@ func bindMapping(typ reflect.Type, titleCases map[string]string, cols []string) 
 
 ColLoop:
 	for i, c := range cols {
-		names := strings.Split(c, ".")
-		for j, n := range names {
-			t, ok := titleCases[n]
-			if ok {
-				names[j] = t
-				continue
-			}
-			names[j] = strmangle.TitleCase(n)
-		}
-		name := strings.Join(names, ".")
-
+		name := strmangle.TitleCaseIdentifier(c, titleCases)
 		ptrMap, ok := mapping[name]
 		if ok {
 			ptrs[i] = ptrMap
@@ -369,8 +359,6 @@ func ptrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	}
 	return ptrs
 }
-
-var sentinel = uint64(255)
 
 // ptrFromMapping expects to be passed an addressable struct that it's looking
 // for things on.
@@ -427,80 +415,6 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 
 		fieldMaps[tag] = current | (sentinel << (depth + 8)) | (uint64(i) << depth)
 	}
-}
-
-func bin64(i uint64) string {
-	str := strconv.FormatUint(i, 2)
-	pad := 64 - len(str)
-	if pad > 0 {
-		str = strings.Repeat("0", pad) + str
-	}
-
-	var newStr string
-	for i := 0; i < len(str); i += 8 {
-		if i != 0 {
-			newStr += " "
-		}
-		newStr += str[i : i+8]
-	}
-
-	return newStr
-}
-
-func findField(names []string, titleCases map[string]string, v reflect.Value) (interface{}, bool) {
-	if !v.IsValid() || len(names) == 0 {
-		return nil, false
-	}
-
-	if v.Kind() == reflect.Ptr {
-		if v.IsNil() {
-			return nil, false
-		}
-		v = reflect.Indirect(v)
-	}
-
-	if v.Kind() != reflect.Struct {
-		return nil, false
-	}
-
-	var name string
-	var ok bool
-	name, ok = titleCases[names[0]]
-	if !ok {
-		name = strmangle.TitleCase(names[0])
-	}
-	typ := v.Type()
-
-	n := typ.NumField()
-	for i := 0; i < n; i++ {
-		f := typ.Field(i)
-		fieldName, recurse := getBoilTag(f, titleCases)
-
-		if fieldName == "-" {
-			continue
-		}
-
-		if recurse {
-			if fieldName == name {
-				names = names[1:]
-			}
-			if ptr, ok := findField(names, titleCases, v.Field(i)); ok {
-				return ptr, ok
-			}
-		}
-
-		if fieldName != name || len(names) > 1 {
-			continue
-		}
-
-		fieldVal := v.Field(i)
-		if fieldVal.Kind() != reflect.Ptr {
-			return fieldVal.Addr().Interface(), true
-		}
-		return fieldVal.Interface(), true
-	}
-
-	return nil, false
 }
 
 func getBoilTag(field reflect.StructField, titleCases map[string]string) (name string, recurse bool) {

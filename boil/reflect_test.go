@@ -3,12 +3,32 @@ package boil
 import (
 	"database/sql/driver"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"gopkg.in/nullbio/null.v4"
 )
+
+func bin64(i uint64) string {
+	str := strconv.FormatUint(i, 2)
+	pad := 64 - len(str)
+	if pad > 0 {
+		str = strings.Repeat("0", pad) + str
+	}
+
+	var newStr string
+	for i := 0; i < len(str); i += 8 {
+		if i != 0 {
+			newStr += " "
+		}
+		newStr += str[i : i+8]
+	}
+
+	return newStr
+}
 
 type mockRowMaker struct {
 	int

@@ -262,6 +262,54 @@ func CamelCase(name string) string {
 	return buf.String()
 }
 
+// TitleCaseIdentifier splits on dots and then titlecases each fragment.
+// map titleCase (split c ".")
+func TitleCaseIdentifier(id string, titleCases map[string]string) string {
+	nextDot := strings.IndexByte(id, '.')
+	if nextDot < 0 {
+		titled, ok := titleCases[id]
+		if !ok {
+			titled = TitleCase(id)
+		}
+		return titled
+	}
+
+	buf := GetBuffer()
+	lastDot := 0
+	ln := len(id)
+	addDots := false
+
+	for i := 0; nextDot >= 0; i++ {
+		fmt.Println(lastDot, nextDot)
+		fragment := id[lastDot:nextDot]
+
+		titled, ok := titleCases[fragment]
+		if !ok {
+			titled = TitleCase(fragment)
+		}
+
+		if addDots {
+			buf.WriteByte('.')
+		}
+		buf.WriteString(titled)
+		addDots = true
+
+		if nextDot == ln {
+			break
+		}
+
+		lastDot = nextDot + 1
+		if nextDot = strings.IndexByte(id[lastDot:], '.'); nextDot >= 0 {
+			nextDot += lastDot
+		} else {
+			nextDot = ln
+		}
+	}
+
+	PutBuffer(buf)
+	return buf.String()
+}
+
 // MakeStringMap converts a map[string]string into the format:
 // "key": "value", "key": "value"
 func MakeStringMap(types map[string]string) string {

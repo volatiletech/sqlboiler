@@ -56,7 +56,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
 // Remove{{.Function.Name}} relationship.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to nil.
 // Removes {{.Function.Receiver}} from all passed in related items' relationships struct (Optional).
-func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(exec boil.Executor, related ...*{{.ForeignTable.NameGo}}) error {
+func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(exec boil.Executor, related *{{.ForeignTable.NameGo}}) error {
   var err error
 
   {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = false
@@ -65,31 +65,28 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
     return errors.Wrap(err, "failed to update local table")
   }
 
-  for _, rel := range related {
-    if rel.R == nil {
+  {{.Function.Receiver}}.R.{{.Function.Name}} = nil
+  if related == nil || related.R == nil {
+    return nil
+  }
+
+  {{if .ForeignKey.Unique -}}
+  related.R.{{.Function.ForeignName}} = nil
+  {{else -}}
+  for i, ri := range related.R.{{.Function.ForeignName}} {
+    if {{.Function.Receiver}}.{{.Function.LocalAssignment}} != ri.{{.Function.LocalAssignment}} {
       continue
     }
 
-    {{if .ForeignKey.Unique -}}
-    rel.R.{{.Function.ForeignName}} = nil
-    {{else -}}
-    for i, ri := range rel.R.{{.Function.ForeignName}} {
-      if {{.Function.Receiver}}.{{.Function.LocalAssignment}} != ri.{{.Function.LocalAssignment}} {
-        continue
-      }
-
-      ln := len(rel.R.{{.Function.ForeignName}})
-      if ln > 1 && i < ln-1 {
-        rel.R.{{.Function.ForeignName}}[i], rel.R.{{.Function.ForeignName}}[ln-1] =
-          rel.R.{{.Function.ForeignName}}[ln-1], rel.R.{{.Function.ForeignName}}[i]
-      }
-      rel.R.{{.Function.ForeignName}} = rel.R.{{.Function.ForeignName}}[:ln-1]
-      break
+    ln := len(related.R.{{.Function.ForeignName}})
+    if ln > 1 && i < ln-1 {
+      related.R.{{.Function.ForeignName}}[i] = related.R.{{.Function.ForeignName}}[ln-1]
     }
-    {{end -}}
+    related.R.{{.Function.ForeignName}} = related.R.{{.Function.ForeignName}}[:ln-1]
+    break
   }
+  {{end -}}
 
-  {{.Function.Receiver}}.R.{{.Function.Name}} = nil
   return nil
 }
 {{end -}}

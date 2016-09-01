@@ -18,7 +18,7 @@ func test{{$tableNamePlural}}Find(t *testing.T) {
     t.Error(err)
   }
 
-  {{$varNameSingular}}Found, err := {{$tableNameSingular}}Find(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", "}})
+  {{$varNameSingular}}Found, err := Find{{$tableNameSingular}}(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", "}})
   if err != nil {
     t.Error(err)
   }

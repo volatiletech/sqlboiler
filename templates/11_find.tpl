@@ -5,13 +5,13 @@
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 // {{$tableNameSingular}}FindG retrieves a single record by ID.
-func {{$tableNameSingular}}FindG({{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-  return {{$tableNameSingular}}Find(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
+func Find{{$tableNameSingular}}G({{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
+  return Find{{$tableNameSingular}}(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
 }
 
 // {{$tableNameSingular}}FindGP retrieves a single record by ID, and panics on error.
-func {{$tableNameSingular}}FindGP({{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-  retobj, err := {{$tableNameSingular}}Find(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
+func Find{{$tableNameSingular}}GP({{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
+  retobj, err := Find{{$tableNameSingular}}(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }
@@ -21,7 +21,7 @@ func {{$tableNameSingular}}FindGP({{$pkArgs}}, selectCols ...string) *{{$tableNa
 
 // {{$tableNameSingular}}Find retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
+func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
   {{$varNameSingular}}Obj := &{{$tableNameSingular}}{}
 
   sel := "*"
@@ -46,8 +46,8 @@ func {{$tableNameSingular}}Find(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 }
 
 // {{$tableNameSingular}}FindP retrieves a single record by ID with an executor, and panics on error.
-func {{$tableNameSingular}}FindP(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-  retobj, err := {{$tableNameSingular}}Find(exec, {{$pkNames | join ", "}}, selectCols...)
+func Find{{$tableNameSingular}}P(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
+  retobj, err := Find{{$tableNameSingular}}(exec, {{$pkNames | join ", "}}, selectCols...)
   if err != nil {
     panic(boil.WrapErr(err))
   }

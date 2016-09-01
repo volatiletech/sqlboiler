@@ -27,7 +27,7 @@ func (o *{{$tableNameSingular}}) ReloadG() error {
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
-  ret, err := {{$tableNameSingular}}Find(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  ret, err := Find{{$tableNameSingular}}(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
   if err != nil {
     return err
   }

@@ -9,6 +9,7 @@ import (
 	"math"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 var (
@@ -150,6 +151,13 @@ func Singular(name string) string {
 	return buf.String()
 }
 
+// titleCaseCache holds the mapping of title cases.
+// Example: map["MyWord"] == "my_word"
+var (
+	mut            sync.RWMutex
+	titleCaseCache = map[string]string{}
+)
+
 // TitleCase changes a snake-case variable name
 // into a go styled object variable name of "ColumnName".
 // titleCase also fully uppercases "ID" components of names, for example
@@ -158,6 +166,14 @@ func Singular(name string) string {
 // Note: This method is ugly because it has been highly optimized,
 // we found that it was a fairly large bottleneck when we were using regexp.
 func TitleCase(n string) string {
+	// Attempt to fetch from cache
+	mut.RLock()
+	val, ok := titleCaseCache[n]
+	mut.RUnlock()
+	if ok {
+		return val
+	}
+
 	ln := len(n)
 	name := []byte(n)
 	buf := GetBuffer()
@@ -219,6 +235,12 @@ func TitleCase(n string) string {
 
 	ret := buf.String()
 	PutBuffer(buf)
+
+	// Cache the title case result
+	mut.Lock()
+	titleCaseCache[n] = ret
+	mut.Unlock()
+
 	return ret
 }
 
@@ -264,14 +286,10 @@ func CamelCase(name string) string {
 
 // TitleCaseIdentifier splits on dots and then titlecases each fragment.
 // map titleCase (split c ".")
-func TitleCaseIdentifier(id string, titleCases map[string]string) string {
+func TitleCaseIdentifier(id string) string {
 	nextDot := strings.IndexByte(id, '.')
 	if nextDot < 0 {
-		titled, ok := titleCases[id]
-		if !ok {
-			titled = TitleCase(id)
-		}
-		return titled
+		return TitleCase(id)
 	}
 
 	buf := GetBuffer()
@@ -283,10 +301,7 @@ func TitleCaseIdentifier(id string, titleCases map[string]string) string {
 		fmt.Println(lastDot, nextDot)
 		fragment := id[lastDot:nextDot]
 
-		titled, ok := titleCases[fragment]
-		if !ok {
-			titled = TitleCase(fragment)
-		}
+		titled := TitleCase(fragment)
 
 		if addDots {
 			buf.WriteByte('.')

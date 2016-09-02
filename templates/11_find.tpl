@@ -34,7 +34,7 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
   q := boil.SQL(exec, query, {{$pkNames | join ", "}})
 
-  err := q.BindFast({{$varNameSingular}}Obj, {{$varNameSingular}}TitleCases)
+  err := q.Bind({{$varNameSingular}}Obj)
   if err != nil {
     if errors.Cause(err) == sql.ErrNoRows {
       return nil, sql.ErrNoRows

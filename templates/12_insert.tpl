@@ -53,10 +53,10 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   {{if .UseLastInsertID}}
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, ins)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, wl...))
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
   }
 
-  result, err := exec.Exec(ins, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, wl...)...)
+  result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
@@ -77,21 +77,21 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
 
   sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}AutoIncPrimaryKeys))
-  err = exec.QueryRow(sel, lastID).Scan(boil.GetStructPointers(o, {{$varNameSingular}}TitleCases, returnColumns...))
+  err = exec.QueryRow(sel, lastID).Scan(boil.GetStructPointers(o, returnColumns...))
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
   }
   {{else}}
   if len(returnColumns) != 0 {
     ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
-    err = exec.QueryRow(ins, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, wl...)...).Scan(boil.GetStructPointers(o, {{$varNameSingular}}TitleCases, returnColumns...)...)
+    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
   } else {
-    _, err = exec.Exec(ins, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, wl...)...)
+    _, err = exec.Exec(ins, boil.GetStructValues(o, wl...)...)
   }
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, ins)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, wl...))
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
   }
 
   if err != nil {

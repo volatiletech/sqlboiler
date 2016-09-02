@@ -74,7 +74,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 
   q := boil.SQL(exec, sql, args...)
 
-  err := q.BindFast(&{{$varNamePlural}}, {{$varNameSingular}}TitleCases)
+  err := q.Bind(&{{$varNamePlural}})
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice")
   }

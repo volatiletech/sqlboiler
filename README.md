@@ -20,7 +20,7 @@ same SQL helpers and wrappers for every project we were creating, but did not wa
 there that utilize the "code-first" approach. `SQLX` is a great project, but very minimalistic and still requires a
 considerable amount of boilerplate for every project. Originally this project started as a SQL boilerplate generator (hence the name)
 that generated simple helper functions, but we found that we could accomplish the same task by turning it into a
-(mostly) fully fledged ORM, without any sacrifice in performance or congruency, but generous gains in flexibility.
+(mostly) fully fledged ORM generator, without any sacrifice in performance or congruency, but generous gains in flexibility.
 
 The approach we've taken has afforded us the following benefits:
 

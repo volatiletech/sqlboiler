@@ -58,16 +58,16 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, query)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, whitelist...))
+    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, whitelist...))
   }
 
   {{- if .UseLastInsertID}}
   return errors.New("don't know how to do this yet")
   {{- else}}
   if len(ret) != 0 {
-    err = exec.QueryRow(query, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, whitelist...)...).Scan(boil.GetStructPointers(o, {{$varNameSingular}}TitleCases, ret...)...)
+    err = exec.QueryRow(query, boil.GetStructValues(o, whitelist...)...).Scan(boil.GetStructPointers(o, ret...)...)
   } else {
-    _, err = exec.Exec(query, boil.GetStructValues(o, {{$varNameSingular}}TitleCases, whitelist...)...)
+    _, err = exec.Exec(query, boil.GetStructValues(o, whitelist...)...)
   }
   {{- end}}
 

@@ -16,7 +16,7 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 
   boil.SetLimit(q.Query, 1)
 
-  err := q.BindFast(o, {{$varNameSingular}}TitleCases)
+  err := q.Bind(o)
   if err != nil {
     if errors.Cause(err) == sql.ErrNoRows {
       return nil, sql.ErrNoRows
@@ -47,7 +47,7 @@ func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
 func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
   var o {{$tableNameSingular}}Slice
 
-  err := q.BindFast(&o, {{$varNameSingular}}TitleCases)
+  err := q.Bind(&o)
   if err != nil {
     return nil, errors.Wrap(err, "{{.PkgName}}: failed to assign all query results to {{$tableNameSingular}} slice")
   }

@@ -115,7 +115,7 @@ func TestMakeStructMapping(t *testing.T) {
 		} `boil:",bind"`
 	}{}
 
-	got := makeStructMapping(reflect.TypeOf(testStruct), nil)
+	got := makeStructMapping(reflect.TypeOf(testStruct))
 
 	expectMap := map[string]uint64{
 		"Different":           testMakeMapping(0),
@@ -189,16 +189,6 @@ func TestGetBoilTag(t *testing.T) {
 		Nose        string
 	}
 
-	var testTitleCases = map[string]string{
-		"test_one":     "TestOne",
-		"test_two":     "TestTwo",
-		"middle_name":  "MiddleName",
-		"awesome_name": "AwesomeName",
-		"age":          "Age",
-		"face":         "Face",
-		"nose":         "Nose",
-	}
-
 	var structFields []reflect.StructField
 	typ := reflect.TypeOf(TestStruct{})
 	removeOk := func(thing reflect.StructField, ok bool) reflect.StructField {
@@ -228,7 +218,7 @@ func TestGetBoilTag(t *testing.T) {
 		{"Nose", false},
 	}
 	for i, s := range structFields {
-		name, recurse := getBoilTag(s, testTitleCases)
+		name, recurse := getBoilTag(s)
 		if expect[i].Name != name {
 			t.Errorf("Invalid name, expect %q, got %q", expect[i].Name, name)
 		}
@@ -665,7 +655,7 @@ func TestGetStructValues(t *testing.T) {
 		NullBool:   null.NewBool(true, false),
 	}
 
-	vals := GetStructValues(&o, nil, "title_thing", "name", "id", "stuff", "things", "time", "null_bool")
+	vals := GetStructValues(&o, "title_thing", "name", "id", "stuff", "things", "time", "null_bool")
 	if vals[0].(string) != "patrick" {
 		t.Errorf("Want test, got %s", vals[0])
 	}
@@ -704,7 +694,7 @@ func TestGetSliceValues(t *testing.T) {
 	in[0] = o[0]
 	in[1] = o[1]
 
-	vals := GetSliceValues(in, nil, "id", "name")
+	vals := GetSliceValues(in, "id", "name")
 	if got := vals[0].(int); got != 5 {
 		t.Error(got)
 	}
@@ -729,7 +719,7 @@ func TestGetStructPointers(t *testing.T) {
 		Title: "patrick",
 	}
 
-	ptrs := GetStructPointers(&o, nil, "title", "id")
+	ptrs := GetStructPointers(&o, "title", "id")
 	*ptrs[0].(*string) = "test"
 	if o.Title != "test" {
 		t.Errorf("Expected test, got %s", o.Title)

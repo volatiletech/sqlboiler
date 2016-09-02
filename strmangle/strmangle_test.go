@@ -242,7 +242,7 @@ func TestTitleCaseIdentifier(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		if out := TitleCaseIdentifier(test.In, nil); out != test.Out {
+		if out := TitleCaseIdentifier(test.In); out != test.Out {
 			t.Errorf("[%d] (%s) Out was wrong: %q, want: %q", i, test.In, out, test.Out)
 		}
 	}

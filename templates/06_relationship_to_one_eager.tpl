@@ -43,7 +43,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
   defer results.Close()
 
   var resultSlice []*{{.ForeignTable.NameGo}}
-  if err = boil.BindFast(results, &resultSlice, {{.ForeignTable.Name | singular | camelCase}}TitleCases); err != nil {
+  if err = boil.Bind(results, &resultSlice); err != nil {
     return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable.NameGo}}")
   }
 

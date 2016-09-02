@@ -65,6 +65,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("basedir", "b", "", "The base directory has the templates and templates_test folders")
 	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
+	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 
@@ -106,6 +107,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		DriverName:       driverName,
 		OutFolder:        viper.GetString("output"),
 		PkgName:          viper.GetString("pkgname"),
+		NoTests:          viper.GetBool("no-tests"),
 		NoHooks:          viper.GetBool("no-hooks"),
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 	}

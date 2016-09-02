@@ -91,7 +91,7 @@ func (s *State) Run(includeTests bool) error {
 		return errors.Wrap(err, "singleton template output")
 	}
 
-	if includeTests {
+	if !s.Config.NoTests && includeTests {
 		if err := generateTestMainOutput(s, singletonData); err != nil {
 			return errors.Wrap(err, "unable to generate TestMain output")
 		}
@@ -124,7 +124,7 @@ func (s *State) Run(includeTests bool) error {
 		}
 
 		// Generate the test templates
-		if includeTests {
+		if !s.Config.NoTests && includeTests {
 			if err := generateTestOutput(s, data); err != nil {
 				return errors.Wrap(err, "unable to generate test output")
 			}
@@ -159,19 +159,21 @@ func (s *State) initTemplates() error {
 		return err
 	}
 
-	s.TestTemplates, err = loadTemplates(filepath.Join(basePath, templatesTestDirectory))
-	if err != nil {
-		return err
-	}
+	if !s.Config.NoTests {
+		s.TestTemplates, err = loadTemplates(filepath.Join(basePath, templatesTestDirectory))
+		if err != nil {
+			return err
+		}
 
-	s.SingletonTestTemplates, err = loadTemplates(filepath.Join(basePath, templatesSingletonTestDirectory))
-	if err != nil {
-		return err
-	}
+		s.SingletonTestTemplates, err = loadTemplates(filepath.Join(basePath, templatesSingletonTestDirectory))
+		if err != nil {
+			return err
+		}
 
-	s.TestMainTemplate, err = loadTemplate(filepath.Join(basePath, templatesTestMainDirectory), s.Config.DriverName+"_main.tpl")
-	if err != nil {
-		return err
+		s.TestMainTemplate, err = loadTemplate(filepath.Join(basePath, templatesTestMainDirectory), s.Config.DriverName+"_main.tpl")
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

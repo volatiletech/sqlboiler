@@ -7,6 +7,7 @@ type Config struct {
 	OutFolder        string
 	BaseDir          string
 	ExcludeTables    []string
+	NoTests          bool
 	NoHooks          bool
 	NoAutoTimestamps bool
 

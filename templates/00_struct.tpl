@@ -13,7 +13,7 @@ type {{$modelName}} struct {
   {{- if .Table.IsJoinTable -}}
   {{- else}}
   R *{{$modelNameCamel}}R `boil:"-" json:"-" toml:"-" yaml:"-"`
-  L *{{$modelNameCamel}}L `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L {{$modelNameCamel}}L `boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 

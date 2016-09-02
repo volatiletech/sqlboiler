@@ -12,12 +12,53 @@ That means you must first create your database schema. Please use something
 like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate)
 or some other migration tool to manage this part of the database's life-cycle.
 
+**Table of Contents**
+
+- [SQLBoiler](#)
+	- [Why another ORM](#)
+	- [About SQL Boiler](#)
+		- [Features](#)
+		- [Supported Databases](#)
+		- [A Small Taste](#)
+	- [Requirements & Pro Tips](#)
+		- [Requirements](#)
+		- [Pro Tips](#)
+	- [Getting started](#)
+			- [Download](#)
+			- [Configuration](#)
+			- [Initial Generation](#)
+	- [Diagnosing Problems](#)
+	- [Features & Examples](#)
+		- [Automatic CreatedAt/UpdatedAt](#)
+			- [Overriding Automatic Timestamps](#)
+		- [Query Building](#)
+		- [Query Mod System](#)
+		- [Function Variations](#)
+		- [Finishers](#)
+		- [Raw Query](#)
+		- [Binding](#)
+		- [Relationships](#)
+		- [Hooks](#)
+		- [Transactions](#)
+		- [Debug Logging](#)
+		- [Select](#)
+		- [Find](#)
+		- [Insert](#)
+		- [Update](#)
+		- [Delete](#)
+		- [Upsert](#)
+		- [Reload](#)
+		- [Exists](#)
+	- [Benchmarks](#)
+	- [FAQ](#)
+			- [Won't compiling models for a huge database be very slow?](#)
+			- [Missing imports for generated package](#)
 
 ## Why another ORM
 
 Whilst using the standard SQL library is efficient (cpu/mem wise), it can be cumbersome. We found ourselves remaking the
 same SQL helpers and wrappers for every project we were creating, but did not want to deal in the existing ORM options out
-there that utilize the "code-first" approach. `SQLX` is a great project, but very minimalistic and still requires a
+there that utilize the "code-first" approach. `sqlx` is a great library, but very minimalistic and still requires a
 considerable amount of boilerplate for every project. Originally this project started as a SQL boilerplate generator (hence the name)
 that generated simple helper functions, but we found that we could accomplish the same task by turning it into a
 (mostly) fully fledged ORM generator, without any sacrifice in performance or congruency, but generous gains in flexibility.
@@ -143,7 +184,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 #### Download
 
 ```shell
-go get -u -t github.com/vattle/sqlboiler
+go get -u -t github.com/vattle/sqlboiler/cmd/sqlboiler
 ```
 
 #### Configuration
@@ -184,6 +225,7 @@ not to pass them through the command line or environment variables:
 | exclude            | [ ]       |
 | debug              | false     |
 | no-hooks           | false     |
+| no-tests           | false     |
 | no-auto-timestamps | false     |
 
 Example:
@@ -213,11 +255,12 @@ Examples:
 sqlboiler postgres
 
 Flags:
-  -b, --basedir string        The base directory templates and templates_test folders are
+  -b, --basedir string        The base directory has the templates and templates_test folders
   -d, --debug                 Debug mode prints stack traces on error
-  -x, --exclude stringSlice   Tables to be excluded from the generated package (default [])
+  -x, --exclude stringSlice   Tables to be excluded from the generated package
       --no-auto-timestamps    Disable automatic timestamps for created_at/updated_at
       --no-hooks              Disable hooks feature for your models
+      --no-tests              Disable generated go test files
   -o, --output string         The name of the folder to output to (default "models")
   -p, --pkgname string        The name you wish to assign to your generated package (default "models")
 ```
@@ -243,9 +286,9 @@ The most common causes of problems and panics are:
 
 - Forgetting to exclude tables you do not want included in your generation, like migration tables.
 - Tables without a primary key. All tables require one.
-- Forgetting foreign key constraints on your columns that reference other tables.
+- Forgetting to put foreign key constraints on your columns that reference other tables.
 - The compatibility tests that run against your own DB schema require a superuser, ensure the user
-  supplied in your config has adequate privileges.
+  supplied in your `sqlboiler.toml` config has adequate privileges.
 - A nil or closed database handle. Ensure your passed in `boil.Executor` is not nil.
   - If you decide to use the `G` variant of functions instead, make sure you've initialized your
     global database handle using `boil.SetDB()`.
@@ -998,3 +1041,9 @@ instead of the linker. This means that when the first `go install` is done it ca
 a little bit of time because there is a lot of code that is generated. However, because of this
 work balance between the compiler and linker in Go, linking to that code afterwards in the subsequent
 compiles is extremely fast.
+
+#### Missing imports for generated package
+
+The generated models might import a couple of packages that are not on your system already, so
+`cd` into your generated models directory and type `go get -u -t` to fetch them. You will only need
+to run this command once, not per generation.

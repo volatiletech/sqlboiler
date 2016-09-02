@@ -94,7 +94,7 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
     }
   }
 }
-{{if .ForeignColumnNullable}}
+{{- if (or .ForeignColumnNullable .ToJoinTable)}}
 
 func test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}}(t *testing.T) {
   var err error

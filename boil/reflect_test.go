@@ -288,7 +288,7 @@ type testLStruct struct {
 type testNestedStruct struct {
 	ID int
 	R  *testNestedRStruct
-	L  *testNestedLStruct
+	L  testNestedLStruct
 }
 type testNestedRStruct struct {
 	ToEagerLoad *testNestedStruct
@@ -299,7 +299,7 @@ type testNestedLStruct struct {
 type testNestedSlice struct {
 	ID int
 	R  *testNestedRSlice
-	L  *testNestedLSlice
+	L  testNestedLSlice
 }
 type testNestedRSlice struct {
 	ToEagerLoad []*testNestedSlice
@@ -307,12 +307,12 @@ type testNestedRSlice struct {
 type testNestedLSlice struct {
 }
 
-func (r *testLStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
+func (testLStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
 	loadFunctionCalled = true
 	return nil
 }
 
-func (r *testNestedLStruct) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
+func (testNestedLStruct) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
 	switch x := obj.(type) {
 	case *testNestedStruct:
 		x.R = &testNestedRStruct{
@@ -329,7 +329,7 @@ func (r *testNestedLStruct) LoadToEagerLoad(exec Executor, singular bool, obj in
 	return nil
 }
 
-func (r *testNestedLSlice) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
+func (testNestedLSlice) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
 
 	switch x := obj.(type) {
 	case *testNestedSlice:
@@ -354,7 +354,7 @@ func TestLoadRelationshipsSlice(t *testing.T) {
 	testSlice := []*struct {
 		ID int
 		R  *testRStruct
-		L  *testLStruct
+		L  testLStruct
 	}{}
 
 	if err := loadRelationships(nil, []string{"TestOne"}, &testSlice, false); err != nil {
@@ -373,7 +373,7 @@ func TestLoadRelationshipsSingular(t *testing.T) {
 	testSingular := struct {
 		ID int
 		R  *testRStruct
-		L  *testLStruct
+		L  testLStruct
 	}{}
 
 	if err := loadRelationships(nil, []string{"TestOne"}, &testSingular, true); err != nil {

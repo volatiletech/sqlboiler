@@ -298,7 +298,6 @@ func TitleCaseIdentifier(id string) string {
 	addDots := false
 
 	for i := 0; nextDot >= 0; i++ {
-		fmt.Println(lastDot, nextDot)
 		fragment := id[lastDot:nextDot]
 
 		titled := TitleCase(fragment)

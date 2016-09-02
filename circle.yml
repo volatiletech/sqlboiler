@@ -6,7 +6,7 @@ test:
     - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
     - createdb -U ubuntu sqlboiler
     - psql -U ubuntu sqlboiler < ./testdata/test_schema.sql
-    - go install github.com/vattle/sqlboiler/cmd/sqlboiler
+    - go get -u github.com/vattle/sqlboiler/cmd/sqlboiler
     - sqlboiler postgres
   override:
     - go test -v -race ./... > $CIRCLE_ARTIFACTS/gotest.txt

@@ -12,48 +12,6 @@ That means you must first create your database schema. Please use something
 like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate)
 or some other migration tool to manage this part of the database's life-cycle.
 
-**Table of Contents**
-
-- [SQLBoiler](#)
-	- [Why another ORM](#)
-	- [About SQL Boiler](#)
-		- [Features](#)
-		- [Supported Databases](#)
-		- [A Small Taste](#)
-	- [Requirements & Pro Tips](#)
-		- [Requirements](#)
-		- [Pro Tips](#)
-	- [Getting started](#)
-			- [Download](#)
-			- [Configuration](#)
-			- [Initial Generation](#)
-	- [Diagnosing Problems](#)
-	- [Features & Examples](#)
-		- [Automatic CreatedAt/UpdatedAt](#)
-			- [Overriding Automatic Timestamps](#)
-		- [Query Building](#)
-		- [Query Mod System](#)
-		- [Function Variations](#)
-		- [Finishers](#)
-		- [Raw Query](#)
-		- [Binding](#)
-		- [Relationships](#)
-		- [Hooks](#)
-		- [Transactions](#)
-		- [Debug Logging](#)
-		- [Select](#)
-		- [Find](#)
-		- [Insert](#)
-		- [Update](#)
-		- [Delete](#)
-		- [Upsert](#)
-		- [Reload](#)
-		- [Exists](#)
-	- [Benchmarks](#)
-	- [FAQ](#)
-			- [Won't compiling models for a huge database be very slow?](#)
-			- [Missing imports for generated package](#)
-
 ## Why another ORM
 
 Whilst using the standard SQL library is efficient (cpu/mem wise), it can be cumbersome. We found ourselves remaking the
@@ -72,6 +30,49 @@ The approach we've taken has afforded us the following benefits:
 * Extensive auto-completion provides work-flow efficiency gains.
 * A system that is easier to debug. Your ORM is tailored to your schema, the code paths are easy to trace and generally very lucid.
 * An API you would write for yourself (we hope), that is compatible with most-any database schema.
+
+Table of Contents
+=================
+
+  * [SQLBoiler](#sqlboiler)
+    * [Why another ORM](#why-another-orm)
+    * [About SQL Boiler](#about-sql-boiler)
+      * [Features](#features)
+      * [Supported Databases](#supported-databases)
+      * [A Small Taste](#a-small-taste)
+    * [Requirements &amp; Pro Tips](#requirements--pro-tips)
+      * [Requirements](#requirements)
+      * [Pro Tips](#pro-tips)
+    * [Getting started](#getting-started)
+        * [Download](#download)
+        * [Configuration](#configuration)
+        * [Initial Generation](#initial-generation)
+    * [Diagnosing Problems](#diagnosing-problems)
+    * [Features &amp; Examples](#features--examples)
+      * [Automatic CreatedAt/UpdatedAt](#automatic-createdatupdatedat)
+        * [Overriding Automatic Timestamps](#overriding-automatic-timestamps)
+      * [Query Building](#query-building)
+      * [Query Mod System](#query-mod-system)
+      * [Function Variations](#function-variations)
+      * [Finishers](#finishers)
+      * [Raw Query](#raw-query)
+      * [Binding](#binding)
+      * [Relationships](#relationships)
+      * [Hooks](#hooks)
+      * [Transactions](#transactions)
+      * [Debug Logging](#debug-logging)
+      * [Select](#select)
+      * [Find](#find)
+      * [Insert](#insert)
+      * [Update](#update)
+      * [Delete](#delete)
+      * [Upsert](#upsert)
+      * [Reload](#reload)
+      * [Exists](#exists)
+    * [Benchmarks](#benchmarks)
+    * [FAQ](#faq)
+        * [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
+        * [Missing imports for generated package](#missing-imports-for-generated-package)
 
 ## About SQL Boiler
 

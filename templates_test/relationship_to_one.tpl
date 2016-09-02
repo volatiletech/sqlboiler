@@ -42,7 +42,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   }
 
   slice := {{.LocalTable.NameGo}}Slice{&local}
-  if err = local.R.Load{{.Function.Name}}(tx, false, &slice); err != nil {
+  if err = local.L.Load{{.Function.Name}}(tx, false, &slice); err != nil {
     t.Fatal(err)
   }
   if local.R.{{.Function.Name}} == nil {
@@ -50,7 +50,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
   }
 
   local.R.{{.Function.Name}} = nil
-  if err = local.R.Load{{.Function.Name}}(tx, true, &local); err != nil {
+  if err = local.L.Load{{.Function.Name}}(tx, true, &local); err != nil {
     t.Fatal(err)
   }
   if local.R.{{.Function.Name}} == nil {

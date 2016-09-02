@@ -75,7 +75,7 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   }
 
   slice := {{$rel.LocalTable.NameGo}}Slice{&a}
-  if err = a.R.Load{{$rel.Function.Name}}(tx, false, &slice); err != nil {
+  if err = a.L.Load{{$rel.Function.Name}}(tx, false, &slice); err != nil {
     t.Fatal(err)
   }
   if got := len(a.R.{{$rel.Function.Name}}); got != 2 {
@@ -83,7 +83,7 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
   }
 
   a.R.{{$rel.Function.Name}} = nil
-  if err = a.R.Load{{$rel.Function.Name}}(tx, true, &a); err != nil {
+  if err = a.L.Load{{$rel.Function.Name}}(tx, true, &a); err != nil {
     t.Fatal(err)
   }
   if got := len(a.R.{{$rel.Function.Name}}); got != 2 {

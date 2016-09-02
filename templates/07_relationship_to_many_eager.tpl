@@ -12,7 +12,7 @@
   {{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (r *{{$varNameSingular}}R) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+func (t *{{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
   var slice []*{{$txt.LocalTable.NameGo}}
   var object *{{$txt.LocalTable.NameGo}}
 

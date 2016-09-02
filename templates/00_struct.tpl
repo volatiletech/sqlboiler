@@ -13,6 +13,7 @@ type {{$modelName}} struct {
   {{- if .Table.IsJoinTable -}}
   {{- else}}
   R *{{$modelNameCamel}}R `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L *{{$modelNameCamel}}L `boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 
@@ -34,4 +35,7 @@ type {{$modelNameCamel}}R struct {
 {{end -}}{{/* if ForeignColumnUnique */}}
 {{- end -}}{{/* range tomany */}}
 }
+
+// {{$modelNameCamel}}L is where Load methods for each relationship are stored.
+type {{$modelNameCamel}}L struct{}
 {{end -}}

@@ -23,6 +23,7 @@ var (
 const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
+	loaderStructName       = "L"
 	sentinel               = uint64(255)
 )
 
@@ -142,14 +143,14 @@ func loadRelationships(exec Executor, toLoad []string, obj interface{}, singular
 	}
 
 	current := toLoad[0]
-	r, found := typ.FieldByName(relationshipStructName)
-	// It's possible a Relationship struct doesn't exist on the struct.
+	l, found := typ.FieldByName(loaderStructName)
+	// It's possible a Loaders struct doesn't exist on the struct.
 	if !found {
-		return errors.Errorf("attempted to load %s but no R struct was found", current)
+		return errors.Errorf("attempted to load %s but no L struct was found", current)
 	}
 
 	// Attempt to find the LoadRelationshipName function
-	loadMethod, found := r.Type.MethodByName(loadMethodPrefix + current)
+	loadMethod, found := l.Type.MethodByName(loadMethodPrefix + current)
 	if !found {
 		return errors.Errorf("could not find %s%s method for eager loading", loadMethodPrefix, current)
 	}
@@ -161,12 +162,11 @@ func loadRelationships(exec Executor, toLoad []string, obj interface{}, singular
 	}
 
 	methodArgs := []reflect.Value{
-		reflect.Indirect(reflect.New(r.Type)),
+		reflect.Indirect(reflect.New(l.Type)),
 		execArg,
 		reflect.ValueOf(singular),
 		reflect.ValueOf(obj),
 	}
-
 	resp := loadMethod.Func.Call(methodArgs)
 	if resp[0].Interface() != nil {
 		return errors.Wrapf(resp[0].Interface().(error), "failed to eager load %s", current)

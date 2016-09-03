@@ -68,7 +68,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
     if len(cache.retMapping) != 0 {
       {{if .UseLastInsertID -}}
-      cache.retQuery = fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}AutoIncPrimaryKeys))
+      cache.retQuery = fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}PrimaryKeyColumns))
       {{else -}}
       cache.query += fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
       {{end -}}
@@ -76,13 +76,14 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
 
   value := reflect.Indirect(reflect.ValueOf(o))
+  vals := boil.ValuesFromMapping(value, cache.valueMapping)
   {{if .UseLastInsertID}}
   if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, ins)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
+    fmt.Fprintln(boil.DebugWriter, cache.query)
+    fmt.Fprintln(boil.DebugWriter, vals)
   }
 
-  result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
+  result, err := exec.Exec(ins, vals...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
@@ -96,16 +97,20 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
 
   lastID, err := result.LastInsertId()
-  if err != nil || lastID == 0 || len({{$varNameSingular}}AutoIncPrimaryKeys) != 1 {
+  if err != nil || lastID == 0 || len({{$varNameSingular}}PrimaryKeyColumns) != 1 {
     return ErrSyncFail
   }
 
-  err = exec.QueryRow(cache.retQuery, lastID).Scan(boil.GetStructPointers(o, returnColumns...))
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, cache.retQuery)
+    fmt.Fprintln(boil.DebugWriter, lastID)
+  }
+
+  err = exec.QueryRow(cache.retQuery, lastID).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
   }
   {{else}}
-  vals := boil.ValuesFromMapping(value, cache.valueMapping)
   if len(cache.retMapping) != 0 {
     err = exec.QueryRow(cache.query, vals...).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
   } else {

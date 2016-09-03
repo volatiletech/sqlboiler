@@ -1,6 +1,6 @@
 {{- define "relationship_to_one_setops_helper" -}}
 {{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
-{{- $localNameSingular := .ForeignKey.Table | singular | camelCase -}}
+{{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
 
 // Set{{.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to related.

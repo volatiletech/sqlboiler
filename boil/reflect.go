@@ -16,6 +16,7 @@ var (
 
 	mut         sync.RWMutex
 	bindingMaps = make(map[string][]uint64)
+	structMaps  = make(map[string]map[string]uint64)
 )
 
 // Identifies what kind of object we're binding to
@@ -192,21 +193,33 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
+	var strMapping map[string]uint64
+	var sok bool
 	var mapping []uint64
 	var ok bool
 
-	mapKey := makeCacheKey(structType.String(), cols)
+	typStr := structType.String()
+
+	mapKey := makeCacheKey(typStr, cols)
 	mut.RLock()
 	mapping, ok = bindingMaps[mapKey]
+	if !ok {
+		if strMapping, sok = structMaps[typStr]; !sok {
+			strMapping = MakeStructMapping(structType)
+		}
+	}
 	mut.RUnlock()
 
 	if !ok {
-		mapping, err = bindMapping(structType, cols)
+		mapping, err = BindMapping(structType, strMapping, cols)
 		if err != nil {
 			return err
 		}
 
 		mut.Lock()
+		if !sok {
+			structMaps[typStr] = strMapping
+		}
 		bindingMaps[mapKey] = mapping
 		mut.Unlock()
 	}
@@ -254,11 +267,10 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	return nil
 }
 
-// bindMapping creates a mapping that helps look up the pointer for the
+// BindMapping creates a mapping that helps look up the pointer for the
 // column given.
-func bindMapping(typ reflect.Type, cols []string) ([]uint64, error) {
+func BindMapping(typ reflect.Type, mapping map[string]uint64, cols []string) ([]uint64, error) {
 	ptrs := make([]uint64, len(cols))
-	mapping := makeStructMapping(typ)
 
 ColLoop:
 	for i, c := range cols {
@@ -315,7 +327,9 @@ func ptrFromMapping(val reflect.Value, mapping uint64) reflect.Value {
 	panic("could not find pointer from mapping")
 }
 
-func makeStructMapping(typ reflect.Type) map[string]uint64 {
+// MakeStructMapping creates a map of the struct to be able to quickly look
+// up its pointers and values by name.
+func MakeStructMapping(typ reflect.Type) map[string]uint64 {
 	fieldMaps := make(map[string]uint64)
 	makeStructMappingHelper(typ, "", 0, 0, fieldMaps)
 	return fieldMaps

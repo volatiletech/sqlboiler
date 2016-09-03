@@ -204,7 +204,7 @@ func TestMakeStructMapping(t *testing.T) {
 		} `boil:",bind"`
 	}{}
 
-	got := makeStructMapping(reflect.TypeOf(testStruct))
+	got := MakeStructMapping(reflect.TypeOf(testStruct))
 
 	expectMap := map[string]uint64{
 		"Different":           testMakeMapping(0),

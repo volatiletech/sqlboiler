@@ -13,11 +13,18 @@ import (
 
 var (
 	bindAccepts = []reflect.Kind{reflect.Ptr, reflect.Slice, reflect.Ptr, reflect.Struct}
-)
 
-var (
 	mut         sync.RWMutex
 	bindingMaps = make(map[string][]uint64)
+)
+
+// Identifies what kind of object we're binding to
+type bindKind int
+
+const (
+	kindStruct bindKind = iota
+	kindSliceStruct
+	kindPtrSliceStruct
 )
 
 const (
@@ -87,7 +94,7 @@ func Bind(rows *sql.Rows, obj interface{}) error {
 //
 // See documentation for boil.Bind()
 func (q *Query) Bind(obj interface{}) error {
-	structType, sliceType, singular, err := bindChecks(obj)
+	structType, sliceType, bkind, err := bindChecks(obj)
 	if err != nil {
 		return err
 	}
@@ -97,8 +104,12 @@ func (q *Query) Bind(obj interface{}) error {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
 	defer rows.Close()
-	if res := bind(rows, obj, structType, sliceType, singular); res != nil {
+	if res := bind(rows, obj, structType, sliceType, bkind); res != nil {
 		return res
+	}
+
+	if len(q.load) == 0 {
+		return nil
 	}
 
 	state := loadRelationshipState{
@@ -107,7 +118,7 @@ func (q *Query) Bind(obj interface{}) error {
 	}
 	for _, toLoad := range q.load {
 		state.toLoad = strings.Split(toLoad, ".")
-		if err = state.loadRelationships(0, obj, singular); err != nil {
+		if err = state.loadRelationships(0, obj, bkind); err != nil {
 			return err
 		}
 	}
@@ -116,47 +127,68 @@ func (q *Query) Bind(obj interface{}) error {
 
 // bindChecks resolves information about the bind target, and errors if it's not an object
 // we can bind to.
-func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Type, singular bool, err error) {
+func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Type, bkind bindKind, err error) {
 	typ := reflect.TypeOf(obj)
 	kind := typ.Kind()
 
-	for i := 0; i < len(bindAccepts); i++ {
-		exp := bindAccepts[i]
-
-		if i != 0 {
-			typ = typ.Elem()
-			kind = typ.Kind()
-		}
-
-		if kind != exp {
-			if exp == reflect.Slice || kind == reflect.Struct {
-				structType = typ
-				singular = true
-				break
-			}
-
-			return nil, nil, false, errors.Errorf("obj type should be *[]*Type or *Type but was %q", reflect.TypeOf(obj).String())
-		}
-
-		switch kind {
-		case reflect.Struct:
-			structType = typ
-		case reflect.Slice:
-			sliceType = typ
-		}
+	setErr := func() {
+		err = errors.Errorf("obj type should be *Type, *[]Type, or *[]*Type but was %q", reflect.TypeOf(obj).String())
 	}
 
-	return structType, sliceType, singular, nil
+	for i := 0; ; i++ {
+		switch i {
+		case 0:
+			if kind != reflect.Ptr {
+				setErr()
+				return
+			}
+		case 1:
+			switch kind {
+			case reflect.Struct:
+				structType = typ
+				bkind = kindStruct
+				return
+			case reflect.Slice:
+				sliceType = typ
+			default:
+				setErr()
+				return
+			}
+		case 2:
+			switch kind {
+			case reflect.Struct:
+				structType = typ
+				bkind = kindSliceStruct
+				return
+			case reflect.Ptr:
+			default:
+				setErr()
+				return
+			}
+		case 3:
+			if kind != reflect.Struct {
+				setErr()
+				return
+			}
+			structType = typ
+			bkind = kindPtrSliceStruct
+			return
+		}
+
+		typ = typ.Elem()
+		kind = typ.Kind()
+	}
 }
 
-func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, singular bool) error {
+func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, bkind bindKind) error {
 	cols, err := rows.Columns()
 	if err != nil {
 		return errors.Wrap(err, "bind failed to get column names")
 	}
 
 	var ptrSlice reflect.Value
-	if !singular {
+	switch bkind {
+	case kindPtrSliceStruct:
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
@@ -185,9 +217,10 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 		var newStruct reflect.Value
 		var pointers []interface{}
 
-		if singular {
+		switch bkind {
+		case kindStruct:
 			pointers = ptrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
-		} else {
+		case kindPtrSliceStruct:
 			newStruct = reflect.New(structType)
 			pointers = ptrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
@@ -199,12 +232,13 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 			return errors.Wrap(err, "failed to bind pointers to obj")
 		}
 
-		if !singular {
+		switch bkind {
+		case kindPtrSliceStruct:
 			ptrSlice.Set(reflect.Append(ptrSlice, newStruct))
 		}
 	}
 
-	if singular && !foundOne {
+	if bkind == kindStruct && !foundOne {
 		return sql.ErrNoRows
 	}
 

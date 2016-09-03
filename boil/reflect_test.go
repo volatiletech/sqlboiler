@@ -228,6 +228,49 @@ func TestGetBoilTag(t *testing.T) {
 	}
 }
 
+func TestBindChecks(t *testing.T) {
+	t.Parallel()
+
+	type useless struct {
+	}
+
+	var tests = []struct {
+		BKind bindKind
+		Fail  bool
+		Obj   interface{}
+	}{
+		{BKind: kindStruct, Fail: false, Obj: &useless{}},
+		{BKind: kindSliceStruct, Fail: false, Obj: &[]useless{}},
+		{BKind: kindPtrSliceStruct, Fail: false, Obj: &[]*useless{}},
+		{Fail: true, Obj: 5},
+		{Fail: true, Obj: useless{}},
+		{Fail: true, Obj: []useless{}},
+	}
+
+	for i, test := range tests {
+		str, sli, bk, err := bindChecks(test.Obj)
+
+		if err != nil {
+			if !test.Fail {
+				t.Errorf("%d) should not fail, got: %v", i, err)
+			}
+			continue
+		} else if test.Fail {
+			t.Errorf("%d) should fail, got: %v", i, bk)
+			continue
+		}
+
+		if s := str.Kind(); s != reflect.Struct {
+			t.Error("struct kind was wrong:", s)
+		}
+		if test.BKind != kindStruct {
+			if s := sli.Kind(); s != reflect.Slice {
+				t.Error("slice kind was wrong:", s)
+			}
+		}
+	}
+}
+
 func TestBindSingular(t *testing.T) {
 	t.Parallel()
 

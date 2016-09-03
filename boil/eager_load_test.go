@@ -89,7 +89,7 @@ func TestLoadRelationshipsSlice(t *testing.T) {
 		L  testLStruct
 	}{{}}
 
-	if err := testFakeState("TestOne").loadRelationships(0, &testSlice, false); err != nil {
+	if err := testFakeState("TestOne").loadRelationships(0, &testSlice, kindPtrSliceStruct); err != nil {
 		t.Error(err)
 	}
 
@@ -108,7 +108,7 @@ func TestLoadRelationshipsSingular(t *testing.T) {
 		L  testLStruct
 	}{}
 
-	if err := testFakeState("TestOne").loadRelationships(0, &testSingular, true); err != nil {
+	if err := testFakeState("TestOne").loadRelationships(0, &testSingular, kindStruct); err != nil {
 		t.Error(err)
 	}
 
@@ -125,7 +125,7 @@ func TestLoadRelationshipsSliceNested(t *testing.T) {
 		},
 	}
 	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSlice, false); err != nil {
+	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSlice, kindPtrSliceStruct); err != nil {
 		t.Error(err)
 	}
 	if loadFunctionNestedCalled != 3 {
@@ -138,7 +138,7 @@ func TestLoadRelationshipsSliceNested(t *testing.T) {
 		},
 	}
 	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSliceSlice, false); err != nil {
+	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSliceSlice, kindPtrSliceStruct); err != nil {
 		t.Error(err)
 	}
 	if loadFunctionNestedCalled != 3 {
@@ -152,7 +152,7 @@ func TestLoadRelationshipsSingularNested(t *testing.T) {
 		ID: 3,
 	}
 	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSingular, true); err != nil {
+	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSingular, kindStruct); err != nil {
 		t.Error(err)
 	}
 	if loadFunctionNestedCalled != 3 {
@@ -163,7 +163,7 @@ func TestLoadRelationshipsSingularNested(t *testing.T) {
 		ID: 3,
 	}
 	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSingularSlice, true); err != nil {
+	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSingularSlice, kindStruct); err != nil {
 		t.Error(err)
 	}
 	if loadFunctionNestedCalled != 3 {
@@ -189,7 +189,7 @@ func TestLoadRelationshipsNoReload(t *testing.T) {
 		toLoad: []string{"ToEagerLoad", "ToEagerLoad"},
 	}
 
-	if err := state.loadRelationships(0, &testSingular, true); err != nil {
+	if err := state.loadRelationships(0, &testSingular, kindStruct); err != nil {
 		t.Error(err)
 	}
 	if loadFunctionNestedCalled != 0 {

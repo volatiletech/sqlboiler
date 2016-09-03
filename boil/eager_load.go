@@ -52,9 +52,9 @@ func (l loadRelationshipState) buildKey(depth int) string {
 //   - obj is the object or slice of objects, always of the type *obj or *[]*obj as per bind.
 //
 // It takes list of nested relationships to load.
-func (s loadRelationshipState) loadRelationships(depth int, obj interface{}, singular bool) error {
+func (s loadRelationshipState) loadRelationships(depth int, obj interface{}, bkind bindKind) error {
 	typ := reflect.TypeOf(obj).Elem()
-	if !singular {
+	if bkind == kindPtrSliceStruct {
 		typ = typ.Elem().Elem()
 	}
 
@@ -79,14 +79,14 @@ func (s loadRelationshipState) loadRelationships(depth int, obj interface{}, sin
 		}
 
 		val := reflect.ValueOf(obj).Elem()
-		if !singular {
+		if bkind == kindPtrSliceStruct {
 			val = val.Index(0).Elem()
 		}
 
 		methodArgs := []reflect.Value{
 			val.FieldByName(loaderStructName),
 			execArg,
-			reflect.ValueOf(singular),
+			reflect.ValueOf(bkind == kindStruct),
 			reflect.ValueOf(obj),
 		}
 		resp := loadMethod.Func.Call(methodArgs)
@@ -111,8 +111,8 @@ func (s loadRelationshipState) loadRelationships(depth int, obj interface{}, sin
 	loadedObject = reflect.Indirect(loadedObject)
 
 	// If it's singular we can just immediately call without looping
-	if singular {
-		return s.loadRelationshipsRecurse(depth, singular, loadedObject)
+	if bkind == kindStruct {
+		return s.loadRelationshipsRecurse(depth, loadedObject)
 	}
 
 	// Loop over all eager loaded objects
@@ -122,7 +122,7 @@ func (s loadRelationshipState) loadRelationships(depth int, obj interface{}, sin
 	}
 	for i := 0; i < ln; i++ {
 		iter := loadedObject.Index(i).Elem()
-		if err := s.loadRelationshipsRecurse(depth, singular, iter); err != nil {
+		if err := s.loadRelationshipsRecurse(depth, iter); err != nil {
 			return err
 		}
 	}
@@ -132,15 +132,16 @@ func (s loadRelationshipState) loadRelationships(depth int, obj interface{}, sin
 
 // loadRelationshipsRecurse is a helper function for taking a reflect.Value and
 // Basically calls loadRelationships with: obj.R.EagerLoadedObj, and whether it's a string or slice
-func (s loadRelationshipState) loadRelationshipsRecurse(depth int, singular bool, obj reflect.Value) error {
+func (s loadRelationshipState) loadRelationshipsRecurse(depth int, obj reflect.Value) error {
 	r := obj.FieldByName(relationshipStructName)
 	if !r.IsValid() || r.IsNil() {
 		return errors.Errorf("could not traverse into loaded %s relationship to load more things", s.toLoad[depth])
 	}
 	newObj := reflect.Indirect(r).FieldByName(s.toLoad[depth])
-	singular = reflect.Indirect(newObj).Kind() == reflect.Struct
-	if !singular {
+	bkind := kindStruct
+	if reflect.Indirect(newObj).Kind() != reflect.Struct {
+		bkind = kindPtrSliceStruct
 		newObj = newObj.Addr()
 	}
-	return s.loadRelationships(depth, newObj.Interface(), singular)
+	return s.loadRelationships(depth, newObj.Interface(), bkind)
 }

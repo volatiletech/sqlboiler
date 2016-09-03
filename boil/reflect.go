@@ -188,7 +188,7 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 
 	var ptrSlice reflect.Value
 	switch bkind {
-	case kindPtrSliceStruct:
+	case kindSliceStruct, kindPtrSliceStruct:
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
@@ -211,6 +211,11 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		mut.Unlock()
 	}
 
+	var oneStruct reflect.Value
+	if bkind == kindSliceStruct {
+		oneStruct = reflect.Indirect(reflect.New(structType))
+	}
+
 	foundOne := false
 	for rows.Next() {
 		foundOne = true
@@ -220,6 +225,8 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		switch bkind {
 		case kindStruct:
 			pointers = ptrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
+		case kindSliceStruct:
+			pointers = ptrsFromMapping(oneStruct, mapping)
 		case kindPtrSliceStruct:
 			newStruct = reflect.New(structType)
 			pointers = ptrsFromMapping(reflect.Indirect(newStruct), mapping)
@@ -233,6 +240,8 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		}
 
 		switch bkind {
+		case kindSliceStruct:
+			ptrSlice.Set(reflect.Append(ptrSlice, oneStruct))
 		case kindPtrSliceStruct:
 			ptrSlice.Set(reflect.Append(ptrSlice, newStruct))
 		}

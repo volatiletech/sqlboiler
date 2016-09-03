@@ -35,7 +35,96 @@ type mockRowMaker struct {
 	rows []driver.Value
 }
 
-func TestBind(t *testing.T) {
+func TestBindStruct(t *testing.T) {
+	t.Parallel()
+
+	testResults := struct {
+		ID   int
+		Name string `boil:"test"`
+	}{}
+
+	query := &Query{
+		from: []string{"fun"},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"id", "test"})
+	ret.AddRow(driver.Value(int64(35)), driver.Value("pat"))
+	mock.ExpectQuery(`SELECT \* FROM "fun";`).WillReturnRows(ret)
+
+	SetExecutor(query, db)
+	err = query.Bind(&testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if id := testResults.ID; id != 35 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults.Name; name != "pat" {
+		t.Error("wrong name:", name)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestBindSlice(t *testing.T) {
+	t.Parallel()
+
+	testResults := []struct {
+		ID   int
+		Name string `boil:"test"`
+	}{}
+
+	query := &Query{
+		from: []string{"fun"},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"id", "test"})
+	ret.AddRow(driver.Value(int64(35)), driver.Value("pat"))
+	ret.AddRow(driver.Value(int64(12)), driver.Value("cat"))
+	mock.ExpectQuery(`SELECT \* FROM "fun";`).WillReturnRows(ret)
+
+	SetExecutor(query, db)
+	err = query.Bind(&testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(testResults) != 2 {
+		t.Fatal("wrong number of results:", len(testResults))
+	}
+	if id := testResults[0].ID; id != 35 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults[0].Name; name != "pat" {
+		t.Error("wrong name:", name)
+	}
+
+	if id := testResults[1].ID; id != 12 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults[1].Name; name != "cat" {
+		t.Error("wrong name:", name)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestBindPtrSlice(t *testing.T) {
 	t.Parallel()
 
 	testResults := []*struct {

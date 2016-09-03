@@ -18,5 +18,28 @@ type (
   }
 )
 
+// Cache for insert and update
+var (
+  {{$varNameSingular}}Mapping = boil.MakeStructMapping(&{{$tableNameSingular}}{})
+  {{$varNameSingular}}InsertCacheMut sync.RMutex
+  {{$varNameSingular}}InsertCache = make(map[string]insertCache)
+  {{$varNameSingular}}UpdateCacheMut sync.RMutex
+  {{$varNameSingular}}UpdateCache = make(map[string]updateCache)
+)
+
+func makeCacheKey(wl, nzDefaults []string) string {
+  buf := strmangle.GetBuffer()
+
+  for _, w := range wl {
+    buf.WriteString(w)
+  }
+  for _, nz := range nzDefaults {
+    buf.WriteString(nz)
+  }
+
+  str := buf.String()
+  strmangle.PutBuffer(buf)
+}
+
 // Force time package dependency for automated UpdatedAt/CreatedAt.
 var _ = time.Second

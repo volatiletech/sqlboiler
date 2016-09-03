@@ -237,12 +237,12 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 
 		switch bkind {
 		case kindStruct:
-			pointers = ptrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
+			pointers = PtrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
 		case kindSliceStruct:
-			pointers = ptrsFromMapping(oneStruct, mapping)
+			pointers = PtrsFromMapping(oneStruct, mapping)
 		case kindPtrSliceStruct:
 			newStruct = reflect.New(structType)
-			pointers = ptrsFromMapping(reflect.Indirect(newStruct), mapping)
+			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
 		if err != nil {
 			return err
@@ -295,19 +295,29 @@ ColLoop:
 	return ptrs, nil
 }
 
-// ptrsFromMapping expects to be passed an addressable struct that it's looking
-// for things on.
-func ptrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
+// PtrsFromMapping expects to be passed an addressable struct and a mapping
+// of where to find things. It pulls the pointers out referred to by the mapping.
+func PtrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	ptrs := make([]interface{}, len(mapping))
 	for i, m := range mapping {
-		ptrs[i] = ptrFromMapping(val, m).Interface()
+		ptrs[i] = ptrFromMapping(val, m, true).Interface()
+	}
+	return ptrs
+}
+
+// ValuesFromMapping expects to be passed an addressable struct and a mapping
+// of where to find things. It pulls the pointers out referred to by the mapping.
+func ValuesFromMapping(val reflect.Value, mapping []uint64) []interface{} {
+	ptrs := make([]interface{}, len(mapping))
+	for i, m := range mapping {
+		ptrs[i] = ptrFromMapping(val, m, false).Interface()
 	}
 	return ptrs
 }
 
 // ptrFromMapping expects to be passed an addressable struct that it's looking
 // for things on.
-func ptrFromMapping(val reflect.Value, mapping uint64) reflect.Value {
+func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.Value {
 	for i := 0; i < 8; i++ {
 		v := (mapping >> uint(i*8)) & sentinel
 

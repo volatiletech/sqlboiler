@@ -17,3 +17,19 @@ type updateCache struct{
   query        string
   valueMapping []uint64
 }
+
+func makeCacheKey(wl, nzDefaults []string) string {
+  buf := strmangle.GetBuffer()
+
+  for _, w := range wl {
+    buf.WriteString(w)
+  }
+  for _, nz := range nzDefaults {
+    buf.WriteString(nz)
+  }
+
+  str := buf.String()
+  strmangle.PutBuffer(buf)
+  return str
+}
+

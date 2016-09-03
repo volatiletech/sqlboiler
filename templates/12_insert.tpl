@@ -56,20 +56,26 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
       whitelist,
     )
 
-    typ := reflect.TypeOf(o)
-    cache.valueMapping = boil.BindMapping(typ, {{$varNameSingular}}Mapping, wl)
-    cache.retMapping = boil.BindMapping(typ, {{$varNameSingular}}Mapping, returnColumns)
+    cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)
+    if err != nil {
+      return err
+    }
+    cache.retMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, returnColumns)
+    if err != nil {
+      return err
+    }
     cache.query = fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
 
     if len(cache.retMapping) != 0 {
       {{if .UseLastInsertID -}}
-      cache.query += fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
-      {{else -}}
       cache.retQuery = fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}AutoIncPrimaryKeys))
+      {{else -}}
+      cache.query += fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
       {{end -}}
     }
   }
 
+  value := reflect.Indirect(reflect.ValueOf(o))
   {{if .UseLastInsertID}}
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, ins)
@@ -99,15 +105,16 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
   }
   {{else}}
+  vals := boil.ValuesFromMapping(value, cache.valueMapping)
   if len(cache.retMapping) != 0 {
-    err = exec.QueryRow(cache.query, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
+    err = exec.QueryRow(cache.query, vals...).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
   } else {
-    _, err = exec.Exec(cache.query, boil.GetStructValues(o, wl...)...)
+    _, err = exec.Exec(cache.query, vals...)
   }
 
   if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, ins)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
+    fmt.Fprintln(boil.DebugWriter, cache.query)
+    fmt.Fprintln(boil.DebugWriter, vals)
   }
 
   if err != nil {

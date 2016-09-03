@@ -40,7 +40,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
     {{$varNameSingular}}Columns,
     {{$varNameSingular}}ColumnsWithDefault,
     {{$varNameSingular}}ColumnsWithoutDefault,
-    boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, {{$varNameSingular}}TitleCases, o),
+    boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
     whitelist,
   )
   update := strmangle.UpdateColumnSet(

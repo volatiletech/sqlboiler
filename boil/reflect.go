@@ -101,111 +101,17 @@ func (q *Query) Bind(obj interface{}) error {
 		return res
 	}
 
+	state := loadRelationshipState{
+		exec:   q.executor,
+		loaded: map[string]struct{}{},
+	}
 	for _, toLoad := range q.load {
-		toLoadFragments := strings.Split(toLoad, ".")
-		if err = loadRelationships(q.executor, toLoadFragments, obj, singular); err != nil {
+		state.toLoad = strings.Split(toLoad, ".")
+		if err = state.loadRelationships(0, obj, singular); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-// loadRelationships dynamically calls the template generated eager load
-// functions of the form:
-//
-//   func (t *TableR) LoadRelationshipName(exec Executor, singular bool, obj interface{})
-//
-// The arguments to this function are:
-//   - t is not considered here, and is always passed nil. The function exists on a loaded
-//     struct to avoid a circular dependency with boil, and the receiver is ignored.
-//   - exec is used to perform additional queries that might be required for loading the relationships.
-//   - singular is passed in to identify whether or not this was a single object
-//     or a slice that must be loaded into.
-//   - obj is the object or slice of objects, always of the type *obj or *[]*obj as per bind.
-//
-// It takes list of nested relationships to load.
-func loadRelationships(exec Executor, toLoad []string, obj interface{}, singular bool) error {
-	typ := reflect.TypeOf(obj).Elem()
-	if !singular {
-		typ = typ.Elem().Elem()
-	}
-
-	current := toLoad[0]
-	l, found := typ.FieldByName(loaderStructName)
-	// It's possible a Loaders struct doesn't exist on the struct.
-	if !found {
-		return errors.Errorf("attempted to load %s but no L struct was found", current)
-	}
-
-	// Attempt to find the LoadRelationshipName function
-	loadMethod, found := l.Type.MethodByName(loadMethodPrefix + current)
-	if !found {
-		return errors.Errorf("could not find %s%s method for eager loading", loadMethodPrefix, current)
-	}
-
-	// Hack to allow nil executors
-	execArg := reflect.ValueOf(exec)
-	if !execArg.IsValid() {
-		execArg = reflect.ValueOf((*sql.DB)(nil))
-	}
-
-	methodArgs := []reflect.Value{
-		reflect.Indirect(reflect.New(l.Type)),
-		execArg,
-		reflect.ValueOf(singular),
-		reflect.ValueOf(obj),
-	}
-	resp := loadMethod.Func.Call(methodArgs)
-	if resp[0].Interface() != nil {
-		return errors.Wrapf(resp[0].Interface().(error), "failed to eager load %s", current)
-	}
-
-	// Pull one off the queue, continue if there's still some to go
-	toLoad = toLoad[1:]
-	if len(toLoad) == 0 {
-		return nil
-	}
-
-	loadedObject := reflect.ValueOf(obj)
-	// If we eagerly loaded nothing
-	if loadedObject.IsNil() {
-		return nil
-	}
-	loadedObject = reflect.Indirect(loadedObject)
-
-	// If it's singular we can just immediately call without looping
-	if singular {
-		return loadRelationshipsRecurse(exec, current, toLoad, singular, loadedObject)
-	}
-
-	// Loop over all eager loaded objects
-	ln := loadedObject.Len()
-	if ln == 0 {
-		return nil
-	}
-	for i := 0; i < ln; i++ {
-		iter := loadedObject.Index(i).Elem()
-		if err := loadRelationshipsRecurse(exec, current, toLoad, singular, iter); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// loadRelationshipsRecurse is a helper function for taking a reflect.Value and
-// Basically calls loadRelationships with: obj.R.EagerLoadedObj, and whether it's a string or slice
-func loadRelationshipsRecurse(exec Executor, current string, toLoad []string, singular bool, obj reflect.Value) error {
-	r := obj.FieldByName(relationshipStructName)
-	if !r.IsValid() || r.IsNil() {
-		return errors.Errorf("could not traverse into loaded %s relationship to load more things", current)
-	}
-	newObj := reflect.Indirect(r).FieldByName(current)
-	singular = reflect.Indirect(newObj).Kind() == reflect.Struct
-	if !singular {
-		newObj = newObj.Addr()
-	}
-	return loadRelationships(exec, toLoad, newObj.Interface(), singular)
 }
 
 // bindChecks resolves information about the bind target, and errors if it's not an object
@@ -305,6 +211,8 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, s
 	return nil
 }
 
+// bindMapping creates a mapping that helps look up the pointer for the
+// column given.
 func bindMapping(typ reflect.Type, cols []string) ([]uint64, error) {
 	ptrs := make([]uint64, len(cols))
 	mapping := makeStructMapping(typ)
@@ -333,7 +241,7 @@ ColLoop:
 }
 
 // ptrsFromMapping expects to be passed an addressable struct that it's looking
-// for things on
+// for things on.
 func ptrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	ptrs := make([]interface{}, len(mapping))
 	for i, m := range mapping {

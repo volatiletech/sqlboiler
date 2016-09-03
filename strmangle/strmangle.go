@@ -293,6 +293,7 @@ func TitleCaseIdentifier(id string) string {
 	}
 
 	buf := GetBuffer()
+	defer PutBuffer(buf)
 	lastDot := 0
 	ln := len(id)
 	addDots := false
@@ -320,7 +321,6 @@ func TitleCaseIdentifier(id string) string {
 		}
 	}
 
-	PutBuffer(buf)
 	return buf.String()
 }
 

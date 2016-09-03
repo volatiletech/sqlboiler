@@ -93,7 +93,6 @@ func executeTemplates(e executeTemplateData) error {
 
 	imps.standard = e.importSet.standard
 	imps.thirdParty = e.importSet.thirdParty
-
 	for _, tplName := range e.templates.Templates() {
 		if e.combineImportsOnType {
 			imps = combineTypeImports(imps, importsBasedOnType, e.data.Table.Columns)

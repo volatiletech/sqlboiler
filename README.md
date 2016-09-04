@@ -14,22 +14,23 @@ or some other migration tool to manage this part of the database's life-cycle.
 
 ## Why another ORM
 
-Whilst using the standard SQL library is efficient (cpu/mem wise), it can be cumbersome. We found ourselves remaking the
-same SQL helpers and wrappers for every project we were creating, but did not want to deal in the existing ORM options out
-there that utilize the "code-first" approach. `sqlx` is a great library, but very minimalistic and still requires a
-considerable amount of boilerplate for every project. Originally this project started as a SQL boilerplate generator (hence the name)
-that generated simple helper functions, but we found that we could accomplish the same task by turning it into a
-(mostly) fully fledged ORM generator, without any sacrifice in performance or congruency, but generous gains in flexibility.
+While attempting to migrate a legacy Rails database, we realized how much ActiveRecord benefitted us in terms of development velocity.
+Coming over to the Go `database/sql` package after using ActiveRecord feels extremely repetitive, super long-winded and down-right boring.
+Being Go veterans we knew the state of ORMs was shaky, and after a quick review we found what our fears confirmed. Most packages out
+there are code-first, reflect-based and have a very weak story around relationships between models. So with that we set out with these goals:
 
-The approach we've taken has afforded us the following benefits:
+* Work with existing databases: Don't be the tool to define the schema, that's better left to other tools.
+* ActiveRecord-like productivity: Eliminate all sql boilerplate, have relationships as a first-class concept.
+* Go-like feel: Work with normal structs, call functions, no hyper-magical struct tags, small interfaces.
+* Go-like performance: Benchmark and optimize the hot-paths, perform like hand-rolled `sql.DB` code.
 
-* Thorough relationship story. No unnecessary struct tags, no unnecessary configuration.
-* High performance and memory efficiency by minimizing run-time reflection.
-* The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for any type assertions.
+We believe with SQLBoiler and our database-first code-generation approach we've been able to successfully meet all of these goals. On top
+of that SQLBoiler also confers the following benefits:
+
+* The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for interface{}.
 * Our types closely correlate to your database column types. This is expanded by our extended null package which supports nearly all Go data types.
-* Extensive auto-completion provides work-flow efficiency gains.
-* A system that is easier to debug. Your ORM is tailored to your schema, the code paths are easy to trace and generally very lucid.
-* An API you would write for yourself (we hope), that is compatible with most-any database schema.
+* A system that is easy to debug. Your ORM is tailored to your schema, the code paths should be easy to trace since it's not all buried in reflect.
+* Auto-completion provides work-flow efficiency gains.
 
 Table of Contents
 =================

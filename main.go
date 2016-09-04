@@ -78,7 +78,7 @@ func main() {
 		if e, ok := err.(commandFailure); ok {
 			fmt.Printf("Error: %v\n\n", string(e))
 			rootCmd.Help()
-		} else if !viper.GetBool("debug") {
+		} else if !cmdConfig.Debug {
 			fmt.Printf("Error: %v\n", err)
 		} else {
 			fmt.Printf("Error: %+v\n", err)
@@ -107,6 +107,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		DriverName:       driverName,
 		OutFolder:        viper.GetString("output"),
 		PkgName:          viper.GetString("pkgname"),
+		Debug:            viper.GetBool("debug"),
 		NoTests:          viper.GetBool("no-tests"),
 		NoHooks:          viper.GetBool("no-hooks"),
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),

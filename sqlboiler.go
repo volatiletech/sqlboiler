@@ -3,6 +3,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"go/build"
 	"os"
 	"path/filepath"
@@ -12,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/bdb/drivers"
+	"github.com/vattle/sqlboiler/boil"
 )
 
 const (
@@ -58,6 +61,15 @@ func New(config *Config) (*State, error) {
 	err = s.initTables(config.ExcludeTables)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
+	}
+
+	if s.Config.Debug {
+		b, err := json.Marshal(s.Tables)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to json marshal tables")
+		}
+		boil.DebugWriter.Write(b)
+		fmt.Fprintln(boil.DebugWriter)
 	}
 
 	err = s.initOutFolder()

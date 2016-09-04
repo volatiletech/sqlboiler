@@ -165,6 +165,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ### Requirements
 
+* Go 1.6 minimum, and Go 1.7 for compatibility tests.
 * Table names and column names should use `snake_case` format.
   * At the moment we require `snake_case` table names and column names. This
   is a recommended default in Postgres. We can reassess this for future database drivers.

@@ -20,6 +20,7 @@ type templateData struct {
 	PkgName          string
 	NoHooks          bool
 	NoAutoTimestamps bool
+	Tags             []string
 
 	StringFuncs map[string]func(string) string
 }
@@ -124,11 +125,13 @@ var templateFunctions = template.FuncMap{
 	"camelCase": strmangle.CamelCase,
 
 	// String Slice ops
-	"join":              func(sep string, slice []string) string { return strings.Join(slice, sep) },
-	"joinSlices":        strmangle.JoinSlices,
-	"stringMap":         strmangle.StringMap,
-	"prefixStringSlice": strmangle.PrefixStringSlice,
-	"containsAny":       strmangle.ContainsAny,
+	"join":               func(sep string, slice []string) string { return strings.Join(slice, sep) },
+	"joinSlices":         strmangle.JoinSlices,
+	"stringMap":          strmangle.StringMap,
+	"prefixStringSlice":  strmangle.PrefixStringSlice,
+	"containsAny":        strmangle.ContainsAny,
+	"generateTags":       strmangle.GenerateTags,
+	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,

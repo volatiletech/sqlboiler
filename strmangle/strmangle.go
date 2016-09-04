@@ -487,3 +487,35 @@ func ContainsAny(a []string, finds ...string) bool {
 
 	return false
 }
+
+// GenerateTags converts a slice of tag strings into tags that
+// can be passed onto the end of a struct, for example:
+// tags: ["xml", "db"] convert to: xml:"column_name" db:"column_name"
+func GenerateTags(tags []string, columnName string) string {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
+	for _, tag := range tags {
+		buf.WriteString(tag)
+		buf.WriteString(`:"`)
+		buf.WriteString(columnName)
+		buf.WriteString(`" `)
+	}
+
+	return buf.String()
+}
+
+// GenerateIgnoreTags converts a slice of tag strings into
+// ignore tags that can be passed onto the end of a struct, for example:
+// tags: ["xml", "db"] convert to: xml:"-" db:"-"
+func GenerateIgnoreTags(tags []string) string {
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
+	for _, tag := range tags {
+		buf.WriteString(tag)
+		buf.WriteString(`:"-" `)
+	}
+
+	return buf.String()
+}

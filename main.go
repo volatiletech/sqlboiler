@@ -64,6 +64,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "b", "", "The base directory has the templates and templates_test folders")
 	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
+	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
@@ -114,12 +115,20 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200
-	// Look up the value of ExcludeTables directly from PFlags in Cobra if we
+	// Look up the value of ExcludeTables & Tags directly from PFlags in Cobra if we
 	// detect a malformed value coming out of viper.
 	// Once the bug is fixed we'll be able to move this into the init above
 	cmdConfig.ExcludeTables = viper.GetStringSlice("exclude")
 	if len(cmdConfig.ExcludeTables) == 1 && strings.HasPrefix(cmdConfig.ExcludeTables[0], "[") {
 		cmdConfig.ExcludeTables, err = cmd.PersistentFlags().GetStringSlice("exclude")
+		if err != nil {
+			return err
+		}
+	}
+
+	cmdConfig.Tags = viper.GetStringSlice("tag")
+	if len(cmdConfig.Tags) == 1 && strings.HasPrefix(cmdConfig.Tags[0], "[") {
+		cmdConfig.Tags, err = cmd.PersistentFlags().GetStringSlice("tag")
 		if err != nil {
 			return err
 		}

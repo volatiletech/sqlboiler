@@ -7,6 +7,7 @@ type Config struct {
 	OutFolder        string
 	BaseDir          string
 	ExcludeTables    []string
+	Tags             []string
 	Debug            bool
 	NoTests          bool
 	NoHooks          bool

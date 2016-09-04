@@ -8,6 +8,7 @@ import (
 	"go/build"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -82,6 +83,11 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
 
+	err = s.initTags(config.Tags)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to initialize struct tags")
+	}
+
 	return s, nil
 }
 
@@ -126,6 +132,7 @@ func (s *State) Run(includeTests bool) error {
 			PkgName:          s.Config.PkgName,
 			NoHooks:          s.Config.NoHooks,
 			NoAutoTimestamps: s.Config.NoAutoTimestamps,
+			Tags:             s.Config.Tags,
 
 			StringFuncs: templateStringMappers,
 		}
@@ -245,6 +252,22 @@ func (s *State) initTables(exclude []string) error {
 
 	if err := checkPKeys(s.Tables); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// Tags must be in a format like: json, xml, etc.
+var rgxValidTag = regexp.MustCompile(`[a-zA-Z_\.]+`)
+
+// initTags removes duplicate tags and validates the format
+// of all user tags are simple strings without quotes: [a-zA-Z_\.]+
+func (s *State) initTags(tags []string) error {
+	s.Config.Tags = removeDuplicates(s.Config.Tags)
+	for _, v := range s.Config.Tags {
+		if !rgxValidTag.MatchString(v) {
+			return errors.New("Invalid tag format %q supplied, only specify name, eg: xml")
+		}
 	}
 
 	return nil

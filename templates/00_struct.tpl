@@ -2,22 +2,22 @@
   {{.Function.Name}} *{{.ForeignTable.NameGo}}
 {{- end -}}
 
+{{- $dot := . -}}
 {{- $tableNameSingular := .Table.Name | singular -}}
 {{- $modelName := $tableNameSingular | titleCase -}}
 {{- $modelNameCamel := $tableNameSingular | camelCase -}}
 // {{$modelName}} is an object representing the database table.
 type {{$modelName}} struct {
   {{range $column := .Table.Columns -}}
-  {{titleCase $column.Name}} {{$column.Type}} `boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
+  {{titleCase $column.Name}} {{$column.Type}} `{{generateTags $dot.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
   {{end -}}
   {{- if .Table.IsJoinTable -}}
   {{- else}}
-  R *{{$modelNameCamel}}R `boil:"-" json:"-" toml:"-" yaml:"-"`
-  L {{$modelNameCamel}}L `boil:"-" json:"-" toml:"-" yaml:"-"`
+  R *{{$modelNameCamel}}R `{{generateIgnoreTags $dot.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
+  L {{$modelNameCamel}}L `{{generateIgnoreTags $dot.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
   {{end -}}
 }
 
-{{- $dot := . -}}
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 // {{$modelNameCamel}}R is where relationships are stored.

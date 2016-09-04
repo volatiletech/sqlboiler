@@ -127,9 +127,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
   {{end}}
 
-  {{$varNameSingular}}InsertCacheMut.Lock()
-  {{$varNameSingular}}InsertCache[key] = cache
-  {{$varNameSingular}}InsertCacheMut.Unlock()
+  if !cached {
+    {{$varNameSingular}}InsertCacheMut.Lock()
+    {{$varNameSingular}}InsertCache[key] = cache
+    {{$varNameSingular}}InsertCacheMut.Unlock()
+  }
 
   {{if not .NoHooks -}}
   return o.doAfterInsertHooks(exec)

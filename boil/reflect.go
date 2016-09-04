@@ -16,6 +16,7 @@ var (
 
 	mut         sync.RWMutex
 	bindingMaps = make(map[string][]uint64)
+	structMaps  = make(map[string]map[string]uint64)
 )
 
 // Identifies what kind of object we're binding to
@@ -192,21 +193,33 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
+	var strMapping map[string]uint64
+	var sok bool
 	var mapping []uint64
 	var ok bool
 
-	mapKey := makeCacheKey(structType.String(), cols)
+	typStr := structType.String()
+
+	mapKey := makeCacheKey(typStr, cols)
 	mut.RLock()
 	mapping, ok = bindingMaps[mapKey]
+	if !ok {
+		if strMapping, sok = structMaps[typStr]; !sok {
+			strMapping = MakeStructMapping(structType)
+		}
+	}
 	mut.RUnlock()
 
 	if !ok {
-		mapping, err = bindMapping(structType, cols)
+		mapping, err = BindMapping(structType, strMapping, cols)
 		if err != nil {
 			return err
 		}
 
 		mut.Lock()
+		if !sok {
+			structMaps[typStr] = strMapping
+		}
 		bindingMaps[mapKey] = mapping
 		mut.Unlock()
 	}
@@ -224,12 +237,12 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 
 		switch bkind {
 		case kindStruct:
-			pointers = ptrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
+			pointers = PtrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
 		case kindSliceStruct:
-			pointers = ptrsFromMapping(oneStruct, mapping)
+			pointers = PtrsFromMapping(oneStruct, mapping)
 		case kindPtrSliceStruct:
 			newStruct = reflect.New(structType)
-			pointers = ptrsFromMapping(reflect.Indirect(newStruct), mapping)
+			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
 		if err != nil {
 			return err
@@ -254,11 +267,10 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	return nil
 }
 
-// bindMapping creates a mapping that helps look up the pointer for the
+// BindMapping creates a mapping that helps look up the pointer for the
 // column given.
-func bindMapping(typ reflect.Type, cols []string) ([]uint64, error) {
+func BindMapping(typ reflect.Type, mapping map[string]uint64, cols []string) ([]uint64, error) {
 	ptrs := make([]uint64, len(cols))
-	mapping := makeStructMapping(typ)
 
 ColLoop:
 	for i, c := range cols {
@@ -283,19 +295,29 @@ ColLoop:
 	return ptrs, nil
 }
 
-// ptrsFromMapping expects to be passed an addressable struct that it's looking
-// for things on.
-func ptrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
+// PtrsFromMapping expects to be passed an addressable struct and a mapping
+// of where to find things. It pulls the pointers out referred to by the mapping.
+func PtrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	ptrs := make([]interface{}, len(mapping))
 	for i, m := range mapping {
-		ptrs[i] = ptrFromMapping(val, m).Interface()
+		ptrs[i] = ptrFromMapping(val, m, true).Interface()
+	}
+	return ptrs
+}
+
+// ValuesFromMapping expects to be passed an addressable struct and a mapping
+// of where to find things. It pulls the pointers out referred to by the mapping.
+func ValuesFromMapping(val reflect.Value, mapping []uint64) []interface{} {
+	ptrs := make([]interface{}, len(mapping))
+	for i, m := range mapping {
+		ptrs[i] = ptrFromMapping(val, m, false).Interface()
 	}
 	return ptrs
 }
 
 // ptrFromMapping expects to be passed an addressable struct that it's looking
 // for things on.
-func ptrFromMapping(val reflect.Value, mapping uint64) reflect.Value {
+func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.Value {
 	for i := 0; i < 8; i++ {
 		v := (mapping >> uint(i*8)) & sentinel
 
@@ -315,7 +337,9 @@ func ptrFromMapping(val reflect.Value, mapping uint64) reflect.Value {
 	panic("could not find pointer from mapping")
 }
 
-func makeStructMapping(typ reflect.Type) map[string]uint64 {
+// MakeStructMapping creates a map of the struct to be able to quickly look
+// up its pointers and values by name.
+func MakeStructMapping(typ reflect.Type) map[string]uint64 {
 	fieldMaps := make(map[string]uint64)
 	makeStructMappingHelper(typ, "", 0, 0, fieldMaps)
 	return fieldMaps

@@ -1,3 +1,5 @@
+{{if .Table.IsJoinTable -}}
+{{else -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 var (
@@ -5,11 +7,6 @@ var (
   {{$varNameSingular}}ColumnsWithoutDefault     = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
   {{$varNameSingular}}ColumnsWithDefault        = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
   {{$varNameSingular}}PrimaryKeyColumns         = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
-  {{$varNameSingular}}TitleCases                = map[string]string{
-    {{range $col := .Table.Columns | columnNames -}}
-    "{{$col}}": "{{titleCase $col}}",
-    {{end -}}
-  }
 )
 
 type (
@@ -23,5 +20,16 @@ type (
   }
 )
 
+// Cache for insert and update
+var (
+  {{$varNameSingular}}Type = reflect.TypeOf(&{{$tableNameSingular}}{})
+  {{$varNameSingular}}Mapping = boil.MakeStructMapping({{$varNameSingular}}Type)
+  {{$varNameSingular}}InsertCacheMut sync.RWMutex
+  {{$varNameSingular}}InsertCache = make(map[string]insertCache)
+  {{$varNameSingular}}UpdateCacheMut sync.RWMutex
+  {{$varNameSingular}}UpdateCache = make(map[string]updateCache)
+)
+
 // Force time package dependency for automated UpdatedAt/CreatedAt.
 var _ = time.Second
+{{end -}}

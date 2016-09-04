@@ -37,37 +37,52 @@ func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... strin
 func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
   {{- template "timestamp_update_helper" . -}}
 
+  var err error
   {{if not .NoHooks -}}
-  if err := o.doBeforeUpdateHooks(exec); err != nil {
+  if err = o.doBeforeUpdateHooks(exec); err != nil {
     return err
   }
-  {{- end}}
+  {{end -}}
 
-  var err error
-  var query string
-  var values []interface{}
+  key := makeCacheKey(whitelist, nil)
+  {{$varNameSingular}}UpdateCacheMut.RLock()
+  cache, cached := {{$varNameSingular}}UpdateCache[key]
+  {{$varNameSingular}}UpdateCacheMut.RUnlock()
 
-  wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
-  if len(wl) == 0 {
+  if !cached {
+    wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
+
+    cache.query = fmt.Sprintf(`UPDATE "{{.Table.Name}}" SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
+    cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
+    if err != nil {
+      return err
+    }
+  }
+
+  if len(cache.valueMapping) == 0 {
     return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
   }
 
-  query = fmt.Sprintf(`UPDATE {{.Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
-  values = boil.GetStructValues(o, wl...)
-  values = append(values, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+  values := boil.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
   if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, query)
+    fmt.Fprintln(boil.DebugWriter, cache.query)
     fmt.Fprintln(boil.DebugWriter, values)
   }
 
-  result, err := exec.Exec(query, values...)
+  result, err := exec.Exec(cache.query, values...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
   }
 
   if r, err := result.RowsAffected(); err == nil && r != 1 {
     return errors.Errorf("failed to update single row, updated %d rows", r)
+  }
+
+  if !cached {
+    {{$varNameSingular}}UpdateCacheMut.Lock()
+    {{$varNameSingular}}UpdateCache[key] = cache
+    {{$varNameSingular}}UpdateCacheMut.Unlock()
   }
 
   {{if not .NoHooks -}}

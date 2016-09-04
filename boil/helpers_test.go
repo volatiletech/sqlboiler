@@ -59,7 +59,7 @@ func TestNonZeroDefaultSet(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		z := NonZeroDefaultSet(test.Defaults, nil, test.Obj)
+		z := NonZeroDefaultSet(test.Defaults, test.Obj)
 		if !reflect.DeepEqual(test.Ret, z) {
 			t.Errorf("[%d] mismatch:\nWant: %#v\nGot:  %#v", i, test.Ret, z)
 		}

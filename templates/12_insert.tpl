@@ -40,64 +40,98 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
   }
   {{- end}}
 
-  wl, returnColumns := strmangle.InsertColumnSet(
-    {{$varNameSingular}}Columns,
-    {{$varNameSingular}}ColumnsWithDefault,
-    {{$varNameSingular}}ColumnsWithoutDefault,
-    boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, {{$varNameSingular}}TitleCases, o),
-    whitelist,
-  )
+  nzDefaults := boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
 
-  ins := fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
+  key := makeCacheKey(whitelist, nzDefaults)
+  {{$varNameSingular}}InsertCacheMut.RLock()
+  cache, cached := {{$varNameSingular}}InsertCache[key]
+  {{$varNameSingular}}InsertCacheMut.RUnlock()
 
-  {{if .UseLastInsertID}}
-  if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, ins)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
+  if !cached {
+    wl, returnColumns := strmangle.InsertColumnSet(
+      {{$varNameSingular}}Columns,
+      {{$varNameSingular}}ColumnsWithDefault,
+      {{$varNameSingular}}ColumnsWithoutDefault,
+      nzDefaults,
+      whitelist,
+    )
+
+    cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)
+    if err != nil {
+      return err
+    }
+    cache.retMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, returnColumns)
+    if err != nil {
+      return err
+    }
+    cache.query = fmt.Sprintf(`INSERT INTO {{.Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(len(wl), 1, 1))
+
+    if len(cache.retMapping) != 0 {
+      {{if .UseLastInsertID -}}
+      cache.retQuery = fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}PrimaryKeyColumns))
+      {{else -}}
+      cache.query += fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
+      {{end -}}
+    }
   }
 
-  result, err := exec.Exec(ins, boil.GetStructValues(o, wl...)...)
+  value := reflect.Indirect(reflect.ValueOf(o))
+  vals := boil.ValuesFromMapping(value, cache.valueMapping)
+  {{if .UseLastInsertID}}
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, cache.query)
+    fmt.Fprintln(boil.DebugWriter, vals)
+  }
+
+  result, err := exec.Exec(ins, vals...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
 
+  if len(cache.retMapping) == 0 {
   {{if not .NoHooks -}}
-  if len(returnColumns) == 0 {
-      return o.doAfterInsertHooks(exec)
-  }
-  {{- else -}}
-  if len(returnColumns) == 0 {
+    return o.doAfterInsertHooks(exec)
+  {{else -}}
     return nil
+  {{end -}}
   }
-  {{- end}}
 
   lastID, err := result.LastInsertId()
-  if err != nil || lastID == 0 || len({{$varNameSingular}}AutoIncPrimaryKeys) != 1 {
+  if err != nil || lastID == 0 || len({{$varNameSingular}}PrimaryKeyColumns) != 1 {
     return ErrSyncFail
   }
 
-  sel := fmt.Sprintf(`SELECT %s FROM {{.Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}AutoIncPrimaryKeys))
-  err = exec.QueryRow(sel, lastID).Scan(boil.GetStructPointers(o, returnColumns...))
+  if boil.DebugMode {
+    fmt.Fprintln(boil.DebugWriter, cache.retQuery)
+    fmt.Fprintln(boil.DebugWriter, lastID)
+  }
+
+  err = exec.QueryRow(cache.retQuery, lastID).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
   }
   {{else}}
-  if len(returnColumns) != 0 {
-    ins = ins + fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
-    err = exec.QueryRow(ins, boil.GetStructValues(o, wl...)...).Scan(boil.GetStructPointers(o, returnColumns...)...)
+  if len(cache.retMapping) != 0 {
+    err = exec.QueryRow(cache.query, vals...).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
   } else {
-    _, err = exec.Exec(ins, boil.GetStructValues(o, wl...)...)
+    _, err = exec.Exec(cache.query, vals...)
   }
 
   if boil.DebugMode {
-    fmt.Fprintln(boil.DebugWriter, ins)
-    fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, wl...))
+    fmt.Fprintln(boil.DebugWriter, cache.query)
+    fmt.Fprintln(boil.DebugWriter, vals)
   }
 
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }
   {{end}}
+
+  if !cached {
+    {{$varNameSingular}}InsertCacheMut.Lock()
+    {{$varNameSingular}}InsertCache[key] = cache
+    {{$varNameSingular}}InsertCacheMut.Unlock()
+  }
 
   {{if not .NoHooks -}}
   return o.doAfterInsertHooks(exec)

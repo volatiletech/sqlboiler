@@ -146,6 +146,8 @@ var defaultTemplateImports = imports{
 		`"fmt"`,
 		`"strings"`,
 		`"database/sql"`,
+		`"reflect"`,
+		`"sync"`,
 		`"time"`,
 	},
 	thirdParty: importList{
@@ -166,6 +168,7 @@ var defaultSingletonTemplateImports = map[string]imports{
 	"boil_types": {
 		thirdParty: importList{
 			`"github.com/pkg/errors"`,
+			`"github.com/vattle/sqlboiler/strmangle"`,
 		},
 	},
 }

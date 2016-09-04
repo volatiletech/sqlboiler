@@ -24,6 +24,9 @@ func makeCacheKey(wl, nzDefaults []string) string {
   for _, w := range wl {
     buf.WriteString(w)
   }
+  if len(nzDefaults) != 0 {
+    buf.WriteByte('.')
+  }
   for _, nz := range nzDefaults {
     buf.WriteString(nz)
   }

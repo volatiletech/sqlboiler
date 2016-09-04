@@ -1052,3 +1052,61 @@ to run this command once, not per generation.
 
 ## Benchmarks
 
+If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/vattle/boilbench) repo.
+
+Here are the results **(lower is better)**:
+
+`go test -bench . -benchmem`
+```
+BenchmarkGORMDelete/gorm-8     	    100000	     15364 ns/op	    5395 B/op	     113 allocs/op
+BenchmarkGORPDelete/gorp-8     	   1000000	      1703 ns/op	     304 B/op	      12 allocs/op
+BenchmarkXORMDelete/xorm-8     	    100000	     14733 ns/op	    3634 B/op	     107 allocs/op
+BenchmarkBoilDelete/boil-8     	   2000000	       986 ns/op	     120 B/op	       7 allocs/op
+
+BenchmarkGORMInsert/gorm-8     	    100000	     19197 ns/op	    8054 B/op	     161 allocs/op
+BenchmarkGORPInsert/gorp-8     	    500000	      3413 ns/op	    1008 B/op	      32 allocs/op
+BenchmarkXORMInsert/xorm-8     	    100000	     15428 ns/op	    5836 B/op	     131 allocs/op
+BenchmarkBoilInsert/boil-8     	    500000	      3041 ns/op	     568 B/op	      21 allocs/op
+
+BenchmarkGORMSelectAll/gorm-8  	     20000	     85422 ns/op	   29912 B/op	     511 allocs/op
+BenchmarkGORPSelectAll/gorp-8  	     50000	     35824 ns/op	    8837 B/op	     312 allocs/op
+BenchmarkXORMSelectAll/xorm-8  	     30000	     58843 ns/op	   13805 B/op	     298 allocs/op
+BenchmarkBoilSelectAll/boil-8  	    100000	     13844 ns/op	    2840 B/op	      61 allocs/op
+
+BenchmarkGORMSelectSubset/gorm-8     10000	    100714 ns/op	   30875 B/op	     517 allocs/op
+BenchmarkGORPSelectSubset/gorp-8     30000	     43547 ns/op	    8837 B/op	     312 allocs/op
+BenchmarkXORMSelectSubset/xorm-8     30000	     48128 ns/op	   12989 B/op	     282 allocs/op
+BenchmarkBoilSelectSubset/boil-8    100000	     12316 ns/op	    2977 B/op	      65 allocs/op
+
+BenchmarkGORMSelectComplex/gorm-8    10000	    133598 ns/op	   49398 B/op	     772 allocs/op
+BenchmarkGORPSelectComplex/gorp-8    50000	     40588 ns/op	    9037 B/op	     321 allocs/op
+BenchmarkXORMSelectComplex/xorm-8    30000	     56367 ns/op	   14174 B/op	     313 allocs/op
+BenchmarkBoilSelectComplex/boil-8   100000	     16941 ns/op	    3821 B/op	      95 allocs/op
+
+BenchmarkGORMUpdate/gorm-8           50000	     25406 ns/op	    9710 B/op	     195 allocs/op
+BenchmarkGORPUpdate/gorp-8          300000	      3614 ns/op	    1152 B/op	      34 allocs/op
+BenchmarkXORMUpdate/xorm-8          100000	     17510 ns/op	    4458 B/op	     132 allocs/op
+BenchmarkBoilUpdate/boil-8          500000	      2958 ns/op	     520 B/op	      16 allocs/op
+
+BenchmarkGORMRawBind/gorm-8    	     10000	    112577 ns/op	   38270 B/op	     595 allocs/op
+BenchmarkGORPRawBind/gorp-8    	     30000	     40967 ns/op	    8837 B/op	     312 allocs/op
+BenchmarkXORMRawBind/xorm-8    	     30000	     54739 ns/op	   12692 B/op	     273 allocs/op
+BenchmarkSQLXRawBind/sqlx-8    	    200000	     13537 ns/op	    4268 B/op	      49 allocs/op
+BenchmarkBoilRawBind/boil-8    	    200000	     11144 ns/op	    4334 B/op	      49 allocs/op
+```
+
+<style>
+li {
+    display: inline;
+}
+</style>
+<ul>
+ <li><img src="http://i.imgur.com/TglZGoI.png"/></li>
+ <li><img src="http://i.imgur.com/Ktm2ta4.png"/></li>
+ <li><img src="http://i.imgur.com/yv8kFPA.png"/></li>
+ <li><img src="http://i.imgur.com/890Zswe.png"/></li>
+ <li><img src="http://i.imgur.com/qMgoAFJ.png"/></li>
+ <li><img src="http://i.imgur.com/sDoNiCN.png"/></li>
+ <li><img src="http://i.imgur.com/EvUa4UT.png"/></li>
+ <li>
+</ul>

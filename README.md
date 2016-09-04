@@ -225,6 +225,7 @@ not to pass them through the command line or environment variables:
 | pkgname            | "models"  |
 | output             | "models"  |
 | exclude            | [ ]       |
+| tags				 | [ ] 		 |
 | debug              | false     |
 | no-hooks           | false     |
 | no-tests           | false     |
@@ -265,6 +266,7 @@ Flags:
       --no-tests              Disable generated go test files
   -o, --output string         The name of the folder to output to (default "models")
   -p, --pkgname string        The name you wish to assign to your generated package (default "models")
+  -t, --tag stringSlice       Struct tags to be included on your models in addition to json, yaml, toml
 ```
 
 Follow the steps below to do some basic model generation. Once we've generated

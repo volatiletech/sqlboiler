@@ -22,7 +22,7 @@ there are code-first, reflect-based and have a very weak story around relationsh
 * Work with existing databases: Don't be the tool to define the schema, that's better left to other tools.
 * ActiveRecord-like productivity: Eliminate all sql boilerplate, have relationships as a first-class concept.
 * Go-like feel: Work with normal structs, call functions, no hyper-magical struct tags, small interfaces.
-* Go-like performance: Benchmark and optimize the hot-paths, perform like hand-rolled `sql.DB` code.
+* Go-like performance: [Benchmark](#benchmarks) and optimize the hot-paths, perform like hand-rolled `sql.DB` code.
 
 We believe with SQLBoiler and our database-first code-generation approach we've been able to successfully meet all of these goals. On top
 of that SQLBoiler also confers the following benefits:
@@ -70,10 +70,10 @@ Table of Contents
       * [Upsert](#upsert)
       * [Reload](#reload)
       * [Exists](#exists)
-    * [Benchmarks](#benchmarks)
     * [FAQ](#faq)
         * [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
         * [Missing imports for generated package](#missing-imports-for-generated-package)
+	* [Benchmarks](#benchmarks)
 
 ## About SQL Boiler
 
@@ -1032,8 +1032,6 @@ exists := jet.Pilot(db).Exists()
 exists := models.Pilots(db, Where("id=?", 5)).Exists()
 ```
 
-## Benchmarks
-
 ## FAQ
 
 #### Won't compiling models for a huge database be very slow?
@@ -1049,3 +1047,6 @@ compiles is extremely fast.
 The generated models might import a couple of packages that are not on your system already, so
 `cd` into your generated models directory and type `go get -u -t` to fetch them. You will only need
 to run this command once, not per generation.
+
+## Benchmarks
+

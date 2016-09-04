@@ -187,7 +187,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 #### Download
 
 ```shell
-go get -u -t github.com/vattle/sqlboiler/cmd/sqlboiler
+go get -u -t github.com/vattle/sqlboiler
 ```
 
 #### Configuration

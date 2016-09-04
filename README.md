@@ -1095,18 +1095,10 @@ BenchmarkSQLXRawBind/sqlx-8    	    200000	     13537 ns/op	    4268 B/op	      
 BenchmarkBoilRawBind/boil-8    	    200000	     11144 ns/op	    4334 B/op	      49 allocs/op
 ```
 
-<style>
-li {
-    display: inline;
-}
-</style>
-<ul>
- <li><img src="http://i.imgur.com/TglZGoI.png"/></li>
- <li><img src="http://i.imgur.com/Ktm2ta4.png"/></li>
- <li><img src="http://i.imgur.com/yv8kFPA.png"/></li>
- <li><img src="http://i.imgur.com/890Zswe.png"/></li>
- <li><img src="http://i.imgur.com/qMgoAFJ.png"/></li>
- <li><img src="http://i.imgur.com/sDoNiCN.png"/></li>
- <li><img src="http://i.imgur.com/EvUa4UT.png"/></li>
- <li>
-</ul>
+<img style="margin-right:6px;" src="http://i.imgur.com/TglZGoI.png"/>
+<img style="margin-right:6px;" src="http://i.imgur.com/Ktm2ta4.png"/>
+<img style="margin-right:6px;" src="http://i.imgur.com/yv8kFPA.png"/>
+<img style="margin-right:6px;" src="http://i.imgur.com/890Zswe.png"/>
+<img style="margin-right:6px;" src="http://i.imgur.com/qMgoAFJ.png"/>
+<img style="margin-right:6px;" src="http://i.imgur.com/sDoNiCN.png"/>
+<img style="margin-right:6px;" src="http://i.imgur.com/EvUa4UT.png"/>

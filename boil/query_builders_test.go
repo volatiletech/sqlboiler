@@ -166,28 +166,28 @@ func TestWhereClause(t *testing.T) {
 		// Or("a=?")
 		{
 			q: Query{
-				where: []where{where{clause: "a=?", orSeparator: true}},
+				where: []where{{clause: "a=?", orSeparator: true}},
 			},
 			expect: " WHERE (a=$1)",
 		},
 		// Where("a=?")
 		{
 			q: Query{
-				where: []where{where{clause: "a=?"}},
+				where: []where{{clause: "a=?"}},
 			},
 			expect: " WHERE (a=$1)",
 		},
 		// Where("(a=?)")
 		{
 			q: Query{
-				where: []where{where{clause: "(a=?)"}},
+				where: []where{{clause: "(a=?)"}},
 			},
 			expect: " WHERE ((a=$1))",
 		},
 		// Where("((a=? OR b=?))")
 		{
 			q: Query{
-				where: []where{where{clause: "((a=? OR b=?))"}},
+				where: []where{{clause: "((a=? OR b=?))"}},
 			},
 			expect: " WHERE (((a=$1 OR b=$2)))",
 		},
@@ -195,8 +195,8 @@ func TestWhereClause(t *testing.T) {
 		{
 			q: Query{
 				where: []where{
-					where{clause: "(a=?)"},
-					where{clause: "(b=?)", orSeparator: true},
+					{clause: "(a=?)"},
+					{clause: "(b=?)", orSeparator: true},
 				},
 			},
 			expect: " WHERE ((a=$1)) OR ((b=$2))",
@@ -204,21 +204,21 @@ func TestWhereClause(t *testing.T) {
 		// Where("a=? OR b=?")
 		{
 			q: Query{
-				where: []where{where{clause: "a=? OR b=?"}},
+				where: []where{{clause: "a=? OR b=?"}},
 			},
 			expect: " WHERE (a=$1 OR b=$2)",
 		},
 		// Where("a=?"), Where("b=?")
 		{
 			q: Query{
-				where: []where{where{clause: "a=?"}, where{clause: "b=?"}},
+				where: []where{{clause: "a=?"}, {clause: "b=?"}},
 			},
 			expect: " WHERE (a=$1) AND (b=$2)",
 		},
 		// Where("(a=? AND b=?) OR c=?")
 		{
 			q: Query{
-				where: []where{where{clause: "(a=? AND b=?) OR c=?"}},
+				where: []where{{clause: "(a=? AND b=?) OR c=?"}},
 			},
 			expect: " WHERE ((a=$1 AND b=$2) OR c=$3)",
 		},
@@ -226,8 +226,8 @@ func TestWhereClause(t *testing.T) {
 		{
 			q: Query{
 				where: []where{
-					where{clause: "(a=? OR b=?)"},
-					where{clause: "(c=? OR d=? OR e=?)"},
+					{clause: "(a=? OR b=?)"},
+					{clause: "(c=? OR d=? OR e=?)"},
 				},
 			},
 			expect: " WHERE ((a=$1 OR b=$2)) AND ((c=$3 OR d=$4 OR e=$5))",
@@ -236,7 +236,7 @@ func TestWhereClause(t *testing.T) {
 		{
 			q: Query{
 				where: []where{
-					where{clause: "(a=? AND b=?) OR (c=? AND d=? AND e=?) OR f=? OR g=?"},
+					{clause: "(a=? AND b=?) OR (c=? AND d=? AND e=?) OR f=? OR g=?"},
 				},
 			},
 			expect: " WHERE ((a=$1 AND b=$2) OR (c=$3 AND d=$4 AND e=$5) OR f=$6 OR g=$7)",
@@ -245,7 +245,7 @@ func TestWhereClause(t *testing.T) {
 		{
 			q: Query{
 				where: []where{
-					where{clause: "(a=? AND b=?) OR (c=? AND d=? OR e=?) OR f=? OR g=?"},
+					{clause: "(a=? AND b=?) OR (c=? AND d=? OR e=?) OR f=? OR g=?"},
 				},
 			},
 			expect: " WHERE ((a=$1 AND b=$2) OR (c=$3 AND d=$4 OR e=$5) OR f=$6 OR g=$7)",
@@ -254,9 +254,9 @@ func TestWhereClause(t *testing.T) {
 		{
 			q: Query{
 				where: []where{
-					where{clause: "a=? or b=?", orSeparator: true},
-					where{clause: "c=? and d=?", orSeparator: true},
-					where{clause: "e=? or f=?", orSeparator: true},
+					{clause: "a=? or b=?", orSeparator: true},
+					{clause: "c=? and d=?", orSeparator: true},
+					{clause: "e=? or f=?", orSeparator: true},
 				},
 			},
 			expect: " WHERE (a=$1 or b=$2) OR (c=$3 and d=$4) OR (e=$5 or f=$6)",
@@ -265,9 +265,9 @@ func TestWhereClause(t *testing.T) {
 		{
 			q: Query{
 				where: []where{
-					where{clause: "a=? or b=?"},
-					where{clause: "c=? and d=?", orSeparator: true},
-					where{clause: "e=? or f=?"},
+					{clause: "a=? or b=?"},
+					{clause: "c=? and d=?", orSeparator: true},
+					{clause: "e=? or f=?"},
 				},
 			},
 			expect: " WHERE (a=$1 or b=$2) OR (c=$3 and d=$4) AND (e=$5 or f=$6)",

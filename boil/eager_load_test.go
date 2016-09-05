@@ -59,12 +59,12 @@ func (testNestedLSlice) LoadToEagerLoad(exec Executor, singular bool, obj interf
 	switch x := obj.(type) {
 	case *testNestedSlice:
 		x.R = &testNestedRSlice{
-			[]*testNestedSlice{&testNestedSlice{ID: 5}},
+			[]*testNestedSlice{{ID: 5}},
 		}
 	case *[]*testNestedSlice:
 		for _, r := range *x {
 			r.R = &testNestedRSlice{
-				[]*testNestedSlice{&testNestedSlice{ID: 5}},
+				[]*testNestedSlice{{ID: 5}},
 			}
 		}
 	}
@@ -183,8 +183,8 @@ func TestLoadRelationshipsNoReload(t *testing.T) {
 	loadFunctionNestedCalled = 0
 	state := loadRelationshipState{
 		loaded: map[string]struct{}{
-			"ToEagerLoad":             struct{}{},
-			"ToEagerLoad.ToEagerLoad": struct{}{},
+			"ToEagerLoad":             {},
+			"ToEagerLoad.ToEagerLoad": {},
 		},
 		toLoad: []string{"ToEagerLoad", "ToEagerLoad"},
 	}

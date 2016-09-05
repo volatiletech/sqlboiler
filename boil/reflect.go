@@ -322,8 +322,10 @@ func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.V
 		v := (mapping >> uint(i*8)) & sentinel
 
 		if v == sentinel {
-			if val.Kind() != reflect.Ptr {
+			if addressOf && val.Kind() != reflect.Ptr {
 				return val.Addr()
+			} else if !addressOf && val.Kind() == reflect.Ptr {
+				return reflect.Indirect(val)
 			}
 			return val
 		}

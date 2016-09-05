@@ -112,7 +112,7 @@ func (m *MockDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
 	}[tableName], nil
 }
 
-// UseLastInsertID returns a database mock LastInsertID compatability flag
+// UseLastInsertID returns a database mock LastInsertID compatibility flag
 func (m *MockDriver) UseLastInsertID() bool { return false }
 
 // Open mimics a database open call and returns nil for no error

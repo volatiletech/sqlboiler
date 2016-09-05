@@ -401,7 +401,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 	return buf.String(), args
 }
 
-// convertInQuestionMarks finds the first unescaped occurence of ? and swaps it
+// convertInQuestionMarks finds the first unescaped occurrence of ? and swaps it
 // with a list of numbered placeholders, starting at startAt.
 // It uses groupAt to determine how many placeholders should be in each group,
 // for example, groupAt 2 would result in: (($1,$2),($3,$4))
@@ -437,7 +437,7 @@ func convertInQuestionMarks(clause string, startAt, groupAt, total int) (string,
 	return ret, total
 }
 
-// convertQuestionMarks converts each occurence of ? with $<number>
+// convertQuestionMarks converts each occurrence of ? with $<number>
 // where <number> is an incrementing digit starting at startAt.
 // If question-mark (?) is escaped using back-slash (\), it will be ignored.
 func convertQuestionMarks(clause string, startAt int) (string, int) {

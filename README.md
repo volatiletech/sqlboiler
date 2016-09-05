@@ -226,7 +226,7 @@ not to pass them through the command line or environment variables:
 | pkgname            | "models"  |
 | output             | "models"  |
 | exclude            | [ ]       |
-| tags				 | [ ] 		 |
+| tag				 | [ ] 		 |
 | debug              | false     |
 | no-hooks           | false     |
 | no-tests           | false     |

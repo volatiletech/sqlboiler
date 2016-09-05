@@ -13,7 +13,10 @@ func (m mockDriver) UseLastInsertID() bool               { return false }
 func (m mockDriver) Open() error                         { return nil }
 func (m mockDriver) Close()                              {}
 
-func (m mockDriver) TableNames(exclude []string) ([]string, error) {
+func (m mockDriver) TableNames(whitelist, exclude []string) ([]string, error) {
+	if len(whitelist) > 0 {
+		return whitelist, nil
+	}
 	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
 	return strmangle.SetComplement(tables, exclude), nil
 }
@@ -96,7 +99,7 @@ func (m mockDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 func TestTables(t *testing.T) {
 	t.Parallel()
 
-	tables, err := Tables(mockDriver{})
+	tables, err := Tables(mockDriver{}, nil, nil)
 	if err != nil {
 		t.Error(err)
 	}

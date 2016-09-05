@@ -225,6 +225,7 @@ not to pass them through the command line or environment variables:
 | basedir            | none      |
 | pkgname            | "models"  |
 | output             | "models"  |
+| whitelist 		 | [ ]		 |
 | exclude            | [ ]       |
 | tag				 | [ ] 		 |
 | debug              | false     |
@@ -261,6 +262,7 @@ sqlboiler postgres
 Flags:
   -b, --basedir string        The base directory has the templates and templates_test folders
   -d, --debug                 Debug mode prints stack traces on error
+  -w, --whitelist stringSlice Only include these tables in your generated package
   -x, --exclude stringSlice   Tables to be excluded from the generated package
       --no-auto-timestamps    Disable automatic timestamps for created_at/updated_at
       --no-hooks              Disable hooks feature for your models

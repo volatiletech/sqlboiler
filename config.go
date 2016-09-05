@@ -6,6 +6,7 @@ type Config struct {
 	PkgName          string
 	OutFolder        string
 	BaseDir          string
+	WhitelistTables  []string
 	ExcludeTables    []string
 	Tags             []string
 	Debug            bool

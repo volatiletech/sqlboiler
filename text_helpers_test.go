@@ -12,7 +12,7 @@ import (
 func TestTextsFromForeignKey(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(&drivers.MockDriver{})
+	tables, err := bdb.Tables(&drivers.MockDriver{}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestTextsFromForeignKey(t *testing.T) {
 func TestTextsFromOneToOneRelationship(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(&drivers.MockDriver{})
+	tables, err := bdb.Tables(&drivers.MockDriver{}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +130,7 @@ func TestTextsFromOneToOneRelationship(t *testing.T) {
 func TestTextsFromRelationship(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(&drivers.MockDriver{})
+	tables, err := bdb.Tables(&drivers.MockDriver{}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

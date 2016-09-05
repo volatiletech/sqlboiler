@@ -64,6 +64,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "b", "", "The base directory has the templates and templates_test folders")
 	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
+	rootCmd.PersistentFlags().StringSliceP("whitelist", "w", nil, "Only include these tables in your generated package")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
@@ -121,6 +122,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 	cmdConfig.ExcludeTables = viper.GetStringSlice("exclude")
 	if len(cmdConfig.ExcludeTables) == 1 && strings.HasPrefix(cmdConfig.ExcludeTables[0], "[") {
 		cmdConfig.ExcludeTables, err = cmd.PersistentFlags().GetStringSlice("exclude")
+		if err != nil {
+			return err
+		}
+	}
+
+	cmdConfig.WhitelistTables = viper.GetStringSlice("whitelist")
+	if len(cmdConfig.WhitelistTables) == 1 && strings.HasPrefix(cmdConfig.WhitelistTables[0], "[") {
+		cmdConfig.WhitelistTables, err = cmd.PersistentFlags().GetStringSlice("whitelist")
 		if err != nil {
 			return err
 		}

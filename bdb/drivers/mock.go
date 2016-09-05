@@ -9,7 +9,10 @@ import (
 type MockDriver struct{}
 
 // TableNames returns a list of mock table names
-func (m *MockDriver) TableNames(exclude []string) ([]string, error) {
+func (m *MockDriver) TableNames(whitelist, exclude []string) ([]string, error) {
+	if len(whitelist) > 0 {
+		return whitelist, nil
+	}
 	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
 	return strmangle.SetComplement(tables, exclude), nil
 }

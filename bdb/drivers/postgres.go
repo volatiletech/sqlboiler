@@ -279,9 +279,9 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float64"
 		case "real":
 			c.Type = "null.Float32"
-		case "bit", "interval", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
-		case "bytea":
+		case "bytea", "json", "jsonb":
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "null.Bool"
@@ -302,8 +302,10 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float64"
 		case "real":
 			c.Type = "float32"
-		case "bit", "interval", "uuint", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "string"
+		case "json", "jsonb":
+			c.Type = "json.RawMessage"
 		case "bytea":
 			c.Type = "[]byte"
 		case "boolean":

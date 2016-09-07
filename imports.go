@@ -246,51 +246,60 @@ var defaultTestMainImports = map[string]imports{
 // TranslateColumnType to see the type assignments.
 var importsBasedOnType = map[string]imports{
 	"null.Float32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Float64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int8": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int16": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint8": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint16": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.String": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Bool": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Time": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
+	},
+	"null.JSON": {
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
+	},
+	"null.Bytes": {
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"time.Time": {
 		standard: importList{`"time"`},
+	},
+	"json.RawBytes": {
+		standard: importList{`"encoding/json"`},
 	},
 }

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
-	"gopkg.in/nullbio/null.v4"
+	"gopkg.in/nullbio/null.v5"
 )
 
 func bin64(i uint64) string {

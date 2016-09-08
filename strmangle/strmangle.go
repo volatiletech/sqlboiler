@@ -22,6 +22,7 @@ var uppercaseWords = map[string]struct{}{
 	"id":   {},
 	"uid":  {},
 	"uuid": {},
+	"json": {},
 }
 
 func init() {

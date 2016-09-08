@@ -1053,6 +1053,12 @@ The generated models might import a couple of packages that are not on your syst
 `cd` into your generated models directory and type `go get -u -t` to fetch them. You will only need
 to run this command once, not per generation.
 
+#### How should I handle multiple schemas?
+
+If your database uses multiple schemas you should generate a new package for each of your schemas.
+Note that this only applies to databases that use real, SQL standard schemas (like PostgreSQL), not
+fake schemas (like MySQL).
+
 ## Benchmarks
 
 If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/vattle/boilbench) repo.

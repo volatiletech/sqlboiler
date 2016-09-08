@@ -15,6 +15,7 @@ import (
 type templateData struct {
 	Tables           []bdb.Table
 	Table            bdb.Table
+	Schema           string
 	DriverName       string
 	UseLastInsertID  bool
 	PkgName          string
@@ -141,6 +142,7 @@ var templateFunctions = template.FuncMap{
 
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
+	"schemaTable": strmangle.SchemaTable,
 
 	// Text helpers
 	"textsFromForeignKey":           textsFromForeignKey,

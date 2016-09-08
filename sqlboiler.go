@@ -59,7 +59,7 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to connect to the database")
 	}
 
-	err = s.initTables(config.WhitelistTables, config.ExcludeTables)
+	err = s.initTables(config.Schema, config.WhitelistTables, config.ExcludeTables)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -96,6 +96,7 @@ func New(config *Config) (*State, error) {
 func (s *State) Run(includeTests bool) error {
 	singletonData := &templateData{
 		Tables:           s.Tables,
+		Schema:           s.Config.Schema,
 		DriverName:       s.Config.DriverName,
 		UseLastInsertID:  s.Driver.UseLastInsertID(),
 		PkgName:          s.Config.PkgName,
@@ -127,6 +128,7 @@ func (s *State) Run(includeTests bool) error {
 		data := &templateData{
 			Tables:           s.Tables,
 			Table:            table,
+			Schema:           s.Config.Schema,
 			DriverName:       s.Config.DriverName,
 			UseLastInsertID:  s.Driver.UseLastInsertID(),
 			PkgName:          s.Config.PkgName,
@@ -239,9 +241,9 @@ func (s *State) initDriver(driverName string) error {
 }
 
 // initTables retrieves all "public" schema table names from the database.
-func (s *State) initTables(whitelist, exclude []string) error {
+func (s *State) initTables(schema string, whitelist, exclude []string) error {
 	var err error
-	s.Tables, err = bdb.Tables(s.Driver, whitelist, exclude)
+	s.Tables, err = bdb.Tables(s.Driver, schema, whitelist, exclude)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}

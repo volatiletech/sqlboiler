@@ -67,7 +67,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
   args := o.inPrimaryKeyArgs()
 
   sql := fmt.Sprintf(
-    `SELECT {{.Table.Name}}.* FROM {{.Table.Name}} WHERE (%s) IN (%s)`,
+    `SELECT {{schemaTable .DriverName .Schema .Table.Name}}.* FROM {{schemaTable .DriverName .Schema .Table.Name}} WHERE (%s) IN (%s)`,
     strings.Join(strmangle.IdentQuoteSlice({{$varNameSingular}}PrimaryKeyColumns), ","),
     strmangle.Placeholders(len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )

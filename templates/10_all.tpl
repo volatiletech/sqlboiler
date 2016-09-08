@@ -8,6 +8,6 @@ func {{$tableNamePlural}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
 
 // {{$tableNamePlural}} retrieves all the records using an executor.
 func {{$tableNamePlural}}(exec boil.Executor, mods ...qm.QueryMod) {{$varNameSingular}}Query {
-  mods = append(mods, qm.From("{{.Table.Name}}"))
+  mods = append(mods, qm.From(`{{schemaTable .DriverName .Schema .Table.Name}}`))
   return {{$varNameSingular}}Query{NewQuery(exec, mods...)}
 }

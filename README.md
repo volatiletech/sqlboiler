@@ -1065,7 +1065,7 @@ fake schemas (like MySQL).
 
 If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/vattle/boilbench) repo.
 
-Here are the results **(lower is better)**:
+Here are the results (lower is better):
 
 `go test -bench . -benchmem`
 ```

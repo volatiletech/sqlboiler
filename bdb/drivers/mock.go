@@ -9,7 +9,7 @@ import (
 type MockDriver struct{}
 
 // TableNames returns a list of mock table names
-func (m *MockDriver) TableNames(whitelist, exclude []string) ([]string, error) {
+func (m *MockDriver) TableNames(schema string, whitelist, exclude []string) ([]string, error) {
 	if len(whitelist) > 0 {
 		return whitelist, nil
 	}
@@ -18,7 +18,7 @@ func (m *MockDriver) TableNames(whitelist, exclude []string) ([]string, error) {
 }
 
 // Columns returns a list of mock columns
-func (m *MockDriver) Columns(tableName string) ([]bdb.Column, error) {
+func (m *MockDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	return map[string][]bdb.Column{
 		"pilots": {
 			{Name: "id", Type: "int", DBType: "integer"},
@@ -59,7 +59,7 @@ func (m *MockDriver) Columns(tableName string) ([]bdb.Column, error) {
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m *MockDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
+func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	return map[string][]bdb.ForeignKey{
 		"jets": {
 			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},
@@ -82,7 +82,7 @@ func (m *MockDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 }
 
 // PrimaryKeyInfo returns mock primary key info for the passed in table name
-func (m *MockDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
+func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey, error) {
 	return map[string]*bdb.PrimaryKey{
 		"pilots": {
 			Name:    "pilot_id_pkey",

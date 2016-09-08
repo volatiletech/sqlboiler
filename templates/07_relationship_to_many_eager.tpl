@@ -35,12 +35,12 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
     {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from "{{.ForeignTable}}" as "{{id 0}}" inner join "{{.JoinTable}}" as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
+    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from {{schemaTable .DriverName .Schema .ForeignTable}} as "{{id 0}}" inner join {{schemaTable .DriverName .Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
     {{else -}}
   query := fmt.Sprintf(
-    `select * from "{{.ForeignTable}}" where "{{.ForeignColumn}}" in (%s)`,
+    `select * from {{schemaTable $dot.DriverName $dot.Schema .ForeignTable}} where "{{.ForeignColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
     {{end -}}

@@ -14,12 +14,13 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
   queryMods = append(queryMods, mods...)
 
   query := {{.ForeignTable.NamePluralGo}}(exec, queryMods...)
-  boil.SetFrom(query.Query, "{{.ForeignTable.Name}}")
+  boil.SetFrom(query.Query, `{{schemaTable .DriverName .Schema .ForeignTable.Name}}`)
 
   return query
 }
+{{end -}}{{/* end define */}}
 
-{{end -}}
+{{/* Begin execution of template for one-to-one relationship. */}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}

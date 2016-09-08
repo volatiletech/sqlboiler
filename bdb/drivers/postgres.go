@@ -81,11 +81,11 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
-// table schema is public. It uses a whitelist and exclude list.
-func (p *PostgresDriver) TableNames(whitelist, exclude []string) ([]string, error) {
+// table schema is schema. It uses a whitelist and exclude list.
+func (p *PostgresDriver) TableNames(schema string, whitelist, exclude []string) ([]string, error) {
 	var names []string
 
-	query := `select table_name from information_schema.tables where table_schema = 'public'`
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = '%s'`, schema)
 	if len(whitelist) > 0 {
 		query = query + fmt.Sprintf("and table_name in ('%s');", strings.Join(whitelist, "','"))
 	} else if len(exclude) > 0 {
@@ -114,7 +114,7 @@ func (p *PostgresDriver) TableNames(whitelist, exclude []string) ([]string, erro
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
+func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	var columns []bdb.Column
 
 	rows, err := p.dbConn.Query(`
@@ -132,11 +132,11 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 		      inner join pg_index pgi on pgi.indexrelid = pgc.oid
 		      inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
 		    where
-		      pgix.schemaname = 'public' and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
+		      pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
 		)) as is_unique
 		from information_schema.columns as c
-		where table_name=$1 and table_schema = 'public';
-	`, tableName)
+		where table_name=$2 and table_schema = $3;
+	`, schema, tableName, schema)
 
 	if err != nil {
 		return nil, err
@@ -172,16 +172,16 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 }
 
 // PrimaryKeyInfo looks up the primary key for a table.
-func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
+func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey, error) {
 	pkey := &bdb.PrimaryKey{}
 	var err error
 
 	query := `
 	select tc.constraint_name
 	from information_schema.table_constraints as tc
-	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY' and tc.table_schema = 'public';`
+	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY' and tc.table_schema = $2;`
 
-	row := p.dbConn.QueryRow(query, tableName)
+	row := p.dbConn.QueryRow(query, tableName, schema)
 	if err = row.Scan(&pkey.Name); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -192,10 +192,10 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  constraint_name = $1 and table_schema = 'public';`
+	where  constraint_name = $1 and table_schema = $2;`
 
 	var rows *sql.Rows
-	if rows, err = p.dbConn.Query(queryColumns, pkey.Name); err != nil {
+	if rows, err = p.dbConn.Query(queryColumns, pkey.Name, schema); err != nil {
 		return nil, err
 	}
 	defer rows.Close()
@@ -222,7 +222,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
-func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
+func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	var fkeys []bdb.ForeignKey
 
 	query := `
@@ -235,11 +235,11 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 	from information_schema.table_constraints as tc
 		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
 		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
-	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';`
+	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = $2;`
 
 	var rows *sql.Rows
 	var err error
-	if rows, err = p.dbConn.Query(query, tableName); err != nil {
+	if rows, err = p.dbConn.Query(query, tableName, schema); err != nil {
 		return nil, err
 	}
 

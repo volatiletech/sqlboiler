@@ -6,10 +6,10 @@ import "github.com/pkg/errors"
 // Interface for a database driver. Functionality required to support a specific
 // database type (eg, MySQL, Postgres etc.)
 type Interface interface {
-	TableNames(whitelist, exclude []string) ([]string, error)
-	Columns(tableName string) ([]Column, error)
-	PrimaryKeyInfo(tableName string) (*PrimaryKey, error)
-	ForeignKeyInfo(tableName string) ([]ForeignKey, error)
+	TableNames(schema string, whitelist, exclude []string) ([]string, error)
+	Columns(schema, tableName string) ([]Column, error)
+	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
+	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
 	TranslateColumnType(Column) Column
@@ -26,19 +26,21 @@ type Interface interface {
 
 // Tables returns the metadata for all tables, minus the tables
 // specified in the exclude slice.
-func Tables(db Interface, whitelist, exclude []string) ([]Table, error) {
+func Tables(db Interface, schema string, whitelist, exclude []string) ([]Table, error) {
 	var err error
 
-	names, err := db.TableNames(whitelist, exclude)
+	names, err := db.TableNames(schema, whitelist, exclude)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get table names")
 	}
 
 	var tables []Table
 	for _, name := range names {
-		t := Table{Name: name}
+		t := Table{
+			Name: name,
+		}
 
-		if t.Columns, err = db.Columns(name); err != nil {
+		if t.Columns, err = db.Columns(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 
@@ -46,11 +48,11 @@ func Tables(db Interface, whitelist, exclude []string) ([]Table, error) {
 			t.Columns[i] = db.TranslateColumnType(c)
 		}
 
-		if t.PKey, err = db.PrimaryKeyInfo(name); err != nil {
+		if t.PKey, err = db.PrimaryKeyInfo(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
 		}
 
-		if t.FKeys, err = db.ForeignKeyInfo(name); err != nil {
+		if t.FKeys, err = db.ForeignKeyInfo(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
 		}
 

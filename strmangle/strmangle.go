@@ -34,6 +34,18 @@ func init() {
 	boilRuleset = newBoilRuleset()
 }
 
+// SchemaTable returns a table name with a schema prefixed if
+// using a database that supports real schemas, for example,
+// for Postgres: "schema_name"."table_name", versus
+// simply "table_name" for MySQL (because it does not support real schemas)
+func SchemaTable(driver string, schema string, table string) string {
+	if driver == "postgres" {
+		return fmt.Sprintf(`"%s"."%s"`, schema, table)
+	}
+
+	return fmt.Sprintf(`"%s"`, table)
+}
+
 // IdentQuote attempts to quote simple identifiers in SQL tatements
 func IdentQuote(s string) string {
 	if strings.ToLower(s) == "null" {

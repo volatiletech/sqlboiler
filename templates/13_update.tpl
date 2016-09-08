@@ -52,7 +52,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   if !cached {
     wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
 
-    cache.query = fmt.Sprintf(`UPDATE "{{.Table.Name}}" SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
+    cache.query = fmt.Sprintf(`UPDATE {{schemaTable .DriverName .Schema .Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
     cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
     if err != nil {
       return err
@@ -155,7 +155,7 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
   args = append(args, o.inPrimaryKeyArgs()...)
 
   sql := fmt.Sprintf(
-    `UPDATE {{.Table.Name}} SET (%s) = (%s) WHERE (%s) IN (%s)`,
+    `UPDATE {{schemaTable .DriverName .Schema .Table.Name}} SET (%s) = (%s) WHERE (%s) IN (%s)`,
     strings.Join(colNames, ", "),
     strmangle.Placeholders(len(colNames), 1, 1),
     strings.Join(strmangle.IdentQuoteSlice({{$varNameSingular}}PrimaryKeyColumns), ","),

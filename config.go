@@ -3,6 +3,7 @@ package main
 // Config for the running of the commands
 type Config struct {
 	DriverName       string
+	Schema           string
 	PkgName          string
 	OutFolder        string
 	BaseDir          string

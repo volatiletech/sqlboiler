@@ -28,7 +28,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
   }
 
   query := fmt.Sprintf(
-    `select * from "{{.ForeignKey.ForeignTable}}" where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
+    `select * from {{schemaTable .DriverName .Schema .ForeignKey.ForeignTable}} where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
 
@@ -79,8 +79,9 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
   return nil
 }
-  {{- end -}}
-{{end -}}
+  {{- end -}}{{- /* end with */ -}}
+{{end -}}{{- /* end define */ -}}
+
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}

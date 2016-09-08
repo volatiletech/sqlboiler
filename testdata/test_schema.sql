@@ -93,7 +93,46 @@ CREATE TABLE magic (
   strange_three timestamp without time zone default (now() at time zone 'utc'),
   strange_four  timestamp with time zone default (now() at time zone 'utc'),
   strange_five  interval NOT NULL DEFAULT '21 days',
-  strange_six   interval NULL DEFAULT '23 hours'
+  strange_six   interval NULL DEFAULT '23 hours',
+
+  aa 	json NULL,
+  bb	json NOT NULL,
+  cc	jsonb NULL,
+  dd 	jsonb NOT NULL,
+  ee	box NULL,
+  ff 	box NOT NULL,
+  gg	cidr NULL,
+  hh 	cidr NOT NULL,
+  ii	circle NULL,
+  jj 	circle NOT NULL,
+  kk	double precision NULL,
+  ll 	double precision NOT NULL,
+  mm	inet NULL,
+  nn 	inet NOT NULL,
+  oo	line NULL,
+  pp 	line NOT NULL,
+  qq	lseg NULL,
+  rr 	lseg NOT NULL,
+  ss	macaddr NULL,
+  tt 	macaddr NOT NULL,
+  uu	money NULL,
+  vv 	money NOT NULL,
+  ww	path NULL,
+  xx 	path NOT NULL,
+  yy	pg_lsn NULL,
+  zz	pg_lsn NOT NULL,
+  aaa 	point NULL,
+  bbb	point NOT NULL,
+  ccc	polygon NULL,
+  ddd 	polygon NOT NULL,
+  eee	tsquery NULL,
+  fff 	tsquery NOT NULL,
+  ggg	tsvector NULL,
+  hhh 	tsvector NOT NULL,
+  iii	txid_snapshot NULL,
+  jjj 	txid_snapshot NOT NULL,
+  kkk	xml NULL,
+  lll 	xml NOT NULL
 );
 
 create table owner (
@@ -136,12 +175,6 @@ create table spider_toys (
   primary key (spider_id)
 );
 
-/*
-  Test:
-  * Variations of capitalization
-  * Single value columns
-  * Primary key as only value
-*/
 create table pals (
   pal character varying,
   primary key (pal)

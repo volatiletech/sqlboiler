@@ -2,6 +2,7 @@
 package randomize
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"sort"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
+	"github.com/vattle/sqlboiler/boil/types"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
@@ -32,11 +34,13 @@ var (
 	typeNullString  = reflect.TypeOf(null.String{})
 	typeNullBool    = reflect.TypeOf(null.Bool{})
 	typeNullTime    = reflect.TypeOf(null.Time{})
+	typeNullBytes   = reflect.TypeOf(null.Bytes{})
+	typeNullJSON    = reflect.TypeOf(null.JSON{})
 	typeTime        = reflect.TypeOf(time.Time{})
+	typeJSON        = reflect.TypeOf(types.JSON{})
+	rgxValidTime    = regexp.MustCompile(`[2-9]+`)
 
-	rgxValidTime = regexp.MustCompile(`[2-9]+`)
-
-	validatedTypes = []string{"uuid", "interval"}
+	validatedTypes = []string{"uuid", "interval", "json", "jsonb"}
 )
 
 // Seed is an atomic counter for pseudo-randomization structs. Using full
@@ -163,6 +167,10 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+			case typeNullJSON:
+				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
 		} else {
 			switch kind {
@@ -177,6 +185,12 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+			}
+			switch typ {
+			case typeJSON:
+				value = []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
 		}
 	}
@@ -250,6 +264,8 @@ func getStructNullValue(typ reflect.Type) interface{} {
 		return null.NewUint32(0, false)
 	case typeNullUint64:
 		return null.NewUint64(0, false)
+	case typeNullBytes:
+		return null.NewBytes(nil, false)
 	}
 
 	return nil
@@ -292,6 +308,8 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 		return null.NewUint32(uint32(s.nextInt()), true)
 	case typeNullUint64:
 		return null.NewUint64(uint64(s.nextInt()), true)
+	case typeNullBytes:
+		return null.NewBytes(randByteSlice(s, 16), true)
 	}
 
 	return nil

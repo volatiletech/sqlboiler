@@ -299,7 +299,7 @@ var importsBasedOnType = map[string]imports{
 	"time.Time": {
 		standard: importList{`"time"`},
 	},
-	"json.RawBytes": {
-		standard: importList{`"encoding/json"`},
+	"types.JSON": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
 	},
 }

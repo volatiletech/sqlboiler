@@ -275,11 +275,11 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Int"
 		case "smallint", "smallserial":
 			c.Type = "null.Int16"
-		case "decimal", "numeric", "double precision", "money":
+		case "decimal", "numeric", "double precision":
 			c.Type = "null.Float64"
 		case "real":
 			c.Type = "null.Float32"
-		case "bit", "interval", "bit varying", "character", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
 		case "bytea":
 			c.Type = "null.Bytes"
@@ -300,11 +300,11 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "int"
 		case "smallint", "smallserial":
 			c.Type = "int16"
-		case "decimal", "numeric", "double precision", "money":
+		case "decimal", "numeric", "double precision":
 			c.Type = "float64"
 		case "real":
 			c.Type = "float32"
-		case "bit", "interval", "uuint", "bit varying", "character", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "string"
 		case "json", "jsonb":
 			c.Type = "types.JSON"

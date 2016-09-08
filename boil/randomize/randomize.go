@@ -3,6 +3,7 @@ package randomize
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
 	"regexp"
 	"sort"
@@ -40,7 +41,12 @@ var (
 	typeJSON        = reflect.TypeOf(types.JSON{})
 	rgxValidTime    = regexp.MustCompile(`[2-9]+`)
 
-	validatedTypes = []string{"uuid", "interval", "json", "jsonb"}
+	validatedTypes = []string{
+		"inet", "line", "uuid", "interval",
+		"json", "jsonb", "box", "cidr", "circle",
+		"lseg", "macaddr", "path", "pg_lsn", "point",
+		"polygon", "txid_snapshot", "money",
+	}
 )
 
 // Seed is an atomic counter for pseudo-randomization structs. Using full
@@ -167,6 +173,47 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
+					fieldType == "path" || fieldType == "polygon" {
+					value = null.NewString(randBox(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "cidr" || fieldType == "inet" {
+					value = null.NewString(randNetAddr(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "macaddr" {
+					value = null.NewString(randMacAddr(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "circle" {
+					value = null.NewString(randCircle(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "pg_lsn" {
+					value = null.NewString(randLsn(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "point" {
+					value = null.NewString(randPoint(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "txid_snapshot" {
+					value = null.NewString(randTxID(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "money" {
+					value = null.NewString(randMoney(s), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
 			case typeNullJSON:
 				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
 				field.Set(reflect.ValueOf(value))
@@ -182,6 +229,47 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				}
 				if fieldType == "uuid" {
 					value = uuid.NewV4().String()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
+					fieldType == "path" || fieldType == "polygon" {
+					value = randBox()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "cidr" || fieldType == "inet" {
+					value = randNetAddr()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "macaddr" {
+					value = randMacAddr()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "circle" {
+					value = randCircle()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "pg_lsn" {
+					value = randLsn()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "point" {
+					value = randPoint()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "txid_snapshot" {
+					value = randTxID()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "money" {
+					value = randMoney(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -415,4 +503,67 @@ func randByteSlice(s *Seed, ln int) []byte {
 	}
 
 	return str
+}
+
+func randPoint() string {
+	a := rand.Intn(100)
+	b := a + 1
+	return fmt.Sprintf("(%d,%d)", a, b)
+}
+
+func randBox() string {
+	a := rand.Intn(100)
+	b := a + 1
+	c := a + 2
+	d := a + 3
+	return fmt.Sprintf("(%d,%d),(%d,%d)", a, b, c, d)
+}
+
+func randCircle() string {
+	a, b, c := rand.Intn(100), rand.Intn(100), rand.Intn(100)
+	return fmt.Sprintf("((%d,%d),%d)", a, b, c)
+}
+
+func randNetAddr() string {
+	return fmt.Sprintf(
+		"%d.%d.%d.%d",
+		rand.Intn(254)+1,
+		rand.Intn(254)+1,
+		rand.Intn(254)+1,
+		rand.Intn(254)+1,
+	)
+}
+
+func randMacAddr() string {
+	buf := make([]byte, 6)
+	_, err := rand.Read(buf)
+	if err != nil {
+		panic(err)
+	}
+
+	// Set the local bit
+	buf[0] |= 2
+	return fmt.Sprintf(
+		"%02x:%02x:%02x:%02x:%02x:%02x",
+		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
+	)
+}
+
+func randLsn() string {
+	a := rand.Int63n(9000000)
+	b := rand.Int63n(9000000)
+	return fmt.Sprintf("%d/%d", a, b)
+}
+
+func randTxID() string {
+	// Order of integers is relevant
+	a := rand.Intn(200) + 100
+	b := a + 100
+	c := a
+	d := a + 50
+	return fmt.Sprintf("%d:%d:%d,%d", a, b, c, d)
+}
+
+func randMoney(s *Seed) string {
+	return fmt.Sprintf("%d.00", s.nextInt())
 }

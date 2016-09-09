@@ -86,15 +86,15 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ?`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query += fmt.Sprintf("and table_name in (%s);", strmangle.Placeholders(len(whitelist), 1, 1))
+		query += fmt.Sprintf(" and table_name in (%s);", strmangle.Placeholders(len(whitelist), 2, 1))
 		for _, w := range whitelist {
 			args = append(args, w)
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf("and table_name not in (%s);", strmangle.Placeholders(len(blacklist), 1, 1))
+		query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(len(blacklist), 2+len(whitelist), 1))
 		for _, b := range blacklist {
 			args = append(args, b)
 		}

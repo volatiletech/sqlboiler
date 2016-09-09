@@ -80,12 +80,12 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ?`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query += fmt.Sprintf("and table_name in (%s);", strings.Repeat(",?", len(whitelist))[1:])
+		query += fmt.Sprintf(" and table_name in (%s);", strings.Repeat(",?", len(whitelist))[1:])
 		for _, w := range whitelist {
 			args = append(args, w)
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf("and table_name not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
+		query += fmt.Sprintf(" and table_name not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
 		for _, b := range blacklist {
 			args = append(args, b)
 		}

@@ -94,7 +94,7 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 			args = append(args, w)
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(len(blacklist), 2+len(whitelist), 1))
+		query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(len(blacklist), 2, 1))
 		for _, b := range blacklist {
 			args = append(args, b)
 		}

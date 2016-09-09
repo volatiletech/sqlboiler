@@ -320,13 +320,13 @@ func mySQLIsValidated(typ string) bool {
 }
 
 // RightQuote is the quoting character for the right side of the identifier
-func (m *MySQLDriver) RightQuote() string {
-	return "`"
+func (m *MySQLDriver) RightQuote() byte {
+	return '`'
 }
 
 // LeftQuote is the quoting character for the left side of the identifier
-func (m *MySQLDriver) LeftQuote() string {
-	return "`"
+func (m *MySQLDriver) LeftQuote() byte {
+	return '`'
 }
 
 // IndexPlaceholders returns false to indicate MySQL doesnt support indexed placeholders

@@ -1,6 +1,6 @@
 var dialect boil.Dialect = boil.Dialect{
-  LQ: {{wrapQuote .Dialect.LQ}},
-  RQ: {{wrapQuote .Dialect.RQ}},
+  LQ: 0x{{printf "%x" .Dialect.LQ}},
+  RQ: 0x{{printf "%x" .Dialect.RQ}},
   IndexPlaceholders: {{.Dialect.IndexPlaceholders}},
 }
 

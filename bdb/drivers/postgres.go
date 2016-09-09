@@ -342,13 +342,13 @@ func psqlIsValidated(typ string) bool {
 }
 
 // RightQuote is the quoting character for the right side of the identifier
-func (p *PostgresDriver) RightQuote() string {
-	return `"`
+func (p *PostgresDriver) RightQuote() byte {
+	return '"'
 }
 
 // LeftQuote is the quoting character for the left side of the identifier
-func (p *PostgresDriver) LeftQuote() string {
-	return `"`
+func (p *PostgresDriver) LeftQuote() byte {
+	return '"'
 }
 
 // IndexPlaceholders returns true to indicate PSQL supports indexed placeholders

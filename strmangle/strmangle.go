@@ -46,18 +46,6 @@ func SchemaTable(driver string, schema string, table string) string {
 	return fmt.Sprintf(`"%s"`, table)
 }
 
-// WrapQuote wraps a quote character in quotes.
-func WrapQuote(s string) string {
-	if s == `"` {
-		return "`\"`"
-	}
-	if s == "`" {
-		return "\"`\""
-	}
-
-	return fmt.Sprintf("`%s`", s)
-}
-
 // IdentQuote attempts to quote simple identifiers in SQL tatements
 func IdentQuote(s string) string {
 	if strings.ToLower(s) == "null" {

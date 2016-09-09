@@ -44,9 +44,9 @@ type Query struct {
 // that provide these values.
 type Dialect struct {
 	// The left quote character for SQL identifiers
-	LQ string
+	LQ byte
 	// The right quote character for SQL identifiers
-	RQ string
+	RQ byte
 	// Bool flag indicating whether indexed
 	// placeholders ($1) are used, or ? placeholders.
 	IndexPlaceholders bool

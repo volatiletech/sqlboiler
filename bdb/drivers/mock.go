@@ -125,13 +125,13 @@ func (m *MockDriver) Open() error { return nil }
 func (m *MockDriver) Close() {}
 
 // RightQuote is the quoting character for the right side of the identifier
-func (m *MockDriver) RightQuote() string {
-	return "`"
+func (m *MockDriver) RightQuote() byte {
+	return '"'
 }
 
 // LeftQuote is the quoting character for the left side of the identifier
-func (m *MockDriver) LeftQuote() string {
-	return `"`
+func (m *MockDriver) LeftQuote() byte {
+	return '"'
 }
 
 // IndexPlaceholders returns true to indicate fake support of indexed placeholders

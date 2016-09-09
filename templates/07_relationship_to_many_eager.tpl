@@ -38,13 +38,13 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
     {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from {{schemaTable $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}" inner join {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
-    strmangle.Placeholders(count, 1, 1),
+    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}" inner join {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
+    strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
   )
     {{else -}}
   query := fmt.Sprintf(
-    `select * from {{schemaTable $dot.DriverName $dot.Schema .ForeignTable}} where "{{.ForeignColumn}}" in (%s)`,
-    strmangle.Placeholders(count, 1, 1),
+    `select * from {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} where "{{.ForeignColumn}}" in (%s)`,
+    strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
   )
     {{end -}}
 

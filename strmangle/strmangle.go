@@ -38,17 +38,17 @@ func init() {
 // using a database that supports real schemas, for example,
 // for Postgres: "schema_name"."table_name", versus
 // simply "table_name" for MySQL (because it does not support real schemas)
-func SchemaTable(driver string, schema string, table string) string {
+func SchemaTable(lq byte, rq byte, driver string, schema string, table string) string {
 	if driver == "postgres" && schema != "public" {
-		return fmt.Sprintf(`"%s"."%s"`, schema, table)
+		return fmt.Sprintf(`%c%s%c.%c%s%c`, lq, schema, rq, lq, table, rq)
 	}
 
-	return fmt.Sprintf(`"%s"`, table)
+	return fmt.Sprintf(`%c%s%c`, lq, table, rq)
 }
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
 func IdentQuote(lq byte, rq byte, s string) string {
-	if strings.ToLower(s) == "null" {
+	if strings.ToLower(s) == "null" || s == "?" {
 		return s
 	}
 
@@ -65,14 +65,14 @@ func IdentQuote(lq byte, rq byte, s string) string {
 			buf.WriteByte('.')
 		}
 
-		if strings.HasPrefix(split, `"`) || strings.HasSuffix(split, `"`) || split == "*" {
+		if split[0] == lq || split[len(split)-1] == rq || split == "*" {
 			buf.WriteString(split)
 			continue
 		}
 
-		buf.WriteByte('"')
+		buf.WriteByte(lq)
 		buf.WriteString(split)
-		buf.WriteByte('"')
+		buf.WriteByte(rq)
 	}
 
 	return buf.String()
@@ -86,7 +86,7 @@ func IdentQuoteSlice(lq byte, rq byte, s []string) []string {
 
 	strs := make([]string, len(s))
 	for i, str := range s {
-		strs[i] = IdentQuote(str)
+		strs[i] = IdentQuote(lq, rq, str)
 	}
 
 	return strs
@@ -381,7 +381,8 @@ func PrefixStringSlice(str string, strs []string) []string {
 // Placeholders generates the SQL statement placeholders for in queries.
 // For example, ($1,$2,$3),($4,$5,$6) etc.
 // It will start counting placeholders at "start".
-func Placeholders(count int, start int, group int) string {
+// If indexPlaceholders is false, it will convert to ? instead of $1 etc.
+func Placeholders(indexPlaceholders bool, count int, start int, group int) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
@@ -400,7 +401,11 @@ func Placeholders(count int, start int, group int) string {
 				buf.WriteByte(',')
 			}
 		}
-		buf.WriteString(fmt.Sprintf("$%d", start+i))
+		if indexPlaceholders {
+			buf.WriteString(fmt.Sprintf("$%d", start+i))
+		} else {
+			buf.WriteByte('?')
+		}
 	}
 	if group > 1 {
 		buf.WriteByte(')')

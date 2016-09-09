@@ -97,17 +97,17 @@ func (m testMockDriver) PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, e
 }
 
 // RightQuote is the quoting character for the right side of the identifier
-func (m *testMockDriver) RightQuote() byte {
+func (m testMockDriver) RightQuote() byte {
 	return '"'
 }
 
 // LeftQuote is the quoting character for the left side of the identifier
-func (m *testMockDriver) LeftQuote() byte {
+func (m testMockDriver) LeftQuote() byte {
 	return '"'
 }
 
 // IndexPlaceholders returns true to indicate fake support of indexed placeholders
-func (m *testMockDriver) IndexPlaceholders() bool {
+func (m testMockDriver) IndexPlaceholders() bool {
 	return false
 }
 

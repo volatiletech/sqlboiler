@@ -29,7 +29,7 @@ func TestIdentQuote(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := IdentQuote(test.In); got != test.Out {
+		if got := IdentQuote('"', '"', test.In); got != test.Out {
 			t.Errorf("want: %s, got: %s", test.Out, got)
 		}
 	}
@@ -38,7 +38,7 @@ func TestIdentQuote(t *testing.T) {
 func TestIdentQuoteSlice(t *testing.T) {
 	t.Parallel()
 
-	ret := IdentQuoteSlice([]string{`thing`, `null`})
+	ret := IdentQuoteSlice('"', '"', []string{`thing`, `null`})
 	if ret[0] != `"thing"` {
 		t.Error(ret[0])
 	}
@@ -72,31 +72,43 @@ func TestIdentifier(t *testing.T) {
 func TestPlaceholders(t *testing.T) {
 	t.Parallel()
 
-	x := Placeholders(1, 2, 1)
+	x := Placeholders(true, 1, 2, 1)
 	want := "$2"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(5, 1, 1)
+	x = Placeholders(true, 5, 1, 1)
 	want = "$1,$2,$3,$4,$5"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(6, 1, 2)
+	x = Placeholders(false, 5, 1, 1)
+	want = "?,?,?,?,?"
+	if want != x {
+		t.Errorf("want %s, got %s", want, x)
+	}
+
+	x = Placeholders(true, 6, 1, 2)
 	want = "($1,$2),($3,$4),($5,$6)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(9, 1, 3)
-	want = "($1,$2,$3),($4,$5,$6),($7,$8,$9)"
+	x = Placeholders(true, 6, 1, 2)
+	want = "($1,$2),($3,$4),($5,$6)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(7, 1, 3)
+	x = Placeholders(false, 9, 1, 3)
+	want = "(?,?,?),(?,?,?),(?,?,?)"
+	if want != x {
+		t.Errorf("want %s, got %s", want, x)
+	}
+
+	x = Placeholders(true, 7, 1, 3)
 	want = "($1,$2,$3),($4,$5,$6),($7)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)

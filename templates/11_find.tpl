@@ -26,10 +26,10 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
   sel := "*"
   if len(selectCols) > 0 {
-    sel = strings.Join(strmangle.IdentQuoteSlice(selectCols), ",")
+    sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
   }
   query := fmt.Sprintf(
-    `select %s from {{schemaTable .DriverName .Schema .Table.Name}} where {{whereClause 1 .Table.PKey.Columns}}`, sel,
+    `select %s from {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} where {{whereClause 1 .Table.PKey.Columns}}`, sel,
   )
 
   q := boil.SQL(exec, query, {{$pkNames | join ", "}})

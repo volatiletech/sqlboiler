@@ -28,8 +28,8 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
   }
 
   query := fmt.Sprintf(
-    `select * from {{schemaTable $tmplData.DriverName $tmplData.Schema .ForeignKey.ForeignTable}} where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
-    strmangle.Placeholders(count, 1, 1),
+    `select * from {{schemaTable $tmplData.Dialect.LQ $tmplData.Dialect.RQ $tmplData.DriverName $tmplData.Schema .ForeignKey.ForeignTable}} where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
+    strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
   )
 
   if boil.DebugMode {

@@ -31,7 +31,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 
     {{if .ToJoinTable -}}
   queryMods = append(queryMods,
-    qm.InnerJoin(`{{schemaTable $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}"`),
+    qm.InnerJoin(`{{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}"`),
     qm.Where(`"{{id 1}}"."{{.JoinLocalColumn}}"=$1`, {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
   )
     {{else -}}
@@ -41,7 +41,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
     {{end}}
 
   query := {{$rel.ForeignTable.NamePluralGo}}(exec, queryMods...)
-  boil.SetFrom(query.Query, `{{schemaTable $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}"`)
+  boil.SetFrom(query.Query, `{{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}"`)
   return query
 }
 

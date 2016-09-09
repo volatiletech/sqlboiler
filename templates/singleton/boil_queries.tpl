@@ -1,4 +1,4 @@
-var dialect boil.Dialect = boil.Dialect{
+var dialect = boil.Dialect{
   LQ: 0x{{printf "%x" .Dialect.LQ}},
   RQ: 0x{{printf "%x" .Dialect.RQ}},
   IndexPlaceholders: {{.Dialect.IndexPlaceholders}},

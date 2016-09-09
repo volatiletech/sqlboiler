@@ -57,7 +57,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		// Don't identQuoteSlice - writeAsStatements does this
 		buf.WriteString(strings.Join(selectColsWithAs, ", "))
 	} else if hasSelectCols {
-		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.selectCols), ", "))
+		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.selectCols), ", "))
 	} else if hasJoins {
 		selectColsWithStars := writeStars(q)
 		buf.WriteString(strings.Join(selectColsWithStars, ", "))
@@ -70,7 +70,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteByte(')')
 	}
 
-	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
+	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
 
 	if len(q.joins) > 0 {
 		argsLen := len(args)
@@ -82,7 +82,12 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
 			args = append(args, j.args...)
 		}
-		resp, _ := convertQuestionMarks(joinBuf.String(), argsLen+1)
+		var resp string
+		if q.dialect.IndexPlaceholders {
+			resp, _ = convertQuestionMarks(joinBuf.String(), argsLen+1)
+		} else {
+			resp = joinBuf.String()
+		}
 		fmt.Fprintf(buf, resp)
 		strmangle.PutBuffer(joinBuf)
 	}
@@ -110,7 +115,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 
 	buf.WriteString("DELETE FROM ")
-	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
 
 	where, whereArgs := whereClause(q, 1)
 	if len(whereArgs) != 0 {
@@ -135,7 +140,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 
 	buf.WriteString("UPDATE ")
-	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.from), ", "))
+	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
 
 	cols := make(sort.StringSlice, len(q.update))
 	var args []interface{}
@@ -150,13 +155,13 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	for i := 0; i < len(cols); i++ {
 		args = append(args, q.update[cols[i]])
-		cols[i] = strmangle.IdentQuote(cols[i])
+		cols[i] = strmangle.IdentQuote(q.dialect.LQ, q.dialect.RQ, cols[i])
 	}
 
 	buf.WriteString(fmt.Sprintf(
 		" SET (%s) = (%s)",
 		strings.Join(cols, ", "),
-		strmangle.Placeholders(len(cols), 1, 1)),
+		strmangle.Placeholders(q.dialect.IndexPlaceholders, len(cols), 1, 1)),
 	)
 
 	where, whereArgs := whereClause(q, len(args)+1)
@@ -179,10 +184,10 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 // BuildUpsertQuery builds a SQL statement string using the upsertData provided.
-func BuildUpsertQuery(tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
-	conflict = strmangle.IdentQuoteSlice(conflict)
-	whitelist = strmangle.IdentQuoteSlice(whitelist)
-	ret = strmangle.IdentQuoteSlice(ret)
+func BuildUpsertQuery(dia Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
+	conflict = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, conflict)
+	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
+	ret = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, ret)
 
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
@@ -192,7 +197,7 @@ func BuildUpsertQuery(tableName string, updateOnConflict bool, ret, update, conf
 		"INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ",
 		tableName,
 		strings.Join(whitelist, ", "),
-		strmangle.Placeholders(len(whitelist), 1, 1),
+		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
 	)
 
 	if !updateOnConflict || len(update) == 0 {
@@ -206,7 +211,7 @@ func BuildUpsertQuery(tableName string, updateOnConflict bool, ret, update, conf
 			if i != 0 {
 				buf.WriteByte(',')
 			}
-			quoted := strmangle.IdentQuote(v)
+			quoted := strmangle.IdentQuote(dia.LQ, dia.RQ, v)
 			buf.WriteString(quoted)
 			buf.WriteString(" = EXCLUDED.")
 			buf.WriteString(quoted)
@@ -237,7 +242,12 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 			fmt.Fprintf(havingBuf, j.clause)
 			*args = append(*args, j.args...)
 		}
-		resp, _ := convertQuestionMarks(havingBuf.String(), argsLen+1)
+		var resp string
+		if q.dialect.IndexPlaceholders {
+			resp, _ = convertQuestionMarks(havingBuf.String(), argsLen+1)
+		} else {
+			resp = havingBuf.String()
+		}
 		fmt.Fprintf(buf, resp)
 		strmangle.PutBuffer(havingBuf)
 	}
@@ -264,7 +274,7 @@ func writeStars(q *Query) []string {
 	for i, f := range q.from {
 		toks := strings.Split(f, " ")
 		if len(toks) == 1 {
-			cols[i] = fmt.Sprintf(`%s.*`, strmangle.IdentQuote(toks[0]))
+			cols[i] = fmt.Sprintf(`%s.*`, strmangle.IdentQuote(q.dialect.LQ, q.dialect.RQ, toks[0]))
 			continue
 		}
 
@@ -276,7 +286,7 @@ func writeStars(q *Query) []string {
 		if len(alias) != 0 {
 			name = alias
 		}
-		cols[i] = fmt.Sprintf(`%s.*`, strmangle.IdentQuote(name))
+		cols[i] = fmt.Sprintf(`%s.*`, strmangle.IdentQuote(q.dialect.LQ, q.dialect.RQ, name))
 	}
 
 	return cols
@@ -292,7 +302,7 @@ func writeAsStatements(q *Query) []string {
 
 		toks := strings.Split(col, ".")
 		if len(toks) == 1 {
-			cols[i] = strmangle.IdentQuote(col)
+			cols[i] = strmangle.IdentQuote(q.dialect.LQ, q.dialect.RQ, col)
 			continue
 		}
 
@@ -301,7 +311,7 @@ func writeAsStatements(q *Query) []string {
 			asParts[j] = strings.Trim(tok, `"`)
 		}
 
-		cols[i] = fmt.Sprintf(`%s as "%s"`, strmangle.IdentQuote(col), strings.Join(asParts, "."))
+		cols[i] = fmt.Sprintf(`%s as "%s"`, strmangle.IdentQuote(q.dialect.LQ, q.dialect.RQ, col), strings.Join(asParts, "."))
 	}
 
 	return cols
@@ -335,7 +345,13 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 		args = append(args, where.args...)
 	}
 
-	resp, _ := convertQuestionMarks(buf.String(), startAt)
+	var resp string
+	if q.dialect.IndexPlaceholders {
+		resp, _ = convertQuestionMarks(buf.String(), startAt)
+	} else {
+		resp = buf.String()
+	}
+
 	return resp, args
 }
 
@@ -374,7 +390,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 		// column name side, however if this case is being hit then the regexp
 		// probably needs adjustment, or the user is passing in invalid clauses.
 		if matches == nil {
-			clause, count := convertInQuestionMarks(in.clause, startAt, 1, ln)
+			clause, count := convertInQuestionMarks(q.dialect.IndexPlaceholders, in.clause, startAt, 1, ln)
 			buf.WriteString(clause)
 			startAt = startAt + count
 		} else {
@@ -384,11 +400,24 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 			// of the clause to determine how many columns they are using.
 			// This number determines the groupAt for the convert function.
 			cols := strings.Split(leftSide, ",")
-			cols = strmangle.IdentQuoteSlice(cols)
+			cols = strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, cols)
 			groupAt := len(cols)
 
-			leftClause, leftCount := convertQuestionMarks(strings.Join(cols, ","), startAt)
-			rightClause, rightCount := convertInQuestionMarks(rightSide, startAt+leftCount, groupAt, ln-leftCount)
+			var leftClause string
+			var leftCount int
+			if q.dialect.IndexPlaceholders {
+				leftClause, leftCount = convertQuestionMarks(strings.Join(cols, ","), startAt)
+			} else {
+				// Count the number of cols that are question marks, so we know
+				// how much to offset convertInQuestionMarks by
+				for _, v := range cols {
+					if v == "?" {
+						leftCount++
+					}
+				}
+				leftClause = strings.Join(cols, ",")
+			}
+			rightClause, rightCount := convertInQuestionMarks(q.dialect.IndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
 			buf.WriteString(leftClause)
 			buf.WriteString(" IN ")
 			buf.WriteString(rightClause)
@@ -406,7 +435,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 // It uses groupAt to determine how many placeholders should be in each group,
 // for example, groupAt 2 would result in: (($1,$2),($3,$4))
 // and groupAt 1 would result in ($1,$2,$3,$4)
-func convertInQuestionMarks(clause string, startAt, groupAt, total int) (string, int) {
+func convertInQuestionMarks(indexPlaceholders bool, clause string, startAt, groupAt, total int) (string, int) {
 	if startAt == 0 || len(clause) == 0 {
 		panic("Not a valid start number.")
 	}
@@ -428,7 +457,7 @@ func convertInQuestionMarks(clause string, startAt, groupAt, total int) (string,
 
 	paramBuf.WriteString(clause[:foundAt])
 	paramBuf.WriteByte('(')
-	paramBuf.WriteString(strmangle.Placeholders(total, startAt, groupAt))
+	paramBuf.WriteString(strmangle.Placeholders(indexPlaceholders, total, startAt, groupAt))
 	paramBuf.WriteByte(')')
 	paramBuf.WriteString(clause[foundAt+1:])
 

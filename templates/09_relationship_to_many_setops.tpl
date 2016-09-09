@@ -39,7 +39,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 
   {{if .ToJoinTable -}}
   for _, rel := range related {
-    query := `insert into {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} ({{.JoinLocalColumn}}, {{.JoinForeignColumn}}) values ($1, $2)`
+    query := `insert into {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} ({{.JoinLocalColumn}}, {{.JoinForeignColumn}}) values ($1, $2)`
     values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}, rel.{{$rel.ForeignTable.ColumnNameGo}}}
 
     if boil.DebugMode {
@@ -96,10 +96,10 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 // Sets related.R.{{$rel.Function.ForeignName}}'s {{$rel.Function.Name}} accordingly.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
   {{if .ToJoinTable -}}
-  query := `delete from {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} where "{{.JoinLocalColumn}}" = $1`
+  query := `delete from {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} where "{{.JoinLocalColumn}}" = $1`
   values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
   {{else -}}
-  query := `update {{schemaTable $dot.DriverName $dot.Schema .ForeignTable}} set "{{.ForeignColumn}}" = null where "{{.ForeignColumn}}" = $1`
+  query := `update {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} set "{{.ForeignColumn}}" = null where "{{.ForeignColumn}}" = $1`
   values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
   {{end -}}
   if boil.DebugMode {
@@ -140,8 +140,8 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Funct
   var err error
   {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `delete from {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} where "{{.JoinLocalColumn}}" = $1 and "{{.JoinForeignColumn}}" in (%s)`,
-    strmangle.Placeholders(len(related), 1, 1),
+    `delete from {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} where "{{.JoinLocalColumn}}" = $1 and "{{.JoinForeignColumn}}" in (%s)`,
+    strmangle.Placeholders(dialect.IndexPlaceholders, len(related), 1, 1),
   )
   values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
 

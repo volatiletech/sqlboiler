@@ -19,6 +19,7 @@ const (
 // Query holds the state for the built up query
 type Query struct {
 	executor   Executor
+	dialect    *Dialect
 	plainSQL   plainSQL
 	load       []string
 	delete     bool
@@ -35,6 +36,20 @@ type Query struct {
 	limit      int
 	offset     int
 	forlock    string
+}
+
+// Dialect holds values that direct the query builder
+// how to build compatible queries for each database.
+// Each database driver needs to implement functions
+// that provide these values.
+type Dialect struct {
+	// The left quote character for SQL identifiers
+	LQ string
+	// The right quote character for SQL identifiers
+	RQ string
+	// Bool flag indicating whether indexed
+	// placeholders ($1) are used, or ? placeholders.
+	IndexPlaceholders bool
 }
 
 type where struct {
@@ -119,6 +134,11 @@ func SetExecutor(q *Query, exec Executor) {
 // GetExecutor on the query.
 func GetExecutor(q *Query) Executor {
 	return q.executor
+}
+
+// SetDialect on the query.
+func SetDialect(q *Query, dialect *Dialect) {
+	q.dialect = dialect
 }
 
 // SetSQL on the query.

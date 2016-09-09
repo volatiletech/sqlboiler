@@ -22,6 +22,13 @@ type Interface interface {
 	Open() error
 	// Close the database connection
 	Close()
+
+	// Dialect helpers, these provide the values that will go into
+	// a boil.Dialect, so the query builder knows how to support
+	// your database driver properly.
+	LeftQuote() string
+	RightQuote() string
+	IndexPlaceholders() bool
 }
 
 // Tables returns the metadata for all tables, minus the tables

@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/boil"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
@@ -22,8 +23,8 @@ type templateData struct {
 	NoHooks          bool
 	NoAutoTimestamps bool
 	Tags             []string
-
-	StringFuncs map[string]func(string) string
+	StringFuncs      map[string]func(string) string
+	Dialect          boil.Dialect
 }
 
 type templateList struct {
@@ -116,6 +117,7 @@ var templateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
 	"id":        strmangle.Identifier,
+	"wrapQuote": strmangle.WrapQuote,
 
 	// Pluralization
 	"singular": strmangle.Singular,

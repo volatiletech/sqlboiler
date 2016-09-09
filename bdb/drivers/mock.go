@@ -123,3 +123,18 @@ func (m *MockDriver) Open() error { return nil }
 
 // Close mimics a database close call
 func (m *MockDriver) Close() {}
+
+// RightQuote is the quoting character for the right side of the identifier
+func (m *MockDriver) RightQuote() string {
+	return "`"
+}
+
+// LeftQuote is the quoting character for the left side of the identifier
+func (m *MockDriver) LeftQuote() string {
+	return `"`
+}
+
+// IndexPlaceholders returns true to indicate fake support of indexed placeholders
+func (m *MockDriver) IndexPlaceholders() bool {
+	return false
+}

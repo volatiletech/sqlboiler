@@ -32,8 +32,9 @@ const (
 type State struct {
 	Config *Config
 
-	Driver bdb.Interface
-	Tables []bdb.Table
+	Driver  bdb.Interface
+	Tables  []bdb.Table
+	Dialect boil.Dialect
 
 	Templates              *templateList
 	TestTemplates          *templateList
@@ -102,6 +103,7 @@ func (s *State) Run(includeTests bool) error {
 		PkgName:          s.Config.PkgName,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
+		Dialect:          s.Dialect,
 
 		StringFuncs: templateStringMappers,
 	}
@@ -135,6 +137,7 @@ func (s *State) Run(includeTests bool) error {
 			NoHooks:          s.Config.NoHooks,
 			NoAutoTimestamps: s.Config.NoAutoTimestamps,
 			Tags:             s.Config.Tags,
+			Dialect:          s.Dialect,
 
 			StringFuncs: templateStringMappers,
 		}
@@ -245,6 +248,10 @@ func (s *State) initDriver(driverName string) error {
 	if s.Driver == nil {
 		return errors.New("An invalid driver name was provided")
 	}
+
+	s.Dialect.LQ = s.Driver.LeftQuote()
+	s.Dialect.RQ = s.Driver.RightQuote()
+	s.Dialect.IndexPlaceholders = s.Driver.IndexPlaceholders()
 
 	return nil
 }

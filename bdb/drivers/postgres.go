@@ -19,7 +19,7 @@ type PostgresDriver struct {
 }
 
 // validatedTypes are types that cannot be zero values in the database.
-var validatedTypes = []string{"uuid"}
+var psqlValidatedTypes = []string{"uuid"}
 
 // NewPostgresDriver takes the database connection details as parameters and
 // returns a pointer to a PostgresDriver object. Note that it is required to
@@ -27,14 +27,14 @@ var validatedTypes = []string{"uuid"}
 // the database connection once an object has been obtained.
 func NewPostgresDriver(user, pass, dbname, host string, port int, sslmode string) *PostgresDriver {
 	driver := PostgresDriver{
-		connStr: BuildQueryString(user, pass, dbname, host, port, sslmode),
+		connStr: PostgresBuildQueryString(user, pass, dbname, host, port, sslmode),
 	}
 
 	return &driver
 }
 
-// BuildQueryString for Postgres
-func BuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
+// PostgresBuildQueryString builds a query string.
+func PostgresBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
 	parts := []string{}
 	if len(user) != 0 {
 		parts = append(parts, fmt.Sprintf("user=%s", user))
@@ -163,7 +163,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 			Default:   colDefault,
 			Nullable:  nullable == "YES",
 			Unique:    unique,
-			Validated: isValidated(colType),
+			Validated: psqlIsValidated(colType),
 		}
 		columns = append(columns, column)
 	}
@@ -323,8 +323,8 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 }
 
 // isValidated checks if the database type is in the validatedTypes list.
-func isValidated(typ string) bool {
-	for _, v := range validatedTypes {
+func psqlIsValidated(typ string) bool {
+	for _, v := range psqlValidatedTypes {
 		if v == typ {
 			return true
 		}

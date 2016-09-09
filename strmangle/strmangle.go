@@ -47,7 +47,7 @@ func SchemaTable(driver string, schema string, table string) string {
 }
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
-func IdentQuote(s string) string {
+func IdentQuote(lq byte, rq byte, s string) string {
 	if strings.ToLower(s) == "null" {
 		return s
 	}
@@ -79,7 +79,7 @@ func IdentQuote(s string) string {
 }
 
 // IdentQuoteSlice applies IdentQuote to a slice.
-func IdentQuoteSlice(s []string) []string {
+func IdentQuoteSlice(lq byte, rq byte, s []string) []string {
 	if len(s) == 0 {
 		return s
 	}

@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 // PostgresDriver holds the database connection string and a handle
@@ -85,14 +86,21 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 func (p *PostgresDriver) TableNames(schema string, whitelist, exclude []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = '%s'`, schema)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ?`)
+	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query = query + fmt.Sprintf("and table_name in ('%s');", strings.Join(whitelist, "','"))
+		query += fmt.Sprintf("and table_name in (%s);", strmangle.Placeholders(len(whitelist), 1, 1))
+		for _, w := range whitelist {
+			args = append(args, w)
+		}
 	} else if len(exclude) > 0 {
-		query = query + fmt.Sprintf("and table_name not in ('%s');", strings.Join(exclude, "','"))
+		query += fmt.Sprintf("and table_name not in (%s);", strmangle.Placeholders(len(exclude), 1, 1))
+		for _, e := range exclude {
+			args = append(args, e)
+		}
 	}
 
-	rows, err := p.dbConn.Query(query)
+	rows, err := p.dbConn.Query(query, args...)
 
 	if err != nil {
 		return nil, err
@@ -135,8 +143,8 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		      pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
 		)) as is_unique
 		from information_schema.columns as c
-		where table_name=$2 and table_schema = $3;
-	`, schema, tableName, schema)
+		where table_name=$2 and table_schema = $1;
+	`, schema, tableName)
 
 	if err != nil {
 		return nil, err

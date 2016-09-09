@@ -74,6 +74,9 @@ func main() {
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
+	viper.SetDefault("mysql.sslmode", "true")
+	viper.SetDefault("mysql.port", "3306")
+
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.AutomaticEnv()
 
@@ -155,10 +158,17 @@ func preRun(cmd *cobra.Command, args []string) error {
 			SSLMode: viper.GetString("postgres.sslmode"),
 		}
 
-		// Set the default SSLMode value
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
 		if cmdConfig.Postgres.SSLMode == "" {
-			viper.Set("postgres.sslmode", "require")
-			cmdConfig.Postgres.SSLMode = viper.GetString("postgres.sslmode")
+			cmdConfig.Postgres.SSLMode = "require"
+			viper.Set("postgres.sslmode", cmdConfig.Postgres.SSLMode)
+		}
+
+		if cmdConfig.Postgres.Port == 0 {
+			cmdConfig.Postgres.Port = 5432
+			viper.Set("postgres.port", cmdConfig.Postgres.Port)
 		}
 
 		err = vala.BeginValidation().Validate(
@@ -174,6 +184,47 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	} else if driverName == "postgres" {
 		return errors.New("postgres driver requires a postgres section in your config file")
+	}
+
+	if viper.IsSet("mysql.dbname") {
+		cmdConfig.MySQL = MySQLConfig{
+			User:    viper.GetString("mysql.user"),
+			Pass:    viper.GetString("mysql.pass"),
+			Host:    viper.GetString("mysql.host"),
+			Port:    viper.GetInt("mysql.port"),
+			DBName:  viper.GetString("mysql.dbname"),
+			SSLMode: viper.GetString("mysql.sslmode"),
+		}
+
+		// MySQL doesn't have schemas, just databases
+		cmdConfig.Schema = cmdConfig.MySQL.DBName
+
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
+		if cmdConfig.MySQL.SSLMode == "" {
+			cmdConfig.MySQL.SSLMode = "true"
+			viper.Set("mysql.sslmode", cmdConfig.MySQL.SSLMode)
+		}
+
+		if cmdConfig.MySQL.Port == 0 {
+			cmdConfig.MySQL.Port = 3306
+			viper.Set("mysql.port", cmdConfig.MySQL.Port)
+		}
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.MySQL.User, "mysql.user"),
+			vala.StringNotEmpty(cmdConfig.MySQL.Host, "mysql.host"),
+			vala.Not(vala.Equals(cmdConfig.MySQL.Port, 0, "mysql.port")),
+			vala.StringNotEmpty(cmdConfig.MySQL.DBName, "mysql.dbname"),
+			vala.StringNotEmpty(cmdConfig.MySQL.SSLMode, "mysql.sslmode"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
+	} else if driverName == "mysql" {
+		return errors.New("mysql driver requires a mysql section in your config file")
 	}
 
 	cmdState, err = New(cmdConfig)

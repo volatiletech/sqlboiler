@@ -229,6 +229,15 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.Postgres.Port,
 			s.Config.Postgres.SSLMode,
 		)
+	case "mysql":
+		s.Driver = drivers.NewMySQLDriver(
+			s.Config.MySQL.User,
+			s.Config.MySQL.Pass,
+			s.Config.MySQL.DBName,
+			s.Config.MySQL.Host,
+			s.Config.MySQL.Port,
+			s.Config.MySQL.SSLMode,
+		)
 	case "mock":
 		s.Driver = &drivers.MockDriver{}
 	}

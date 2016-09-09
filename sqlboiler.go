@@ -59,7 +59,7 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to connect to the database")
 	}
 
-	err = s.initTables(config.Schema, config.WhitelistTables, config.ExcludeTables)
+	err = s.initTables(config.Schema, config.WhitelistTables, config.BlacklistTables)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -241,9 +241,9 @@ func (s *State) initDriver(driverName string) error {
 }
 
 // initTables retrieves all "public" schema table names from the database.
-func (s *State) initTables(schema string, whitelist, exclude []string) error {
+func (s *State) initTables(schema string, whitelist, blacklist []string) error {
 	var err error
-	s.Tables, err = bdb.Tables(s.Driver, schema, whitelist, exclude)
+	s.Tables, err = bdb.Tables(s.Driver, schema, whitelist, blacklist)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}

@@ -8,7 +8,7 @@ type Config struct {
 	OutFolder        string
 	BaseDir          string
 	WhitelistTables  []string
-	ExcludeTables    []string
+	BlacklistTables  []string
 	Tags             []string
 	Debug            bool
 	NoTests          bool

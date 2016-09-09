@@ -13,12 +13,12 @@ func (m mockDriver) UseLastInsertID() bool               { return false }
 func (m mockDriver) Open() error                         { return nil }
 func (m mockDriver) Close()                              {}
 
-func (m mockDriver) TableNames(whitelist, exclude []string) ([]string, error) {
+func (m mockDriver) TableNames(whitelist, blacklist []string) ([]string, error) {
 	if len(whitelist) > 0 {
 		return whitelist, nil
 	}
 	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
-	return strmangle.SetComplement(tables, exclude), nil
+	return strmangle.SetComplement(tables, blacklist), nil
 }
 
 // Columns returns a list of mock columns

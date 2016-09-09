@@ -223,12 +223,12 @@ not to pass them through the command line or environment variables:
 | Name | Default |
 | --- | --- |
 | basedir            | none      |
-| schema 			 | "public"  |
+| schema             | "public"  |
 | pkgname            | "models"  |
 | output             | "models"  |
-| whitelist 		 | [ ]		 |
-| exclude            | [ ]       |
-| tag				 | [ ] 		 |
+| whitelist          | []        |
+| blacklist          | []        |
+| tag                | []        |
 | debug              | false     |
 | no-hooks           | false     |
 | no-tests           | false     |
@@ -261,14 +261,14 @@ Examples:
 sqlboiler postgres
 
 Flags:
-  -b, --basedir string        The base directory has the templates and templates_test folders
+  -b, --blacklist stringSlice Do not include these tables in your generated package
   -w, --whitelist stringSlice Only include these tables in your generated package
-  -x, --exclude stringSlice   Tables to be excluded from the generated package
   -s, --schema string         The name of your database schema, for databases that support real schemas (default "public")
   -p, --pkgname string        The name you wish to assign to your generated package (default "models")
   -o, --output string         The name of the folder to output to (default "models")
   -t, --tag stringSlice       Struct tags to be included on your models in addition to json, yaml, toml
   -d, --debug                 Debug mode prints stack traces on error
+      --basedir string        The base directory has the templates and templates_test folders
       --no-auto-timestamps    Disable automatic timestamps for created_at/updated_at
       --no-hooks              Disable hooks feature for your models
       --no-tests              Disable generated go test files

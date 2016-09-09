@@ -37,10 +37,10 @@ func TestNew(t *testing.T) {
 	}()
 
 	config := &Config{
-		DriverName:    "mock",
-		PkgName:       "models",
-		OutFolder:     out,
-		ExcludeTables: []string{"hangars"},
+		DriverName:      "mock",
+		PkgName:         "models",
+		OutFolder:       out,
+		BlacklistTables: []string{"hangars"},
 	}
 
 	state, err = New(config)

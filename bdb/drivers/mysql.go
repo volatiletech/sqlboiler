@@ -73,9 +73,8 @@ func (m *MySQLDriver) UseLastInsertID() bool {
 
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
-// table schema is public. It excludes common migration tool tables
-// such as gorp_migrations
-func (m *MySQLDriver) TableNames(schema string, whitelist, exclude []string) ([]string, error) {
+// table schema is public.
+func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
 	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ?`)
@@ -85,10 +84,10 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, exclude []string) ([]
 		for _, w := range whitelist {
 			args = append(args, w)
 		}
-	} else if len(exclude) > 0 {
-		query += fmt.Sprintf("and table_name not in (%s);", strings.Repeat(",?", len(exclude))[1:])
-		for _, e := range exclude {
-			args = append(args, e)
+	} else if len(blacklist) > 0 {
+		query += fmt.Sprintf("and table_name not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
+		for _, b := range blacklist {
+			args = append(args, b)
 		}
 	}
 

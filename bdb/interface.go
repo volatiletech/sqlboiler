@@ -6,7 +6,7 @@ import "github.com/pkg/errors"
 // Interface for a database driver. Functionality required to support a specific
 // database type (eg, MySQL, Postgres etc.)
 type Interface interface {
-	TableNames(schema string, whitelist, exclude []string) ([]string, error)
+	TableNames(schema string, whitelist, blacklist []string) ([]string, error)
 	Columns(schema, tableName string) ([]Column, error)
 	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
 	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
@@ -25,11 +25,11 @@ type Interface interface {
 }
 
 // Tables returns the metadata for all tables, minus the tables
-// specified in the exclude slice.
-func Tables(db Interface, schema string, whitelist, exclude []string) ([]Table, error) {
+// specified in the blacklist.
+func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table, error) {
 	var err error
 
-	names, err := db.TableNames(schema, whitelist, exclude)
+	names, err := db.TableNames(schema, whitelist, blacklist)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get table names")
 	}

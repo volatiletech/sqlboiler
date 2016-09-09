@@ -81,7 +81,7 @@ func main() {
 		if e, ok := err.(commandFailure); ok {
 			fmt.Printf("Error: %v\n\n", string(e))
 			rootCmd.Help()
-		} else if !cmdConfig.Debug {
+		} else if !viper.GetBool("debug") {
 			fmt.Printf("Error: %v\n", err)
 		} else {
 			fmt.Printf("Error: %+v\n", err)

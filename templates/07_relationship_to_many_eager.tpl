@@ -1,15 +1,18 @@
+{{- /* Begin execution of template for many-to-one or many-to-many eager load */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-{{- $dot := . -}}
-{{- range .Table.ToManyRelationships -}}
-{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-  {{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table . -}}
-  {{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
-{{- else -}}
-  {{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
-  {{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
-  {{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
-  {{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
+  {{- $dot := . -}}
+  {{- range .Table.ToManyRelationships -}}
+    {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
+      {{- /* Begin execution of template for many-to-one eager load */ -}}
+      {{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table . -}}
+      {{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
+    {{- else -}}
+      {{- /* Begin execution of template for many-to-many eager load */ -}}
+      {{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
+      {{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
+      {{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
+      {{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -35,7 +38,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
     {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from {{schemaTable .DriverName .Schema .ForeignTable}} as "{{id 0}}" inner join {{schemaTable .DriverName .Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
+    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from {{schemaTable $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}" inner join {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
     {{else -}}
@@ -133,4 +136,4 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 {{end -}}{{/* if ForeignColumnUnique */}}
 {{- end -}}{{/* range tomany */}}
-{{- end -}}{{/* if isjointable */}}
+{{- end -}}{{/* if IsJoinTable */}}

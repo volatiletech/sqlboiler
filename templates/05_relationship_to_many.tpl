@@ -1,3 +1,4 @@
+{{- /* Begin execution of template for many-to-one or many-to-many relationship helper */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
@@ -5,11 +6,12 @@
   {{- range .Table.ToManyRelationships -}}
     {{- $varNameSingular := .ForeignTable | singular | camelCase -}}
     {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-{{- /* Begin execution of template for many-to-one relationship. */ -}}
-{{- template "relationship_to_one_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
+      {{- /* Begin execution of template for many-to-one relationship. */ -}}
+      {{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+      {{- template "relationship_to_one_helper" (preserveDot $dot $txt) -}}
     {{- else -}}
-{{- /* Begin execution of template for many-to-many relationship. */ -}}
-    {{- $rel := textsFromRelationship $dot.Tables $table . -}}
+      {{- /* Begin execution of template for many-to-many relationship. */ -}}
+      {{- $rel := textsFromRelationship $dot.Tables $table . -}}
 // {{$rel.Function.Name}}G retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
@@ -45,4 +47,4 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 
 {{end -}}{{- /* if unique foreign key */ -}}
 {{- end -}}{{- /* range relationships */ -}}
-{{- end -}}{{- /* outer if join table */ -}}
+{{- end -}}{{- /* if isJoinTable */ -}}

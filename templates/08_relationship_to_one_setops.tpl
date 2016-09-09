@@ -1,7 +1,8 @@
 {{- define "relationship_to_one_setops_helper" -}}
-{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
-{{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
-
+  {{- $tmplData := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
+  {{- with .Rel -}}
+    {{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
+    {{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
 // Set{{.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to related.
 // Adds {{.Function.Receiver}} to related.R.{{.Function.ForeignName}}.
@@ -51,8 +52,8 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
   {{end -}}
   return nil
 }
-{{- if .ForeignKey.Nullable}}
 
+    {{- if .ForeignKey.Nullable}}
 // Remove{{.Function.Name}} relationship.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to nil.
 // Removes {{.Function.Receiver}} from all passed in related items' relationships struct (Optional).
@@ -89,13 +90,16 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
 
   return nil
 }
-{{end -}}
-{{- end -}}
+    {{- end -}}{{/* if foreignkey nullable */}}
+  {{end -}}{{/* end with */}}
+{{- end -}}{{/* end define */}}
+
+{{- /* Begin execution of template for one-to-one setops */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
   {{- range .Table.FKeys -}}
-    {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-{{- template "relationship_to_one_setops_helper" $rel -}}
-{{- end -}}
+    {{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+    {{- template "relationship_to_one_setops_helper" (preserveDot $dot $txt) -}}
+  {{- end -}}
 {{- end -}}

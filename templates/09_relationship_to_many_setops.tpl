@@ -1,3 +1,4 @@
+{{- /* Begin execution of template for many-to-one or many-to-many setops */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
@@ -5,12 +6,13 @@
   {{- range .Table.ToManyRelationships -}}
     {{- $varNameSingular := .ForeignTable | singular | camelCase -}}
     {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-{{- template "relationship_to_one_setops_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
+      {{- /* Begin execution of template for many-to-one setops */ -}}
+      {{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+      {{- template "relationship_to_one_setops_helper" (preserveDot $dot $txt) -}}
     {{- else -}}
-    {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-    {{- $localNameSingular := .Table | singular | camelCase -}}
-    {{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
-
+      {{- $rel := textsFromRelationship $dot.Tables $table . -}}
+      {{- $localNameSingular := .Table | singular | camelCase -}}
+      {{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}.
@@ -37,7 +39,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 
   {{if .ToJoinTable -}}
   for _, rel := range related {
-    query := `insert into {{schemaTable .DriverName .Schema .JoinTable}} ({{.JoinLocalColumn}}, {{.JoinForeignColumn}}) values ($1, $2)`
+    query := `insert into {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} ({{.JoinLocalColumn}}, {{.JoinForeignColumn}}) values ($1, $2)`
     values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}, rel.{{$rel.ForeignTable.ColumnNameGo}}}
 
     if boil.DebugMode {
@@ -84,8 +86,8 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 
   return nil
 }
-{{- if (or .ForeignColumnNullable .ToJoinTable)}}
 
+      {{- if (or .ForeignColumnNullable .ToJoinTable)}}
 // Set{{$rel.Function.Name}} removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -138,7 +140,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Funct
   var err error
   {{if .ToJoinTable -}}
   query := fmt.Sprintf(
-    `delete from {{schemaTable .DriverName .Schema .JoinTable}} where "{{.JoinLocalColumn}}" = $1 and "{{.JoinForeignColumn}}" in (%s)`,
+    `delete from {{schemaTable $dot.DriverName $dot.Schema .JoinTable}} where "{{.JoinLocalColumn}}" = $1 and "{{.JoinForeignColumn}}" in (%s)`,
     strmangle.Placeholders(len(related), 1, 1),
   )
   values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
@@ -191,7 +193,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Funct
   return nil
 }
 
-{{if .ToJoinTable -}}
+        {{if .ToJoinTable -}}
 func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}, related []*{{$rel.ForeignTable.NameGo}}) {
   for _, rel := range related {
     if rel.R == nil {
@@ -211,8 +213,8 @@ func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$re
     }
   }
 }
-{{end -}}{{- /* if join table */ -}}
-{{- end -}}{{- /* if nullable foreign key */ -}}
-{{- end -}}{{- /* if unique foreign key */ -}}
-{{- end -}}{{- /* range relationships */ -}}
-{{- end -}}{{- /* outer if join table */ -}}
+        {{end -}}{{- /* if ToJoinTable */ -}}
+      {{- end -}}{{- /* if nullable foreign key */ -}}
+    {{- end -}}{{- /* if unique foreign key */ -}}
+  {{- end -}}{{- /* range relationships */ -}}
+{{- end -}}{{- /* if IsJoinTable */ -}}

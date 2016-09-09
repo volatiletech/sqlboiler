@@ -1,5 +1,7 @@
 {{- define "relationship_to_one_helper" -}}
-{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
+  {{- $tmplData := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
+  {{- with .Rel -}}{{/* Rel holds the text helper data, passed in through preserveDot */}}
+    {{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 // {{.Function.Name}}G pointed to by the foreign key.
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
   return {{.Function.Receiver}}.{{.Function.Name}}(boil.GetDB(), mods...)
@@ -14,18 +16,19 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
   queryMods = append(queryMods, mods...)
 
   query := {{.ForeignTable.NamePluralGo}}(exec, queryMods...)
-  boil.SetFrom(query.Query, `{{schemaTable .DriverName .Schema .ForeignTable.Name}}`)
+  boil.SetFrom(query.Query, `{{schemaTable $tmplData.DriverName $tmplData.Schema .ForeignTable.Name}}`)
 
   return query
 }
+  {{- end -}}{{/* end with */}}
 {{end -}}{{/* end define */}}
 
-{{/* Begin execution of template for one-to-one relationship. */}}
+{{- /* Begin execution of template for one-to-one relationship */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
   {{- range .Table.FKeys -}}
-    {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-{{- template "relationship_to_one_helper" $rel -}}
+    {{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+{{- template "relationship_to_one_helper" (preserveDot $dot $txt) -}}
 {{- end -}}
 {{- end -}}

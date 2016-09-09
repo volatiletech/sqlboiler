@@ -98,7 +98,7 @@ func dropTestDB() error {
 
 // DBConnect connects to a database and returns the handle.
 func DBConnect(user, pass, dbname, host string, port int, sslmode string) (*sql.DB, error) {
-	connStr := drivers.BuildQueryString(user, pass, dbname, host, port, sslmode)
+	connStr := drivers.PostgresBuildQueryString(user, pass, dbname, host, port, sslmode)
 
 	return sql.Open("postgres", connStr)
 }

@@ -1,6 +1,6 @@
 {{- define "relationship_to_one_eager_helper" -}}
-  {{- $varNameSingular := .Dot.Table.Name | singular | camelCase -}}
-  {{- $noHooks := .Dot.NoHooks -}}
+  {{- $tmplData := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
+  {{- $varNameSingular := $tmplData.Table.Name | singular | camelCase -}}
   {{- with .Rel -}}
   {{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
@@ -28,7 +28,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
   }
 
   query := fmt.Sprintf(
-    `select * from {{schemaTable .DriverName .Schema .ForeignKey.ForeignTable}} where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
+    `select * from {{schemaTable $tmplData.DriverName $tmplData.Schema .ForeignKey.ForeignTable}} where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
     strmangle.Placeholders(count, 1, 1),
   )
 
@@ -47,7 +47,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
     return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable.NameGo}}")
   }
 
-  {{if not $noHooks -}}
+  {{if not $tmplData.NoHooks -}}
   if len({{.ForeignTable.Name | singular | camelCase}}AfterSelectHooks) != 0 {
     for _, obj := range resultSlice {
       if err := obj.doAfterSelectHooks(e); err != nil {
@@ -82,11 +82,12 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
   {{- end -}}{{- /* end with */ -}}
 {{end -}}{{- /* end define */ -}}
 
+{{- /* Begin execution of template for one-to-one eager load */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
   {{- $dot := . -}}
   {{- range .Table.FKeys -}}
-    {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-{{- template "relationship_to_one_eager_helper" (preserveDot $dot $rel) -}}
-{{- end -}}
+    {{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+    {{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
+  {{- end -}}
 {{end}}

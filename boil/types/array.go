@@ -184,9 +184,10 @@ func Array(a interface{}) interface {
 		return (*Int64Array)(a)
 	case *[]string:
 		return (*StringArray)(a)
-	}
 
-	return GenericArray{a}
+	default:
+		panic(fmt.Sprintf("boil: invalid type received %T", a))
+	}
 }
 
 // ArrayDelimiter may be optionally implemented by driver.Valuer or sql.Scanner
@@ -208,7 +209,7 @@ func (a *BoolArray) Scan(src interface{}) error {
 		return a.scanBytes([]byte(src))
 	}
 
-	return fmt.Errorf("pq: cannot convert %T to BoolArray", src)
+	return fmt.Errorf("boil: cannot convert %T to BoolArray", src)
 }
 
 func (a *BoolArray) scanBytes(src []byte) error {
@@ -222,7 +223,7 @@ func (a *BoolArray) scanBytes(src []byte) error {
 		b := make(BoolArray, len(elems))
 		for i, v := range elems {
 			if len(v) != 1 {
-				return fmt.Errorf("pq: could not parse boolean array index %d: invalid boolean %q", i, v)
+				return fmt.Errorf("boil: could not parse boolean array index %d: invalid boolean %q", i, v)
 			}
 			switch v[0] {
 			case 't':
@@ -230,7 +231,7 @@ func (a *BoolArray) scanBytes(src []byte) error {
 			case 'f':
 				b[i] = false
 			default:
-				return fmt.Errorf("pq: could not parse boolean array index %d: invalid boolean %q", i, v)
+				return fmt.Errorf("boil: could not parse boolean array index %d: invalid boolean %q", i, v)
 			}
 		}
 		*a = b
@@ -279,7 +280,7 @@ func (a *BytesArray) Scan(src interface{}) error {
 		return a.scanBytes([]byte(src))
 	}
 
-	return fmt.Errorf("pq: cannot convert %T to BytesArray", src)
+	return fmt.Errorf("boil: cannot convert %T to BytesArray", src)
 }
 
 func (a *BytesArray) scanBytes(src []byte) error {
@@ -348,7 +349,7 @@ func (a *Float64Array) Scan(src interface{}) error {
 		return a.scanBytes([]byte(src))
 	}
 
-	return fmt.Errorf("pq: cannot convert %T to Float64Array", src)
+	return fmt.Errorf("boil: cannot convert %T to Float64Array", src)
 }
 
 func (a *Float64Array) scanBytes(src []byte) error {
@@ -362,7 +363,7 @@ func (a *Float64Array) scanBytes(src []byte) error {
 		b := make(Float64Array, len(elems))
 		for i, v := range elems {
 			if b[i], err = strconv.ParseFloat(string(v), 64); err != nil {
-				return fmt.Errorf("pq: parsing array element index %d: %v", i, err)
+				return fmt.Errorf("boil: parsing array element index %d: %v", i, err)
 			}
 		}
 		*a = b
@@ -394,151 +395,6 @@ func (a Float64Array) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
-// GenericArray implements the driver.Valuer and sql.Scanner interfaces for
-// an array or slice of any dimension.
-type GenericArray struct{ A interface{} }
-
-func (GenericArray) evaluateDestination(rt reflect.Type) (reflect.Type, func([]byte, reflect.Value) error, string) {
-	var assign func([]byte, reflect.Value) error
-	var del = ","
-
-	// TODO calculate the assign function for other types
-	// TODO repeat this section on the element type of arrays or slices (multidimensional)
-	{
-		if reflect.PtrTo(rt).Implements(typeSQLScanner) {
-			// dest is always addressable because it is an element of a slice.
-			assign = func(src []byte, dest reflect.Value) (err error) {
-				ss := dest.Addr().Interface().(sql.Scanner)
-				if src == nil {
-					err = ss.Scan(nil)
-				} else {
-					err = ss.Scan(src)
-				}
-				return
-			}
-			goto FoundType
-		}
-
-		assign = func([]byte, reflect.Value) error {
-			return fmt.Errorf("pq: scanning to %s is not implemented; only sql.Scanner", rt)
-		}
-	}
-
-FoundType:
-
-	if ad, ok := reflect.Zero(rt).Interface().(ArrayDelimiter); ok {
-		del = ad.ArrayDelimiter()
-	}
-
-	return rt, assign, del
-}
-
-// Scan implements the sql.Scanner interface.
-func (a GenericArray) Scan(src interface{}) error {
-	dpv := reflect.ValueOf(a.A)
-	switch {
-	case dpv.Kind() != reflect.Ptr:
-		return fmt.Errorf("pq: destination %T is not a pointer to array or slice", a.A)
-	case dpv.IsNil():
-		return fmt.Errorf("pq: destination %T is nil", a.A)
-	}
-
-	dv := dpv.Elem()
-	switch dv.Kind() {
-	case reflect.Slice:
-	case reflect.Array:
-	default:
-		return fmt.Errorf("pq: destination %T is not a pointer to array or slice", a.A)
-	}
-
-	switch src := src.(type) {
-	case []byte:
-		return a.scanBytes(src, dv)
-	case string:
-		return a.scanBytes([]byte(src), dv)
-	}
-
-	return fmt.Errorf("pq: cannot convert %T to %s", src, dv.Type())
-}
-
-func (a GenericArray) scanBytes(src []byte, dv reflect.Value) error {
-	dtype, assign, del := a.evaluateDestination(dv.Type().Elem())
-	dims, elems, err := parseArray(src, []byte(del))
-	if err != nil {
-		return err
-	}
-
-	// TODO allow multidimensional
-
-	if len(dims) > 1 {
-		return fmt.Errorf("pq: scanning from multidimensional ARRAY%s is not implemented",
-			strings.Replace(fmt.Sprint(dims), " ", "][", -1))
-	}
-
-	// Treat a zero-dimensional array like an array with a single dimension of zero.
-	if len(dims) == 0 {
-		dims = append(dims, 0)
-	}
-
-	for i, rt := 0, dv.Type(); i < len(dims); i, rt = i+1, rt.Elem() {
-		switch rt.Kind() {
-		case reflect.Slice:
-		case reflect.Array:
-			if rt.Len() != dims[i] {
-				return fmt.Errorf("pq: cannot convert ARRAY%s to %s",
-					strings.Replace(fmt.Sprint(dims), " ", "][", -1), dv.Type())
-			}
-		default:
-			// TODO handle multidimensional
-		}
-	}
-
-	values := reflect.MakeSlice(reflect.SliceOf(dtype), len(elems), len(elems))
-	for i, e := range elems {
-		if err := assign(e, values.Index(i)); err != nil {
-			return fmt.Errorf("pq: parsing array element index %d: %v", i, err)
-		}
-	}
-
-	// TODO handle multidimensional
-
-	switch dv.Kind() {
-	case reflect.Slice:
-		dv.Set(values.Slice(0, dims[0]))
-	case reflect.Array:
-		for i := 0; i < dims[0]; i++ {
-			dv.Index(i).Set(values.Index(i))
-		}
-	}
-
-	return nil
-}
-
-// Value implements the driver.Valuer interface.
-func (a GenericArray) Value() (driver.Value, error) {
-	if a.A == nil {
-		return nil, nil
-	}
-
-	rv := reflect.ValueOf(a.A)
-
-	if k := rv.Kind(); k != reflect.Array && k != reflect.Slice {
-		return nil, fmt.Errorf("pq: Unable to convert %T to array", a.A)
-	}
-
-	if n := rv.Len(); n > 0 {
-		// There will be at least two curly brackets, N bytes of values,
-		// and N-1 bytes of delimiters.
-		b := make([]byte, 0, 1+2*n)
-
-		b, _, err := appendArray(b, rv, n)
-		return string(b), err
-	}
-
-	return "{}", nil
-}
-
-// Int64Array represents a one-dimensional array of the PostgreSQL integer types.
 type Int64Array []int64
 
 // Scan implements the sql.Scanner interface.
@@ -550,7 +406,7 @@ func (a *Int64Array) Scan(src interface{}) error {
 		return a.scanBytes([]byte(src))
 	}
 
-	return fmt.Errorf("pq: cannot convert %T to Int64Array", src)
+	return fmt.Errorf("boil: cannot convert %T to Int64Array", src)
 }
 
 func (a *Int64Array) scanBytes(src []byte) error {
@@ -564,7 +420,7 @@ func (a *Int64Array) scanBytes(src []byte) error {
 		b := make(Int64Array, len(elems))
 		for i, v := range elems {
 			if b[i], err = strconv.ParseInt(string(v), 10, 64); err != nil {
-				return fmt.Errorf("pq: parsing array element index %d: %v", i, err)
+				return fmt.Errorf("boil: parsing array element index %d: %v", i, err)
 			}
 		}
 		*a = b
@@ -608,7 +464,7 @@ func (a *StringArray) Scan(src interface{}) error {
 		return a.scanBytes([]byte(src))
 	}
 
-	return fmt.Errorf("pq: cannot convert %T to StringArray", src)
+	return fmt.Errorf("boil: cannot convert %T to StringArray", src)
 }
 
 func (a *StringArray) scanBytes(src []byte) error {
@@ -622,7 +478,7 @@ func (a *StringArray) scanBytes(src []byte) error {
 		b := make(StringArray, len(elems))
 		for i, v := range elems {
 			if b[i] = string(v); v == nil {
-				return fmt.Errorf("pq: parsing array element index %d: cannot convert nil to string", i)
+				return fmt.Errorf("boil: parsing array element index %d: cannot convert nil to string", i)
 			}
 		}
 		*a = b
@@ -753,7 +609,7 @@ func parseArray(src, del []byte) (dims []int, elems [][]byte, err error) {
 	var depth, i int
 
 	if len(src) < 1 || src[0] != '{' {
-		return nil, nil, fmt.Errorf("pq: unable to parse array; expected %q at offset %d", '{', 0)
+		return nil, nil, fmt.Errorf("boil: unable to parse array; expected %q at offset %d", '{', 0)
 	}
 
 Open:
@@ -803,7 +659,7 @@ Element:
 				if bytes.HasPrefix(src[i:], del) || src[i] == '}' {
 					elem := src[start:i]
 					if len(elem) == 0 {
-						return nil, nil, fmt.Errorf("pq: unable to parse array; unexpected %q at offset %d", src[i], i)
+						return nil, nil, fmt.Errorf("boil: unable to parse array; unexpected %q at offset %d", src[i], i)
 					}
 					if bytes.Equal(elem, []byte("NULL")) {
 						elem = nil
@@ -825,7 +681,7 @@ Element:
 			depth--
 			i++
 		} else {
-			return nil, nil, fmt.Errorf("pq: unable to parse array; unexpected %q at offset %d", src[i], i)
+			return nil, nil, fmt.Errorf("boil: unable to parse array; unexpected %q at offset %d", src[i], i)
 		}
 	}
 
@@ -835,16 +691,16 @@ Close:
 			depth--
 			i++
 		} else {
-			return nil, nil, fmt.Errorf("pq: unable to parse array; unexpected %q at offset %d", src[i], i)
+			return nil, nil, fmt.Errorf("boil: unable to parse array; unexpected %q at offset %d", src[i], i)
 		}
 	}
 	if depth > 0 {
-		err = fmt.Errorf("pq: unable to parse array; expected %q at offset %d", '}', i)
+		err = fmt.Errorf("boil: unable to parse array; expected %q at offset %d", '}', i)
 	}
 	if err == nil {
 		for _, d := range dims {
 			if (len(elems) % d) != 0 {
-				err = fmt.Errorf("pq: multidimensional arrays must have elements with matching dimensions")
+				err = fmt.Errorf("boil: multidimensional arrays must have elements with matching dimensions")
 			}
 		}
 	}
@@ -857,7 +713,7 @@ func scanLinearArray(src, del []byte, typ string) (elems [][]byte, err error) {
 		return nil, err
 	}
 	if len(dims) > 1 {
-		return nil, fmt.Errorf("pq: cannot convert ARRAY%s to %s", strings.Replace(fmt.Sprint(dims), " ", "][", -1), typ)
+		return nil, fmt.Errorf("boil: cannot convert ARRAY%s to %s", strings.Replace(fmt.Sprint(dims), " ", "][", -1), typ)
 	}
 	return elems, err
 }

@@ -305,9 +305,6 @@ var importsBasedOnType = map[string]imports{
 	"types.BytesArray": {
 		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
 	},
-	"types.GenericArray": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
-	},
 	"types.Int64Array": {
 		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
 	},

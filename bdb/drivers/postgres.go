@@ -367,12 +367,12 @@ func getArrayType(c bdb.Column) string {
 		return "types.BytesArray"
 	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 		return "types.StringArray"
-	case "bool":
+	case "boolean":
 		return "types.BoolArray"
 	case "decimal", "numeric", "double precision", "real":
 		return "types.Float64Array"
 	default:
-		return "types.GenericArray"
+		return "types.StringArray"
 	}
 }
 

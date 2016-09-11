@@ -47,7 +47,6 @@ var (
 	typeBoolArray    = reflect.TypeOf(types.BoolArray{})
 	typeFloat64Array = reflect.TypeOf(types.Float64Array{})
 	typeStringArray  = reflect.TypeOf(types.StringArray{})
-	typeGenericArray = reflect.TypeOf(types.GenericArray{})
 	typeHstore       = reflect.TypeOf(types.Hstore{})
 	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
@@ -318,11 +317,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 
 	// If it's a Postgres array, treat it like one
 	if strings.HasPrefix(fieldType, "ARRAY") {
-		if isNull {
-			value = getArrayNullValue(typ)
-		} else {
-			value = getArrayRandValue(s, typ)
-		}
+		value = getArrayRandValue(s, typ, fieldType)
 		// Retrieve the value to be returned
 	} else if kind == reflect.Struct {
 		if isNull {
@@ -347,27 +342,8 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 	return nil
 }
 
-func getArrayNullValue(typ reflect.Type) interface{} {
-	fmt.Println(typ)
-	switch typ {
-	case typeInt64Array:
-		return types.Int64Array{}
-	case typeFloat64Array:
-		return types.Float64Array{}
-	case typeBoolArray:
-		return types.BoolArray{}
-	case typeStringArray:
-		return types.StringArray{}
-	case typeBytesArray:
-		return types.BytesArray{}
-	case typeGenericArray:
-		return types.GenericArray{}
-	}
-
-	return nil
-}
-
-func getArrayRandValue(s *Seed, typ reflect.Type) interface{} {
+func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} {
+	fieldType = strings.TrimLeft(fieldType, "ARRAY")
 	switch typ {
 	case typeInt64Array:
 		return types.Int64Array{int64(s.nextInt()), int64(s.nextInt())}
@@ -376,11 +352,54 @@ func getArrayRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeBoolArray:
 		return types.BoolArray{s.nextInt()%2 == 0, s.nextInt()%2 == 0, s.nextInt()%2 == 0}
 	case typeStringArray:
+		if fieldType == "interval" {
+			value := strconv.Itoa((s.nextInt()%26)+2) + " days"
+			return types.StringArray{value, value}
+		}
+		if fieldType == "uuid" {
+			value := uuid.NewV4().String()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
+			fieldType == "path" || fieldType == "polygon" {
+			value := randBox()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "cidr" || fieldType == "inet" {
+			value := randNetAddr()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "macaddr" {
+			value := randMacAddr()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "circle" {
+			value := randCircle()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "pg_lsn" {
+			value := randLsn()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "point" {
+			value := randPoint()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "txid_snapshot" {
+			value := randTxID()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "money" {
+			value := randMoney(s)
+			return types.StringArray{value, value}
+		}
+		if fieldType == "json" || fieldType == "jsonb" {
+			value := []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
+			return types.StringArray{string(value)}
+		}
 		return types.StringArray{randStr(s, 4), randStr(s, 4), randStr(s, 4)}
 	case typeBytesArray:
 		return types.BytesArray{randByteSlice(s, 4), randByteSlice(s, 4), randByteSlice(s, 4)}
-	case typeGenericArray:
-		return types.GenericArray{A: []types.JSON{randJSON(s, 4), randJSON(s, 4), randJSON(s, 4)}}
 	}
 
 	return nil
@@ -570,17 +589,6 @@ func randByteSlice(s *Seed, ln int) []byte {
 	for i := 0; i < ln; i++ {
 		str[i] = byte(s.nextInt() % 256)
 	}
-
-	return str
-}
-
-func randJSON(s *Seed, ln int) types.JSON {
-	str := make(types.JSON, ln)
-	str[0] = '"'
-	for i := 1; i < ln-1; i++ {
-		str[i] = byte(s.nextInt() % 256)
-	}
-	str[ln-1] = '"'
 
 	return str
 }

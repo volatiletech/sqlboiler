@@ -194,3 +194,22 @@ create table enemies (
   enemies character varying,
   primary key (enemies)
 );
+
+create table fun_arrays (
+  id serial,
+  fun_one integer[] null,
+  fun_two integer[] not null,
+  fun_three boolean[] null,
+  fun_four boolean[] not null,
+  fun_five varchar[] null,
+  fun_six varchar[] not null,
+  fun_seven decimal[] null,
+  fun_eight decimal[] not null,
+  fun_nine bytea[] null,
+  fun_ten bytea[] not null,
+  fun_eleven jsonb[] null,
+  fun_twelve jsonb[] not null,
+  fun_thirteen json[] null,
+  fun_fourteen json[] not null,
+  primary key (id)
+)

@@ -239,6 +239,29 @@ var defaultTestMainImports = map[string]imports{
 			`_ "github.com/lib/pq"`,
 		},
 	},
+	"mysql": {
+		standard: importList{
+			`"testing"`,
+			`"os"`,
+			`"os/exec"`,
+			`"flag"`,
+			`"fmt"`,
+			`"io/ioutil"`,
+			`"bytes"`,
+			`"database/sql"`,
+			`"path/filepath"`,
+			`"time"`,
+			`"math/rand"`,
+		},
+		thirdParty: importList{
+			`"github.com/kat-co/vala"`,
+			`"github.com/pkg/errors"`,
+			`"github.com/spf13/viper"`,
+			`"github.com/vattle/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/bdb/drivers"`,
+			`_ "github.com/go-mysql-driver/mysql"`,
+		},
+	},
 }
 
 // importsBasedOnType imports are only included in the template output if the

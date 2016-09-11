@@ -2,7 +2,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -148,7 +147,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if viper.IsSet("postgres.dbname") {
+	if driverName == "postgres" {
 		cmdConfig.Postgres = PostgresConfig{
 			User:    viper.GetString("postgres.user"),
 			Pass:    viper.GetString("postgres.pass"),
@@ -182,11 +181,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return commandFailure(err.Error())
 		}
-	} else if driverName == "postgres" {
-		return errors.New("postgres driver requires a postgres section in your config file")
 	}
 
-	if viper.IsSet("mysql.dbname") {
+	if driverName == "mysql" {
 		cmdConfig.MySQL = MySQLConfig{
 			User:    viper.GetString("mysql.user"),
 			Pass:    viper.GetString("mysql.pass"),
@@ -223,8 +220,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return commandFailure(err.Error())
 		}
-	} else if driverName == "mysql" {
-		return errors.New("mysql driver requires a mysql section in your config file")
 	}
 
 	cmdState, err = New(cmdConfig)

@@ -11,16 +11,18 @@ type pgTester struct {
 	testDBName string
 }
 
-dbMain = pgTester{}
+func init() {
+	dbMain = &pgTester{}
+}
 
 // disableTriggers is used to disable foreign key constraints for every table.
 // If this is not used we cannot test inserts due to foreign key constraint errors.
-func (p pgTester) disableTriggers() error {
+func (p *pgTester) disableTriggers() error {
 	var stmts []string
 
-	{{range .Tables}}
+	{{range .Tables -}}
 	stmts = append(stmts, `ALTER TABLE {{.Name}} DISABLE TRIGGER ALL;`)
-	{{- end}}
+	{{end -}}
 
 	if len(stmts) == 0 {
 		return nil
@@ -38,19 +40,18 @@ func (p pgTester) disableTriggers() error {
 }
 
 // teardown executes cleanup tasks when the tests finish running
-func (p pgTester) teardown() error {
-	err := dropTestDB()
-	return err
+func (p *pgTester) teardown() error {
+	return p.dropTestDB()
 }
 
-func (p pgTester) conn() *sql.DB {
+func (p *pgTester) conn() *sql.DB {
 	return p.dbConn
 }
 
 // dropTestDB switches its connection to the template1 database temporarily
 // so that it can drop the test database without causing "in use" conflicts.
 // The template1 database should be present on all default postgres installations.
-func (p pgTester) dropTestDB() error {
+func (p *pgTester) dropTestDB() error {
 	var err error
 	if p.dbConn != nil {
 		if err = p.dbConn.Close(); err != nil {
@@ -58,12 +59,12 @@ func (p pgTester) dropTestDB() error {
 		}
 	}
 
-	p.dbConn, err = DBConnect(testCfg.Postgres.User, testCfg.Postgres.Pass, "template1", testCfg.Postgres.Host, testCfg.Postgres.Port, testCfg.Postgres.SSLMode)
+	p.dbConn, err = DBConnect(p.user, p.pass, "template1", p.host, p.port, p.sslmode)
 	if err != nil {
 		return err
 	}
 
-	_, err = p.dbConn.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, testCfg.Postgres.DBName))
+	_, err = p.dbConn.Exec(fmt.Sprintf(`DROP DATABASE IF EXISTS %s;`, p.testDBName))
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func DBConnect(user, pass, dbname, host string, port int, sslmode string) (*sql.
 // setup dumps the database schema and imports it into a temporary randomly
 // generated test database so that tests can be run against it using the
 // generated sqlboiler ORM package.
-func (p pgTester) setup() error {
+func (p *pgTester) setup() error {
 	var err error
 
 	p.dbName = viper.GetString("postgres.dbname")
@@ -89,11 +90,11 @@ func (p pgTester) setup() error {
 	p.user = viper.GetString("postgres.user")
 	p.pass = viper.GetString("postgres.pass")
 	p.port = viper.GetInt("postgres.port")
-	p.sslmode = viper.GetString("postgres.dbname")
+	p.sslmode = viper.GetString("postgres.sslmode")
 	// Create a randomized db name.
-	p.testDBName = getDBNameHash(p.dbname)
+	p.testDBName = getDBNameHash(p.dbName)
 
-	err = dropTestDB()
+	err = p.dropTestDB()
 	if err != nil {
 		fmt.Printf("%#v\n", err)
 		return err
@@ -112,7 +113,7 @@ func (p pgTester) setup() error {
 	defer os.RemoveAll(passDir)
 
 	// Write the postgres user password to a tmp file for pg_dump
-	pwBytes := []byte(fmt.Sprintf("%s:%d:%s:%s", p.host, p.port, p.dbname, p.user))
+	pwBytes := []byte(fmt.Sprintf("%s:%d:%s:%s", p.host, p.port, p.dbName, p.user))
 
 	if len(p.pass) > 0 {
 		pwBytes = []byte(fmt.Sprintf("%s:%s", pwBytes, p.pass))

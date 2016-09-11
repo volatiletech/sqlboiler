@@ -186,14 +186,22 @@ var defaultTestTemplateImports = imports{
 }
 
 var defaultSingletonTestTemplateImports = map[string]imports{
-	"boil_viper_test": {
+	"boil_main_test": {
 		standard: importList{
 			`"database/sql"`,
+			`"flag"`,
+			`"fmt"`,
+			`"math/rand"`,
 			`"os"`,
 			`"path/filepath"`,
+			`"testing"`,
+			`"time"`,
 		},
 		thirdParty: importList{
+			`"github.com/kat-co/vala"`,
+			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
+			`"github.com/vattle/sqlboiler/boil"`,
 		},
 	},
 	"boil_queries_test": {
@@ -218,23 +226,17 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 var defaultTestMainImports = map[string]imports{
 	"postgres": {
 		standard: importList{
-			`"testing"`,
 			`"os"`,
 			`"os/exec"`,
-			`"flag"`,
 			`"fmt"`,
 			`"io/ioutil"`,
 			`"bytes"`,
 			`"database/sql"`,
 			`"path/filepath"`,
-			`"time"`,
-			`"math/rand"`,
 		},
 		thirdParty: importList{
-			`"github.com/kat-co/vala"`,
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
-			`"github.com/vattle/sqlboiler/boil"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
 			`_ "github.com/lib/pq"`,
 		},
@@ -254,7 +256,6 @@ var defaultTestMainImports = map[string]imports{
 			`"math/rand"`,
 		},
 		thirdParty: importList{
-			`"github.com/kat-co/vala"`,
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/boil"`,

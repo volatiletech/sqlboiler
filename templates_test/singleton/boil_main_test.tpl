@@ -17,27 +17,28 @@ func TestMain(m *testing.M) {
 	}
 
 	rand.Seed(time.Now().UnixNano())
+	var err error
 
 	// Load configuration
 	err = initViper()
 	if err != nil {
-		return errors.Wrap(err, "Unable to load config file")
+		fmt.Println("unable to load config file")
+		os.Exit(-2)
 	}
 
 	setConfigDefaults()
-	if err := validateConfig({{.DriverName}}); err != nil {
+	if err := validateConfig("{{.DriverName}}"); err != nil {
 		fmt.Println("failed to validate config", err)
-		os.Exit(-2)
+		os.Exit(-3)
 	}
 
 	// Set DebugMode so we can see generated sql statements
 	flag.Parse()
 	boil.DebugMode = *flagDebugMode
 
-	var err error
 	if err = dbMain.setup(); err != nil {
 		fmt.Println("Unable to execute setup:", err)
-		os.Exit(-3)
+		os.Exit(-4)
 	}
 
 	var code int
@@ -46,7 +47,7 @@ func TestMain(m *testing.M) {
 
 	if err = dbMain.teardown(); err != nil {
 		fmt.Println("Unable to execute teardown:", err)
-		os.Exit(-4)
+		os.Exit(-5)
 	}
 
 	os.Exit(code)
@@ -84,8 +85,8 @@ func initViper() error {
 	return nil
 }
 
-// setDefaults is only necessary because of bugs in viper, noted in main
-func setDefaults() {
+// setConfigDefaults is only necessary because of bugs in viper, noted in main
+func setConfigDefaults() {
 	if viper.GetString("postgres.sslmode") == "" {
 		viper.Set("postgres.sslmode", "require")
 	}
@@ -101,35 +102,25 @@ func setDefaults() {
 }
 
 func validateConfig(driverName string) error {
-	if viper.IsSet("postgres.dbname") {
-		err = vala.BeginValidation().Validate(
+	if driverName == "postgres" {
+		return vala.BeginValidation().Validate(
 			vala.StringNotEmpty(viper.GetString("postgres.user"), "postgres.user"),
 			vala.StringNotEmpty(viper.GetString("postgres.host"), "postgres.host"),
 			vala.Not(vala.Equals(viper.GetInt("postgres.port"), 0, "postgres.port")),
 			vala.StringNotEmpty(viper.GetString("postgres.dbname"), "postgres.dbname"),
 			vala.StringNotEmpty(viper.GetString("postgres.sslmode"), "postgres.sslmode"),
 		).Check()
-
-		if err != nil {
-			return err
-		}
-	} else if driverName == "postgres" {
-		return errors.New("postgres driver requires a postgres section in your config file")
 	}
 
-	if viper.IsSet("mysql.dbname") {
-		err = vala.BeginValidation().Validate(
+	if driverName == "mysql" {
+		return vala.BeginValidation().Validate(
 			vala.StringNotEmpty(viper.GetString("mysql.user"), "mysql.user"),
 			vala.StringNotEmpty(viper.GetString("mysql.host"), "mysql.host"),
 			vala.Not(vala.Equals(viper.GetInt("mysql.port"), 0, "mysql.port")),
 			vala.StringNotEmpty(viper.GetString("mysql.dbname"), "mysql.dbname"),
 			vala.StringNotEmpty(viper.GetString("mysql.sslmode"), "mysql.sslmode"),
 		).Check()
-
-		if err != nil {
-			return err
-		}
-	} else if driverName == "mysql" {
-		return errors.New("mysql driver requires a mysql section in your config file")
 	}
+
+	return errors.New("not a valid driver name")
 }

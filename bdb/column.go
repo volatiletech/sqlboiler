@@ -5,6 +5,11 @@ import "github.com/vattle/sqlboiler/strmangle"
 // Column holds information about a database column.
 // Types are Go types, converted by TranslateColumnType.
 type Column struct {
+	// ArrType is the underlying data type of the Postgres
+	// ARRAY type. See here:
+	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
+	ArrType   *string
+	UDTName   string
 	Name      string
 	Type      string
 	DBType    string

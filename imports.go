@@ -302,4 +302,22 @@ var importsBasedOnType = map[string]imports{
 	"types.JSON": {
 		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
 	},
+	"types.BytesArray": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+	},
+	"types.GenericArray": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+	},
+	"types.Int64Array": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+	},
+	"types.Float64Array": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+	},
+	"types.BoolArray": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+	},
+	"types.Hstore": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+	},
 }

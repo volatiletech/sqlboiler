@@ -148,12 +148,11 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 		}
 
 		column := bdb.Column{
-			Name:      colName,
-			DBType:    colType,
-			Default:   colDefault,
-			Nullable:  nullable == "YES",
-			Unique:    unique,
-			Validated: psqlIsValidated(colType),
+			Name:     colName,
+			DBType:   colType,
+			Default:  colDefault,
+			Nullable: nullable == "YES",
+			Unique:   unique,
 		}
 		columns = append(columns, column)
 	}
@@ -304,19 +303,6 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	}
 
 	return c
-}
-
-var mySQLValidatedTypes = []string{}
-
-// isValidated checks if the database type is in the validatedTypes list.
-func mySQLIsValidated(typ string) bool {
-	for _, v := range mySQLValidatedTypes {
-		if v == typ {
-			return true
-		}
-	}
-
-	return false
 }
 
 // RightQuote is the quoting character for the right side of the identifier

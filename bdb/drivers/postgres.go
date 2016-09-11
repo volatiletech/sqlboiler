@@ -19,9 +19,6 @@ type PostgresDriver struct {
 	dbConn  *sql.DB
 }
 
-// validatedTypes are types that cannot be zero values in the database.
-var psqlValidatedTypes = []string{"uuid"}
-
 // NewPostgresDriver takes the database connection details as parameters and
 // returns a pointer to a PostgresDriver object. Note that it is required to
 // call PostgresDriver.Open() and PostgresDriver.Close() to open and close
@@ -126,7 +123,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 	var columns []bdb.Column
 
 	rows, err := p.dbConn.Query(`
-		select column_name, data_type, column_default, is_nullable,
+		select column_name, c.data_type, e.data_type, column_default, c.udt_name, is_nullable,
 			(select exists(
 		    select 1
 				from information_schema.constraint_column_usage as ccu
@@ -142,8 +139,10 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		    where
 		      pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
 		)) as is_unique
-		from information_schema.columns as c
-		where table_name=$2 and table_schema = $1;
+		from information_schema.columns as c LEFT JOIN information_schema.element_types e
+			ON ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
+				= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
+		where c.table_name=$2 and c.table_schema = $1;
 	`, schema, tableName)
 
 	if err != nil {
@@ -152,10 +151,11 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colDefault, nullable string
+		var colName, udtName, colType, colDefault, nullable string
+		var elementType *string
 		var unique bool
 		var defaultPtr *string
-		if err := rows.Scan(&colName, &colType, &defaultPtr, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &elementType, &defaultPtr, &udtName, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -166,12 +166,13 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		}
 
 		column := bdb.Column{
-			Name:      colName,
-			DBType:    colType,
-			Default:   colDefault,
-			Nullable:  nullable == "YES",
-			Unique:    unique,
-			Validated: psqlIsValidated(colType),
+			Name:     colName,
+			DBType:   colType,
+			ArrType:  elementType,
+			UDTName:  udtName,
+			Default:  colDefault,
+			Nullable: nullable == "YES",
+			Unique:   unique,
 		}
 		columns = append(columns, column)
 	}
@@ -297,6 +298,21 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Bool"
 		case "date", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "null.Time"
+		case "ARRAY":
+			if c.ArrType == nil {
+				panic("unable to get postgres ARRAY underlying type")
+			}
+			c.Type = getArrayType(c)
+			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
+			c.DBType = c.DBType + *c.ArrType
+		case "USER-DEFINED":
+			if c.UDTName == "hstore" {
+				c.Type = "types.Hstore"
+				c.DBType = "hstore"
+			} else {
+				c.Type = "string"
+				fmt.Printf("Warning: Incompatible data type detected: %s", c.UDTName)
+			}
 		default:
 			c.Type = "null.String"
 		}
@@ -322,6 +338,18 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "bool"
 		case "date", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "time.Time"
+		case "ARRAY":
+			c.Type = getArrayType(c)
+			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
+			c.DBType = c.DBType + *c.ArrType
+		case "USER-DEFINED":
+			if c.UDTName == "hstore" {
+				c.Type = "types.Hstore"
+				c.DBType = "hstore"
+			} else {
+				c.Type = "string"
+				fmt.Printf("Warning: Incompatible data type detected: %s", c.UDTName)
+			}
 		default:
 			c.Type = "string"
 		}
@@ -330,15 +358,22 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	return c
 }
 
-// isValidated checks if the database type is in the validatedTypes list.
-func psqlIsValidated(typ string) bool {
-	for _, v := range psqlValidatedTypes {
-		if v == typ {
-			return true
-		}
+// getArrayType returns the correct boil.Array type for each database type
+func getArrayType(c bdb.Column) string {
+	switch *c.ArrType {
+	case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial":
+		return "types.Int64Array"
+	case "bytea":
+		return "types.BytesArray"
+	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		return "types.StringArray"
+	case "bool":
+		return "types.BoolArray"
+	case "decimal", "numeric", "double precision", "real":
+		return "types.Float64Array"
+	default:
+		return "types.GenericArray"
 	}
-
-	return false
 }
 
 // RightQuote is the quoting character for the right side of the identifier

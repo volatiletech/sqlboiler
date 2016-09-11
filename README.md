@@ -1061,6 +1061,16 @@ If your database uses multiple schemas you should generate a new package for eac
 Note that this only applies to databases that use real, SQL standard schemas (like PostgreSQL), not
 fake schemas (like MySQL).
 
+#### How do I use types.BytesArray for Postgres bytea arrays?
+
+Only "escaped format" is supported for types.BytesArray. This means that your byte slice needs to have
+a format of "\\x00" (4 bytes per byte) opposed to "\x00" (1 byte per byte). This is to maintain compatibility
+with all Postgres drivers. Example:
+
+`x := types.BytesArray{0: []byte("\\x68\\x69")}`
+
+Please note that multi-dimensional Postgres ARRAY types are not supported at this time.
+
 #### Where is the homepage?
 
 The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler)  [Golang ORM](https://github.com/vattle/sqlboiler) generator is located at: https://github.com/vattle/sqlboiler 

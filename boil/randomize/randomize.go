@@ -2,17 +2,20 @@
 package randomize
 
 import (
+	"database/sql"
 	"fmt"
 	"math/rand"
 	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
 	"gopkg.in/nullbio/null.v5"
 
+	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/vattle/sqlboiler/boil/types"
@@ -20,32 +23,39 @@ import (
 )
 
 var (
-	typeNullFloat32 = reflect.TypeOf(null.Float32{})
-	typeNullFloat64 = reflect.TypeOf(null.Float64{})
-	typeNullInt     = reflect.TypeOf(null.Int{})
-	typeNullInt8    = reflect.TypeOf(null.Int8{})
-	typeNullInt16   = reflect.TypeOf(null.Int16{})
-	typeNullInt32   = reflect.TypeOf(null.Int32{})
-	typeNullInt64   = reflect.TypeOf(null.Int64{})
-	typeNullUint    = reflect.TypeOf(null.Uint{})
-	typeNullUint8   = reflect.TypeOf(null.Uint8{})
-	typeNullUint16  = reflect.TypeOf(null.Uint16{})
-	typeNullUint32  = reflect.TypeOf(null.Uint32{})
-	typeNullUint64  = reflect.TypeOf(null.Uint64{})
-	typeNullString  = reflect.TypeOf(null.String{})
-	typeNullBool    = reflect.TypeOf(null.Bool{})
-	typeNullTime    = reflect.TypeOf(null.Time{})
-	typeNullBytes   = reflect.TypeOf(null.Bytes{})
-	typeNullJSON    = reflect.TypeOf(null.JSON{})
-	typeTime        = reflect.TypeOf(time.Time{})
-	typeJSON        = reflect.TypeOf(types.JSON{})
-	rgxValidTime    = regexp.MustCompile(`[2-9]+`)
+	typeNullFloat32  = reflect.TypeOf(null.Float32{})
+	typeNullFloat64  = reflect.TypeOf(null.Float64{})
+	typeNullInt      = reflect.TypeOf(null.Int{})
+	typeNullInt8     = reflect.TypeOf(null.Int8{})
+	typeNullInt16    = reflect.TypeOf(null.Int16{})
+	typeNullInt32    = reflect.TypeOf(null.Int32{})
+	typeNullInt64    = reflect.TypeOf(null.Int64{})
+	typeNullUint     = reflect.TypeOf(null.Uint{})
+	typeNullUint8    = reflect.TypeOf(null.Uint8{})
+	typeNullUint16   = reflect.TypeOf(null.Uint16{})
+	typeNullUint32   = reflect.TypeOf(null.Uint32{})
+	typeNullUint64   = reflect.TypeOf(null.Uint64{})
+	typeNullString   = reflect.TypeOf(null.String{})
+	typeNullBool     = reflect.TypeOf(null.Bool{})
+	typeNullTime     = reflect.TypeOf(null.Time{})
+	typeNullBytes    = reflect.TypeOf(null.Bytes{})
+	typeNullJSON     = reflect.TypeOf(null.JSON{})
+	typeTime         = reflect.TypeOf(time.Time{})
+	typeJSON         = reflect.TypeOf(types.JSON{})
+	typeInt64Array   = reflect.TypeOf(types.Int64Array{})
+	typeBytesArray   = reflect.TypeOf(types.BytesArray{})
+	typeBoolArray    = reflect.TypeOf(types.BoolArray{})
+	typeFloat64Array = reflect.TypeOf(types.Float64Array{})
+	typeStringArray  = reflect.TypeOf(types.StringArray{})
+	typeGenericArray = reflect.TypeOf(types.GenericArray{})
+	typeHstore       = reflect.TypeOf(types.Hstore{})
+	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
 	validatedTypes = []string{
 		"inet", "line", "uuid", "interval",
 		"json", "jsonb", "box", "cidr", "circle",
 		"lseg", "macaddr", "path", "pg_lsn", "point",
-		"polygon", "txid_snapshot", "money",
+		"polygon", "txid_snapshot", "money", "hstore",
 	}
 )
 
@@ -218,7 +228,14 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
 				field.Set(reflect.ValueOf(value))
 				return nil
+			case typeHstore:
+				value := hstore.Hstore{Map: map[string]sql.NullString{}}
+				value.Map[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value.Map[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
+
 		} else {
 			switch kind {
 			case reflect.String:
@@ -279,6 +296,12 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				value = []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
 				field.Set(reflect.ValueOf(value))
 				return nil
+			case typeHstore:
+				value := types.Hstore{}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
 		}
 	}
@@ -293,8 +316,15 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		isNull = false
 	}
 
-	// Retrieve the value to be returned
-	if kind == reflect.Struct {
+	// If it's a Postgres array, treat it like one
+	if strings.HasPrefix(fieldType, "ARRAY") {
+		if isNull {
+			value = getArrayNullValue(typ)
+		} else {
+			value = getArrayRandValue(s, typ)
+		}
+		// Retrieve the value to be returned
+	} else if kind == reflect.Struct {
 		if isNull {
 			value = getStructNullValue(typ)
 		} else {
@@ -313,6 +343,45 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 	}
 
 	field.Set(reflect.ValueOf(value))
+
+	return nil
+}
+
+func getArrayNullValue(typ reflect.Type) interface{} {
+	fmt.Println(typ)
+	switch typ {
+	case typeInt64Array:
+		return types.Int64Array{}
+	case typeFloat64Array:
+		return types.Float64Array{}
+	case typeBoolArray:
+		return types.BoolArray{}
+	case typeStringArray:
+		return types.StringArray{}
+	case typeBytesArray:
+		return types.BytesArray{}
+	case typeGenericArray:
+		return types.GenericArray{}
+	}
+
+	return nil
+}
+
+func getArrayRandValue(s *Seed, typ reflect.Type) interface{} {
+	switch typ {
+	case typeInt64Array:
+		return types.Int64Array{int64(s.nextInt()), int64(s.nextInt())}
+	case typeFloat64Array:
+		return types.Float64Array{float64(s.nextInt()), float64(s.nextInt())}
+	case typeBoolArray:
+		return types.BoolArray{s.nextInt()%2 == 0, s.nextInt()%2 == 0, s.nextInt()%2 == 0}
+	case typeStringArray:
+		return types.StringArray{randStr(s, 4), randStr(s, 4), randStr(s, 4)}
+	case typeBytesArray:
+		return types.BytesArray{randByteSlice(s, 4), randByteSlice(s, 4), randByteSlice(s, 4)}
+	case typeGenericArray:
+		return types.GenericArray{A: []types.JSON{randJSON(s, 4), randJSON(s, 4), randJSON(s, 4)}}
+	}
 
 	return nil
 }
@@ -501,6 +570,17 @@ func randByteSlice(s *Seed, ln int) []byte {
 	for i := 0; i < ln; i++ {
 		str[i] = byte(s.nextInt() % 256)
 	}
+
+	return str
+}
+
+func randJSON(s *Seed, ln int) types.JSON {
+	str := make(types.JSON, ln)
+	str[0] = '"'
+	for i := 1; i < ln-1; i++ {
+		str[i] = byte(s.nextInt() % 256)
+	}
+	str[ln-1] = '"'
 
 	return str
 }

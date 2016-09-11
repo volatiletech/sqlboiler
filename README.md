@@ -1051,11 +1051,16 @@ The generated models might import a couple of packages that are not on your syst
 `cd` into your generated models directory and type `go get -u -t` to fetch them. You will only need
 to run this command once, not per generation.
 
+#### Where is the homepage?
+
+The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler)
+[Golang ORM](https://github.com/vattle/sqlboiler) generator is located at: https://github.com/vattle/sqlboiler
+
 ## Benchmarks
 
 If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/vattle/boilbench) repo.
 
-Here are the results **(lower is better)**:
+Here are the results (lower is better):
 
 `go test -bench . -benchmem`
 ```

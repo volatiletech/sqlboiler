@@ -70,8 +70,7 @@ func New(config *Config) (*State, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to json marshal tables")
 		}
-		boil.DebugWriter.Write(b)
-		fmt.Fprintln(boil.DebugWriter)
+		fmt.Printf("%s\n", b)
 	}
 
 	err = s.initOutFolder()

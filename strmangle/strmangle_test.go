@@ -69,6 +69,20 @@ func TestIdentifier(t *testing.T) {
 	}
 }
 
+func TestQuoteCharacter(t *testing.T) {
+	t.Parallel()
+
+	if QuoteCharacter('[') != "[" {
+		t.Error("want just the normal quote character")
+	}
+	if QuoteCharacter('`') != "`" {
+		t.Error("want just the normal quote character")
+	}
+	if QuoteCharacter('"') != `\"` {
+		t.Error("want an escaped character")
+	}
+}
+
 func TestPlaceholders(t *testing.T) {
 	t.Parallel()
 
@@ -317,7 +331,7 @@ func TestWhereClause(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		r := WhereClause(test.Start, test.Cols)
+		r := WhereClause(`"`, `"`, test.Start, test.Cols)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}

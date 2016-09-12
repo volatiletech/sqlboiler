@@ -1,6 +1,7 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
+{{- $schemaTable := .Table.Name | .SchemaTable -}}
 // ReloadGP refetches the object from the database and panics on error.
 func (o *{{$tableNameSingular}}) ReloadGP() {
   if err := o.ReloadG(); err != nil {
@@ -67,7 +68,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
   args := o.inPrimaryKeyArgs()
 
   sql := fmt.Sprintf(
-    `SELECT {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}}.* FROM {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} WHERE (%s) IN (%s)`,
+    "SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE (%s) IN (%s)",
     strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, {{$varNameSingular}}PrimaryKeyColumns), ","),
     strmangle.Placeholders(dialect.IndexPlaceholders, len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )

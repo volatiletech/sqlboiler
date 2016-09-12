@@ -12,6 +12,7 @@
     {{- else -}}
       {{- /* Begin execution of template for many-to-many relationship. */ -}}
       {{- $rel := textsFromRelationship $dot.Tables $table . -}}
+      {{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable -}}
 // {{$rel.Function.Name}}G retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
@@ -22,7 +23,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) {{$varNameSingular}}Query {
   queryMods := []qm.QueryMod{
-    qm.Select(`"{{id 0}}".*`),
+    qm.Select("{{id 0 | $dot.Quotes}}.*"),
   }
 
   if len(mods) != 0 {
@@ -31,17 +32,17 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 
     {{if .ToJoinTable -}}
   queryMods = append(queryMods,
-    qm.InnerJoin(`{{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}"`),
-    qm.Where(`"{{id 1}}"."{{.JoinLocalColumn}}"=$1`, {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
+    qm.InnerJoin("{{.JoinTable | $dot.SchemaTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}}"),
+    qm.Where("{{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}}=$1", {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
   )
     {{else -}}
   queryMods = append(queryMods,
-    qm.Where(`"{{id 0}}"."{{.ForeignColumn}}"=$1`, {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
+    qm.Where("{{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}}=$1", {{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}),
   )
     {{end}}
 
   query := {{$rel.ForeignTable.NamePluralGo}}(exec, queryMods...)
-  boil.SetFrom(query.Query, `{{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}"`)
+  boil.SetFrom(query.Query, "{{$schemaForeignTable}} as {{id 0 | $dot.Quotes}}")
   return query
 }
 

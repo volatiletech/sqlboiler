@@ -3,6 +3,7 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
+{{- $schemaTable := .Table.Name | .SchemaTable -}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) error {
@@ -52,7 +53,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   if !cached {
     wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
 
-    cache.query = fmt.Sprintf(`UPDATE {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} SET %s WHERE %s`, strmangle.SetParamNames(wl), strmangle.WhereClause(len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
+    cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s", strmangle.SetParamNames(wl), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
     cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
     if err != nil {
       return err
@@ -155,8 +156,8 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
   args = append(args, o.inPrimaryKeyArgs()...)
 
   sql := fmt.Sprintf(
-    `UPDATE {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} SET (%s) = (%s) WHERE (%s) IN (%s)`,
-    strings.Join(colNames, ", "),
+    "UPDATE {{$schemaTable}} SET (%s) = (%s) WHERE (%s) IN (%s)",
+    strings.Join(colNames, ","),
     strmangle.Placeholders(dialect.IndexPlaceholders, len(colNames), 1, 1),
     strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, {{$varNameSingular}}PrimaryKeyColumns), ","),
     strmangle.Placeholders(dialect.IndexPlaceholders, len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(colNames)+1, len({{$varNameSingular}}PrimaryKeyColumns)),

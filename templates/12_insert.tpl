@@ -1,5 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $schemaTable := .Table.Name | .SchemaTable -}}
 // InsertG a single record. See Insert for whitelist behavior description.
 func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
   return o.Insert(boil.GetDB(), whitelist...)
@@ -64,13 +65,13 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     if err != nil {
       return err
     }
-    cache.query = fmt.Sprintf(`INSERT INTO {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} ("%s") VALUES (%s)`, strings.Join(wl, `","`), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
+    cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) VALUES (%s)", strings.Join(wl, "{{.LQ}},{{.RQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
 
     if len(cache.retMapping) != 0 {
       {{if .UseLastInsertID -}}
-      cache.retQuery = fmt.Sprintf(`SELECT %s FROM {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} WHERE %s`, strings.Join(returnColumns, `","`), strmangle.WhereClause(1, {{$varNameSingular}}PrimaryKeyColumns))
+      cache.retQuery = fmt.Sprintf("SELECT %s FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.LQ}},{{.RQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", 1, {{$varNameSingular}}PrimaryKeyColumns))
       {{else -}}
-      cache.query += fmt.Sprintf(` RETURNING %s`, strings.Join(returnColumns, ","))
+      cache.query += fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.LQ}},{{.RQ}}"))
       {{end -}}
     }
   }

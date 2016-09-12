@@ -14,17 +14,39 @@ import (
 
 // templateData for sqlboiler templates
 type templateData struct {
-	Tables           []bdb.Table
-	Table            bdb.Table
-	Schema           string
-	DriverName       string
-	UseLastInsertID  bool
-	PkgName          string
+	Tables []bdb.Table
+	Table  bdb.Table
+
+	// Controls what names are output
+	PkgName string
+	Schema  string
+
+	// Controls which code is output (mysql vs postgres ...)
+	DriverName      string
+	UseLastInsertID bool
+
+	// Turn off auto timestamps or hook generation
 	NoHooks          bool
 	NoAutoTimestamps bool
-	Tags             []string
-	StringFuncs      map[string]func(string) string
-	Dialect          boil.Dialect
+
+	// Tags control which
+	Tags []string
+
+	// StringFuncs are usable in templates with stringMap
+	StringFuncs map[string]func(string) string
+
+	// Dialect controls quoting
+	Dialect boil.Dialect
+	LQ      string
+	RQ      string
+}
+
+func (t templateData) Quotes(s string) string {
+	return fmt.Sprintf("%s%s%s", t.LQ, s, t.RQ)
+}
+
+func (t templateData) SchemaTable(table string) string {
+	return strmangle.SchemaTable(t.LQ, t.RQ, t.DriverName, t.Schema, table)
 }
 
 type templateList struct {
@@ -115,7 +137,7 @@ var templateStringMappers = map[string]func(string) string{
 // add a function pointer here.
 var templateFunctions = template.FuncMap{
 	// String ops
-	"quoteWrap": func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
 	"id":        strmangle.Identifier,
 
 	// Pluralization
@@ -143,7 +165,6 @@ var templateFunctions = template.FuncMap{
 
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
-	"schemaTable": strmangle.SchemaTable,
 
 	// Text helpers
 	"textsFromForeignKey":           textsFromForeignKey,

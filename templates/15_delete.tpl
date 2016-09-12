@@ -1,5 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $schemaTable := .Table.Name | .SchemaTable -}}
 // DeleteP deletes a single {{$tableNameSingular}} record with an executor.
 // DeleteP will match against the primary key column to find the record to delete.
 // Panics on error.
@@ -43,7 +44,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
   args := o.inPrimaryKeyArgs()
 
-  sql := `DELETE FROM {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} WHERE {{whereClause 1 .Table.PKey.Columns}}`
+  sql := "DELETE FROM {{$schemaTable}} WHERE {{whereClause .LQ .RQ 1 .Table.PKey.Columns}}"
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, sql)
@@ -132,8 +133,8 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
   args := o.inPrimaryKeyArgs()
 
   sql := fmt.Sprintf(
-    `DELETE FROM {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} WHERE (%s) IN (%s)`,
-    strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, {{$varNameSingular}}PrimaryKeyColumns), ","),
+    "DELETE FROM {{$schemaTable}} WHERE (%s) IN (%s)",
+    strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, {{$varNameSingular}}PrimaryKeyColumns), "{{.LQ}},{{.RQ}}"),
     strmangle.Placeholders(dialect.IndexPlaceholders, len(o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 

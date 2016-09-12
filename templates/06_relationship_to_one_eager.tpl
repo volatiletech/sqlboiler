@@ -1,6 +1,6 @@
 {{- define "relationship_to_one_eager_helper" -}}
-  {{- $tmplData := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
-  {{- $varNameSingular := $tmplData.Table.Name | singular | camelCase -}}
+  {{- $dot := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
+  {{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
   {{- with .Rel -}}
   {{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
   {{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
@@ -28,7 +28,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
   }
 
   query := fmt.Sprintf(
-    `select * from {{schemaTable $tmplData.Dialect.LQ $tmplData.Dialect.RQ $tmplData.DriverName $tmplData.Schema .ForeignKey.ForeignTable}} where "{{.ForeignKey.ForeignColumn}}" in (%s)`,
+    "select * from {{.ForeignKey.ForeignTable | $dot.SchemaTable}} where {{.ForeignKey.ForeignColumn | $dot.Quotes}} in (%s)",
     strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
   )
 
@@ -47,7 +47,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
     return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable.NameGo}}")
   }
 
-  {{if not $tmplData.NoHooks -}}
+  {{if not $dot.NoHooks -}}
   if len({{.ForeignTable.Name | singular | camelCase}}AfterSelectHooks) != 0 {
     for _, obj := range resultSlice {
       if err := obj.doAfterSelectHooks(e); err != nil {

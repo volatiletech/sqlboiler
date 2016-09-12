@@ -13,6 +13,7 @@
       {{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
       {{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
       {{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
+      {{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable -}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -37,13 +38,14 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
   }
 
     {{if .ToJoinTable -}}
+      {{- $schemaJoinTable := .JoinTable | $dot.SchemaTable -}}
   query := fmt.Sprintf(
-    `select "{{id 0}}".*, "{{id 1}}"."{{.JoinLocalColumn}}" from {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} as "{{id 0}}" inner join {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .JoinTable}} as "{{id 1}}" on "{{id 0}}"."{{.ForeignColumn}}" = "{{id 1}}"."{{.JoinForeignColumn}}" where "{{id 1}}"."{{.JoinLocalColumn}}" in (%s)`,
+    "select {{id 0 | $dot.Quotes}}.*, {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} from {{$schemaForeignTable}} as {{id 0 | $dot.Quotes}} inner join {{$schemaJoinTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}} where {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} in (%s)",
     strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
   )
     {{else -}}
   query := fmt.Sprintf(
-    `select * from {{schemaTable $dot.Dialect.LQ $dot.Dialect.RQ $dot.DriverName $dot.Schema .ForeignTable}} where "{{.ForeignColumn}}" in (%s)`,
+    "select * from {{$schemaForeignTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
     strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
   )
     {{end -}}

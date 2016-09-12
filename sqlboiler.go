@@ -16,6 +16,7 @@ import (
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/bdb/drivers"
 	"github.com/vattle/sqlboiler/boil"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 const (
@@ -103,6 +104,8 @@ func (s *State) Run(includeTests bool) error {
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
 		Dialect:          s.Dialect,
+		LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
+		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
 
 		StringFuncs: templateStringMappers,
 	}
@@ -137,6 +140,8 @@ func (s *State) Run(includeTests bool) error {
 			NoAutoTimestamps: s.Config.NoAutoTimestamps,
 			Tags:             s.Config.Tags,
 			Dialect:          s.Dialect,
+			LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
+			RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
 
 			StringFuncs: templateStringMappers,
 		}

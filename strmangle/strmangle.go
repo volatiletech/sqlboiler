@@ -38,12 +38,12 @@ func init() {
 // using a database that supports real schemas, for example,
 // for Postgres: "schema_name"."table_name", versus
 // simply "table_name" for MySQL (because it does not support real schemas)
-func SchemaTable(lq byte, rq byte, driver string, schema string, table string) string {
+func SchemaTable(lq, rq string, driver string, schema string, table string) string {
 	if driver == "postgres" && schema != "public" {
-		return fmt.Sprintf(`%c%s%c.%c%s%c`, lq, schema, rq, lq, table, rq)
+		return fmt.Sprintf(`%s%s%s.%s%s%s`, lq, schema, rq, lq, table, rq)
 	}
 
-	return fmt.Sprintf(`%c%s%c`, lq, table, rq)
+	return fmt.Sprintf(`%s%s%s`, lq, table, rq)
 }
 
 // IdentQuote attempts to quote simple identifiers in SQL tatements
@@ -116,6 +116,16 @@ func Identifier(in int) string {
 	}
 
 	return cols.String()
+}
+
+// QuoteCharacter returns a string that allows the quote character
+// to be embedded into a Go string that uses double quotes:
+func QuoteCharacter(q byte) string {
+	if q == '"' {
+		return `\"`
+	}
+
+	return string(q)
 }
 
 // Plural converts singular words to plural words (eg: person to people)
@@ -433,7 +443,7 @@ func SetParamNames(columns []string) string {
 
 // WhereClause returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func WhereClause(start int, cols []string) string {
+func WhereClause(lq, rq string, start int, cols []string) string {
 	if start == 0 {
 		panic("0 is not a valid start number for whereClause")
 	}
@@ -442,7 +452,7 @@ func WhereClause(start int, cols []string) string {
 	defer PutBuffer(buf)
 
 	for i, c := range cols {
-		buf.WriteString(fmt.Sprintf(`"%s"=$%d`, c, start+i))
+		buf.WriteString(fmt.Sprintf(`%s%s%s=$%d`, lq, c, rq, start+i))
 		if i < len(cols)-1 {
 			buf.WriteString(" AND ")
 		}

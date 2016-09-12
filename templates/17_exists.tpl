@@ -2,11 +2,12 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
+{{- $schemaTable := .Table.Name | .SchemaTable -}}
 // {{$tableNameSingular}}Exists checks if the {{$tableNameSingular}} row exists.
 func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error) {
   var exists bool
 
-  sql := `select exists(select 1 from {{schemaTable .Dialect.LQ .Dialect.RQ .DriverName .Schema .Table.Name}} where {{whereClause 1 .Table.PKey.Columns}} limit 1)`
+  sql := "select exists(select 1 from {{$schemaTable}} where {{whereClause .LQ .RQ 1 .Table.PKey.Columns}} limit 1)"
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, sql)

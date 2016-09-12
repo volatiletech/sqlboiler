@@ -6,7 +6,7 @@ var (
 
 type tester interface {
 	setup() error
-	conn() *sql.DB
+	conn() (*sql.DB, error)
 	teardown() error
 }
 
@@ -41,8 +41,13 @@ func TestMain(m *testing.M) {
 		os.Exit(-4)
 	}
 
+  conn, err := dbMain.conn()
+  if err != nil {
+    fmt.Println("failed to get connection:", err)
+  }
+
 	var code int
-	boil.SetDB(dbMain.conn())
+	boil.SetDB(conn)
 	code = m.Run()
 
 	if err = dbMain.teardown(); err != nil {

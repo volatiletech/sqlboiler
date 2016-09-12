@@ -44,8 +44,8 @@ func (p *pgTester) teardown() error {
 	return p.dropTestDB()
 }
 
-func (p *pgTester) conn() *sql.DB {
-	return p.dbConn
+func (p *pgTester) conn() (*sql.DB, error) {
+	return p.dbConn, nil
 }
 
 // dropTestDB switches its connection to the template1 database temporarily

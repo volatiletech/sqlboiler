@@ -84,7 +84,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
     fmt.Fprintln(boil.DebugWriter, vals)
   }
 
-  result, err := exec.Exec(ins, vals...)
+  result, err := exec.Exec(cache.query, vals...)
   if err != nil {
     return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
   }

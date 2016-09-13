@@ -92,7 +92,7 @@ func (p *pgTester) setup() error {
 	p.port = viper.GetInt("postgres.port")
 	p.sslmode = viper.GetString("postgres.sslmode")
 	// Create a randomized db name.
-	p.testDBName = getDBNameHash(p.dbName)
+	p.testDBName = randomize.StableDBName(p.dbName)
 
 	err = p.dropTestDB()
 	if err != nil {

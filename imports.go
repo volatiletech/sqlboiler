@@ -206,11 +206,12 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 	},
 	"boil_queries_test": {
 		standard: importList{
-			`"crypto/md5"`,
+			`"bytes"`,
 			`"fmt"`,
-			`"os"`,
-			`"strconv"`,
+			`"io"`,
+			`"io/ioutil"`,
 			`"math/rand"`,
+			`"regexp"`,
 		},
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
@@ -238,6 +239,7 @@ var defaultTestMainImports = map[string]imports{
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
+			`"github.com/vattle/sqlboiler/boil/randomize"`,
 			`_ "github.com/lib/pq"`,
 		},
 	},
@@ -256,6 +258,7 @@ var defaultTestMainImports = map[string]imports{
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
+			`"github.com/vattle/sqlboiler/boil/randomize"`,
 			`_ "github.com/go-sql-driver/mysql"`,
 		},
 	},

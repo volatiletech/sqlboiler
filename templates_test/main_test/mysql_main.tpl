@@ -27,7 +27,7 @@ func (m *mysqlTester) setup() error {
   m.port = viper.GetInt("mysql.port")
   m.sslmode = viper.GetString("mysql.sslmode")
   // Create a randomized db name.
-  m.testDBName = getDBNameHash(m.dbName)
+  m.testDBName = randomize.StableDBName(m.dbName)
 
   if err = m.makeOptionFile(); err != nil {
     return errors.Wrap(err, "couldn't make option file")
@@ -45,7 +45,7 @@ func (m *mysqlTester) setup() error {
 
   r, w := io.Pipe()
   dumpCmd.Stdout = w
-  createCmd.Stdin = io.TeeReader(r, os.Stdout)
+  createCmd.Stdin = newFKeyDestroyer(r)
 
   if err = dumpCmd.Start(); err != nil {
     return errors.Wrap(err, "failed to start mysqldump command")

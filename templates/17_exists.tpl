@@ -7,7 +7,7 @@
 func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error) {
   var exists bool
 
-  sql := "select exists(select 1 from {{$schemaTable}} where {{whereClause .LQ .RQ 1 .Table.PKey.Columns}} limit 1)"
+  sql := "select exists(select 1 from {{$schemaTable}} where {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}} limit 1)"
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, sql)

@@ -44,7 +44,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
   args := o.inPrimaryKeyArgs()
 
-  sql := "DELETE FROM {{$schemaTable}} WHERE {{whereClause .LQ .RQ 1 .Table.PKey.Columns}}"
+  sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
 
   if boil.DebugMode {
     fmt.Fprintln(boil.DebugWriter, sql)

@@ -29,7 +29,7 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
     sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
   }
   query := fmt.Sprintf(
-    "select %s from {{.Table.Name | .SchemaTable}} where {{whereClause .LQ .RQ 1 .Table.PKey.Columns}}", sel,
+    "select %s from {{.Table.Name | .SchemaTable}} where {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", sel,
   )
 
   q := boil.SQL(exec, query, {{$pkNames | join ", "}})

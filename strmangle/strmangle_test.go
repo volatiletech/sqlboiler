@@ -317,6 +317,28 @@ func TestPrefixStringSlice(t *testing.T) {
 	}
 }
 
+func TestSetParamNames(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Cols   []string
+		Start  int
+		Should string
+	}{
+		{Cols: []string{"col1", "col2"}, Start: 0, Should: `"col1"=?,"col2"=?`},
+		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
+		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4,"col2"=$5`},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4,"col2"=$5,"col3"=$6`},
+	}
+
+	for i, test := range tests {
+		r := SetParamNames(`"`, `"`, test.Start, test.Cols)
+		if r != test.Should {
+			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
+		}
+	}
+}
+
 func TestWhereClause(t *testing.T) {
 	t.Parallel()
 
@@ -325,6 +347,7 @@ func TestWhereClause(t *testing.T) {
 		Start  int
 		Should string
 	}{
+		{Cols: []string{"col1", "col2"}, Start: 0, Should: `"col1"=? AND "col2"=?`},
 		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
 		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5`},
 		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5 AND "col3"=$6`},

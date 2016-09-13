@@ -427,14 +427,19 @@ func Placeholders(indexPlaceholders bool, count int, start int, group int) strin
 // SetParamNames takes a slice of columns and returns a comma separated
 // list of parameter names for a template statement SET clause.
 // eg: "col1"=$1, "col2"=$2, "col3"=$3
-func SetParamNames(columns []string) string {
+func SetParamNames(lq, rq string, start int, columns []string) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
 	for i, c := range columns {
-		buf.WriteString(fmt.Sprintf(`"%s"=$%d`, c, i+1))
+		if start != 0 {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=$%d`, lq, c, rq, i+start))
+		} else {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=?`, lq, c, rq))
+		}
+
 		if i < len(columns)-1 {
-			buf.WriteString(", ")
+			buf.WriteByte(',')
 		}
 	}
 
@@ -444,15 +449,16 @@ func SetParamNames(columns []string) string {
 // WhereClause returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
 func WhereClause(lq, rq string, start int, cols []string) string {
-	if start == 0 {
-		panic("0 is not a valid start number for whereClause")
-	}
-
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
 	for i, c := range cols {
-		buf.WriteString(fmt.Sprintf(`%s%s%s=$%d`, lq, c, rq, start+i))
+		if start != 0 {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=$%d`, lq, c, rq, start+i))
+		} else {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=?`, lq, c, rq))
+		}
+
 		if i < len(cols)-1 {
 			buf.WriteString(" AND ")
 		}

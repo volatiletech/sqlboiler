@@ -53,7 +53,10 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
   if !cached {
     wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
 
-    cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s", strmangle.SetParamNames(wl), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", len(wl)+1, {{$varNameSingular}}PrimaryKeyColumns))
+    cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
+      strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, wl),
+      strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}len(wl)+1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns),
+    )
     cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
     if err != nil {
       return err

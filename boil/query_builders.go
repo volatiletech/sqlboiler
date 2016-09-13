@@ -58,7 +58,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString(strings.Join(selectColsWithAs, ", "))
 	} else if hasSelectCols {
 		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.selectCols), ", "))
-	} else if hasJoins {
+	} else if hasJoins && !q.count {
 		selectColsWithStars := writeStars(q)
 		buf.WriteString(strings.Join(selectColsWithStars, ", "))
 	} else {

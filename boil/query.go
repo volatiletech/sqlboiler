@@ -151,6 +151,11 @@ func SetLoad(q *Query, relationships ...string) {
 	q.load = append([]string(nil), relationships...)
 }
 
+// SetSelect on the query.
+func SetSelect(q *Query, sel []string) {
+	q.selectCols = sel
+}
+
 // SetCount on the query.
 func SetCount(q *Query) {
 	q.count = true

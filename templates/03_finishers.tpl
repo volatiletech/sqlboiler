@@ -79,6 +79,7 @@ func (q {{$varNameSingular}}Query) CountP() int64 {
 func (q {{$varNameSingular}}Query) Count() (int64, error) {
   var count int64
 
+  boil.SetSelect(q.Query, nil)
   boil.SetCount(q.Query)
 
   err := boil.ExecQueryOne(q.Query).Scan(&count)

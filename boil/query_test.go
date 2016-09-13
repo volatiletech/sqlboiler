@@ -290,6 +290,17 @@ func TestFrom(t *testing.T) {
 	}
 }
 
+func TestSetSelect(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{selectCols: []string{"hello"}}
+	SetSelect(q, nil)
+
+	if q.selectCols != nil {
+		t.Errorf("want nil")
+	}
+}
+
 func TestSetCount(t *testing.T) {
 	t.Parallel()
 

@@ -100,7 +100,7 @@ func (q *Query) Bind(obj interface{}) error {
 		return err
 	}
 
-	rows, err := ExecQueryAll(q)
+	rows, err := q.ExecQueryAll()
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}

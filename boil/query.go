@@ -97,7 +97,7 @@ func SQLG(query string, args ...interface{}) *Query {
 }
 
 // ExecQuery executes a query that does not need a row returned
-func ExecQuery(q *Query) (sql.Result, error) {
+func (q *Query) ExecQuery() (sql.Result, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
@@ -107,7 +107,7 @@ func ExecQuery(q *Query) (sql.Result, error) {
 }
 
 // ExecQueryOne executes the query for the One finisher and returns a row
-func ExecQueryOne(q *Query) *sql.Row {
+func (q *Query) ExecQueryOne() *sql.Row {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
@@ -117,7 +117,7 @@ func ExecQueryOne(q *Query) *sql.Row {
 }
 
 // ExecQueryAll executes the query for the All finisher and returns multiple rows
-func ExecQueryAll(q *Query) (*sql.Rows, error) {
+func (q *Query) ExecQueryAll() (*sql.Rows, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)

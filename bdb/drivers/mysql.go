@@ -117,7 +117,7 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	var columns []bdb.Column
 
 	rows, err := m.dbConn.Query(`
-	select column_name, data_type, column_default, is_nullable,
+	select column_name, data_type, if(extra = 'auto_increment','auto_increment', column_default), is_nullable,
 		exists (
 			select c.column_name
 			from information_schema.table_constraints tc

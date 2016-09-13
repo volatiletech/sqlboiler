@@ -4,7 +4,6 @@ package randomize
 import (
 	"database/sql"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"regexp"
 	"sort"
@@ -571,87 +570,4 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 	}
 
 	return nil
-}
-
-const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func randStr(s *Seed, ln int) string {
-	str := make([]byte, ln)
-	for i := 0; i < ln; i++ {
-		str[i] = byte(alphabet[s.nextInt()%len(alphabet)])
-	}
-
-	return string(str)
-}
-
-func randByteSlice(s *Seed, ln int) []byte {
-	str := make([]byte, ln)
-	for i := 0; i < ln; i++ {
-		str[i] = byte(s.nextInt() % 256)
-	}
-
-	return str
-}
-
-func randPoint() string {
-	a := rand.Intn(100)
-	b := a + 1
-	return fmt.Sprintf("(%d,%d)", a, b)
-}
-
-func randBox() string {
-	a := rand.Intn(100)
-	b := a + 1
-	c := a + 2
-	d := a + 3
-	return fmt.Sprintf("(%d,%d),(%d,%d)", a, b, c, d)
-}
-
-func randCircle() string {
-	a, b, c := rand.Intn(100), rand.Intn(100), rand.Intn(100)
-	return fmt.Sprintf("((%d,%d),%d)", a, b, c)
-}
-
-func randNetAddr() string {
-	return fmt.Sprintf(
-		"%d.%d.%d.%d",
-		rand.Intn(254)+1,
-		rand.Intn(254)+1,
-		rand.Intn(254)+1,
-		rand.Intn(254)+1,
-	)
-}
-
-func randMacAddr() string {
-	buf := make([]byte, 6)
-	_, err := rand.Read(buf)
-	if err != nil {
-		panic(err)
-	}
-
-	// Set the local bit
-	buf[0] |= 2
-	return fmt.Sprintf(
-		"%02x:%02x:%02x:%02x:%02x:%02x",
-		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
-	)
-}
-
-func randLsn() string {
-	a := rand.Int63n(9000000)
-	b := rand.Int63n(9000000)
-	return fmt.Sprintf("%d/%d", a, b)
-}
-
-func randTxID() string {
-	// Order of integers is relevant
-	a := rand.Intn(200) + 100
-	b := a + 100
-	c := a
-	d := a + 50
-	return fmt.Sprintf("%d:%d:%d,%d", a, b, c, d)
-}
-
-func randMoney(s *Seed) string {
-	return fmt.Sprintf("%d.00", s.nextInt())
 }

@@ -150,7 +150,7 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 
   i := 0
   for name, value := range cols {
-    colNames[i] = strmangle.IdentQuote(dialect.LQ, dialect.RQ, name)
+    colNames[i] = name
     args[i] = value
     i++
   }
@@ -159,10 +159,8 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
   args = append(args, o.inPrimaryKeyArgs()...)
 
   sql := fmt.Sprintf(
-    "UPDATE {{$schemaTable}} SET (%s) = (%s) WHERE (%s) IN (%s)",
-    strings.Join(colNames, ","),
-    strmangle.Placeholders(dialect.IndexPlaceholders, len(colNames), 1, 1),
-    strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, {{$varNameSingular}}PrimaryKeyColumns), ","),
+    "UPDATE {{$schemaTable}} SET %s WHERE ({{.LQ}}{{.Table.PKey.Columns | join (printf "%s,%s" .LQ .RQ)}}{{.RQ}}) IN (%s)",
+    strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, colNames),
     strmangle.Placeholders(dialect.IndexPlaceholders, len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(colNames)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
   )
 

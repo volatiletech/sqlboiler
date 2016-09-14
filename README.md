@@ -456,36 +456,8 @@ err := models.NewQuery(db, From("pilots")).All()
 As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
 allow you to execute the final action.
 
-If you plan on executing the same query with the same values using the query builder,
-you should do so like the following to utilize caching:
-
-```go
-// Instead of this:
-for i := 0; i < 10; i++ {
-   pilots := models.Pilots(qm.Where("id > ?", 5), qm.Limit(5)).All()
-}
-
-// You should do this
-query := models.Pilots(qm.Where("id > ?", 5), qm.Limit(5))
-for i := 0; i < 10; i++ {
-   pilots := query.All()
-}
-
-// Every execution of All() after the first will use a cached version of
-// the built query that short circuits the query builder all together.
-// This allows you to save on performance.
-
-// Just something to be aware of: query mods don't store pointers, so if
-// your passed in variable's value changes, your generated query will not change.
-```
-
-Note: You will see exported `boil.SetX` methods in the boil package. These should not be used on query
-objects because they will break caching. Unfortunately these had to be exported due to some circular
-dependency issues, but they're not functionality we want exposed. If you want a different
-query object, generate a new one.
-
-Take a look at our [Relationships Query Building](#relationships) section for some additional query
-building information.
+We also generate query building helper methods for your relationships as well. Take a look at our 
+[Relationships Query Building](#relationships) section for some additional query building information.
 
 
 ### Query Mod System
@@ -579,6 +551,9 @@ UpdateAll(models.M{"name": "John", "age": 23}) // Update all rows matching the b
 DeleteAll() // Delete all rows matching the built query.
 Exists() // Returns a bool indicating whether the row(s) for the built query exists.
 Bind(&myObj) // Bind the results of a query to your own struct object.
+ExecQuery() // Execute an SQL query that does not require any rows returned. Equivalent to `sql.Exec()`.
+ExecQueryOne() // Execute an SQL query expected to return only a single row. Equivalent to `sql.QueryRow()`.
+ExecQueryAll() // Execute an SQL query expected to return multiple rows. Equivalent to `sql.Query()`.
 ```
 
 ### Raw Query
@@ -593,8 +568,10 @@ err := boil.SQL(db, "select * from pilots where id=$1", 5).Bind(&obj)
 You can use your own structs or a generated struct as a parameter to Bind. Bind supports both
 a single object for single row queries and a slice of objects for multiple row queries.
 
-You also have `models.NewQuery()` at your disposal if you would still like to use [Query Build](#query-building)
-but would like to build against a non-generated model.
+`boil.SQL()` also has a method that can execute a query without binding to an object, if required.
+
+You also have `models.NewQuery()` at your disposal if you would still like to use [Query Building](#query-building)
+in combination with your own custom, non-generated model.
 
 ### Binding
 

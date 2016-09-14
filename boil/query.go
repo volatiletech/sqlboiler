@@ -126,6 +126,28 @@ func (q *Query) ExecQueryAll() (*sql.Rows, error) {
 	return q.executor.Query(qs, args...)
 }
 
+// ExecQueryP executes a query that does not need a row returned
+// It will panic on error
+func (q *Query) ExecQueryP() sql.Result {
+	res, err := q.ExecQuery()
+	if err != nil {
+		panic(WrapErr(err))
+	}
+
+	return res
+}
+
+// ExecQueryAllP executes the query for the All finisher and returns multiple rows
+// It will panic on error
+func (q *Query) ExecQueryAllP() *sql.Rows {
+	rows, err := q.ExecQueryAll()
+	if err != nil {
+		panic(WrapErr(err))
+	}
+
+	return rows
+}
+
 // SetExecutor on the query.
 func SetExecutor(q *Query, exec Executor) {
 	q.executor = exec

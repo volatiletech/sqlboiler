@@ -45,7 +45,7 @@ func (m *mysqlTester) setup() error {
 
   r, w := io.Pipe()
   dumpCmd.Stdout = w
-  createCmd.Stdin = newFKeyDestroyer(r)
+  createCmd.Stdin = newFKeyDestroyer(rgxMySQLkey, r)
 
   if err = dumpCmd.Start(); err != nil {
     return errors.Wrap(err, "failed to start mysqldump command")
@@ -111,12 +111,12 @@ func (m *mysqlTester) dropTestDB() error {
 }
 
 func (m *mysqlTester) teardown() error {
-  if err := m.dropTestDB(); err != nil {
-    return err
-  }
-
   if m.dbConn != nil {
     m.dbConn.Close()
+  }
+
+  if err := m.dropTestDB(); err != nil {
+    return err
   }
 
   return os.Remove(m.optionFile)

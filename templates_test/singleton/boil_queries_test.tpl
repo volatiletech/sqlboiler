@@ -7,18 +7,20 @@ func MustTx(transactor boil.Transactor, err error) boil.Transactor {
 	return transactor
 }
 
-var rgxPGFkey = regexp.MustCompile(`(?m)(?s)^ALTER TABLE ONLY.*?ADD CONSTRAINT.*?FOREIGN KEY.*?;\n`)
+var rgxPGFkey = regexp.MustCompile(`(?m)^ALTER TABLE ONLY .*\n\s+ADD CONSTRAINT .*? FOREIGN KEY .*?;\n`)
 var rgxMySQLkey = regexp.MustCompile(`(?m)((,\n)?\s+CONSTRAINT.*?FOREIGN KEY.*?\n)+`)
 
-func newFKeyDestroyer(reader io.Reader) io.Reader {
+func newFKeyDestroyer(regex *regexp.Regexp, reader io.Reader) io.Reader {
 	return &fKeyDestroyer{
 		reader: reader,
+    rgx:    regex,
 	}
 }
 
 type fKeyDestroyer struct {
 	reader io.Reader
 	buf    *bytes.Buffer
+  rgx    *regexp.Regexp
 }
 
 func (f *fKeyDestroyer) Read(b []byte) (int, error) {
@@ -28,7 +30,7 @@ func (f *fKeyDestroyer) Read(b []byte) (int, error) {
 			return 0, err
 		}
 
-		f.buf = bytes.NewBuffer(rgxMySQLkey.ReplaceAll(rgxPGFkey.ReplaceAll(all, []byte{}), []byte{}))
+		f.buf = bytes.NewBuffer(f.rgx.ReplaceAll(all, []byte{}))
 	}
 
 	return f.buf.Read(b)

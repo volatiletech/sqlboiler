@@ -227,13 +227,14 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 var defaultTestMainImports = map[string]imports{
 	"postgres": {
 		standard: importList{
-			`"os"`,
-			`"os/exec"`,
-			`"fmt"`,
-			`"io/ioutil"`,
 			`"bytes"`,
 			`"database/sql"`,
-			`"path/filepath"`,
+			`"fmt"`,
+			`"io"`,
+			`"io/ioutil"`,
+			`"os"`,
+			`"os/exec"`,
+			`"strings"`,
 		},
 		thirdParty: importList{
 			`"github.com/pkg/errors"`,

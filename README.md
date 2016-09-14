@@ -558,9 +558,9 @@ UpdateAll(models.M{"name": "John", "age": 23}) // Update all rows matching the b
 DeleteAll() // Delete all rows matching the built query.
 Exists() // Returns a bool indicating whether the row(s) for the built query exists.
 Bind(&myObj) // Bind the results of a query to your own struct object.
-ExecQuery() // Execute an SQL query that does not require any rows returned. Equivalent to `sql.Exec()`.
-ExecQueryOne() // Execute an SQL query expected to return only a single row. Equivalent to `sql.QueryRow()`.
-ExecQueryAll() // Execute an SQL query expected to return multiple rows. Equivalent to `sql.Query()`.
+Exec() // Execute an SQL query that does not require any rows returned.
+QueryRow() // Execute an SQL query expected to return only a single row.
+Query() // Execute an SQL query expected to return multiple rows.
 ```
 
 ### Raw Query

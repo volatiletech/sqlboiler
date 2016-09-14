@@ -96,8 +96,8 @@ func SQLG(query string, args ...interface{}) *Query {
 	return SQL(GetDB(), query, args...)
 }
 
-// ExecQuery executes a query that does not need a row returned
-func (q *Query) ExecQuery() (sql.Result, error) {
+// Exec executes a query that does not need a row returned
+func (q *Query) Exec() (sql.Result, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
@@ -106,8 +106,8 @@ func (q *Query) ExecQuery() (sql.Result, error) {
 	return q.executor.Exec(qs, args...)
 }
 
-// ExecQueryOne executes the query for the One finisher and returns a row
-func (q *Query) ExecQueryOne() *sql.Row {
+// QueryRow executes the query for the One finisher and returns a row
+func (q *Query) QueryRow() *sql.Row {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
@@ -116,8 +116,8 @@ func (q *Query) ExecQueryOne() *sql.Row {
 	return q.executor.QueryRow(qs, args...)
 }
 
-// ExecQueryAll executes the query for the All finisher and returns multiple rows
-func (q *Query) ExecQueryAll() (*sql.Rows, error) {
+// Query executes the query for the All finisher and returns multiple rows
+func (q *Query) Query() (*sql.Rows, error) {
 	qs, args := buildQuery(q)
 	if DebugMode {
 		fmt.Fprintln(DebugWriter, qs)
@@ -126,10 +126,10 @@ func (q *Query) ExecQueryAll() (*sql.Rows, error) {
 	return q.executor.Query(qs, args...)
 }
 
-// ExecQueryP executes a query that does not need a row returned
+// ExecP executes a query that does not need a row returned
 // It will panic on error
-func (q *Query) ExecQueryP() sql.Result {
-	res, err := q.ExecQuery()
+func (q *Query) ExecP() sql.Result {
+	res, err := q.Exec()
 	if err != nil {
 		panic(WrapErr(err))
 	}
@@ -137,10 +137,10 @@ func (q *Query) ExecQueryP() sql.Result {
 	return res
 }
 
-// ExecQueryAllP executes the query for the All finisher and returns multiple rows
+// QueryP executes the query for the All finisher and returns multiple rows
 // It will panic on error
-func (q *Query) ExecQueryAllP() *sql.Rows {
-	rows, err := q.ExecQueryAll()
+func (q *Query) QueryP() *sql.Rows {
+	rows, err := q.Query()
 	if err != nil {
 		panic(WrapErr(err))
 	}

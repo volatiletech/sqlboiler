@@ -38,8 +38,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	var err error
 	var ret []string
 	whitelist, ret = strmangle.InsertColumnSet(
-		{{$varNameSingular}}ColumnsWithDefault,
 		{{$varNameSingular}}Columns,
+		{{$varNameSingular}}ColumnsWithDefault,
 		{{$varNameSingular}}ColumnsWithoutDefault,
 		boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
 		whitelist,

@@ -82,7 +82,7 @@ func (q {{$varNameSingular}}Query) Count() (int64, error) {
 	boil.SetSelect(q.Query, nil)
 	boil.SetCount(q.Query)
 
-	err := q.Query.ExecQueryOne().Scan(&count)
+	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
 		return 0, errors.Wrap(err, "{{.PkgName}}: failed to count {{.Table.Name}} rows")
 	}
@@ -107,7 +107,7 @@ func (q {{$varNameSingular}}Query) Exists() (bool, error) {
 	boil.SetCount(q.Query)
 	boil.SetLimit(q.Query, 1)
 
-	err := q.Query.ExecQueryOne().Scan(&count)
+	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
 		return false, errors.Wrap(err, "{{.PkgName}}: failed to check if {{.Table.Name}} exists")
 	}

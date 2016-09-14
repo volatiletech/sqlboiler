@@ -80,7 +80,7 @@ func (q {{$varNameSingular}}Query) DeleteAll() error {
 
 	boil.SetDelete(q.Query)
 
-	_, err := q.Query.ExecQuery()
+	_, err := q.Query.Exec()
 	if err != nil {
 	return errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{.Table.Name}}")
 	}

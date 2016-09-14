@@ -107,7 +107,7 @@ func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
 func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
 	boil.SetUpdate(q.Query, cols)
 
-	_, err := q.Query.ExecQuery()
+	_, err := q.Query.Exec()
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to update all for {{.Table.Name}}")
 	}

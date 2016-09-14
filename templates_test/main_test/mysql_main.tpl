@@ -40,7 +40,7 @@ func (m *mysqlTester) setup() error {
 		return err
 	}
 
-	dumpCmd := exec.Command("mysqldump", m.defaultsFile(), m.dbName)
+	dumpCmd := exec.Command("mysqldump", m.defaultsFile(), "--no-data", m.dbName)
 	createCmd := exec.Command("mysql", m.defaultsFile(), "--database", m.testDBName)
 
 	r, w := io.Pipe()

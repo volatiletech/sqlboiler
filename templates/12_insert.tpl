@@ -98,18 +98,34 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	}
 
 	lastID, err := result.LastInsertId()
-	if err != nil || lastID == 0 || len({{$varNameSingular}}PrimaryKeyColumns) != 1 {
+	if err != nil {
 		return ErrSyncFail
 	}
 
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, lastID)
+	var identifierCols []interface{}
+	if lastID != 0 {
+		{{- $colName := index .Table.PKey.Columns 0 -}}
+		{{- $col := .Table.GetColumn $colName -}}
+		o.{{$colName | singular | titleCase}} = {{$col.Type}}(lastID)
+		identifierCols = []interface{}{lastID}
+	} else {
+		identifierCols = []interface{}{
+			{{range .Table.PKey.Columns -}}
+			o.{{. | singular | titleCase}},
+			{{end -}}
+		}
 	}
 
-	err = exec.QueryRow(cache.retQuery, lastID).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
-	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
+	if lastID != 0 && len(cache.retMapping) == 1 {
+		if boil.DebugMode {
+			fmt.Fprintln(boil.DebugWriter, cache.retQuery)
+			fmt.Fprintln(boil.DebugWriter, identifierCols...)
+		}
+
+		err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
+		if err != nil {
+			return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
+		}
 	}
 	{{else}}
 	if len(cache.retMapping) != 0 {

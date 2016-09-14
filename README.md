@@ -80,23 +80,28 @@ Table of Contents
 ### Features
 
 - Full model generation
-- High performance through generation
 - Extremely fast code generation
+- High performance through generation & intelligent caching
 - Uses boil.Executor (simple interface, sql.DB, sqlx.DB etc. compatible)
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
+- Table whitelist/blacklist
 - Relationships/Associations
 - Eager loading (recursive)
+- Custom struct tags
+- Schema support
 - Transactions
 - Raw SQL fallback
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
+- Postgres 1d arrays, json, hstore & more
 
 ### Supported Databases
 
 - PostgreSQL
+- MySQL
 
 *Note: Seeking contributors for other database engines.*
 
@@ -203,36 +208,36 @@ order:
 - `$XDG_CONFIG_HOME/sqlboiler/`
 - `$HOME/.config/sqlboiler/`
 
-We require you pass in the `postgres` configuration via the configuration file rather than env vars.
-There is no command line argument support for database configuration. Values given under the `postgres`
-block are passed directly to the [pq](github.com/lib/pq) driver. Here is a rundown of all the different
+We require you pass in your `postgres` and `mysql` database configuration via the configuration file rather than env vars.
+There is no command line argument support for database configuration. Values given under the `postgres` and `mysql`
+block are passed directly to the postgres and mysql drivers. Here is a rundown of all the different
 values that can go in that section:
 
-| Name | Required | Default |
-| --- | --- | --- |
-| dbname  | yes       | none      |
-| host    | yes       | none      |
-| port    | no        | 5432      |
-| user    | yes       | none      |
-| pass    | no        | none      |
-| sslmode | no        | "require" |
+| Name | Required | Postgres Default | MySQL Default |
+| --- | --- | --- | --- |
+| dbname  | yes       | none      | none   |
+| host    | yes       | none      | none   |
+| port    | no        | 5432      | 3306   |
+| user    | yes       | none      | none   |
+| pass    | no        | none      | none   |
+| sslmode | no        | "require" | "true" |
 
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
 
-| Name | Default |
-| --- | --- |
-| basedir            | none      |
-| schema             | "public"  |
-| pkgname            | "models"  |
-| output             | "models"  |
-| whitelist          | []        |
-| blacklist          | []        |
-| tag                | []        |
-| debug              | false     |
-| no-hooks           | false     |
-| no-tests           | false     |
-| no-auto-timestamps | false     |
+| Name | Postgres Default | Mysql Default
+| --- | --- | --- |
+| basedir            | none      | none     |
+| schema             | "public"  | *N/A*    |
+| pkgname            | "models"  | "models" |
+| output             | "models"  | "models" |
+| whitelist          | []        | []       |
+| blacklist          | []        | []       |
+| tag                | []        | []       |
+| debug              | false     | false    |
+| no-hooks           | false     | false    |
+| no-tests           | false     | false    |
+| no-auto-timestamps | false     | false    |
 
 Example:
 
@@ -258,7 +263,8 @@ Usage:
   sqlboiler [flags] <driver>
 
 Examples:
-sqlboiler postgres
+  sqlboiler postgres
+  sqlboiler mysql
 
 Flags:
   -b, --blacklist stringSlice Do not include these tables in your generated package
@@ -274,9 +280,9 @@ Flags:
       --no-tests              Disable generated go test files
 ```
 
-Follow the steps below to do some basic model generation. Once we've generated
-our models, we can run the compatibility tests which will exercise the entirety
-of the generated code. This way we can ensure that our database is compatible
+Follow the steps below to do some basic model generation. Once you've generated
+your models, you can run the compatibility tests which will exercise the entirety
+of the generated code. This way you can ensure that your database is compatible
 with SQLBoiler. If you find there are some failing tests, please check the
 [Diagnosing Problems](#diagnosing-problems) section.
 
@@ -285,8 +291,7 @@ with SQLBoiler. If you find there are some failing tests, please check the
 sqlboiler -x goose_migrations postgres
 
 # Run the generated tests
-go test ./models # This requires an administrator postgres user because of some
-                 # voodoo we do to disable triggers for the generated test db
+go test ./models 
 ```
 
 ## Diagnosing Problems
@@ -296,7 +301,7 @@ The most common causes of problems and panics are:
 - Forgetting to exclude tables you do not want included in your generation, like migration tables.
 - Tables without a primary key. All tables require one.
 - Forgetting to put foreign key constraints on your columns that reference other tables.
-- The compatibility tests that run against your own DB schema require a superuser, ensure the user
+- The compatibility tests require privileges to create a database for testing purposes, ensure the user
   supplied in your `sqlboiler.toml` config has adequate privileges.
 - A nil or closed database handle. Ensure your passed in `boil.Executor` is not nil.
   - If you decide to use the `G` variant of functions instead, make sure you've initialized your
@@ -349,9 +354,8 @@ ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) RE
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
 ```
 
-The generated model structs for this schema look like the following. Note that I've included the relationship
-structs as well so you can see how it all pieces together, but these are unexported and not something you should
-ever need to touch directly:
+The generated model structs for this schema look like the following. Note that we've included the relationship
+structs as well so you can see how it all pieces together:
 
 ```go
 type Pilot struct {
@@ -359,6 +363,7 @@ type Pilot struct {
   Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
 
   R *pilotR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L pilotR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 type pilotR struct {
@@ -375,6 +380,7 @@ type Jet struct {
   Color   string `boil:"color" json:"color" toml:"color" yaml:"color"`
 
   R *jetR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L jetR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 type jetR struct {
@@ -386,6 +392,7 @@ type Language struct {
   Language string `boil:"language" json:"language" toml:"language" yaml:"language"`
 
   R *languageR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L languageR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 type languageR struct {
@@ -987,7 +994,6 @@ The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns f
 For MySQL, this param will not be generated.
 
 Note: Passing a different set of column values to the update component is not currently supported.
-If this feature is important to you let us know and we can consider adding something for this.
 
 ### Reload
 In the event that your objects get out of sync with the database for whatever reason,
@@ -997,7 +1003,7 @@ attached to the objects.
 ```go
 pilot, _ := models.FindPilot(db, 1)
 
-// > Object becomes out of sync for some reason
+// > Object becomes out of sync for some reason, perhaps async processing
 
 // Refresh the object with the latest data from the db
 err := pilot.Reload(db)

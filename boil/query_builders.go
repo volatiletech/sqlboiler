@@ -183,8 +183,37 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, args
 }
 
-// BuildUpsertQuery builds a SQL statement string using the upsertData provided.
-func BuildUpsertQuery(dia Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
+// BuildUpsertQueryMySQL builds a SQL statement string using the upsertData provided.
+func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []string) string {
+	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
+
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
+
+	fmt.Fprintf(
+		buf,
+		"INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE ",
+		tableName,
+		strings.Join(whitelist, ", "),
+		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
+	)
+
+	for i, v := range update {
+		if i != 0 {
+			buf.WriteByte(',')
+		}
+		quoted := strmangle.IdentQuote(dia.LQ, dia.RQ, v)
+		buf.WriteString(quoted)
+		buf.WriteString(" = VALUES(")
+		buf.WriteString(quoted)
+		buf.WriteByte(')')
+	}
+
+	return buf.String()
+}
+
+// BuildUpsertQueryPostgres builds a SQL statement string using the upsertData provided.
+func BuildUpsertQueryPostgres(dia Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
 	conflict = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, conflict)
 	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
 	ret = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, ret)

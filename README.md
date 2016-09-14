@@ -1003,6 +1003,12 @@ p1.Name = "Hogan"
 err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
 ```
 
+The `updateOnConflict` argument allows you to specify whether you would like Postgres
+to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL, this param will not be generated.
+
+The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres. 
+For MySQL, this param will not be generated.
+
 Note: Passing a different set of column values to the update component is not currently supported.
 If this feature is important to you let us know and we can consider adding something for this.
 

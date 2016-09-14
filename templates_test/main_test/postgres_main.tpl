@@ -50,7 +50,7 @@ func (p *pgTester) setup() error {
 
   r, w := io.Pipe()
   dumpCmd.Stdout = w
-  createCmd.Stdin = io.TeeReader(newFKeyDestroyer(rgxPGFkey, r), os.Stdout)
+  createCmd.Stdin = newFKeyDestroyer(rgxPGFkey, r)
 
   if err = dumpCmd.Start(); err != nil {
     return errors.Wrap(err, "failed to start pg_dump command")

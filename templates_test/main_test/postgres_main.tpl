@@ -1,36 +1,36 @@
 type pgTester struct {
-	dbConn *sql.DB
+  dbConn *sql.DB
 
-	dbName  string
-	host    string
-	user    string
-	pass    string
-	sslmode string
-	port    int
+  dbName  string
+  host    string
+  user    string
+  pass    string
+  sslmode string
+  port    int
 
   pgPassFile string
 
-	testDBName string
+  testDBName string
 }
 
 func init() {
-	dbMain = &pgTester{}
+  dbMain = &pgTester{}
 }
 
 // setup dumps the database schema and imports it into a temporary randomly
 // generated test database so that tests can be run against it using the
 // generated sqlboiler ORM package.
 func (p *pgTester) setup() error {
-	var err error
+  var err error
 
-	p.dbName = viper.GetString("postgres.dbname")
-	p.host = viper.GetString("postgres.host")
-	p.user = viper.GetString("postgres.user")
-	p.pass = viper.GetString("postgres.pass")
-	p.port = viper.GetInt("postgres.port")
-	p.sslmode = viper.GetString("postgres.sslmode")
-	// Create a randomized db name.
-	p.testDBName = randomize.StableDBName(p.dbName)
+  p.dbName = viper.GetString("postgres.dbname")
+  p.host = viper.GetString("postgres.host")
+  p.user = viper.GetString("postgres.user")
+  p.pass = viper.GetString("postgres.pass")
+  p.port = viper.GetInt("postgres.port")
+  p.sslmode = viper.GetString("postgres.sslmode")
+  // Create a randomized db name.
+  p.testDBName = randomize.StableDBName(p.dbName)
 
   if err = p.makePGPassFile(); err != nil {
     return err

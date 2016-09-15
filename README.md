@@ -288,7 +288,7 @@ with SQLBoiler. If you find there are some failing tests, please check the
 
 ```sh
 # Generate our models and exclude the migrations table
-sqlboiler -x goose_migrations postgres
+sqlboiler -b goose_migrations postgres
 
 # Run the generated tests
 go test ./models

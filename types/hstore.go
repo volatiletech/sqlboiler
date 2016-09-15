@@ -25,8 +25,8 @@ import (
 	"strings"
 )
 
-// Hstore is a wrapper for transferring Hstore values back and forth easily.
-type Hstore map[string]sql.NullString
+// HStore is a wrapper for transferring HStore values back and forth easily.
+type HStore map[string]sql.NullString
 
 // escapes and quotes hstore keys/values
 // s should be a sql.NullString or string
@@ -52,7 +52,7 @@ func hQuote(s interface{}) string {
 //
 // Note h is reallocated before the scan to clear existing values. If the
 // hstore column's database value is NULL, then h is set to nil instead.
-func (h *Hstore) Scan(value interface{}) error {
+func (h *HStore) Scan(value interface{}) error {
 	if value == nil {
 		h = nil
 		return nil
@@ -122,7 +122,7 @@ func (h *Hstore) Scan(value interface{}) error {
 
 // Value implements the driver Valuer interface. Note if h is nil, the
 // database column value will be set to NULL.
-func (h Hstore) Value() (driver.Value, error) {
+func (h HStore) Value() (driver.Value, error) {
 	if h == nil {
 		return nil, nil
 	}

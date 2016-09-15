@@ -307,7 +307,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.DBType = c.DBType + *c.ArrType
 		case "USER-DEFINED":
 			if c.UDTName == "hstore" {
-				c.Type = "types.Hstore"
+				c.Type = "types.HStore"
 				c.DBType = "hstore"
 			} else {
 				c.Type = "string"
@@ -344,7 +344,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.DBType = c.DBType + *c.ArrType
 		case "USER-DEFINED":
 			if c.UDTName == "hstore" {
-				c.Type = "types.Hstore"
+				c.Type = "types.HStore"
 				c.DBType = "hstore"
 			} else {
 				c.Type = "string"

@@ -14,7 +14,6 @@ import (
 
 	"gopkg.in/nullbio/null.v5"
 
-	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/vattle/sqlboiler/strmangle"
@@ -46,7 +45,7 @@ var (
 	typeBoolArray    = reflect.TypeOf(types.BoolArray{})
 	typeFloat64Array = reflect.TypeOf(types.Float64Array{})
 	typeStringArray  = reflect.TypeOf(types.StringArray{})
-	typeHstore       = reflect.TypeOf(types.Hstore{})
+	typeHStore       = reflect.TypeOf(types.HStore{})
 	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
 	validatedTypes = []string{
@@ -226,10 +225,10 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
 				field.Set(reflect.ValueOf(value))
 				return nil
-			case typeHstore:
-				value := hstore.Hstore{Map: map[string]sql.NullString{}}
-				value.Map[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
-				value.Map[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+			case typeHStore:
+				value := types.HStore{}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				field.Set(reflect.ValueOf(value))
 				return nil
 			}
@@ -294,8 +293,8 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				value = []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
 				field.Set(reflect.ValueOf(value))
 				return nil
-			case typeHstore:
-				value := types.Hstore{}
+			case typeHStore:
+				value := types.HStore{}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				field.Set(reflect.ValueOf(value))

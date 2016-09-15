@@ -373,7 +373,7 @@ func TestAppendSelect(t *testing.T) {
 func TestSQL(t *testing.T) {
 	t.Parallel()
 
-	q := SQL(&sql.DB{}, "thing", 5)
+	q := Raw(&sql.DB{}, "thing", 5)
 	if q.rawSQL.sql != "thing" {
 		t.Errorf("Expected %q, got %s", "thing", q.rawSQL.sql)
 	}
@@ -385,7 +385,7 @@ func TestSQL(t *testing.T) {
 func TestSQLG(t *testing.T) {
 	t.Parallel()
 
-	q := SQLG("thing", 5)
+	q := RawG("thing", 5)
 	if q.rawSQL.sql != "thing" {
 		t.Errorf("Expected %q, got %s", "thing", q.rawSQL.sql)
 	}

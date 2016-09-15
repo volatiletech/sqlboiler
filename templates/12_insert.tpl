@@ -88,21 +88,19 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
 	}
+	
+	var lastID int64 
+	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
-	{{if not .NoHooks -}}
-		return o.doAfterInsertHooks(exec)
-	{{else -}}
-		return nil
-	{{end -}}
+		goto CacheNoHooks
 	}
 
-	lastID, err := result.LastInsertId()
+	lastID, err = result.LastInsertId()
 	if err != nil {
 		return ErrSyncFail
 	}
 
-	var identifierCols []interface{}
 	if lastID != 0 {
 		{{- $colName := index .Table.PKey.Columns 0 -}}
 		{{- $col := .Table.GetColumn $colName -}}
@@ -143,7 +141,9 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
 	}
 	{{end}}
-
+{{if .UseLastInsertID -}}
+CacheNoHooks:
+{{- end}}
 	if !cached {
 		{{$varNameSingular}}InsertCacheMut.Lock()
 		{{$varNameSingular}}InsertCache[key] = cache

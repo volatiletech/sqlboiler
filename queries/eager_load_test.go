@@ -1,6 +1,10 @@
-package boil
+package queries
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/vattle/sqlboiler/boil"
+)
 
 var loadFunctionCalled bool
 var loadFunctionNestedCalled int
@@ -32,12 +36,12 @@ type testNestedRSlice struct {
 type testNestedLSlice struct {
 }
 
-func (testLStruct) LoadTestOne(exec Executor, singular bool, obj interface{}) error {
+func (testLStruct) LoadTestOne(exec boil.Executor, singular bool, obj interface{}) error {
 	loadFunctionCalled = true
 	return nil
 }
 
-func (testNestedLStruct) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
+func (testNestedLStruct) LoadToEagerLoad(exec boil.Executor, singular bool, obj interface{}) error {
 	switch x := obj.(type) {
 	case *testNestedStruct:
 		x.R = &testNestedRStruct{
@@ -54,7 +58,7 @@ func (testNestedLStruct) LoadToEagerLoad(exec Executor, singular bool, obj inter
 	return nil
 }
 
-func (testNestedLSlice) LoadToEagerLoad(exec Executor, singular bool, obj interface{}) error {
+func (testNestedLSlice) LoadToEagerLoad(exec boil.Executor, singular bool, obj interface{}) error {
 
 	switch x := obj.(type) {
 	case *testNestedSlice:

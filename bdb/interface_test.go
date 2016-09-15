@@ -6,20 +6,23 @@ import (
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
-type mockDriver struct{}
+type testMockDriver struct{}
 
-func (m mockDriver) TranslateColumnType(c Column) Column { return c }
-func (m mockDriver) UseLastInsertID() bool               { return false }
-func (m mockDriver) Open() error                         { return nil }
-func (m mockDriver) Close()                              {}
+func (m testMockDriver) TranslateColumnType(c Column) Column { return c }
+func (m testMockDriver) UseLastInsertID() bool               { return false }
+func (m testMockDriver) Open() error                         { return nil }
+func (m testMockDriver) Close()                              {}
 
-func (m mockDriver) TableNames(exclude []string) ([]string, error) {
+func (m testMockDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	if len(whitelist) > 0 {
+		return whitelist, nil
+	}
 	tables := []string{"pilots", "jets", "airports", "licenses", "hangars", "languages", "pilot_languages"}
-	return strmangle.SetComplement(tables, exclude), nil
+	return strmangle.SetComplement(tables, blacklist), nil
 }
 
 // Columns returns a list of mock columns
-func (m mockDriver) Columns(tableName string) ([]Column, error) {
+func (m testMockDriver) Columns(schema, tableName string) ([]Column, error) {
 	return map[string][]Column{
 		"pilots": {
 			{Name: "id", Type: "int", DBType: "integer"},
@@ -61,7 +64,7 @@ func (m mockDriver) Columns(tableName string) ([]Column, error) {
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m mockDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) {
+func (m testMockDriver) ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error) {
 	return map[string][]ForeignKey{
 		"jets": {
 			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},
@@ -81,7 +84,7 @@ func (m mockDriver) ForeignKeyInfo(tableName string) ([]ForeignKey, error) {
 }
 
 // PrimaryKeyInfo returns mock primary key info for the passed in table name
-func (m mockDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
+func (m testMockDriver) PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error) {
 	return map[string]*PrimaryKey{
 		"pilots":          {Name: "pilot_id_pkey", Columns: []string{"id"}},
 		"airports":        {Name: "airport_id_pkey", Columns: []string{"id"}},
@@ -93,10 +96,25 @@ func (m mockDriver) PrimaryKeyInfo(tableName string) (*PrimaryKey, error) {
 	}[tableName], nil
 }
 
+// RightQuote is the quoting character for the right side of the identifier
+func (m testMockDriver) RightQuote() byte {
+	return '"'
+}
+
+// LeftQuote is the quoting character for the left side of the identifier
+func (m testMockDriver) LeftQuote() byte {
+	return '"'
+}
+
+// IndexPlaceholders returns true to indicate fake support of indexed placeholders
+func (m testMockDriver) IndexPlaceholders() bool {
+	return false
+}
+
 func TestTables(t *testing.T) {
 	t.Parallel()
 
-	tables, err := Tables(mockDriver{})
+	tables, err := Tables(testMockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Error(err)
 	}

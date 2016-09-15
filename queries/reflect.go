@@ -1,4 +1,4 @@
-package boil
+package queries
 
 import (
 	"database/sql"
@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"github.com/vattle/sqlboiler/boil"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
@@ -40,7 +41,7 @@ const (
 // It panics on error. See boil.Bind() documentation.
 func (q *Query) BindP(obj interface{}) {
 	if err := q.Bind(obj); err != nil {
-		panic(WrapErr(err))
+		panic(boil.WrapErr(err))
 	}
 }
 
@@ -100,7 +101,7 @@ func (q *Query) Bind(obj interface{}) error {
 		return err
 	}
 
-	rows, err := ExecQueryAll(q)
+	rows, err := q.Query()
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
@@ -322,8 +323,10 @@ func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.V
 		v := (mapping >> uint(i*8)) & sentinel
 
 		if v == sentinel {
-			if val.Kind() != reflect.Ptr {
+			if addressOf && val.Kind() != reflect.Ptr {
 				return val.Addr()
+			} else if !addressOf && val.Kind() == reflect.Ptr {
+				return reflect.Indirect(val)
 			}
 			return val
 		}
@@ -403,75 +406,4 @@ func makeCacheKey(typ string, cols []string) string {
 	strmangle.PutBuffer(buf)
 
 	return mapKey
-}
-
-// GetStructValues returns the values (as interface) of the matching columns in obj
-func GetStructValues(obj interface{}, columns ...string) []interface{} {
-	ret := make([]interface{}, len(columns))
-	val := reflect.Indirect(reflect.ValueOf(obj))
-
-	for i, c := range columns {
-		fieldName := strmangle.TitleCase(c)
-		field := val.FieldByName(fieldName)
-		if !field.IsValid() {
-			panic(fmt.Sprintf("unable to find field with name: %s\n%#v", fieldName, obj))
-		}
-		ret[i] = field.Interface()
-	}
-
-	return ret
-}
-
-// GetSliceValues returns the values (as interface) of the matching columns in obj.
-func GetSliceValues(slice []interface{}, columns ...string) []interface{} {
-	ret := make([]interface{}, len(slice)*len(columns))
-
-	for i, obj := range slice {
-		val := reflect.Indirect(reflect.ValueOf(obj))
-		for j, c := range columns {
-			fieldName := strmangle.TitleCase(c)
-			field := val.FieldByName(fieldName)
-			if !field.IsValid() {
-				panic(fmt.Sprintf("unable to find field with name: %s\n%#v", fieldName, obj))
-			}
-			ret[i*len(columns)+j] = field.Interface()
-		}
-	}
-
-	return ret
-}
-
-// GetStructPointers returns a slice of pointers to the matching columns in obj
-func GetStructPointers(obj interface{}, columns ...string) []interface{} {
-	val := reflect.ValueOf(obj).Elem()
-
-	var ln int
-	var getField func(reflect.Value, int) reflect.Value
-
-	if len(columns) == 0 {
-		ln = val.NumField()
-		getField = func(v reflect.Value, i int) reflect.Value {
-			return v.Field(i)
-		}
-	} else {
-		ln = len(columns)
-		getField = func(v reflect.Value, i int) reflect.Value {
-			return v.FieldByName(strmangle.TitleCase(columns[i]))
-		}
-	}
-
-	ret := make([]interface{}, ln)
-	for i := 0; i < ln; i++ {
-		field := getField(val, i)
-
-		if !field.IsValid() {
-			// Although this breaks the abstraction of getField above - we know that v.Field(i) can't actually
-			// produce an Invalid value, so we make a hopefully safe assumption here.
-			panic(fmt.Sprintf("Could not find field on struct %T for field %s", obj, strmangle.TitleCase(columns[i])))
-		}
-
-		ret[i] = field.Addr().Interface()
-	}
-
-	return ret
 }

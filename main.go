@@ -2,7 +2,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,9 +60,11 @@ func main() {
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
+	rootCmd.PersistentFlags().StringP("schema", "s", "public", "The name of your database schema, for databases that support real schemas")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
-	rootCmd.PersistentFlags().StringP("basedir", "b", "", "The base directory has the templates and templates_test folders")
-	rootCmd.PersistentFlags().StringSliceP("exclude", "x", nil, "Tables to be excluded from the generated package")
+	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")
+	rootCmd.PersistentFlags().StringSliceP("blacklist", "b", nil, "Do not include these tables in your generated package")
+	rootCmd.PersistentFlags().StringSliceP("whitelist", "w", nil, "Only include these tables in your generated package")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
@@ -72,6 +73,9 @@ func main() {
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
+	viper.SetDefault("mysql.sslmode", "true")
+	viper.SetDefault("mysql.port", "3306")
+
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.AutomaticEnv()
 
@@ -79,7 +83,7 @@ func main() {
 		if e, ok := err.(commandFailure); ok {
 			fmt.Printf("Error: %v\n\n", string(e))
 			rootCmd.Help()
-		} else if !cmdConfig.Debug {
+		} else if !viper.GetBool("debug") {
 			fmt.Printf("Error: %v\n", err)
 		} else {
 			fmt.Printf("Error: %+v\n", err)
@@ -107,6 +111,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	cmdConfig = &Config{
 		DriverName:       driverName,
 		OutFolder:        viper.GetString("output"),
+		Schema:           viper.GetString("schema"),
 		PkgName:          viper.GetString("pkgname"),
 		Debug:            viper.GetBool("debug"),
 		NoTests:          viper.GetBool("no-tests"),
@@ -115,12 +120,20 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200
-	// Look up the value of ExcludeTables & Tags directly from PFlags in Cobra if we
+	// Look up the value of blacklist, whitelist & tags directly from PFlags in Cobra if we
 	// detect a malformed value coming out of viper.
 	// Once the bug is fixed we'll be able to move this into the init above
-	cmdConfig.ExcludeTables = viper.GetStringSlice("exclude")
-	if len(cmdConfig.ExcludeTables) == 1 && strings.HasPrefix(cmdConfig.ExcludeTables[0], "[") {
-		cmdConfig.ExcludeTables, err = cmd.PersistentFlags().GetStringSlice("exclude")
+	cmdConfig.BlacklistTables = viper.GetStringSlice("blacklist")
+	if len(cmdConfig.BlacklistTables) == 1 && strings.HasPrefix(cmdConfig.BlacklistTables[0], "[") {
+		cmdConfig.BlacklistTables, err = cmd.PersistentFlags().GetStringSlice("blacklist")
+		if err != nil {
+			return err
+		}
+	}
+
+	cmdConfig.WhitelistTables = viper.GetStringSlice("whitelist")
+	if len(cmdConfig.WhitelistTables) == 1 && strings.HasPrefix(cmdConfig.WhitelistTables[0], "[") {
+		cmdConfig.WhitelistTables, err = cmd.PersistentFlags().GetStringSlice("whitelist")
 		if err != nil {
 			return err
 		}
@@ -134,7 +147,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if viper.IsSet("postgres.dbname") {
+	if driverName == "postgres" {
 		cmdConfig.Postgres = PostgresConfig{
 			User:    viper.GetString("postgres.user"),
 			Pass:    viper.GetString("postgres.pass"),
@@ -144,10 +157,17 @@ func preRun(cmd *cobra.Command, args []string) error {
 			SSLMode: viper.GetString("postgres.sslmode"),
 		}
 
-		// Set the default SSLMode value
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
 		if cmdConfig.Postgres.SSLMode == "" {
-			viper.Set("postgres.sslmode", "require")
-			cmdConfig.Postgres.SSLMode = viper.GetString("postgres.sslmode")
+			cmdConfig.Postgres.SSLMode = "require"
+			viper.Set("postgres.sslmode", cmdConfig.Postgres.SSLMode)
+		}
+
+		if cmdConfig.Postgres.Port == 0 {
+			cmdConfig.Postgres.Port = 5432
+			viper.Set("postgres.port", cmdConfig.Postgres.Port)
 		}
 
 		err = vala.BeginValidation().Validate(
@@ -161,8 +181,45 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return commandFailure(err.Error())
 		}
-	} else if driverName == "postgres" {
-		return errors.New("postgres driver requires a postgres section in your config file")
+	}
+
+	if driverName == "mysql" {
+		cmdConfig.MySQL = MySQLConfig{
+			User:    viper.GetString("mysql.user"),
+			Pass:    viper.GetString("mysql.pass"),
+			Host:    viper.GetString("mysql.host"),
+			Port:    viper.GetInt("mysql.port"),
+			DBName:  viper.GetString("mysql.dbname"),
+			SSLMode: viper.GetString("mysql.sslmode"),
+		}
+
+		// MySQL doesn't have schemas, just databases
+		cmdConfig.Schema = cmdConfig.MySQL.DBName
+
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
+		if cmdConfig.MySQL.SSLMode == "" {
+			cmdConfig.MySQL.SSLMode = "true"
+			viper.Set("mysql.sslmode", cmdConfig.MySQL.SSLMode)
+		}
+
+		if cmdConfig.MySQL.Port == 0 {
+			cmdConfig.MySQL.Port = 3306
+			viper.Set("mysql.port", cmdConfig.MySQL.Port)
+		}
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.MySQL.User, "mysql.user"),
+			vala.StringNotEmpty(cmdConfig.MySQL.Host, "mysql.host"),
+			vala.Not(vala.Equals(cmdConfig.MySQL.Port, 0, "mysql.port")),
+			vala.StringNotEmpty(cmdConfig.MySQL.DBName, "mysql.dbname"),
+			vala.StringNotEmpty(cmdConfig.MySQL.SSLMode, "mysql.sslmode"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
 	}
 
 	cmdState, err = New(cmdConfig)

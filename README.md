@@ -80,23 +80,28 @@ Table of Contents
 ### Features
 
 - Full model generation
-- High performance through generation
 - Extremely fast code generation
+- High performance through generation & intelligent caching
 - Uses boil.Executor (simple interface, sql.DB, sqlx.DB etc. compatible)
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
+- Table whitelist/blacklist
 - Relationships/Associations
 - Eager loading (recursive)
+- Custom struct tags
+- Schema support
 - Transactions
 - Raw SQL fallback
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
+- Postgres 1d arrays, json, hstore & more
 
 ### Supported Databases
 
 - PostgreSQL
+- MySQL
 
 *Note: Seeking contributors for other database engines.*
 
@@ -203,30 +208,32 @@ order:
 - `$XDG_CONFIG_HOME/sqlboiler/`
 - `$HOME/.config/sqlboiler/`
 
-We require you pass in the `postgres` configuration via the configuration file rather than env vars.
-There is no command line argument support for database configuration. Values given under the `postgres`
-block are passed directly to the [pq](github.com/lib/pq) driver. Here is a rundown of all the different
+We require you pass in your `postgres` and `mysql` database configuration via the configuration file rather than env vars.
+There is no command line argument support for database configuration. Values given under the `postgres` and `mysql`
+block are passed directly to the postgres and mysql drivers. Here is a rundown of all the different
 values that can go in that section:
 
-| Name | Required | Default |
-| --- | --- | --- |
-| dbname  | yes       | none      |
-| host    | yes       | none      |
-| port    | no        | 5432      |
-| user    | yes       | none      |
-| pass    | no        | none      |
-| sslmode | no        | "require" |
+| Name | Required | Postgres Default | MySQL Default |
+| --- | --- | --- | --- |
+| dbname  | yes       | none      | none   |
+| host    | yes       | none      | none   |
+| port    | no        | 5432      | 3306   |
+| user    | yes       | none      | none   |
+| pass    | no        | none      | none   |
+| sslmode | no        | "require" | "true" |
 
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
 
-| Name | Default |
-| --- | --- |
+| Name               | Defaults  |
+| ------------------ | --------- |
 | basedir            | none      |
+| schema             | "public" *(or dbname for mysql)* |
 | pkgname            | "models"  |
 | output             | "models"  |
-| exclude            | [ ]       |
-| tag				 | [ ] 		 |
+| whitelist          | []        |
+| blacklist          | []        |
+| tag                | []        |
 | debug              | false     |
 | no-hooks           | false     |
 | no-tests           | false     |
@@ -256,23 +263,26 @@ Usage:
   sqlboiler [flags] <driver>
 
 Examples:
-sqlboiler postgres
+  sqlboiler postgres
+  sqlboiler mysql
 
 Flags:
-  -b, --basedir string        The base directory has the templates and templates_test folders
+  -b, --blacklist stringSlice Do not include these tables in your generated package
+  -w, --whitelist stringSlice Only include these tables in your generated package
+  -s, --schema string         The name of your database schema, for databases that support real schemas (default "public")
+  -p, --pkgname string        The name you wish to assign to your generated package (default "models")
+  -o, --output string         The name of the folder to output to (default "models")
+  -t, --tag stringSlice       Struct tags to be included on your models in addition to json, yaml, toml
   -d, --debug                 Debug mode prints stack traces on error
-  -x, --exclude stringSlice   Tables to be excluded from the generated package
+      --basedir string        The base directory has the templates and templates_test folders
       --no-auto-timestamps    Disable automatic timestamps for created_at/updated_at
       --no-hooks              Disable hooks feature for your models
       --no-tests              Disable generated go test files
-  -o, --output string         The name of the folder to output to (default "models")
-  -p, --pkgname string        The name you wish to assign to your generated package (default "models")
-  -t, --tag stringSlice       Struct tags to be included on your models in addition to json, yaml, toml
 ```
 
-Follow the steps below to do some basic model generation. Once we've generated
-our models, we can run the compatibility tests which will exercise the entirety
-of the generated code. This way we can ensure that our database is compatible
+Follow the steps below to do some basic model generation. Once you've generated
+your models, you can run the compatibility tests which will exercise the entirety
+of the generated code. This way you can ensure that your database is compatible
 with SQLBoiler. If you find there are some failing tests, please check the
 [Diagnosing Problems](#diagnosing-problems) section.
 
@@ -281,8 +291,7 @@ with SQLBoiler. If you find there are some failing tests, please check the
 sqlboiler -x goose_migrations postgres
 
 # Run the generated tests
-go test ./models # This requires an administrator postgres user because of some
-                 # voodoo we do to disable triggers for the generated test db
+go test ./models
 ```
 
 ## Diagnosing Problems
@@ -292,7 +301,7 @@ The most common causes of problems and panics are:
 - Forgetting to exclude tables you do not want included in your generation, like migration tables.
 - Tables without a primary key. All tables require one.
 - Forgetting to put foreign key constraints on your columns that reference other tables.
-- The compatibility tests that run against your own DB schema require a superuser, ensure the user
+- The compatibility tests require privileges to create a database for testing purposes, ensure the user
   supplied in your `sqlboiler.toml` config has adequate privileges.
 - A nil or closed database handle. Ensure your passed in `boil.Executor` is not nil.
   - If you decide to use the `G` variant of functions instead, make sure you've initialized your
@@ -345,9 +354,8 @@ ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) RE
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
 ```
 
-The generated model structs for this schema look like the following. Note that I've included the relationship
-structs as well so you can see how it all pieces together, but these are unexported and not something you should
-ever need to touch directly:
+The generated model structs for this schema look like the following. Note that we've included the relationship
+structs as well so you can see how it all pieces together:
 
 ```go
 type Pilot struct {
@@ -355,6 +363,7 @@ type Pilot struct {
   Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
 
   R *pilotR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L pilotR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 type pilotR struct {
@@ -371,6 +380,7 @@ type Jet struct {
   Color   string `boil:"color" json:"color" toml:"color" yaml:"color"`
 
   R *jetR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L jetR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 type jetR struct {
@@ -382,6 +392,7 @@ type Language struct {
   Language string `boil:"language" json:"language" toml:"language" yaml:"language"`
 
   R *languageR `boil:"-" json:"-" toml:"-" yaml:"-"`
+  L languageR  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 type languageR struct {
@@ -414,7 +425,7 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
   This is somewhat of a work around until we can devise a better solution in a later version.
 * **Update**
   * The `updated_at` column will always be set to `time.Now()`. If you need to override
-  this value you will need to fall back to another method in the meantime: `boil.SQL()`,
+  this value you will need to fall back to another method in the meantime: `queries.Raw()`,
   overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
 * **Upsert**
   * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
@@ -452,36 +463,8 @@ err := models.NewQuery(db, From("pilots")).All()
 As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
 allow you to execute the final action.
 
-If you plan on executing the same query with the same values using the query builder,
-you should do so like the following to utilize caching:
-
-```go
-// Instead of this:
-for i := 0; i < 10; i++ {
-   pilots := models.Pilots(qm.Where("id > ?", 5), qm.Limit(5)).All()
-}
-
-// You should do this
-query := models.Pilots(qm.Where("id > ?", 5), qm.Limit(5))
-for i := 0; i < 10; i++ {
-   pilots := query.All()
-}
-
-// Every execution of All() after the first will use a cached version of
-// the built query that short circuits the query builder all together.
-// This allows you to save on performance.
-
-// Just something to be aware of: query mods don't store pointers, so if
-// your passed in variable's value changes, your generated query will not change.
-```
-
-Note: You will see exported `boil.SetX` methods in the boil package. These should not be used on query
-objects because they will break caching. Unfortunately these had to be exported due to some circular
-dependency issues, but they're not functionality we want exposed. If you want a different
-query object, generate a new one.
-
-Take a look at our [Relationships Query Building](#relationships) section for some additional query
-building information.
+We also generate query building helper methods for your relationships as well. Take a look at our
+[Relationships Query Building](#relationships) section for some additional query building information.
 
 
 ### Query Mod System
@@ -575,26 +558,31 @@ UpdateAll(models.M{"name": "John", "age": 23}) // Update all rows matching the b
 DeleteAll() // Delete all rows matching the built query.
 Exists() // Returns a bool indicating whether the row(s) for the built query exists.
 Bind(&myObj) // Bind the results of a query to your own struct object.
+Exec() // Execute an SQL query that does not require any rows returned.
+QueryRow() // Execute an SQL query expected to return only a single row.
+Query() // Execute an SQL query expected to return multiple rows.
 ```
 
 ### Raw Query
 
-We provide `boil.SQL()` for executing raw queries. Generally you will want to use `Bind()` with
+We provide `queries.Raw()` for executing raw queries. Generally you will want to use `Bind()` with
 this, like the following:
 
 ```go
-err := boil.SQL(db, "select * from pilots where id=$1", 5).Bind(&obj)
+err := queries.Raw(db, "select * from pilots where id=$1", 5).Bind(&obj)
 ```
 
 You can use your own structs or a generated struct as a parameter to Bind. Bind supports both
 a single object for single row queries and a slice of objects for multiple row queries.
 
-You also have `models.NewQuery()` at your disposal if you would still like to use [Query Build](#query-building)
-but would like to build against a non-generated model.
+`queries.Raw()` also has a method that can execute a query without binding to an object, if required.
+
+You also have `models.NewQuery()` at your disposal if you would still like to use [Query Building](#query-building)
+in combination with your own custom, non-generated model.
 
 ### Binding
 
-For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/vattle/sqlboiler/boil#Bind).
+For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/vattle/sqlboiler/queries#Bind).
 
 The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
@@ -613,7 +601,7 @@ type PilotAndJet struct {
 
 var paj PilotAndJet
 // Use a raw query
-err := boil.SQL(`
+err := queries.Raw(`
   select pilots.id as "pilots.id", pilots.name as "pilots.name",
   jets.id as "jets.id", jets.pilot_id as "jets.pilot_id",
   jets.age as "jets.age", jets.name as "jets.name", jets.color as "jets.color"
@@ -641,7 +629,7 @@ var info JetInfo
 err := models.NewQuery(db, Select("sum(age) as age_sum", "count(*) as juicy_count", From("jets"))).Bind(&info)
 
 // Use a raw query
-err := boil.SQL(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
+err := queries.Raw(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
 ```
 
 We support the following struct tag modes for `Bind()` control:
@@ -905,8 +893,8 @@ err := p1.Insert(db) // Insert the first pilot with name "Larry"
 // p1 now has an ID field set to 1
 
 var p2 models.Pilot
-p2.Name "Borris"
-err := p2.Insert(db) // Insert the second pilot with name "Borris"
+p2.Name "Boris"
+err := p2.Insert(db) // Insert the second pilot with name "Boris"
 // p2 now has an ID field set to 2
 
 var p3 models.Pilot
@@ -999,8 +987,13 @@ p1.Name = "Hogan"
 err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
 ```
 
+The `updateOnConflict` argument allows you to specify whether you would like Postgres
+to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL, this param will not be generated.
+
+The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres.
+For MySQL, this param will not be generated.
+
 Note: Passing a different set of column values to the update component is not currently supported.
-If this feature is important to you let us know and we can consider adding something for this.
 
 ### Reload
 In the event that your objects get out of sync with the database for whatever reason,
@@ -1010,7 +1003,7 @@ attached to the objects.
 ```go
 pilot, _ := models.FindPilot(db, 1)
 
-// > Object becomes out of sync for some reason
+// > Object becomes out of sync for some reason, perhaps async processing
 
 // Refresh the object with the latest data from the db
 err := pilot.Reload(db)
@@ -1051,10 +1044,26 @@ The generated models might import a couple of packages that are not on your syst
 `cd` into your generated models directory and type `go get -u -t` to fetch them. You will only need
 to run this command once, not per generation.
 
+#### How should I handle multiple schemas?
+
+If your database uses multiple schemas you should generate a new package for each of your schemas.
+Note that this only applies to databases that use real, SQL standard schemas (like PostgreSQL), not
+fake schemas (like MySQL).
+
+#### How do I use types.BytesArray for Postgres bytea arrays?
+
+Only "escaped format" is supported for types.BytesArray. This means that your byte slice needs to have
+a format of "\\x00" (4 bytes per byte) opposed to "\x00" (1 byte per byte). This is to maintain compatibility
+with all Postgres drivers. Example:
+
+`x := types.BytesArray{0: []byte("\\x68\\x69")}`
+
+Please note that multi-dimensional Postgres ARRAY types are not supported at this time.
+
 #### Where is the homepage?
 
-The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler)
-[Golang ORM](https://github.com/vattle/sqlboiler) generator is located at: https://github.com/vattle/sqlboiler
+The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler) [Golang ORM](https://github.com/vattle/sqlboiler)
+generator is located at: https://github.com/vattle/sqlboiler
 
 ## Benchmarks
 

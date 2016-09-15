@@ -153,7 +153,8 @@ var defaultTemplateImports = imports{
 	thirdParty: importList{
 		`"github.com/pkg/errors"`,
 		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/boil/qm"`,
+		`"github.com/vattle/sqlboiler/queries"`,
+		`"github.com/vattle/sqlboiler/queries/qm"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }
@@ -162,7 +163,8 @@ var defaultSingletonTemplateImports = map[string]imports{
 	"boil_queries": {
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
-			`"github.com/vattle/sqlboiler/boil/qm"`,
+			`"github.com/vattle/sqlboiler/queries"`,
+			`"github.com/vattle/sqlboiler/queries/qm"`,
 		},
 	},
 	"boil_types": {
@@ -180,29 +182,38 @@ var defaultTestTemplateImports = imports{
 	},
 	thirdParty: importList{
 		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/boil/randomize"`,
+		`"github.com/vattle/sqlboiler/randomize"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }
 
 var defaultSingletonTestTemplateImports = map[string]imports{
-	"boil_viper_test": {
+	"boil_main_test": {
 		standard: importList{
 			`"database/sql"`,
+			`"flag"`,
+			`"fmt"`,
+			`"math/rand"`,
 			`"os"`,
 			`"path/filepath"`,
+			`"testing"`,
+			`"time"`,
 		},
 		thirdParty: importList{
+			`"github.com/kat-co/vala"`,
+			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
+			`"github.com/vattle/sqlboiler/boil"`,
 		},
 	},
 	"boil_queries_test": {
 		standard: importList{
-			`"crypto/md5"`,
+			`"bytes"`,
 			`"fmt"`,
-			`"os"`,
-			`"strconv"`,
+			`"io"`,
+			`"io/ioutil"`,
 			`"math/rand"`,
+			`"regexp"`,
 		},
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
@@ -218,25 +229,40 @@ var defaultSingletonTestTemplateImports = map[string]imports{
 var defaultTestMainImports = map[string]imports{
 	"postgres": {
 		standard: importList{
-			`"testing"`,
-			`"os"`,
-			`"os/exec"`,
-			`"flag"`,
-			`"fmt"`,
-			`"io/ioutil"`,
 			`"bytes"`,
 			`"database/sql"`,
-			`"path/filepath"`,
-			`"time"`,
-			`"math/rand"`,
+			`"fmt"`,
+			`"io"`,
+			`"io/ioutil"`,
+			`"os"`,
+			`"os/exec"`,
+			`"strings"`,
 		},
 		thirdParty: importList{
-			`"github.com/kat-co/vala"`,
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
-			`"github.com/vattle/sqlboiler/boil"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
+			`"github.com/vattle/sqlboiler/randomize"`,
 			`_ "github.com/lib/pq"`,
+		},
+	},
+	"mysql": {
+		standard: importList{
+			`"bytes"`,
+			`"database/sql"`,
+			`"fmt"`,
+			`"io"`,
+			`"io/ioutil"`,
+			`"os"`,
+			`"os/exec"`,
+			`"strings"`,
+		},
+		thirdParty: importList{
+			`"github.com/pkg/errors"`,
+			`"github.com/spf13/viper"`,
+			`"github.com/vattle/sqlboiler/bdb/drivers"`,
+			`"github.com/vattle/sqlboiler/randomize"`,
+			`_ "github.com/go-sql-driver/mysql"`,
 		},
 	},
 }
@@ -246,51 +272,75 @@ var defaultTestMainImports = map[string]imports{
 // TranslateColumnType to see the type assignments.
 var importsBasedOnType = map[string]imports{
 	"null.Float32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Float64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int8": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int16": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Int64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint8": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint16": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Uint64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.String": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Bool": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"null.Time": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v4"`},
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
+	},
+	"null.JSON": {
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
+	},
+	"null.Bytes": {
+		thirdParty: importList{`"gopkg.in/nullbio/null.v5"`},
 	},
 	"time.Time": {
 		standard: importList{`"time"`},
+	},
+	"types.JSON": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+	},
+	"types.BytesArray": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+	},
+	"types.Int64Array": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+	},
+	"types.Float64Array": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+	},
+	"types.BoolArray": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+	},
+	"types.Hstore": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 }

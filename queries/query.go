@@ -1,8 +1,10 @@
-package boil
+package queries
 
 import (
 	"database/sql"
 	"fmt"
+
+	"github.com/vattle/sqlboiler/boil"
 )
 
 // joinKind is the type of join
@@ -18,8 +20,9 @@ const (
 
 // Query holds the state for the built up query
 type Query struct {
-	executor   Executor
-	plainSQL   plainSQL
+	executor   boil.Executor
+	dialect    *Dialect
+	rawSQL     rawSQL
 	load       []string
 	delete     bool
 	update     map[string]interface{}
@@ -35,6 +38,20 @@ type Query struct {
 	limit      int
 	offset     int
 	forlock    string
+}
+
+// Dialect holds values that direct the query builder
+// how to build compatible queries for each database.
+// Each database driver needs to implement functions
+// that provide these values.
+type Dialect struct {
+	// The left quote character for SQL identifiers
+	LQ byte
+	// The right quote character for SQL identifiers
+	RQ byte
+	// Bool flag indicating whether indexed
+	// placeholders ($1) are used, or ? placeholders.
+	IndexPlaceholders bool
 }
 
 type where struct {
@@ -54,7 +71,7 @@ type having struct {
 	args   []interface{}
 }
 
-type plainSQL struct {
+type rawSQL struct {
 	sql  string
 	args []interface{}
 }
@@ -65,70 +82,102 @@ type join struct {
 	args   []interface{}
 }
 
-// SQL makes a plainSQL query, usually for use with bind
-func SQL(exec Executor, query string, args ...interface{}) *Query {
+// Raw makes a raw query, usually for use with bind
+func Raw(exec boil.Executor, query string, args ...interface{}) *Query {
 	return &Query{
 		executor: exec,
-		plainSQL: plainSQL{
+		rawSQL: rawSQL{
 			sql:  query,
 			args: args,
 		},
 	}
 }
 
-// SQLG makes a plainSQL query using the global Executor, usually for use with bind
-func SQLG(query string, args ...interface{}) *Query {
-	return SQL(GetDB(), query, args...)
+// RawG makes a raw query using the global boil.Executor, usually for use with bind
+func RawG(query string, args ...interface{}) *Query {
+	return Raw(boil.GetDB(), query, args...)
 }
 
-// ExecQuery executes a query that does not need a row returned
-func ExecQuery(q *Query) (sql.Result, error) {
+// Exec executes a query that does not need a row returned
+func (q *Query) Exec() (sql.Result, error) {
 	qs, args := buildQuery(q)
-	if DebugMode {
-		fmt.Fprintln(DebugWriter, qs)
-		fmt.Fprintln(DebugWriter, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	return q.executor.Exec(qs, args...)
 }
 
-// ExecQueryOne executes the query for the One finisher and returns a row
-func ExecQueryOne(q *Query) *sql.Row {
+// QueryRow executes the query for the One finisher and returns a row
+func (q *Query) QueryRow() *sql.Row {
 	qs, args := buildQuery(q)
-	if DebugMode {
-		fmt.Fprintln(DebugWriter, qs)
-		fmt.Fprintln(DebugWriter, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	return q.executor.QueryRow(qs, args...)
 }
 
-// ExecQueryAll executes the query for the All finisher and returns multiple rows
-func ExecQueryAll(q *Query) (*sql.Rows, error) {
+// Query executes the query for the All finisher and returns multiple rows
+func (q *Query) Query() (*sql.Rows, error) {
 	qs, args := buildQuery(q)
-	if DebugMode {
-		fmt.Fprintln(DebugWriter, qs)
-		fmt.Fprintln(DebugWriter, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	return q.executor.Query(qs, args...)
 }
 
+// ExecP executes a query that does not need a row returned
+// It will panic on error
+func (q *Query) ExecP() sql.Result {
+	res, err := q.Exec()
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return res
+}
+
+// QueryP executes the query for the All finisher and returns multiple rows
+// It will panic on error
+func (q *Query) QueryP() *sql.Rows {
+	rows, err := q.Query()
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rows
+}
+
 // SetExecutor on the query.
-func SetExecutor(q *Query, exec Executor) {
+func SetExecutor(q *Query, exec boil.Executor) {
 	q.executor = exec
 }
 
 // GetExecutor on the query.
-func GetExecutor(q *Query) Executor {
+func GetExecutor(q *Query) boil.Executor {
 	return q.executor
+}
+
+// SetDialect on the query.
+func SetDialect(q *Query, dialect *Dialect) {
+	q.dialect = dialect
 }
 
 // SetSQL on the query.
 func SetSQL(q *Query, sql string, args ...interface{}) {
-	q.plainSQL = plainSQL{sql: sql, args: args}
+	q.rawSQL = rawSQL{sql: sql, args: args}
 }
 
 // SetLoad on the query.
 func SetLoad(q *Query, relationships ...string) {
 	q.load = append([]string(nil), relationships...)
+}
+
+// SetSelect on the query.
+func SetSelect(q *Query, sel []string) {
+	q.selectCols = sel
 }
 
 // SetCount on the query.

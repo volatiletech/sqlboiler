@@ -2,41 +2,58 @@
 package randomize
 
 import (
+	"database/sql"
+	"fmt"
 	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 
-	"gopkg.in/nullbio/null.v4"
+	"gopkg.in/nullbio/null.v5"
 
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/vattle/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/types"
 )
 
 var (
-	typeNullFloat32 = reflect.TypeOf(null.Float32{})
-	typeNullFloat64 = reflect.TypeOf(null.Float64{})
-	typeNullInt     = reflect.TypeOf(null.Int{})
-	typeNullInt8    = reflect.TypeOf(null.Int8{})
-	typeNullInt16   = reflect.TypeOf(null.Int16{})
-	typeNullInt32   = reflect.TypeOf(null.Int32{})
-	typeNullInt64   = reflect.TypeOf(null.Int64{})
-	typeNullUint    = reflect.TypeOf(null.Uint{})
-	typeNullUint8   = reflect.TypeOf(null.Uint8{})
-	typeNullUint16  = reflect.TypeOf(null.Uint16{})
-	typeNullUint32  = reflect.TypeOf(null.Uint32{})
-	typeNullUint64  = reflect.TypeOf(null.Uint64{})
-	typeNullString  = reflect.TypeOf(null.String{})
-	typeNullBool    = reflect.TypeOf(null.Bool{})
-	typeNullTime    = reflect.TypeOf(null.Time{})
-	typeTime        = reflect.TypeOf(time.Time{})
+	typeNullFloat32  = reflect.TypeOf(null.Float32{})
+	typeNullFloat64  = reflect.TypeOf(null.Float64{})
+	typeNullInt      = reflect.TypeOf(null.Int{})
+	typeNullInt8     = reflect.TypeOf(null.Int8{})
+	typeNullInt16    = reflect.TypeOf(null.Int16{})
+	typeNullInt32    = reflect.TypeOf(null.Int32{})
+	typeNullInt64    = reflect.TypeOf(null.Int64{})
+	typeNullUint     = reflect.TypeOf(null.Uint{})
+	typeNullUint8    = reflect.TypeOf(null.Uint8{})
+	typeNullUint16   = reflect.TypeOf(null.Uint16{})
+	typeNullUint32   = reflect.TypeOf(null.Uint32{})
+	typeNullUint64   = reflect.TypeOf(null.Uint64{})
+	typeNullString   = reflect.TypeOf(null.String{})
+	typeNullBool     = reflect.TypeOf(null.Bool{})
+	typeNullTime     = reflect.TypeOf(null.Time{})
+	typeNullBytes    = reflect.TypeOf(null.Bytes{})
+	typeNullJSON     = reflect.TypeOf(null.JSON{})
+	typeTime         = reflect.TypeOf(time.Time{})
+	typeJSON         = reflect.TypeOf(types.JSON{})
+	typeInt64Array   = reflect.TypeOf(types.Int64Array{})
+	typeBytesArray   = reflect.TypeOf(types.BytesArray{})
+	typeBoolArray    = reflect.TypeOf(types.BoolArray{})
+	typeFloat64Array = reflect.TypeOf(types.Float64Array{})
+	typeStringArray  = reflect.TypeOf(types.StringArray{})
+	typeHStore       = reflect.TypeOf(types.HStore{})
+	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
-	rgxValidTime = regexp.MustCompile(`[2-9]+`)
-
-	validatedTypes = []string{"uuid", "interval"}
+	validatedTypes = []string{
+		"inet", "line", "uuid", "interval",
+		"json", "jsonb", "box", "cidr", "circle",
+		"lseg", "macaddr", "path", "pg_lsn", "point",
+		"polygon", "txid_snapshot", "money", "hstore",
+	}
 )
 
 // Seed is an atomic counter for pseudo-randomization structs. Using full
@@ -163,7 +180,59 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
+					fieldType == "path" || fieldType == "polygon" {
+					value = null.NewString(randBox(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "cidr" || fieldType == "inet" {
+					value = null.NewString(randNetAddr(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "macaddr" {
+					value = null.NewString(randMacAddr(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "circle" {
+					value = null.NewString(randCircle(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "pg_lsn" {
+					value = null.NewString(randLsn(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "point" {
+					value = null.NewString(randPoint(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "txid_snapshot" {
+					value = null.NewString(randTxID(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "money" {
+					value = null.NewString(randMoney(s), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+			case typeNullJSON:
+				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeHStore:
+				value := types.HStore{}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
+
 		} else {
 			switch kind {
 			case reflect.String:
@@ -177,6 +246,59 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
+					fieldType == "path" || fieldType == "polygon" {
+					value = randBox()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "cidr" || fieldType == "inet" {
+					value = randNetAddr()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "macaddr" {
+					value = randMacAddr()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "circle" {
+					value = randCircle()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "pg_lsn" {
+					value = randLsn()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "point" {
+					value = randPoint()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "txid_snapshot" {
+					value = randTxID()
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "money" {
+					value = randMoney(s)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+			}
+			switch typ {
+			case typeJSON:
+				value = []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeHStore:
+				value := types.HStore{}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
 		}
 	}
@@ -191,8 +313,11 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		isNull = false
 	}
 
-	// Retrieve the value to be returned
-	if kind == reflect.Struct {
+	// If it's a Postgres array, treat it like one
+	if strings.HasPrefix(fieldType, "ARRAY") {
+		value = getArrayRandValue(s, typ, fieldType)
+		// Retrieve the value to be returned
+	} else if kind == reflect.Struct {
 		if isNull {
 			value = getStructNullValue(typ)
 		} else {
@@ -211,6 +336,69 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 	}
 
 	field.Set(reflect.ValueOf(value))
+
+	return nil
+}
+
+func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} {
+	fieldType = strings.TrimLeft(fieldType, "ARRAY")
+	switch typ {
+	case typeInt64Array:
+		return types.Int64Array{int64(s.nextInt()), int64(s.nextInt())}
+	case typeFloat64Array:
+		return types.Float64Array{float64(s.nextInt()), float64(s.nextInt())}
+	case typeBoolArray:
+		return types.BoolArray{s.nextInt()%2 == 0, s.nextInt()%2 == 0, s.nextInt()%2 == 0}
+	case typeStringArray:
+		if fieldType == "interval" {
+			value := strconv.Itoa((s.nextInt()%26)+2) + " days"
+			return types.StringArray{value, value}
+		}
+		if fieldType == "uuid" {
+			value := uuid.NewV4().String()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
+			fieldType == "path" || fieldType == "polygon" {
+			value := randBox()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "cidr" || fieldType == "inet" {
+			value := randNetAddr()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "macaddr" {
+			value := randMacAddr()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "circle" {
+			value := randCircle()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "pg_lsn" {
+			value := randLsn()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "point" {
+			value := randPoint()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "txid_snapshot" {
+			value := randTxID()
+			return types.StringArray{value, value}
+		}
+		if fieldType == "money" {
+			value := randMoney(s)
+			return types.StringArray{value, value}
+		}
+		if fieldType == "json" || fieldType == "jsonb" {
+			value := []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
+			return types.StringArray{string(value)}
+		}
+		return types.StringArray{randStr(s, 4), randStr(s, 4), randStr(s, 4)}
+	case typeBytesArray:
+		return types.BytesArray{randByteSlice(s, 4), randByteSlice(s, 4), randByteSlice(s, 4)}
+	}
 
 	return nil
 }
@@ -250,6 +438,8 @@ func getStructNullValue(typ reflect.Type) interface{} {
 		return null.NewUint32(0, false)
 	case typeNullUint64:
 		return null.NewUint64(0, false)
+	case typeNullBytes:
+		return null.NewBytes(nil, false)
 	}
 
 	return nil
@@ -292,6 +482,8 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 		return null.NewUint32(uint32(s.nextInt()), true)
 	case typeNullUint64:
 		return null.NewUint64(uint64(s.nextInt()), true)
+	case typeNullBytes:
+		return null.NewBytes(randByteSlice(s, 16), true)
 	}
 
 	return nil
@@ -377,24 +569,4 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 	}
 
 	return nil
-}
-
-const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func randStr(s *Seed, ln int) string {
-	str := make([]byte, ln)
-	for i := 0; i < ln; i++ {
-		str[i] = byte(alphabet[s.nextInt()%len(alphabet)])
-	}
-
-	return string(str)
-}
-
-func randByteSlice(s *Seed, ln int) []byte {
-	str := make([]byte, ln)
-	for i := 0; i < ln; i++ {
-		str[i] = byte(s.nextInt() % 256)
-	}
-
-	return str
 }

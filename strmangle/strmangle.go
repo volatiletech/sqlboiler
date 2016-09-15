@@ -22,6 +22,7 @@ var uppercaseWords = map[string]struct{}{
 	"id":   {},
 	"uid":  {},
 	"uuid": {},
+	"json": {},
 }
 
 func init() {
@@ -33,9 +34,21 @@ func init() {
 	boilRuleset = newBoilRuleset()
 }
 
+// SchemaTable returns a table name with a schema prefixed if
+// using a database that supports real schemas, for example,
+// for Postgres: "schema_name"."table_name", versus
+// simply "table_name" for MySQL (because it does not support real schemas)
+func SchemaTable(lq, rq string, driver string, schema string, table string) string {
+	if driver == "postgres" && schema != "public" {
+		return fmt.Sprintf(`%s%s%s.%s%s%s`, lq, schema, rq, lq, table, rq)
+	}
+
+	return fmt.Sprintf(`%s%s%s`, lq, table, rq)
+}
+
 // IdentQuote attempts to quote simple identifiers in SQL tatements
-func IdentQuote(s string) string {
-	if strings.ToLower(s) == "null" {
+func IdentQuote(lq byte, rq byte, s string) string {
+	if strings.ToLower(s) == "null" || s == "?" {
 		return s
 	}
 
@@ -52,28 +65,28 @@ func IdentQuote(s string) string {
 			buf.WriteByte('.')
 		}
 
-		if strings.HasPrefix(split, `"`) || strings.HasSuffix(split, `"`) || split == "*" {
+		if split[0] == lq || split[len(split)-1] == rq || split == "*" {
 			buf.WriteString(split)
 			continue
 		}
 
-		buf.WriteByte('"')
+		buf.WriteByte(lq)
 		buf.WriteString(split)
-		buf.WriteByte('"')
+		buf.WriteByte(rq)
 	}
 
 	return buf.String()
 }
 
 // IdentQuoteSlice applies IdentQuote to a slice.
-func IdentQuoteSlice(s []string) []string {
+func IdentQuoteSlice(lq byte, rq byte, s []string) []string {
 	if len(s) == 0 {
 		return s
 	}
 
 	strs := make([]string, len(s))
 	for i, str := range s {
-		strs[i] = IdentQuote(str)
+		strs[i] = IdentQuote(lq, rq, str)
 	}
 
 	return strs
@@ -103,6 +116,16 @@ func Identifier(in int) string {
 	}
 
 	return cols.String()
+}
+
+// QuoteCharacter returns a string that allows the quote character
+// to be embedded into a Go string that uses double quotes:
+func QuoteCharacter(q byte) string {
+	if q == '"' {
+		return `\"`
+	}
+
+	return string(q)
 }
 
 // Plural converts singular words to plural words (eg: person to people)
@@ -368,7 +391,8 @@ func PrefixStringSlice(str string, strs []string) []string {
 // Placeholders generates the SQL statement placeholders for in queries.
 // For example, ($1,$2,$3),($4,$5,$6) etc.
 // It will start counting placeholders at "start".
-func Placeholders(count int, start int, group int) string {
+// If indexPlaceholders is false, it will convert to ? instead of $1 etc.
+func Placeholders(indexPlaceholders bool, count int, start int, group int) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
@@ -387,7 +411,11 @@ func Placeholders(count int, start int, group int) string {
 				buf.WriteByte(',')
 			}
 		}
-		buf.WriteString(fmt.Sprintf("$%d", start+i))
+		if indexPlaceholders {
+			buf.WriteString(fmt.Sprintf("$%d", start+i))
+		} else {
+			buf.WriteByte('?')
+		}
 	}
 	if group > 1 {
 		buf.WriteByte(')')
@@ -399,14 +427,19 @@ func Placeholders(count int, start int, group int) string {
 // SetParamNames takes a slice of columns and returns a comma separated
 // list of parameter names for a template statement SET clause.
 // eg: "col1"=$1, "col2"=$2, "col3"=$3
-func SetParamNames(columns []string) string {
+func SetParamNames(lq, rq string, start int, columns []string) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
 	for i, c := range columns {
-		buf.WriteString(fmt.Sprintf(`"%s"=$%d`, c, i+1))
+		if start != 0 {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=$%d`, lq, c, rq, i+start))
+		} else {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=?`, lq, c, rq))
+		}
+
 		if i < len(columns)-1 {
-			buf.WriteString(", ")
+			buf.WriteByte(',')
 		}
 	}
 
@@ -415,16 +448,17 @@ func SetParamNames(columns []string) string {
 
 // WhereClause returns the where clause using start as the $ flag index
 // For example, if start was 2 output would be: "colthing=$2 AND colstuff=$3"
-func WhereClause(start int, cols []string) string {
-	if start == 0 {
-		panic("0 is not a valid start number for whereClause")
-	}
-
+func WhereClause(lq, rq string, start int, cols []string) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
 	for i, c := range cols {
-		buf.WriteString(fmt.Sprintf(`"%s"=$%d`, c, start+i))
+		if start != 0 {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=$%d`, lq, c, rq, start+i))
+		} else {
+			buf.WriteString(fmt.Sprintf(`%s%s%s=?`, lq, c, rq))
+		}
+
 		if i < len(cols)-1 {
 			buf.WriteString(" AND ")
 		}

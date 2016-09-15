@@ -15,7 +15,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/vattle/sqlboiler/boil"
+	"github.com/vattle/sqlboiler/queries"
+	"github.com/vattle/sqlboiler/strmangle"
 )
 
 const (
@@ -32,8 +33,9 @@ const (
 type State struct {
 	Config *Config
 
-	Driver bdb.Interface
-	Tables []bdb.Table
+	Driver  bdb.Interface
+	Tables  []bdb.Table
+	Dialect queries.Dialect
 
 	Templates              *templateList
 	TestTemplates          *templateList
@@ -59,7 +61,7 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to connect to the database")
 	}
 
-	err = s.initTables(config.ExcludeTables)
+	err = s.initTables(config.Schema, config.WhitelistTables, config.BlacklistTables)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -69,8 +71,7 @@ func New(config *Config) (*State, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to json marshal tables")
 		}
-		boil.DebugWriter.Write(b)
-		fmt.Fprintln(boil.DebugWriter)
+		fmt.Printf("%s\n", b)
 	}
 
 	err = s.initOutFolder()
@@ -96,11 +97,15 @@ func New(config *Config) (*State, error) {
 func (s *State) Run(includeTests bool) error {
 	singletonData := &templateData{
 		Tables:           s.Tables,
+		Schema:           s.Config.Schema,
 		DriverName:       s.Config.DriverName,
 		UseLastInsertID:  s.Driver.UseLastInsertID(),
 		PkgName:          s.Config.PkgName,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
+		Dialect:          s.Dialect,
+		LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
+		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
 
 		StringFuncs: templateStringMappers,
 	}
@@ -127,12 +132,16 @@ func (s *State) Run(includeTests bool) error {
 		data := &templateData{
 			Tables:           s.Tables,
 			Table:            table,
+			Schema:           s.Config.Schema,
 			DriverName:       s.Config.DriverName,
 			UseLastInsertID:  s.Driver.UseLastInsertID(),
 			PkgName:          s.Config.PkgName,
 			NoHooks:          s.Config.NoHooks,
 			NoAutoTimestamps: s.Config.NoAutoTimestamps,
 			Tags:             s.Config.Tags,
+			Dialect:          s.Dialect,
+			LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
+			RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
 
 			StringFuncs: templateStringMappers,
 		}
@@ -227,6 +236,15 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.Postgres.Port,
 			s.Config.Postgres.SSLMode,
 		)
+	case "mysql":
+		s.Driver = drivers.NewMySQLDriver(
+			s.Config.MySQL.User,
+			s.Config.MySQL.Pass,
+			s.Config.MySQL.DBName,
+			s.Config.MySQL.Host,
+			s.Config.MySQL.Port,
+			s.Config.MySQL.SSLMode,
+		)
 	case "mock":
 		s.Driver = &drivers.MockDriver{}
 	}
@@ -235,13 +253,17 @@ func (s *State) initDriver(driverName string) error {
 		return errors.New("An invalid driver name was provided")
 	}
 
+	s.Dialect.LQ = s.Driver.LeftQuote()
+	s.Dialect.RQ = s.Driver.RightQuote()
+	s.Dialect.IndexPlaceholders = s.Driver.IndexPlaceholders()
+
 	return nil
 }
 
 // initTables retrieves all "public" schema table names from the database.
-func (s *State) initTables(exclude []string) error {
+func (s *State) initTables(schema string, whitelist, blacklist []string) error {
 	var err error
-	s.Tables, err = bdb.Tables(s.Driver, exclude...)
+	s.Tables, err = bdb.Tables(s.Driver, schema, whitelist, blacklist)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}

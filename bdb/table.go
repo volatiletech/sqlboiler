@@ -4,8 +4,11 @@ import "fmt"
 
 // Table metadata from the database schema.
 type Table struct {
-	Name    string
-	Columns []Column
+	Name string
+	// For dbs with real schemas, like Postgres.
+	// Example value: "schema_name"."table_name"
+	SchemaName string
+	Columns    []Column
 
 	PKey  *PrimaryKey
 	FKeys []ForeignKey

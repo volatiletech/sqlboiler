@@ -1,15 +1,16 @@
-package boil
+package queries
 
 import (
 	"database/sql"
 	"reflect"
 
 	"github.com/pkg/errors"
+	"github.com/vattle/sqlboiler/boil"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
 type loadRelationshipState struct {
-	exec   Executor
+	exec   boil.Executor
 	loaded map[string]struct{}
 	toLoad []string
 }

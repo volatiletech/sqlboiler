@@ -1,4 +1,4 @@
-package boil
+package queries
 
 import (
 	"bytes"
@@ -97,6 +97,7 @@ func TestBuildQuery(t *testing.T) {
 
 	for i, test := range tests {
 		filename := filepath.Join("_fixtures", fmt.Sprintf("%02d.sql", i))
+		test.q.dialect = &Dialect{LQ: '"', RQ: '"', IndexPlaceholders: true}
 		out, args := buildQuery(test.q)
 
 		if *writeGoldenFiles {
@@ -149,6 +150,7 @@ func TestWriteStars(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		test.In.dialect = &Dialect{LQ: '"', RQ: '"', IndexPlaceholders: true}
 		selects := writeStars(&test.In)
 		if !reflect.DeepEqual(selects, test.Out) {
 			t.Errorf("writeStar test fail %d\nwant: %v\ngot:  %v", i, test.Out, selects)
@@ -275,6 +277,7 @@ func TestWhereClause(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		test.q.dialect = &Dialect{LQ: '"', RQ: '"', IndexPlaceholders: true}
 		result, _ := whereClause(&test.q, 1)
 		if result != test.expect {
 			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
@@ -407,6 +410,7 @@ func TestInClause(t *testing.T) {
 	}
 
 	for i, test := range tests {
+		test.q.dialect = &Dialect{LQ: '"', RQ: '"', IndexPlaceholders: true}
 		result, args := inClause(&test.q, 1)
 		if result != test.expect {
 			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
@@ -489,13 +493,21 @@ func TestConvertInQuestionMarks(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		res, count := convertInQuestionMarks(test.clause, test.start, test.group, test.total)
+		res, count := convertInQuestionMarks(true, test.clause, test.start, test.group, test.total)
 		if res != test.expect {
 			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, res)
 		}
 		if count != test.total {
 			t.Errorf("%d) Expected %d, got %d", i, test.total, count)
 		}
+	}
+
+	res, count := convertInQuestionMarks(false, "?", 1, 3, 9)
+	if res != "((?,?,?),(?,?,?),(?,?,?))" {
+		t.Errorf("Mismatch between expected and result: %s", res)
+	}
+	if count != 9 {
+		t.Errorf("Expected 9 results, got %d", count)
 	}
 }
 
@@ -512,6 +524,7 @@ func TestWriteAsStatements(t *testing.T) {
 			`a.clown.run`,
 			`COUNT(a)`,
 		},
+		dialect: &Dialect{LQ: '"', RQ: '"', IndexPlaceholders: true},
 	}
 
 	expect := []string{

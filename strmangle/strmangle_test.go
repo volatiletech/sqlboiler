@@ -29,7 +29,7 @@ func TestIdentQuote(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := IdentQuote(test.In); got != test.Out {
+		if got := IdentQuote('"', '"', test.In); got != test.Out {
 			t.Errorf("want: %s, got: %s", test.Out, got)
 		}
 	}
@@ -38,7 +38,7 @@ func TestIdentQuote(t *testing.T) {
 func TestIdentQuoteSlice(t *testing.T) {
 	t.Parallel()
 
-	ret := IdentQuoteSlice([]string{`thing`, `null`})
+	ret := IdentQuoteSlice('"', '"', []string{`thing`, `null`})
 	if ret[0] != `"thing"` {
 		t.Error(ret[0])
 	}
@@ -69,34 +69,60 @@ func TestIdentifier(t *testing.T) {
 	}
 }
 
+func TestQuoteCharacter(t *testing.T) {
+	t.Parallel()
+
+	if QuoteCharacter('[') != "[" {
+		t.Error("want just the normal quote character")
+	}
+	if QuoteCharacter('`') != "`" {
+		t.Error("want just the normal quote character")
+	}
+	if QuoteCharacter('"') != `\"` {
+		t.Error("want an escaped character")
+	}
+}
+
 func TestPlaceholders(t *testing.T) {
 	t.Parallel()
 
-	x := Placeholders(1, 2, 1)
+	x := Placeholders(true, 1, 2, 1)
 	want := "$2"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(5, 1, 1)
+	x = Placeholders(true, 5, 1, 1)
 	want = "$1,$2,$3,$4,$5"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(6, 1, 2)
+	x = Placeholders(false, 5, 1, 1)
+	want = "?,?,?,?,?"
+	if want != x {
+		t.Errorf("want %s, got %s", want, x)
+	}
+
+	x = Placeholders(true, 6, 1, 2)
 	want = "($1,$2),($3,$4),($5,$6)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(9, 1, 3)
-	want = "($1,$2,$3),($4,$5,$6),($7,$8,$9)"
+	x = Placeholders(true, 6, 1, 2)
+	want = "($1,$2),($3,$4),($5,$6)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
 	}
 
-	x = Placeholders(7, 1, 3)
+	x = Placeholders(false, 9, 1, 3)
+	want = "(?,?,?),(?,?,?),(?,?,?)"
+	if want != x {
+		t.Errorf("want %s, got %s", want, x)
+	}
+
+	x = Placeholders(true, 7, 1, 3)
 	want = "($1,$2,$3),($4,$5,$6),($7)"
 	if want != x {
 		t.Errorf("want %s, got %s", want, x)
@@ -291,6 +317,28 @@ func TestPrefixStringSlice(t *testing.T) {
 	}
 }
 
+func TestSetParamNames(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Cols   []string
+		Start  int
+		Should string
+	}{
+		{Cols: []string{"col1", "col2"}, Start: 0, Should: `"col1"=?,"col2"=?`},
+		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
+		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4,"col2"=$5`},
+		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4,"col2"=$5,"col3"=$6`},
+	}
+
+	for i, test := range tests {
+		r := SetParamNames(`"`, `"`, test.Start, test.Cols)
+		if r != test.Should {
+			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
+		}
+	}
+}
+
 func TestWhereClause(t *testing.T) {
 	t.Parallel()
 
@@ -299,13 +347,14 @@ func TestWhereClause(t *testing.T) {
 		Start  int
 		Should string
 	}{
+		{Cols: []string{"col1", "col2"}, Start: 0, Should: `"col1"=? AND "col2"=?`},
 		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
 		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5`},
 		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5 AND "col3"=$6`},
 	}
 
 	for i, test := range tests {
-		r := WhereClause(test.Start, test.Cols)
+		r := WhereClause(`"`, `"`, test.Start, test.Cols)
 		if r != test.Should {
 			t.Errorf("(%d) want: %s, got: %s\nTest: %#v", i, test.Should, r, test)
 		}

@@ -19,23 +19,20 @@ type PostgresDriver struct {
 	dbConn  *sql.DB
 }
 
-// validatedTypes are types that cannot be zero values in the database.
-var validatedTypes = []string{"uuid"}
-
 // NewPostgresDriver takes the database connection details as parameters and
 // returns a pointer to a PostgresDriver object. Note that it is required to
 // call PostgresDriver.Open() and PostgresDriver.Close() to open and close
 // the database connection once an object has been obtained.
 func NewPostgresDriver(user, pass, dbname, host string, port int, sslmode string) *PostgresDriver {
 	driver := PostgresDriver{
-		connStr: BuildQueryString(user, pass, dbname, host, port, sslmode),
+		connStr: PostgresBuildQueryString(user, pass, dbname, host, port, sslmode),
 	}
 
 	return &driver
 }
 
-// BuildQueryString for Postgres
-func BuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
+// PostgresBuildQueryString builds a query string.
+func PostgresBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
 	parts := []string{}
 	if len(user) != 0 {
 		parts = append(parts, fmt.Sprintf("user=%s", user))
@@ -82,21 +79,25 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
-// table schema is public. It excludes common migration tool tables
-// such as gorp_migrations
-func (p *PostgresDriver) TableNames(exclude []string) ([]string, error) {
+// table schema is schema. It uses a whitelist and blacklist.
+func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := `select table_name from information_schema.tables where table_schema = 'public'`
-	if len(exclude) > 0 {
-		quoteStr := func(x string) string {
-			return `'` + x + `'`
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		query += fmt.Sprintf(" and table_name in (%s);", strmangle.Placeholders(true, len(whitelist), 2, 1))
+		for _, w := range whitelist {
+			args = append(args, w)
 		}
-		exclude = strmangle.StringMap(quoteStr, exclude)
-		query = query + fmt.Sprintf("and table_name not in (%s);", strings.Join(exclude, ","))
+	} else if len(blacklist) > 0 {
+		query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(true, len(blacklist), 2, 1))
+		for _, b := range blacklist {
+			args = append(args, b)
+		}
 	}
 
-	rows, err := p.dbConn.Query(query)
+	rows, err := p.dbConn.Query(query, args...)
 
 	if err != nil {
 		return nil, err
@@ -118,11 +119,11 @@ func (p *PostgresDriver) TableNames(exclude []string) ([]string, error) {
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
+func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	var columns []bdb.Column
 
 	rows, err := p.dbConn.Query(`
-		select column_name, data_type, column_default, is_nullable,
+		select column_name, c.data_type, e.data_type, column_default, c.udt_name, is_nullable,
 			(select exists(
 		    select 1
 				from information_schema.constraint_column_usage as ccu
@@ -136,11 +137,13 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 		      inner join pg_index pgi on pgi.indexrelid = pgc.oid
 		      inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
 		    where
-		      pgix.schemaname = 'public' and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
+		      pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
 		)) as is_unique
-		from information_schema.columns as c
-		where table_name=$1 and table_schema = 'public';
-	`, tableName)
+		from information_schema.columns as c LEFT JOIN information_schema.element_types e
+			ON ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
+				= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
+		where c.table_name=$2 and c.table_schema = $1;
+	`, schema, tableName)
 
 	if err != nil {
 		return nil, err
@@ -148,10 +151,11 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colDefault, nullable string
+		var colName, udtName, colType, colDefault, nullable string
+		var elementType *string
 		var unique bool
 		var defaultPtr *string
-		if err := rows.Scan(&colName, &colType, &defaultPtr, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &elementType, &defaultPtr, &udtName, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -162,12 +166,13 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 		}
 
 		column := bdb.Column{
-			Name:      colName,
-			DBType:    colType,
-			Default:   colDefault,
-			Nullable:  nullable == "YES",
-			Unique:    unique,
-			Validated: isValidated(colType),
+			Name:     colName,
+			DBType:   colType,
+			ArrType:  elementType,
+			UDTName:  udtName,
+			Default:  colDefault,
+			Nullable: nullable == "YES",
+			Unique:   unique,
 		}
 		columns = append(columns, column)
 	}
@@ -176,16 +181,16 @@ func (p *PostgresDriver) Columns(tableName string) ([]bdb.Column, error) {
 }
 
 // PrimaryKeyInfo looks up the primary key for a table.
-func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, error) {
+func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey, error) {
 	pkey := &bdb.PrimaryKey{}
 	var err error
 
 	query := `
 	select tc.constraint_name
 	from information_schema.table_constraints as tc
-	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY' and tc.table_schema = 'public';`
+	where tc.table_name = $1 and tc.constraint_type = 'PRIMARY KEY' and tc.table_schema = $2;`
 
-	row := p.dbConn.QueryRow(query, tableName)
+	row := p.dbConn.QueryRow(query, tableName, schema)
 	if err = row.Scan(&pkey.Name); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -196,10 +201,10 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  constraint_name = $1 and table_schema = 'public';`
+	where  constraint_name = $1 and table_schema = $2;`
 
 	var rows *sql.Rows
-	if rows, err = p.dbConn.Query(queryColumns, pkey.Name); err != nil {
+	if rows, err = p.dbConn.Query(queryColumns, pkey.Name, schema); err != nil {
 		return nil, err
 	}
 	defer rows.Close()
@@ -226,7 +231,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(tableName string) (*bdb.PrimaryKey, erro
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
-func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, error) {
+func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	var fkeys []bdb.ForeignKey
 
 	query := `
@@ -239,11 +244,11 @@ func (p *PostgresDriver) ForeignKeyInfo(tableName string) ([]bdb.ForeignKey, err
 	from information_schema.table_constraints as tc
 		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
 		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
-	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = 'public';`
+	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = $2;`
 
 	var rows *sql.Rows
 	var err error
-	if rows, err = p.dbConn.Query(query, tableName); err != nil {
+	if rows, err = p.dbConn.Query(query, tableName, schema); err != nil {
 		return nil, err
 	}
 
@@ -279,18 +284,35 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Int"
 		case "smallint", "smallserial":
 			c.Type = "null.Int16"
-		case "decimal", "numeric", "double precision", "money":
+		case "decimal", "numeric", "double precision":
 			c.Type = "null.Float64"
 		case "real":
 			c.Type = "null.Float32"
-		case "bit", "interval", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
 		case "bytea":
-			c.Type = "[]byte"
+			c.Type = "null.Bytes"
+		case "json", "jsonb":
+			c.Type = "null.JSON"
 		case "boolean":
 			c.Type = "null.Bool"
 		case "date", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "null.Time"
+		case "ARRAY":
+			if c.ArrType == nil {
+				panic("unable to get postgres ARRAY underlying type")
+			}
+			c.Type = getArrayType(c)
+			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
+			c.DBType = c.DBType + *c.ArrType
+		case "USER-DEFINED":
+			if c.UDTName == "hstore" {
+				c.Type = "types.HStore"
+				c.DBType = "hstore"
+			} else {
+				c.Type = "string"
+				fmt.Printf("Warning: Incompatible data type detected: %s", c.UDTName)
+			}
 		default:
 			c.Type = "null.String"
 		}
@@ -302,18 +324,32 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "int"
 		case "smallint", "smallserial":
 			c.Type = "int16"
-		case "decimal", "numeric", "double precision", "money":
+		case "decimal", "numeric", "double precision":
 			c.Type = "float64"
 		case "real":
 			c.Type = "float32"
-		case "bit", "interval", "uuint", "bit varying", "character", "character varying", "cidr", "inet", "json", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "string"
+		case "json", "jsonb":
+			c.Type = "types.JSON"
 		case "bytea":
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "bool"
 		case "date", "time", "timestamp without time zone", "timestamp with time zone":
 			c.Type = "time.Time"
+		case "ARRAY":
+			c.Type = getArrayType(c)
+			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
+			c.DBType = c.DBType + *c.ArrType
+		case "USER-DEFINED":
+			if c.UDTName == "hstore" {
+				c.Type = "types.HStore"
+				c.DBType = "hstore"
+			} else {
+				c.Type = "string"
+				fmt.Printf("Warning: Incompatible data type detected: %s", c.UDTName)
+			}
 		default:
 			c.Type = "string"
 		}
@@ -322,13 +358,35 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	return c
 }
 
-// isValidated checks if the database type is in the validatedTypes list.
-func isValidated(typ string) bool {
-	for _, v := range validatedTypes {
-		if v == typ {
-			return true
-		}
+// getArrayType returns the correct boil.Array type for each database type
+func getArrayType(c bdb.Column) string {
+	switch *c.ArrType {
+	case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial":
+		return "types.Int64Array"
+	case "bytea":
+		return "types.BytesArray"
+	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		return "types.StringArray"
+	case "boolean":
+		return "types.BoolArray"
+	case "decimal", "numeric", "double precision", "real":
+		return "types.Float64Array"
+	default:
+		return "types.StringArray"
 	}
+}
 
-	return false
+// RightQuote is the quoting character for the right side of the identifier
+func (p *PostgresDriver) RightQuote() byte {
+	return '"'
+}
+
+// LeftQuote is the quoting character for the left side of the identifier
+func (p *PostgresDriver) LeftQuote() byte {
+	return '"'
+}
+
+// IndexPlaceholders returns true to indicate PSQL supports indexed placeholders
+func (p *PostgresDriver) IndexPlaceholders() bool {
+	return true
 }

@@ -1,8 +1,10 @@
-package boil
+package queries
 
 import (
 	"database/sql"
 	"fmt"
+
+	"github.com/vattle/sqlboiler/boil"
 )
 
 // joinKind is the type of join
@@ -18,7 +20,7 @@ const (
 
 // Query holds the state for the built up query
 type Query struct {
-	executor   Executor
+	executor   boil.Executor
 	dialect    *Dialect
 	plainSQL   plainSQL
 	load       []string
@@ -81,7 +83,7 @@ type join struct {
 }
 
 // SQL makes a plainSQL query, usually for use with bind
-func SQL(exec Executor, query string, args ...interface{}) *Query {
+func SQL(exec boil.Executor, query string, args ...interface{}) *Query {
 	return &Query{
 		executor: exec,
 		plainSQL: plainSQL{
@@ -91,17 +93,17 @@ func SQL(exec Executor, query string, args ...interface{}) *Query {
 	}
 }
 
-// SQLG makes a plainSQL query using the global Executor, usually for use with bind
+// SQLG makes a plainSQL query using the global boil.Executor, usually for use with bind
 func SQLG(query string, args ...interface{}) *Query {
-	return SQL(GetDB(), query, args...)
+	return SQL(boil.GetDB(), query, args...)
 }
 
 // Exec executes a query that does not need a row returned
 func (q *Query) Exec() (sql.Result, error) {
 	qs, args := buildQuery(q)
-	if DebugMode {
-		fmt.Fprintln(DebugWriter, qs)
-		fmt.Fprintln(DebugWriter, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	return q.executor.Exec(qs, args...)
 }
@@ -109,9 +111,9 @@ func (q *Query) Exec() (sql.Result, error) {
 // QueryRow executes the query for the One finisher and returns a row
 func (q *Query) QueryRow() *sql.Row {
 	qs, args := buildQuery(q)
-	if DebugMode {
-		fmt.Fprintln(DebugWriter, qs)
-		fmt.Fprintln(DebugWriter, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	return q.executor.QueryRow(qs, args...)
 }
@@ -119,9 +121,9 @@ func (q *Query) QueryRow() *sql.Row {
 // Query executes the query for the All finisher and returns multiple rows
 func (q *Query) Query() (*sql.Rows, error) {
 	qs, args := buildQuery(q)
-	if DebugMode {
-		fmt.Fprintln(DebugWriter, qs)
-		fmt.Fprintln(DebugWriter, args)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	return q.executor.Query(qs, args...)
 }
@@ -131,7 +133,7 @@ func (q *Query) Query() (*sql.Rows, error) {
 func (q *Query) ExecP() sql.Result {
 	res, err := q.Exec()
 	if err != nil {
-		panic(WrapErr(err))
+		panic(boil.WrapErr(err))
 	}
 
 	return res
@@ -142,19 +144,19 @@ func (q *Query) ExecP() sql.Result {
 func (q *Query) QueryP() *sql.Rows {
 	rows, err := q.Query()
 	if err != nil {
-		panic(WrapErr(err))
+		panic(boil.WrapErr(err))
 	}
 
 	return rows
 }
 
 // SetExecutor on the query.
-func SetExecutor(q *Query, exec Executor) {
+func SetExecutor(q *Query, exec boil.Executor) {
 	q.executor = exec
 }
 
 // GetExecutor on the query.
-func GetExecutor(q *Query) Executor {
+func GetExecutor(q *Query) boil.Executor {
 	return q.executor
 }
 

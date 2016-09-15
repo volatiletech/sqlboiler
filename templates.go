@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/vattle/sqlboiler/bdb"
-	"github.com/vattle/sqlboiler/boil"
+	"github.com/vattle/sqlboiler/queries"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
@@ -36,7 +36,7 @@ type templateData struct {
 	StringFuncs map[string]func(string) string
 
 	// Dialect controls quoting
-	Dialect boil.Dialect
+	Dialect queries.Dialect
 	LQ      string
 	RQ      string
 }

@@ -1,4 +1,4 @@
-package boil
+package queries
 
 import (
 	"database/sql"

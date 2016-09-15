@@ -153,7 +153,7 @@ var defaultTemplateImports = imports{
 	thirdParty: importList{
 		`"github.com/pkg/errors"`,
 		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/boil/qm"`,
+		`"github.com/vattle/sqlboiler/queries/qm"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }
@@ -162,7 +162,7 @@ var defaultSingletonTemplateImports = map[string]imports{
 	"boil_queries": {
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
-			`"github.com/vattle/sqlboiler/boil/qm"`,
+			`"github.com/vattle/sqlboiler/queries/qm"`,
 		},
 	},
 	"boil_types": {
@@ -180,7 +180,7 @@ var defaultTestTemplateImports = imports{
 	},
 	thirdParty: importList{
 		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/boil/randomize"`,
+		`"github.com/vattle/sqlboiler/randomize"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
 }
@@ -240,7 +240,7 @@ var defaultTestMainImports = map[string]imports{
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
-			`"github.com/vattle/sqlboiler/boil/randomize"`,
+			`"github.com/vattle/sqlboiler/randomize"`,
 			`_ "github.com/lib/pq"`,
 		},
 	},
@@ -259,7 +259,7 @@ var defaultTestMainImports = map[string]imports{
 			`"github.com/pkg/errors"`,
 			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/bdb/drivers"`,
-			`"github.com/vattle/sqlboiler/boil/randomize"`,
+			`"github.com/vattle/sqlboiler/randomize"`,
 			`_ "github.com/go-sql-driver/mysql"`,
 		},
 	},
@@ -324,21 +324,21 @@ var importsBasedOnType = map[string]imports{
 		standard: importList{`"time"`},
 	},
 	"types.JSON": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 	"types.BytesArray": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 	"types.Int64Array": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 	"types.Float64Array": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 	"types.BoolArray": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 	"types.Hstore": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/boil/types"`},
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
 }

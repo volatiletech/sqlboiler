@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/vattle/sqlboiler/boil"
+	"github.com/vattle/sqlboiler/queries"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
@@ -35,7 +35,7 @@ type State struct {
 
 	Driver  bdb.Interface
 	Tables  []bdb.Table
-	Dialect boil.Dialect
+	Dialect queries.Dialect
 
 	Templates              *templateList
 	TestTemplates          *templateList

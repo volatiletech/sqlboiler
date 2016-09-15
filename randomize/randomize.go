@@ -17,8 +17,8 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
-	"github.com/vattle/sqlboiler/boil/types"
 	"github.com/vattle/sqlboiler/strmangle"
+	"github.com/vattle/sqlboiler/types"
 )
 
 var (

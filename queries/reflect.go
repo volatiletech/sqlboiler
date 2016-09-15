@@ -1,4 +1,4 @@
-package boil
+package queries
 
 import (
 	"database/sql"
@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"github.com/vattle/sqlboiler/boil"
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
@@ -40,7 +41,7 @@ const (
 // It panics on error. See boil.Bind() documentation.
 func (q *Query) BindP(obj interface{}) {
 	if err := q.Bind(obj); err != nil {
-		panic(WrapErr(err))
+		panic(boil.WrapErr(err))
 	}
 }
 

@@ -248,6 +248,14 @@ host="localhost"
 port=5432
 user="dbusername"
 pass="dbpassword"
+
+[mysql]
+dbname="dbname"
+host="localhost"
+port=3306
+user="dbusername"
+pass="dbpassword"
+sslmode="false"
 ```
 
 #### Initial Generation

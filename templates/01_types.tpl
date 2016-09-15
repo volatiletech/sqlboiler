@@ -23,7 +23,7 @@ type (
 	}
 )
 
-// Cache for insert and update
+// Cache for insert, update and upsert
 var (
 	{{$varNameSingular}}Type = reflect.TypeOf(&{{$tableNameSingular}}{})
 	{{$varNameSingular}}Mapping = queries.MakeStructMapping({{$varNameSingular}}Type)
@@ -31,6 +31,8 @@ var (
 	{{$varNameSingular}}InsertCache = make(map[string]insertCache)
 	{{$varNameSingular}}UpdateCacheMut sync.RWMutex
 	{{$varNameSingular}}UpdateCache = make(map[string]updateCache)
+	{{$varNameSingular}}UpsertCacheMut sync.RWMutex
+	{{$varNameSingular}}UpsertCache = make(map[string]insertCache)
 )
 
 // Force time package dependency for automated UpdatedAt/CreatedAt.

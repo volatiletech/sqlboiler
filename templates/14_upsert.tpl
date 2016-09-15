@@ -20,7 +20,7 @@ func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, {{if ne .DriverName
 		panic(boil.WrapErr(err))
 	}
 }
-	
+
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName "mysql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string, whitelist ...string) error {
 	if o == nil {
@@ -35,44 +35,97 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	}
 	{{- end}}
 
-	var err error
-	var ret []string
-	whitelist, ret = strmangle.InsertColumnSet(
-		{{$varNameSingular}}Columns,
-		{{$varNameSingular}}ColumnsWithDefault,
-		{{$varNameSingular}}ColumnsWithoutDefault,
-		queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
-		whitelist,
-	)
-	update := strmangle.UpdateColumnSet(
-		{{$varNameSingular}}Columns,
-		{{$varNameSingular}}PrimaryKeyColumns,
-		updateColumns,
-	)
-
+	// Build cache key in-line uglily - mysql vs postgres problems
+	buf := strmangle.GetBuffer()
 	{{if ne .DriverName "mysql" -}}
-	conflict := conflictColumns
-	if len(conflict) == 0 {
-		conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
-		copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
+	if updateOnConflict {
+		buf.WriteByte('t')
+	} else {
+		buf.WriteByte('f')
 	}
-	query := queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, whitelist)
-	{{- else -}}
-	query := queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, whitelist)
-	{{- end}}
+	buf.WriteByte('.')
+	for _, c := range conflictColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	{{end -}}
+	for _, c := range updateColumns {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range whitelist {
+		buf.WriteString(c)
+	}
+	key := buf.String()
+	strmangle.PutBuffer(buf)
+
+	{{$varNameSingular}}UpsertCacheMut.RLock()
+	cache, cached := {{$varNameSingular}}UpsertCache[key]
+	{{$varNameSingular}}UpsertCacheMut.RUnlock()
+
+	var err error
+
+	if !cached {
+		var ret []string
+		whitelist, ret = strmangle.InsertColumnSet(
+			{{$varNameSingular}}Columns,
+			{{$varNameSingular}}ColumnsWithDefault,
+			{{$varNameSingular}}ColumnsWithoutDefault,
+			queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
+			whitelist,
+		)
+		update := strmangle.UpdateColumnSet(
+			{{$varNameSingular}}Columns,
+			{{$varNameSingular}}PrimaryKeyColumns,
+			updateColumns,
+		)
+
+		{{if ne .DriverName "mysql" -}}
+		var conflict []string
+		if len(conflictColumns) == 0 {
+			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
+			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
+		}
+		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, whitelist)
+		{{- else -}}
+		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, whitelist)
+		cache.retQuery = fmt.Sprintf(
+			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
+			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),
+		)
+		{{- end}}
+
+		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, whitelist)
+		if err != nil {
+			return err
+		}
+		if len(ret) != 0 {
+			cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, ret)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	value := reflect.Indirect(reflect.ValueOf(o))
+	values := queries.ValuesFromMapping(value, cache.valueMapping)
+	var returns []interface{}
+	if len(cache.retMapping) != 0 {
+		returns = queries.PtrsFromMapping(value, cache.retMapping)
+	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, queries.GetStructValues(o, whitelist...))
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 
 	{{- if .UseLastInsertID}}
-	result, err := exec.Exec(query, queries.GetStructValues(o, whitelist...)...)
+	result, err := exec.Exec(cache.query, values...)
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
 	}
 
-	if len(ret) == 0 {
+	if len(cache.retMapping) == 0 {
 	{{if not .NoHooks -}}
 		return o.doAfterUpsertHooks(exec)
 	{{else -}}
@@ -99,32 +152,33 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		}
 	}
 
-	if lastID != 0 && len(ret) == 1 {
-		retQuery := fmt.Sprintf(
-			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
-			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),
-		)
-
+	if lastID != 0 && len(cache.retMapping) == 1 {
 		if boil.DebugMode {
-			fmt.Fprintln(boil.DebugWriter, ret)
+			fmt.Fprintln(boil.DebugWriter, cache.retQuery)
 			fmt.Fprintln(boil.DebugWriter, identifierCols...)
 		}
 
-		err = exec.QueryRow(retQuery, identifierCols...).Scan(queries.GetStructPointers(o, ret...)...)
+		err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(returns...)
 		if err != nil {
 			return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 		}
 	}
 	{{- else}}
-	if len(ret) != 0 {
-		err = exec.QueryRow(query, queries.GetStructValues(o, whitelist...)...).Scan(queries.GetStructPointers(o, ret...)...)
+	if len(cache.retMapping) != 0 {
+		err = exec.QueryRow(cache.query, values...).Scan(returns...)
 	} else {
-		_, err = exec.Exec(query, queries.GetStructValues(o, whitelist...)...)
+		_, err = exec.Exec(cache.query, values...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
 	}
 	{{- end}}
+
+	if !cached {
+		{{$varNameSingular}}UpsertCacheMut.Lock()
+		{{$varNameSingular}}UpsertCache[key] = cache
+		{{$varNameSingular}}UpsertCacheMut.Unlock()
+	}
 
 	{{if not .NoHooks -}}
 	return o.doAfterUpsertHooks(exec)

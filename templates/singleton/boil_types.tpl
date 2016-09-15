@@ -6,15 +6,15 @@ type M map[string]interface{}
 // fails or there was a primary key configuration that was not resolvable.
 var ErrSyncFail = errors.New("{{.PkgName}}: failed to synchronize data after insert")
 
-type insertCache struct{
-	query			 string
-	retQuery		 string
+type insertCache struct {
+	query        string
+	retQuery     string
 	valueMapping []uint64
-	retMapping	 []uint64
+	retMapping   []uint64
 }
 
-type updateCache struct{
-	query			 string
+type updateCache struct {
+	query        string
 	valueMapping []uint64
 }
 
@@ -35,4 +35,3 @@ func makeCacheKey(wl, nzDefaults []string) string {
 	strmangle.PutBuffer(buf)
 	return str
 }
-

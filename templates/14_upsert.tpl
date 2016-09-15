@@ -127,10 +127,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	{{- end}}
 
 	{{if not .NoHooks -}}
-	if err := o.doAfterUpsertHooks(exec); err != nil {
-		return err
-	}
-	{{- end}}
-
+	return o.doAfterUpsertHooks(exec)
+	{{- else -}}
 	return nil
+	{{- end}}
 }

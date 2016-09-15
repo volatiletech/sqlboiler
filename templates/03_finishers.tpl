@@ -14,7 +14,7 @@ func (q {{$varNameSingular}}Query) OneP() (*{{$tableNameSingular}}) {
 func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 	o := &{{$tableNameSingular}}{}
 
-	boil.SetLimit(q.Query, 1)
+	queries.SetLimit(q.Query, 1)
 
 	err := q.Bind(o)
 	if err != nil {
@@ -25,7 +25,7 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 	}
 
 	{{if not .NoHooks -}}
-	if err := o.doAfterSelectHooks(boil.GetExecutor(q.Query)); err != nil {
+	if err := o.doAfterSelectHooks(queries.GetExecutor(q.Query)); err != nil {
 		return o, err
 	}
 	{{- end}}
@@ -55,7 +55,7 @@ func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
 	{{if not .NoHooks -}}
 	if len({{$varNameSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range o {
-			if err := obj.doAfterSelectHooks(boil.GetExecutor(q.Query)); err != nil {
+			if err := obj.doAfterSelectHooks(queries.GetExecutor(q.Query)); err != nil {
 				return o, err
 			}
 		}
@@ -79,8 +79,8 @@ func (q {{$varNameSingular}}Query) CountP() int64 {
 func (q {{$varNameSingular}}Query) Count() (int64, error) {
 	var count int64
 
-	boil.SetSelect(q.Query, nil)
-	boil.SetCount(q.Query)
+	queries.SetSelect(q.Query, nil)
+	queries.SetCount(q.Query)
 
 	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
@@ -104,8 +104,8 @@ func (q {{$varNameSingular}}Query) ExistsP() bool {
 func (q {{$varNameSingular}}Query) Exists() (bool, error) {
 	var count int64
 
-	boil.SetCount(q.Query)
-	boil.SetLimit(q.Query, 1)
+	queries.SetCount(q.Query)
+	queries.SetLimit(q.Query, 1)
 
 	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {

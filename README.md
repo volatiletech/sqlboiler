@@ -291,7 +291,7 @@ with SQLBoiler. If you find there are some failing tests, please check the
 sqlboiler -x goose_migrations postgres
 
 # Run the generated tests
-go test ./models 
+go test ./models
 ```
 
 ## Diagnosing Problems
@@ -425,7 +425,7 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
   This is somewhat of a work around until we can devise a better solution in a later version.
 * **Update**
   * The `updated_at` column will always be set to `time.Now()`. If you need to override
-  this value you will need to fall back to another method in the meantime: `boil.SQL()`,
+  this value you will need to fall back to another method in the meantime: `queries.Raw()`,
   overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
 * **Upsert**
   * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
@@ -463,7 +463,7 @@ err := models.NewQuery(db, From("pilots")).All()
 As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
 allow you to execute the final action.
 
-We also generate query building helper methods for your relationships as well. Take a look at our 
+We also generate query building helper methods for your relationships as well. Take a look at our
 [Relationships Query Building](#relationships) section for some additional query building information.
 
 
@@ -565,17 +565,17 @@ Query() // Execute an SQL query expected to return multiple rows.
 
 ### Raw Query
 
-We provide `boil.SQL()` for executing raw queries. Generally you will want to use `Bind()` with
+We provide `queries.Raw()` for executing raw queries. Generally you will want to use `Bind()` with
 this, like the following:
 
 ```go
-err := boil.SQL(db, "select * from pilots where id=$1", 5).Bind(&obj)
+err := queries.Raw(db, "select * from pilots where id=$1", 5).Bind(&obj)
 ```
 
 You can use your own structs or a generated struct as a parameter to Bind. Bind supports both
 a single object for single row queries and a slice of objects for multiple row queries.
 
-`boil.SQL()` also has a method that can execute a query without binding to an object, if required.
+`queries.Raw()` also has a method that can execute a query without binding to an object, if required.
 
 You also have `models.NewQuery()` at your disposal if you would still like to use [Query Building](#query-building)
 in combination with your own custom, non-generated model.
@@ -601,7 +601,7 @@ type PilotAndJet struct {
 
 var paj PilotAndJet
 // Use a raw query
-err := boil.SQL(`
+err := queries.Raw(`
   select pilots.id as "pilots.id", pilots.name as "pilots.name",
   jets.id as "jets.id", jets.pilot_id as "jets.pilot_id",
   jets.age as "jets.age", jets.name as "jets.name", jets.color as "jets.color"
@@ -629,7 +629,7 @@ var info JetInfo
 err := models.NewQuery(db, Select("sum(age) as age_sum", "count(*) as juicy_count", From("jets"))).Bind(&info)
 
 // Use a raw query
-err := boil.SQL(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
+err := queries.Raw(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
 ```
 
 We support the following struct tag modes for `Bind()` control:
@@ -990,7 +990,7 @@ err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
 The `updateOnConflict` argument allows you to specify whether you would like Postgres
 to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL, this param will not be generated.
 
-The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres. 
+The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres.
 For MySQL, this param will not be generated.
 
 Note: Passing a different set of column values to the update component is not currently supported.
@@ -1062,7 +1062,7 @@ Please note that multi-dimensional Postgres ARRAY types are not supported at thi
 
 #### Where is the homepage?
 
-The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler)  [Golang ORM](https://github.com/vattle/sqlboiler) generator is located at: https://github.com/vattle/sqlboiler 
+The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler)  [Golang ORM](https://github.com/vattle/sqlboiler) generator is located at: https://github.com/vattle/sqlboiler
 
 ## Benchmarks
 

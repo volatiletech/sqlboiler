@@ -83,7 +83,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
 	}
 	{{else -}}
-	if err = boil.Bind(results, &resultSlice); err != nil {
+	if err = queries.Bind(results, &resultSlice); err != nil {
 		return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
 	}
 	{{end}}

@@ -16,7 +16,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
 	queryMods = append(queryMods, mods...)
 
 	query := {{.ForeignTable.NamePluralGo}}(exec, queryMods...)
-	boil.SetFrom(query.Query, "{{.ForeignTable.Name | $dot.SchemaTable}}")
+	queries.SetFrom(query.Query, "{{.ForeignTable.Name | $dot.SchemaTable}}")
 
 	return query
 }

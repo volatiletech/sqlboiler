@@ -32,7 +32,7 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 		"select %s from {{.Table.Name | .SchemaTable}} where {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", sel,
 	)
 
-	q := boil.SQL(exec, query, {{$pkNames | join ", "}})
+	q := queries.Raw(exec, query, {{$pkNames | join ", "}})
 
 	err := q.Bind({{$varNameSingular}}Obj)
 	if err != nil {

@@ -16,14 +16,14 @@ type (
 	{{- end}}
 
 	{{$varNameSingular}}Query struct {
-		*boil.Query
+		*queries.Query
 	}
 )
 
 // Cache for insert and update
 var (
 	{{$varNameSingular}}Type = reflect.TypeOf(&{{$tableNameSingular}}{})
-	{{$varNameSingular}}Mapping = boil.MakeStructMapping({{$varNameSingular}}Type)
+	{{$varNameSingular}}Mapping = queries.MakeStructMapping({{$varNameSingular}}Type)
 	{{$varNameSingular}}InsertCacheMut sync.RWMutex
 	{{$varNameSingular}}InsertCache = make(map[string]insertCache)
 	{{$varNameSingular}}UpdateCacheMut sync.RWMutex

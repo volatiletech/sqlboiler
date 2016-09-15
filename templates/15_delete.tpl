@@ -78,7 +78,7 @@ func (q {{$varNameSingular}}Query) DeleteAll() error {
 	return errors.New("{{.PkgName}}: no {{$varNameSingular}}Query provided for delete all")
 	}
 
-	boil.SetDelete(q.Query)
+	queries.SetDelete(q.Query)
 
 	_, err := q.Query.Exec()
 	if err != nil {

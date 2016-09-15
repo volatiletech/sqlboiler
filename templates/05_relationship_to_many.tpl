@@ -42,7 +42,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Na
 		{{end}}
 
 	query := {{$rel.ForeignTable.NamePluralGo}}(exec, queryMods...)
-	boil.SetFrom(query.Query, "{{$schemaForeignTable}} as {{id 0 | $dot.Quotes}}")
+	queries.SetFrom(query.Query, "{{$schemaForeignTable}} as {{id 0 | $dot.Quotes}}")
 	return query
 }
 

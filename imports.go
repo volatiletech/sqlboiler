@@ -153,6 +153,7 @@ var defaultTemplateImports = imports{
 	thirdParty: importList{
 		`"github.com/pkg/errors"`,
 		`"github.com/vattle/sqlboiler/boil"`,
+		`"github.com/vattle/sqlboiler/queries"`,
 		`"github.com/vattle/sqlboiler/queries/qm"`,
 		`"github.com/vattle/sqlboiler/strmangle"`,
 	},
@@ -162,6 +163,7 @@ var defaultSingletonTemplateImports = map[string]imports{
 	"boil_queries": {
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/queries"`,
 			`"github.com/vattle/sqlboiler/queries/qm"`,
 		},
 	},

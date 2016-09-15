@@ -57,7 +57,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, wl),
 			strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}len(wl)+1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns),
 		)
-		cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
 	}
 
-	values := boil.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
+	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, cache.query)
@@ -105,7 +105,7 @@ func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
 
 // UpdateAll updates all rows with the specified column values.
 func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
-	boil.SetUpdate(q.Query, cols)
+	queries.SetUpdate(q.Query, cols)
 
 	_, err := q.Query.Exec()
 	if err != nil {

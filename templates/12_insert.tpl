@@ -41,7 +41,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	}
 	{{- end}}
 
-	nzDefaults := boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
 
 	key := makeCacheKey(whitelist, nzDefaults)
 	{{$varNameSingular}}InsertCacheMut.RLock()
@@ -57,11 +57,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			whitelist,
 		)
 
-		cache.valueMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)
+		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = boil.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, returnColumns)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	}
 
 	value := reflect.Indirect(reflect.ValueOf(o))
-	vals := boil.ValuesFromMapping(value, cache.valueMapping)
+	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 	{{if .UseLastInsertID}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, cache.query)
@@ -122,14 +122,14 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			fmt.Fprintln(boil.DebugWriter, identifierCols...)
 		}
 
-		err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 		if err != nil {
 			return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 		}
 	}
 	{{else}}
 	if len(cache.retMapping) != 0 {
-		err = exec.QueryRow(cache.query, vals...).Scan(boil.PtrsFromMapping(value, cache.retMapping)...)
+		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	} else {
 		_, err = exec.Exec(cache.query, vals...)
 	}

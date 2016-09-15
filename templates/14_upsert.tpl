@@ -41,7 +41,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		{{$varNameSingular}}Columns,
 		{{$varNameSingular}}ColumnsWithDefault,
 		{{$varNameSingular}}ColumnsWithoutDefault,
-		boil.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
+		queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
 		whitelist,
 	)
 	update := strmangle.UpdateColumnSet(
@@ -56,18 +56,18 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
 		copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
 	}
-	query := boil.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, whitelist)
+	query := queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, whitelist)
 	{{- else -}}
-	query := boil.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, whitelist)
+	query := queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, whitelist)
 	{{- end}}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, boil.GetStructValues(o, whitelist...))
+		fmt.Fprintln(boil.DebugWriter, queries.GetStructValues(o, whitelist...))
 	}
 
 	{{- if .UseLastInsertID}}
-	result, err := exec.Exec(query, boil.GetStructValues(o, whitelist...)...)
+	result, err := exec.Exec(query, queries.GetStructValues(o, whitelist...)...)
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
 	}
@@ -110,16 +110,16 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 			fmt.Fprintln(boil.DebugWriter, identifierCols...)
 		}
 
-		err = exec.QueryRow(retQuery, identifierCols...).Scan(boil.GetStructPointers(o, ret...)...)
+		err = exec.QueryRow(retQuery, identifierCols...).Scan(queries.GetStructPointers(o, ret...)...)
 		if err != nil {
 			return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 		}
 	}
 	{{- else}}
 	if len(ret) != 0 {
-		err = exec.QueryRow(query, boil.GetStructValues(o, whitelist...)...).Scan(boil.GetStructPointers(o, ret...)...)
+		err = exec.QueryRow(query, queries.GetStructValues(o, whitelist...)...).Scan(queries.GetStructPointers(o, ret...)...)
 	} else {
-		_, err = exec.Exec(query, boil.GetStructValues(o, whitelist...)...)
+		_, err = exec.Exec(query, queries.GetStructValues(o, whitelist...)...)
 	}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")

@@ -73,7 +73,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 		strmangle.Placeholders(dialect.IndexPlaceholders, len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
 	)
 
-	q := boil.SQL(exec, sql, args...)
+	q := queries.Raw(exec, sql, args...)
 
 	err := q.Bind(&{{$varNamePlural}})
 	if err != nil {

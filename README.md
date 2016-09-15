@@ -225,19 +225,19 @@ values that can go in that section:
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
 
-| Name | Postgres Default | Mysql Default
-| --- | --- | --- |
-| basedir            | none      | none     |
-| schema             | "public"  | *N/A*    |
-| pkgname            | "models"  | "models" |
-| output             | "models"  | "models" |
-| whitelist          | []        | []       |
-| blacklist          | []        | []       |
-| tag                | []        | []       |
-| debug              | false     | false    |
-| no-hooks           | false     | false    |
-| no-tests           | false     | false    |
-| no-auto-timestamps | false     | false    |
+| Name               | Defaults  |
+| ------------------ | --------- |
+| basedir            | none      |
+| schema             | "public" *(or dbname for mysql)* |
+| pkgname            | "models"  |
+| output             | "models"  |
+| whitelist          | []        |
+| blacklist          | []        |
+| tag                | []        |
+| debug              | false     |
+| no-hooks           | false     |
+| no-tests           | false     |
+| no-auto-timestamps | false     |
 
 Example:
 
@@ -582,7 +582,7 @@ in combination with your own custom, non-generated model.
 
 ### Binding
 
-For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/vattle/sqlboiler/boil#Bind).
+For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/vattle/sqlboiler/queries#Bind).
 
 The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
@@ -893,8 +893,8 @@ err := p1.Insert(db) // Insert the first pilot with name "Larry"
 // p1 now has an ID field set to 1
 
 var p2 models.Pilot
-p2.Name "Borris"
-err := p2.Insert(db) // Insert the second pilot with name "Borris"
+p2.Name "Boris"
+err := p2.Insert(db) // Insert the second pilot with name "Boris"
 // p2 now has an ID field set to 2
 
 var p3 models.Pilot

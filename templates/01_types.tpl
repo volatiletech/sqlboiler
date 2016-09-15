@@ -10,8 +10,11 @@ var (
 )
 
 type (
+	// {{$tableNameSingular}}Slice is an alias for a slice of pointers to {{$tableNameSingular}}.
+	// This should generally be used opposed to []{{$tableNameSingular}}.
 	{{$tableNameSingular}}Slice []*{{$tableNameSingular}}
 	{{if eq .NoHooks false -}}
+	// {{$tableNameSingular}}Hook is the signature for custom {{$tableNameSingular}} hook methods
 	{{$tableNameSingular}}Hook func(boil.Executor, *{{$tableNameSingular}}) error
 	{{- end}}
 

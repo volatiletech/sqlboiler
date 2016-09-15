@@ -111,6 +111,7 @@ func (o *{{$tableNameSingular}}) doAfterUpsertHooks(exec boil.Executor) (err err
 	return nil
 }
 
+// Add{{$tableNameSingular}}Hook registers your hook function for all future operations.
 func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
 	switch hookPoint {
 		case boil.BeforeInsertHook:

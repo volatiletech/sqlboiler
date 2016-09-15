@@ -88,7 +88,7 @@ func (q {{$varNameSingular}}Query) DeleteAll() error {
 	return nil
 }
 
-// DeleteAll deletes all rows in the slice, and panics on error.
+// DeleteAllGP deletes all rows in the slice, and panics on error.
 func (o {{$tableNameSingular}}Slice) DeleteAllGP() {
 	if err := o.DeleteAllG(); err != nil {
 	panic(boil.WrapErr(err))

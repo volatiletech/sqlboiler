@@ -37,18 +37,26 @@ func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
 	return nil
 }
 
+// ReloadAllGP refetches every row with matching primary key column values
+// and overwrites the original object slice with the newly updated slice.
+// Panics on error.
 func (o *{{$tableNameSingular}}Slice) ReloadAllGP() {
 	if err := o.ReloadAllG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
+// ReloadAllP refetches every row with matching primary key column values
+// and overwrites the original object slice with the newly updated slice.
+// Panics on error.
 func (o *{{$tableNameSingular}}Slice) ReloadAllP(exec boil.Executor) {
 	if err := o.ReloadAll(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
+// ReloadAllG refetches every row with matching primary key column values
+// and overwrites the original object slice with the newly updated slice.
 func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: empty {{$tableNameSingular}}Slice provided for reload all")

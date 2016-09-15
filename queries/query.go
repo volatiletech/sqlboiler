@@ -22,7 +22,7 @@ const (
 type Query struct {
 	executor   boil.Executor
 	dialect    *Dialect
-	plainSQL   plainSQL
+	rawSQL     rawSQL
 	load       []string
 	delete     bool
 	update     map[string]interface{}
@@ -71,7 +71,7 @@ type having struct {
 	args   []interface{}
 }
 
-type plainSQL struct {
+type rawSQL struct {
 	sql  string
 	args []interface{}
 }
@@ -82,20 +82,20 @@ type join struct {
 	args   []interface{}
 }
 
-// SQL makes a plainSQL query, usually for use with bind
-func SQL(exec boil.Executor, query string, args ...interface{}) *Query {
+// Raw makes a raw query, usually for use with bind
+func Raw(exec boil.Executor, query string, args ...interface{}) *Query {
 	return &Query{
 		executor: exec,
-		plainSQL: plainSQL{
+		rawSQL: rawSQL{
 			sql:  query,
 			args: args,
 		},
 	}
 }
 
-// SQLG makes a plainSQL query using the global boil.Executor, usually for use with bind
-func SQLG(query string, args ...interface{}) *Query {
-	return SQL(boil.GetDB(), query, args...)
+// RawG makes a raw query using the global boil.Executor, usually for use with bind
+func RawG(query string, args ...interface{}) *Query {
+	return Raw(boil.GetDB(), query, args...)
 }
 
 // Exec executes a query that does not need a row returned
@@ -167,7 +167,7 @@ func SetDialect(q *Query, dialect *Dialect) {
 
 // SetSQL on the query.
 func SetSQL(q *Query, sql string, args ...interface{}) {
-	q.plainSQL = plainSQL{sql: sql, args: args}
+	q.rawSQL = rawSQL{sql: sql, args: args}
 }
 
 // SetLoad on the query.

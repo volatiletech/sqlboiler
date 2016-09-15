@@ -36,12 +36,12 @@ func TestSetSQL(t *testing.T) {
 	q := &Query{}
 	SetSQL(q, "select * from thing", 5, 3)
 
-	if len(q.plainSQL.args) != 2 {
-		t.Errorf("Expected len 2, got %d", len(q.plainSQL.args))
+	if len(q.rawSQL.args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.rawSQL.args))
 	}
 
-	if q.plainSQL.sql != "select * from thing" {
-		t.Errorf("Was not expected string, got %s", q.plainSQL.sql)
+	if q.rawSQL.sql != "select * from thing" {
+		t.Errorf("Was not expected string, got %s", q.rawSQL.sql)
 	}
 }
 
@@ -374,11 +374,11 @@ func TestSQL(t *testing.T) {
 	t.Parallel()
 
 	q := SQL(&sql.DB{}, "thing", 5)
-	if q.plainSQL.sql != "thing" {
-		t.Errorf("Expected %q, got %s", "thing", q.plainSQL.sql)
+	if q.rawSQL.sql != "thing" {
+		t.Errorf("Expected %q, got %s", "thing", q.rawSQL.sql)
 	}
-	if q.plainSQL.args[0].(int) != 5 {
-		t.Errorf("Expected 5, got %v", q.plainSQL.args[0])
+	if q.rawSQL.args[0].(int) != 5 {
+		t.Errorf("Expected 5, got %v", q.rawSQL.args[0])
 	}
 }
 
@@ -386,11 +386,11 @@ func TestSQLG(t *testing.T) {
 	t.Parallel()
 
 	q := SQLG("thing", 5)
-	if q.plainSQL.sql != "thing" {
-		t.Errorf("Expected %q, got %s", "thing", q.plainSQL.sql)
+	if q.rawSQL.sql != "thing" {
+		t.Errorf("Expected %q, got %s", "thing", q.rawSQL.sql)
 	}
-	if q.plainSQL.args[0].(int) != 5 {
-		t.Errorf("Expected 5, got %v", q.plainSQL.args[0])
+	if q.rawSQL.args[0].(int) != 5 {
+		t.Errorf("Expected 5, got %v", q.rawSQL.args[0])
 	}
 }
 

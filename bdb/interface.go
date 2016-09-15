@@ -24,7 +24,7 @@ type Interface interface {
 	Close()
 
 	// Dialect helpers, these provide the values that will go into
-	// a boil.Dialect, so the query builder knows how to support
+	// a queries.Dialect, so the query builder knows how to support
 	// your database driver properly.
 	LeftQuote() byte
 	RightQuote() byte

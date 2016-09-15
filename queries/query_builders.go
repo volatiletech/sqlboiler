@@ -20,8 +20,8 @@ func buildQuery(q *Query) (string, []interface{}) {
 	var args []interface{}
 
 	switch {
-	case len(q.plainSQL.sql) != 0:
-		return q.plainSQL.sql, q.plainSQL.args
+	case len(q.rawSQL.sql) != 0:
+		return q.rawSQL.sql, q.rawSQL.args
 	case q.delete:
 		buf, args = buildDeleteQuery(q)
 	case len(q.update) > 0:
@@ -34,8 +34,8 @@ func buildQuery(q *Query) (string, []interface{}) {
 
 	// Cache the generated query for query object re-use
 	bufStr := buf.String()
-	q.plainSQL.sql = bufStr
-	q.plainSQL.args = args
+	q.rawSQL.sql = bufStr
+	q.rawSQL.args = args
 
 	return bufStr, args
 }

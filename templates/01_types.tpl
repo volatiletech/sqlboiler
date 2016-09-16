@@ -27,6 +27,7 @@ type (
 var (
 	{{$varNameSingular}}Type = reflect.TypeOf(&{{$tableNameSingular}}{})
 	{{$varNameSingular}}Mapping = queries.MakeStructMapping({{$varNameSingular}}Type)
+	{{$varNameSingular}}PrimaryKeyMapping, _ = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, {{$varNameSingular}}PrimaryKeyColumns)
 	{{$varNameSingular}}InsertCacheMut sync.RWMutex
 	{{$varNameSingular}}InsertCache = make(map[string]insertCache)
 	{{$varNameSingular}}UpdateCacheMut sync.RWMutex

@@ -104,17 +104,6 @@ func TestCount(t *testing.T) {
   {{- end -}}
 }
 
-func TestHelpers(t *testing.T) {
-  {{- range $index, $table := .Tables}}
-  {{- if $table.IsJoinTable -}}
-  {{- else -}}
-  {{- $tableName := $table.Name | plural | titleCase -}}
-  t.Run("{{$tableName}}", test{{$tableName}}InPrimaryKeyArgs)
-  t.Run("{{$tableName}}", test{{$tableName}}SliceInPrimaryKeyArgs)
-  {{end -}}
-  {{- end -}}
-}
-
 {{if eq .NoHooks false -}}
 func TestHooks(t *testing.T) {
   {{- range $index, $table := .Tables}}

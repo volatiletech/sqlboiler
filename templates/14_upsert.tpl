@@ -145,7 +145,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	if lastID != 0 {
 		{{- $colName := index .Table.PKey.Columns 0 -}}
 		{{- $col := .Table.GetColumn $colName -}}
-		o.{{$colName | singular | titleCase}} = {{$col.Type}}(lastID)
+		{{- $colTitled := $colName | singular | titleCase}}
+		o.{{$colTitled}} = {{$col.Type}}(lastID)
 		identifierCols = []interface{}{lastID}
 	} else {
 		identifierCols = []interface{}{
@@ -155,7 +156,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		}
 	}
 
-	if lastID != 0 && len(cache.retMapping) == 1 {
+	if lastID == 0 || len(cache.retMapping) != 1 || cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, cache.retQuery)
 			fmt.Fprintln(boil.DebugWriter, identifierCols...)

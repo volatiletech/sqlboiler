@@ -1,6 +1,6 @@
 {{- define "relationship_to_one_setops_test_helper" -}}
 {{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
-{{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
+{{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
 func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	var err error
 

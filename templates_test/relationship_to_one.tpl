@@ -1,6 +1,9 @@
 {{- define "relationship_to_one_test_helper"}}
 {{- $dot := .Dot -}}
 {{- with .Rel -}}
+{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
+{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}
 func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
@@ -39,10 +42,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 		t.Fatal(err)
 	}
 
-	{{$foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
-	{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-	{{- $type := $column.Type -}}
-	{{if eq $type "[]byte" -}}
+	{{if $usesBytes -}}
 	if 0 == bytes.Compare(check.{{.Function.ForeignAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
 	{{else -}}
 	if check.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {

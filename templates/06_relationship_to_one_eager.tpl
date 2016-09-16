@@ -4,6 +4,9 @@
 	{{- with .Rel -}}
 	{{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
 	{{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
+	{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
+	{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+	{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -67,11 +70,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			{{/* Use the foreign table (the one without the fkey) to avoid null types in the id type */}}
-			{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
-			{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-			{{- $type := $column.Type -}}
-			{{if eq $type "[]byte" -}}
+			{{if $usesBytes -}}
 			if 0 == bytes.Compare(local.{{.Function.LocalAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
 			{{else -}}
 			if local.{{.Function.LocalAssignment}} == foreign.{{.Function.ForeignAssignment}} {

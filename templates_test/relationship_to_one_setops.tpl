@@ -4,8 +4,8 @@
 {{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
 {{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
-{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-{{- $type := $column.Type -}}
+{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}
 func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -39,7 +39,7 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 			t.Fatal(err)
 		}
 
-		{{if eq $type "[]byte" -}}
+		{{if $usesBytes -}}
 		if 0 != bytes.Compare(a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}}) {
 		{{else -}}
 		if a.{{.Function.LocalAssignment}} != x.{{.Function.ForeignAssignment}} {
@@ -57,7 +57,7 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 			t.Fatal("failed to reload", err)
 		}
 
-		{{if eq $type "[]byte" -}}
+		{{if $usesBytes -}}
 		if 0 != bytes.Compare(a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}}) {
 		{{else -}}
 		if a.{{.Function.LocalAssignment}} != x.{{.Function.ForeignAssignment}} {

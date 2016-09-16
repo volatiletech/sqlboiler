@@ -9,8 +9,8 @@
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
-		{{- $column := $dot.Table.GetColumn .Column -}}
-		{{- $type := $column.Type}}
+		{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
+		{{- $usesBytes := eq "[]byte" $fkeyCol.Type}}
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -64,7 +64,7 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
 		}
 		{{- else}}
 
-		{{if eq $type "[]byte" -}}
+		{{if $usesBytes -}}
 		if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}}) {
 			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}})
 		}
@@ -184,7 +184,7 @@ func test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}}(t *testing.
 	if c.{{$rel.ForeignTable.ColumnNameGo}}.Valid {
 		t.Error("want c's foreign key value to be nil")
 	}
-	{{if eq $type "[]byte" -}}
+	{{if $usesBytes -}}
 	if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}}) {
 		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}})
 	}

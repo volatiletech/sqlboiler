@@ -8,6 +8,8 @@
 {{- template "relationship_to_one_test_helper" (preserveDot $dot $txt) -}}
 		{{- else -}}
 		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
+		{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
+		{{- $usesBytes := eq "[]byte" $fkeyCol.Type}}
 func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -60,9 +62,7 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range {{$varname}} {
-		{{- $column := $dot.Table.GetColumn .Column -}}
-		{{- $type := $column.Type}}
-		{{if eq $type "[]byte" -}}
+		{{if $usesBytes -}}
 		if 0 == bytes.Compare(v.{{$rel.Function.ForeignAssignment}}, b.{{$rel.Function.ForeignAssignment}}) {
 			bFound = true
 		}

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -353,8 +354,15 @@ func MakeStringMap(types map[string]string) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
+	keys := make([]string, 0, len(types))
+	for k := range types {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	c := 0
-	for k, v := range types {
+	for _, k := range keys {
+		v := types[k]
 		buf.WriteString(fmt.Sprintf(`"%s": "%s"`, k, v))
 		if c < len(types)-1 {
 			buf.WriteString(", ")

@@ -21,12 +21,12 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
 	var b, c, d, e {{$rel.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	foreigners := []*{{$rel.ForeignTable.NameGo}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -116,12 +116,12 @@ func test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}}(t *testing.
 	var b, c, d, e {{$rel.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	foreigners := []*{{$rel.ForeignTable.NameGo}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -232,12 +232,12 @@ func test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}}(t *testi
 	var b, c, d, e {{$rel.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	foreigners := []*{{$rel.ForeignTable.NameGo}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}

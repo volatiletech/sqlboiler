@@ -43,7 +43,7 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 	}
 
 	{{if $usesBytes -}}
-	if 0 == bytes.Compare(check.{{.Function.ForeignAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
+	if 0 != bytes.Compare(check.{{.Function.ForeignAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
 	{{else -}}
 	if check.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {
 	{{end -}}

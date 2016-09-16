@@ -131,20 +131,17 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
 	}
 
+	var lastID int64
+	var identifierCols []interface{}
 	if len(cache.retMapping) == 0 {
-	{{if not .NoHooks -}}
-		return o.doAfterUpsertHooks(exec)
-	{{else -}}
-		return nil
-	{{end -}}
+		goto CacheNoHooks
 	}
 
-	lastID, err := result.LastInsertId()
+	lastID, err = result.LastInsertId()
 	if err != nil {
 		return ErrSyncFail
 	}
 
-	var identifierCols []interface{}
 	if lastID != 0 {
 		{{- $colName := index .Table.PKey.Columns 0 -}}
 		{{- $col := .Table.GetColumn $colName -}}
@@ -180,6 +177,9 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	}
 	{{- end}}
 
+{{if .UseLastInsertID -}}
+CacheNoHooks:
+{{end -}}
 	if !cached {
 		{{$varNameSingular}}UpsertCacheMut.Lock()
 		{{$varNameSingular}}UpsertCache[key] = cache

@@ -67,7 +67,15 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
+			{{/* Use the foreign table (the one without the fkey) to avoid null types in the id type */}}
+			{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
+			{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+			{{- $type := $column.Type -}}
+			{{if eq $type "[]byte" -}}
+			if 0 == bytes.Compare(local.{{.Function.LocalAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
+			{{else -}}
 			if local.{{.Function.LocalAssignment}} == foreign.{{.Function.ForeignAssignment}} {
+			{{end -}}
 				if local.R == nil {
 					local.R = &{{$varNameSingular}}R{}
 				}

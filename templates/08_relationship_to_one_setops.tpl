@@ -1,5 +1,5 @@
 {{- define "relationship_to_one_setops_helper" -}}
-	{{- $tmplData := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
+	{{- $dot := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
 	{{- with .Rel -}}
 		{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 		{{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
@@ -75,7 +75,14 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
 	related.R.{{.Function.ForeignName}} = nil
 	{{else -}}
 	for i, ri := range related.R.{{.Function.ForeignName}} {
+		{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
+		{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+		{{- $type := $column.Type}}
+		{{if eq $type "[]byte" -}}
+		if 0 != bytes.Compare({{.Function.Receiver}}.{{.Function.LocalAssignment}}, ri.{{.Function.LocalAssignment}}) {
+		{{else -}}
 		if {{.Function.Receiver}}.{{.Function.LocalAssignment}} != ri.{{.Function.LocalAssignment}} {
+		{{end -}}
 			continue
 		}
 
@@ -90,8 +97,8 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
 
 	return nil
 }
-		{{- end -}}{{/* if foreignkey nullable */}}
-	{{end -}}{{/* end with */}}
+{{end -}}{{/* if foreignkey nullable */}}
+{{- end -}}{{/* end with */}}
 {{- end -}}{{/* end define */}}
 
 {{- /* Begin execution of template for one-to-one setops */ -}}

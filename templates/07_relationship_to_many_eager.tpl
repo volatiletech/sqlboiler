@@ -106,11 +106,17 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		return nil
 	}
 
+	{{$column := $dot.Table.GetColumn .Column -}}
+	{{- $type := $column.Type -}}
 	{{if .ToJoinTable -}}
 	for i, foreign := range resultSlice {
 		localJoinCol := localJoinCols[i]
 		for _, local := range slice {
+			{{if eq $type "[]byte" -}}
+			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, localJoinCol) {
+			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
+			{{end -}}
 				if local.R == nil {
 					local.R = &{{$varNameSingular}}R{}
 				}
@@ -122,7 +128,11 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	{{else -}}
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
+			{{if eq $type "[]byte" -}}
+			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
+			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
+			{{end -}}
 				if local.R == nil {
 					local.R = &{{$varNameSingular}}R{}
 				}

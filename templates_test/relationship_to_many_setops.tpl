@@ -8,8 +8,9 @@
 		{{- else -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $rel := textsFromRelationship $dot.Tables $table .}}
-
+		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
+		{{- $column := $dot.Table.GetColumn .Column -}}
+		{{- $type := $column.Type}}
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -63,12 +64,21 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
 		}
 		{{- else}}
 
+		{{if eq $type "[]byte" -}}
+		if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}}) {
+			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}})
+		}
+		if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, second.{{$rel.Function.ForeignAssignment}}) {
+			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, second.{{$rel.Function.ForeignAssignment}})
+		}
+		{{else -}}
 		if a.{{$rel.Function.LocalAssignment}} != first.{{$rel.Function.ForeignAssignment}} {
 			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}})
 		}
 		if a.{{$rel.Function.LocalAssignment}} != second.{{$rel.Function.ForeignAssignment}} {
 			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, second.{{$rel.Function.ForeignAssignment}})
 		}
+		{{- end}}
 
 		if first.R.{{$rel.Function.ForeignName}} != &a {
 			t.Error("relationship was not added properly to the foreign slice")
@@ -174,12 +184,21 @@ func test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}}(t *testing.
 	if c.{{$rel.ForeignTable.ColumnNameGo}}.Valid {
 		t.Error("want c's foreign key value to be nil")
 	}
+	{{if eq $type "[]byte" -}}
+	if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}}) {
+		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}})
+	}
+	if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, e.{{$rel.Function.ForeignAssignment}}) {
+		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, e.{{$rel.Function.ForeignAssignment}})
+	}
+	{{else -}}
 	if a.{{$rel.Function.LocalAssignment}} != d.{{$rel.Function.ForeignAssignment}} {
 		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}})
 	}
 	if a.{{$rel.Function.LocalAssignment}} != e.{{$rel.Function.ForeignAssignment}} {
 		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, e.{{$rel.Function.ForeignAssignment}})
 	}
+	{{- end}}
 
 	if b.R.{{$rel.Function.ForeignName}} != nil {
 		t.Error("relationship was not removed properly from the foreign struct")

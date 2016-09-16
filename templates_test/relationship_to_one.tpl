@@ -1,4 +1,6 @@
 {{- define "relationship_to_one_test_helper"}}
+{{- $dot := .Dot -}}
+{{- with .Rel -}}
 func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
@@ -37,7 +39,14 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 		t.Fatal(err)
 	}
 
+	{{$foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
+	{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+	{{- $type := $column.Type -}}
+	{{if eq $type "[]byte" -}}
+	if 0 == bytes.Compare(check.{{.Function.ForeignAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
+	{{else -}}
 	if check.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {
+	{{end -}}
 		t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, check.{{.Function.ForeignAssignment}})
 	}
 
@@ -59,11 +68,12 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 }
 
 {{end -}}
+{{- end -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-{{- template "relationship_to_one_test_helper" $rel -}}
+		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+{{- template "relationship_to_one_test_helper" (preserveDot $dot $txt) -}}
 {{end -}}
 {{- end -}}

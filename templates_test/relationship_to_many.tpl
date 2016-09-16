@@ -4,7 +4,8 @@
 	{{- $table := .Table }}
 	{{- range .Table.ToManyRelationships -}}
 		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-{{- template "relationship_to_one_test_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
+		{{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+{{- template "relationship_to_one_test_helper" (preserveDot $dot $txt) -}}
 		{{- else -}}
 		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
 func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
@@ -59,12 +60,23 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range {{$varname}} {
+		{{- $column := $dot.Table.GetColumn .Column -}}
+		{{- $type := $column.Type}}
+		{{if eq $type "[]byte" -}}
+		if 0 == bytes.Compare(v.{{$rel.Function.ForeignAssignment}}, b.{{$rel.Function.ForeignAssignment}}) {
+			bFound = true
+		}
+		if 0 == bytes.Compare(v.{{$rel.Function.ForeignAssignment}}, c.{{$rel.Function.ForeignAssignment}}) {
+			cFound = true
+		}
+		{{else -}}
 		if v.{{$rel.Function.ForeignAssignment}} == b.{{$rel.Function.ForeignAssignment}} {
 			bFound = true
 		}
 		if v.{{$rel.Function.ForeignAssignment}} == c.{{$rel.Function.ForeignAssignment}} {
 			cFound = true
 		}
+		{{end -}}
 	}
 
 	if !bFound {

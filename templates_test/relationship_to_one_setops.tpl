@@ -1,6 +1,11 @@
 {{- define "relationship_to_one_setops_test_helper" -}}
+{{- $dot := .Dot -}}
+{{- with .Rel -}}
 {{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
+{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
+{{- $column := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
+{{- $type := $column.Type -}}
 func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -34,7 +39,11 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 			t.Fatal(err)
 		}
 
+		{{if eq $type "[]byte" -}}
+		if 0 != bytes.Compare(a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}}) {
+		{{else -}}
 		if a.{{.Function.LocalAssignment}} != x.{{.Function.ForeignAssignment}} {
+		{{end -}}
 			t.Error("foreign key was wrong value", a.{{.Function.LocalAssignment}})
 		}
 		if a.R.{{.Function.Name}} != x {
@@ -48,7 +57,11 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 			t.Fatal("failed to reload", err)
 		}
 
+		{{if eq $type "[]byte" -}}
+		if 0 != bytes.Compare(a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}}) {
+		{{else -}}
 		if a.{{.Function.LocalAssignment}} != x.{{.Function.ForeignAssignment}} {
+		{{end -}}
 			t.Error("foreign key was wrong value", a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}})
 		}
 
@@ -120,14 +133,14 @@ func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function
 	}
 	{{end -}}
 }
-{{end -}}
-{{- end -}}
+{{end -}}{{/* end if foreign key nullable */}}
+{{- end -}}{{/* with rel */}}
+{{- end -}}{{/* define */}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table .}}
-
-{{template "relationship_to_one_setops_test_helper" $rel -}}
+		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table .}}
+{{template "relationship_to_one_setops_test_helper" (preserveDot $dot $txt) -}}
 {{- end -}}
 {{- end -}}

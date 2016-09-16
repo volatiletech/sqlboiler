@@ -35,6 +35,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	}
 	{{- end}}
 
+	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
+
 	// Build cache key in-line uglily - mysql vs postgres problems
 	buf := strmangle.GetBuffer()
 	{{if ne .DriverName "mysql" -}}
@@ -56,6 +58,10 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	for _, c := range whitelist {
 		buf.WriteString(c)
 	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
@@ -71,7 +77,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
-			queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
+			nzDefaults,
 			whitelist,
 		)
 		update := strmangle.UpdateColumnSet(

@@ -4,7 +4,8 @@
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
 		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-{{- template "relationship_to_one_setops_test_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
+		{{- $txt := (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
+{{- template "relationship_to_one_setops_test_helper" (preserveDot $dot $txt) -}}
 		{{- else -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}

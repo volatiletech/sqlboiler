@@ -2,7 +2,6 @@ CREATE TABLE magic (
 	id				int PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	id_two		int NOT NULL,
 	id_three	int,
-
 	bool_zero   bool,
 	bool_one    bool NULL,
 	bool_two		bool NOT NULL,
@@ -10,7 +9,6 @@ CREATE TABLE magic (
 	bool_four	  bool NULL DEFAULT TRUE,
 	bool_five	  bool NOT NULL DEFAULT FALSE,
 	bool_six		bool NOT NULL DEFAULT TRUE,
-
 	string_zero	  VARCHAR(1),
 	string_one		VARCHAR(1) NULL,
 	string_two		VARCHAR(1) NOT NULL,
@@ -23,7 +21,6 @@ CREATE TABLE magic (
 	string_nine	  VARCHAR(1000) NOT NULL DEFAULT 'abcdefgh',
 	string_ten		VARCHAR(1000) NULL DEFAULT '',
 	string_eleven VARCHAR(1000) NOT NULL DEFAULT '',
-
 	big_int_zero	bigint,
 	big_int_one	  bigint NULL,
 	big_int_two	  bigint NOT NULL,
@@ -31,7 +28,6 @@ CREATE TABLE magic (
 	big_int_four	bigint NOT NULL DEFAULT 222222,
 	big_int_five	bigint NULL DEFAULT 0,
 	big_int_six	  bigint NOT NULL DEFAULT 0,
-
 	int_zero	int,
 	int_one	  int NULL,
 	int_two	  int NOT NULL,
@@ -39,7 +35,6 @@ CREATE TABLE magic (
 	int_four	int NOT NULL DEFAULT 444444,
 	int_five	int NULL DEFAULT 0,
 	int_six	  int NOT NULL DEFAULT 0,
-
 	float_zero	float,
 	float_one	  float,
 	float_two	  float(2,1),
@@ -50,7 +45,6 @@ CREATE TABLE magic (
 	float_seven float(2,1) NOT NULL DEFAULT 1.1,
 	float_eight float(2,1) NULL DEFAULT 0.0,
 	float_nine	float(2,1) NULL DEFAULT 0.0,
-
 	bytea_zero	binary,
 	bytea_one	  binary NULL,
 	bytea_two	  binary NOT NULL,
@@ -60,27 +54,16 @@ CREATE TABLE magic (
 	bytea_six	  binary(100) NULL DEFAULT 'hgfedcbahgfedcbahgfedcba',
 	bytea_seven binary NOT NULL DEFAULT '',
 	bytea_eight binary NOT NULL DEFAULT '',
-
 	time_zero			  timestamp,
 	time_one				date,
 	time_two				timestamp NULL DEFAULT NULL,
 	time_three			timestamp NULL,
-	time_four			  timestamp NOT NULL DEFAULT 0,
-	time_five			  timestamp NULL DEFAULT '1999-01-08 04:05:06.789',
-	time_six				timestamp NULL DEFAULT '1999-01-08 04:05:06.789 -8:00',
-	time_seven			timestamp NULL DEFAULT 'January 8 04:05:06 1999 PST',
-	time_eight			timestamp NOT NULL DEFAULT '1999-01-08 04:05:06.789',
-	time_nine			  timestamp NOT NULL DEFAULT '1999-01-08 04:05:06.789 -8:00',
-	time_ten				timestamp NOT NULL DEFAULT 'January 8 04:05:06 1999 PST',
+	time_five			  timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+	time_nine			  timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	time_eleven		  date NULL,
 	time_twelve		  date NOT NULL,
-	time_thirteen	  date NULL DEFAULT '1999-01-08',
-	time_fourteen	  date NULL DEFAULT 'January 8, 1999',
 	time_fifteen		date NULL DEFAULT '19990108',
 	time_sixteen		date NOT NULL DEFAULT '1999-01-08',
-	time_seventeen	date NOT NULL DEFAULT 'January 8, 1999',
-	time_eighteen	  date NOT NULL DEFAULT '19990108',
-
 	aa	json NULL,
 	bb	json NOT NULL,
 	kk	double precision NULL,
@@ -110,7 +93,7 @@ CREATE TABLE magic (
 	iii	datetime NULL,
 	jjj	datetime NOT NULL,
 	kkk	timestamp NULL,
-	lll	timestamp NOT NULL DEFAULT 0,
+	lll	timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   mmm binary NULL,
   nnn binary NOT NULL,
   ooo varbinary(100) NULL,
@@ -167,7 +150,7 @@ create table dragon_toys (
 
 create table spider_toys (
 	spider_id varchar(100) primary key,
-	name      varchar(100),
+	name      varchar(100)
 );
 
 create table pals (
@@ -186,14 +169,15 @@ create table enemies (
 	enemies varchar(100) primary key
 );
 
-create table elephants (
-	id        binary primary key,
-  name      binary not null,
-  tiger_id  binary null unique,
-  foreign key (stuff_id) references tigers (id)
-);
-
 create table tigers (
   id    binary primary key,
   name  binary null
 );
+
+create table elephants (
+	id        binary primary key,
+  name      binary not null,
+  tiger_id  binary null unique,
+  foreign key (tiger_id) references tigers (id)
+);
+

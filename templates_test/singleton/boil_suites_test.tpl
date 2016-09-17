@@ -252,8 +252,10 @@ func TestToManyRemove(t *testing.T) {
           {{- $rel := textsFromRelationship $dot.Tables $table . -}}
           {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
             {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
+				{{- if $oneToOne.ForeignKey.Nullable -}}
     t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneRemoveOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-          {{else -}}
+				{{end -}}
+          {{- else -}}
     t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}})
           {{end -}}{{- /* if unique */ -}}
         {{- end -}}{{- /* if foreign column nullable */ -}}

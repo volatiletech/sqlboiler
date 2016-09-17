@@ -9,7 +9,7 @@
 		{{- else -}}
 		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
 		{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
-		{{- $usesBytes := or (eq "[]byte" $fkeyCol.Type) (eq "null.Bytes" $fkeyCol.Type)}}
+		{{- $usesBytes := eq "[]byte" $fkeyCol.Type}}
 func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())

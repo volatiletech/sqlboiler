@@ -5,7 +5,7 @@
 		{{- $localNameSingular := .ForeignKey.Table | singular | camelCase -}}
 		{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
 		{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-		{{- $usesBytes := or (eq "[]byte" $foreignTableFKeyCol.Type) (eq "null.Bytes" $foreignTableFKeyCol.Type)}}
+		{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}
 // Set{{.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to related.
 // Adds {{.Function.Receiver}} to related.R.{{.Function.ForeignName}}.

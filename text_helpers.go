@@ -30,9 +30,10 @@ type RelationshipToOneTexts struct {
 		Name        string
 		ForeignName string
 
-		Varname  string
-		Receiver string
-		OneToOne bool
+		Varname   string
+		Receiver  string
+		OneToOne  bool
+		UsesBytes bool
 
 		LocalAssignment   string
 		ForeignAssignment string
@@ -70,13 +71,16 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 		r.Function.LocalAssignment = strmangle.TitleCase(fkey.Column)
 	}
 
+	foreignTable := bdb.GetTable(tables, fkey.ForeignTable)
+	foreignColumn := foreignTable.GetColumn(fkey.ForeignColumn)
+
 	if fkey.ForeignColumnNullable {
-		foreignTable := bdb.GetTable(tables, fkey.ForeignTable)
-		col := foreignTable.GetColumn(fkey.ForeignColumn)
-		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(fkey.ForeignColumn), strings.TrimPrefix(col.Type, "null."))
+		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(fkey.ForeignColumn), strings.TrimPrefix(foreignColumn.Type, "null."))
 	} else {
 		r.Function.ForeignAssignment = strmangle.TitleCase(fkey.ForeignColumn)
 	}
+
+	r.Function.UsesBytes = foreignColumn.Type == "[]byte"
 
 	return r
 }
@@ -99,6 +103,9 @@ func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table
 	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(toMany.ForeignTable))
 	rel.Function.ForeignName = mkFunctionName(strmangle.Singular(toMany.Table), strmangle.TitleCase(strmangle.Singular(toMany.Table)), toMany.ForeignColumn, false)
 	rel.Function.OneToOne = true
+
+	col := table.GetColumn(toMany.Column)
+	rel.Function.UsesBytes = col.Type == "[]byte"
 	return rel
 }
 
@@ -123,6 +130,8 @@ type RelationshipToManyTexts struct {
 		Name        string
 		ForeignName string
 		Receiver    string
+
+		UsesBytes bool
 
 		LocalAssignment   string
 		ForeignAssignment string
@@ -154,8 +163,8 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 	}
 	r.Function.ForeignName = strmangle.TitleCase(plurality(strings.TrimSuffix(foreignNamingColumn, "_id")))
 
+	col := table.GetColumn(rel.Column)
 	if rel.Nullable {
-		col := table.GetColumn(rel.Column)
 		r.Function.LocalAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.Column), strings.TrimPrefix(col.Type, "null."))
 	} else {
 		r.Function.LocalAssignment = strmangle.TitleCase(rel.Column)
@@ -163,11 +172,13 @@ func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRe
 
 	if rel.ForeignColumnNullable {
 		foreignTable := bdb.GetTable(tables, rel.ForeignTable)
-		col := foreignTable.GetColumn(rel.ForeignColumn)
-		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.ForeignColumn), strings.TrimPrefix(col.Type, "null."))
+		foreignColumn := foreignTable.GetColumn(rel.ForeignColumn)
+		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.ForeignColumn), strings.TrimPrefix(foreignColumn.Type, "null."))
 	} else {
 		r.Function.ForeignAssignment = strmangle.TitleCase(rel.ForeignColumn)
 	}
+
+	r.Function.UsesBytes = col.Type == "[]byte"
 
 	return r
 }

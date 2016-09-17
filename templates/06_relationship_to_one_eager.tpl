@@ -3,10 +3,7 @@
 	{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
 	{{- with .Rel -}}
 	{{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
-	{{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
-	{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
-	{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-	{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type}}
+	{{- $slice := printf "%sSlice" .LocalTable.NameGo}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -70,7 +67,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			{{if $usesBytes -}}
+			{{if .Function.UsesBytes -}}
 			if 0 == bytes.Compare(local.{{.Function.LocalAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
 			{{else -}}
 			if local.{{.Function.LocalAssignment}} == foreign.{{.Function.ForeignAssignment}} {

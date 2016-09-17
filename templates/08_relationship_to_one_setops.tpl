@@ -2,10 +2,7 @@
 	{{- $dot := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
 	{{- with .Rel -}}
 		{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
-		{{- $localNameSingular := .ForeignKey.Table | singular | camelCase -}}
-		{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
-		{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-		{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}
+		{{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
 // Set{{.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to related.
 // Adds {{.Function.Receiver}} to related.R.{{.Function.ForeignName}}.
@@ -78,7 +75,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
 	related.R.{{.Function.ForeignName}} = nil
 	{{else -}}
 	for i, ri := range related.R.{{.Function.ForeignName}} {
-		{{if $usesBytes -}}
+		{{if .Function.UsesBytes -}}
 		if 0 != bytes.Compare({{.Function.Receiver}}.{{.Function.LocalAssignment}}, ri.{{.Function.LocalAssignment}}) {
 		{{else -}}
 		if {{.Function.Receiver}}.{{.Function.LocalAssignment}} != ri.{{.Function.LocalAssignment}} {

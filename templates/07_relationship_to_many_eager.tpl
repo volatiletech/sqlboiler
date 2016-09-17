@@ -13,9 +13,7 @@
 			{{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
 			{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 			{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
-			{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable -}}
-			{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
-			{{- $usesBytes := eq "[]byte" $fkeyCol.Type -}}
+			{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -112,7 +110,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	for i, foreign := range resultSlice {
 		localJoinCol := localJoinCols[i]
 		for _, local := range slice {
-			{{if $usesBytes -}}
+			{{if $txt.Function.UsesBytes -}}
 			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, localJoinCol) {
 			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
@@ -128,7 +126,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	{{else -}}
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			{{if $usesBytes -}}
+			{{if $txt.Function.UsesBytes -}}
 			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
 			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {

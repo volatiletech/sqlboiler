@@ -7,9 +7,7 @@
 		{{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
 {{- template "relationship_to_one_test_helper" (preserveDot $dot $txt) -}}
 		{{- else -}}
-		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
-		{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
-		{{- $usesBytes := eq "[]byte" $fkeyCol.Type}}
+		{{- $rel := textsFromRelationship $dot.Tables $table .}}
 func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -23,8 +21,8 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	}
 
 	seed := randomize.NewSeed()
-	randomize.Struct(seed, &b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false{{if not $usesBytes}}, "{{.ForeignColumn}}"{{end}})
-	randomize.Struct(seed, &c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false{{if not $usesBytes}}, "{{.ForeignColumn}}"{{end}})
+	randomize.Struct(seed, &b, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false{{if not $rel.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
+	randomize.Struct(seed, &c, {{$rel.ForeignTable.NameSingular | camelCase}}DBTypes, false{{if not $rel.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
 	{{if .Nullable -}}
 	a.{{.Column | titleCase}}.Valid = true
 	{{- end}}
@@ -62,7 +60,7 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range {{$varname}} {
-		{{if $usesBytes -}}
+		{{if $rel.Function.UsesBytes -}}
 		if 0 == bytes.Compare(v.{{$rel.Function.ForeignAssignment}}, b.{{$rel.Function.ForeignAssignment}}) {
 			bFound = true
 		}

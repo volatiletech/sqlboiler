@@ -2,7 +2,7 @@
 {{- $dot := .Dot -}}
 {{- with .Rel -}}
 {{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
-{{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
+{{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 {{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
 {{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
 {{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}

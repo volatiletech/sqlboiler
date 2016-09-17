@@ -100,20 +100,23 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	if err != nil {
 		return ErrSyncFail
 	}
-
-	if lastID != 0 {
-		{{- $colName := index .Table.PKey.Columns 0 -}}
-		{{- $col := .Table.GetColumn $colName -}}
-		{{- $colTitled := $colName | singular | titleCase}}
-		o.{{$colTitled}} = {{$col.Type}}(lastID)
-		identifierCols = []interface{}{lastID}
-	} else {
-		identifierCols = []interface{}{
-			{{range .Table.PKey.Columns -}}
-			o.{{. | singular | titleCase}},
-			{{end -}}
-		}
+	
+	{{- $colName := index .Table.PKey.Columns 0 -}}
+	{{- $col := .Table.GetColumn $colName -}}
+	{{- $colTitled := $colName | singular | titleCase}}
+	{{if eq 1 (len .Table.PKey.Columns)}}
+		{{$cnames :=  .Table.Columns | filterColumnsByDefault true | columnNames}}
+		{{if setInclude $colName $cnames}}
+	o.{{$colTitled}} = {{$col.Type}}(lastID)
+	identifierCols = []interface{}{lastID}
+		{{end}}
+	{{else}}
+	identifierCols = []interface{}{
+		{{range .Table.PKey.Columns -}}
+		o.{{. | singular | titleCase}},
+		{{end -}}
 	}
+	{{end}}
 
 	if lastID == 0 || len(cache.retMapping) != 1 || cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
 		if boil.DebugMode {

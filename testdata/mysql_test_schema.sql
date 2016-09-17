@@ -181,3 +181,23 @@ create table elephants (
   foreign key (tiger_id) references tigers (id)
 );
 
+create table wolves (
+	id        binary primary key,
+  name      binary not null,
+  tiger_id  binary not null unique,
+  foreign key (tiger_id) references tigers (id)
+);
+
+create table ants (
+	id        binary primary key,
+  name      binary not null,
+  tiger_id  binary not null,
+  foreign key (tiger_id) references tigers (id)
+);
+
+create table worms (
+	id        binary primary key,
+  name      binary not null,
+  tiger_id  binary null,
+  foreign key (tiger_id) references tigers (id)
+);

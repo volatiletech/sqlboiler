@@ -214,16 +214,35 @@ create table fun_arrays (
 	primary key (id)
 );
 
-create table elephants (
-	id    bytea,
-  name bytea not null,
-  tiger_id bytea null unique,
-  primary key (id),
-  foreign key (stuff_id) references tigers (id)
+create table tigers (
+  id    bytea primary key,
+  name  bytea null
 );
 
-create table tigers (
-  id        bytea,
-  name bytea null,
-  primary key (id)
+create table elephants (
+	id        bytea primary key,
+  name      bytea not null,
+  tiger_id  bytea null unique,
+  foreign key (tiger_id) references tigers (id)
+);
+
+create table wolves (
+	id        bytea primary key,
+  name      bytea not null,
+  tiger_id  bytea not null unique,
+  foreign key (tiger_id) references tigers (id)
+);
+
+create table ants (
+	id        bytea primary key,
+  name      bytea not null,
+  tiger_id  bytea not null,
+  foreign key (tiger_id) references tigers (id)
+);
+
+create table worms (
+	id        bytea primary key,
+  name      bytea not null,
+  tiger_id  bytea null,
+  foreign key (tiger_id) references tigers (id)
 );

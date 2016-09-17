@@ -91,12 +91,12 @@ Table of Contents
 - Relationships/Associations
 - Eager loading (recursive)
 - Custom struct tags
-- Schema support
 - Transactions
 - Raw SQL fallback
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
-- Postgres 1d arrays, json, hstore & more
+- Schemas support
+- 1d arrays, json, hstore & more
 
 ### Supported Databases
 
@@ -112,7 +112,7 @@ For a comprehensive list of available operations and examples please see [Featur
 ```go
 import (
   // Import this so we don't have to use qm.Limit etc.
-  . "github.com/vattle/sqlboiler/boil/qm"
+  . "github.com/vattle/sqlboiler/queries/qm"
 )
 
 // Open handle to database like normal
@@ -120,6 +120,12 @@ db, err := sql.Open("postgres", "dbname=fun user=abc")
 if err != nil {
   return err
 }
+
+// If you don't want to pass in db to all generated methods 
+// you can use boil.SetDB to set it globally, and then use 
+// the G variant methods like so:
+boil.SetDB(db)
+users, err := models.UsersG().All()
 
 // Query all users
 users, err := models.Users(db).All()

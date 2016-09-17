@@ -3,7 +3,7 @@
 {{- with .Rel -}}
 {{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
 {{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}
+{{- $usesBytes := or (eq "[]byte" $foreignTableFKeyCol.Type) (eq "null.Bytes" $foreignTableFKeyCol.Type)}}
 func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()

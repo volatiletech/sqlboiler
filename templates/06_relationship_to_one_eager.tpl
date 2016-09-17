@@ -6,7 +6,7 @@
 	{{- $slice := printf "%sSlice" .LocalTable.NameGo -}}
 	{{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
 	{{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-	{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type}}
+	{{- $usesBytes := or (eq "[]byte" $foreignTableFKeyCol.Type) (eq "null.Bytes" $foreignTableFKeyCol.Type)}}
 // Load{{.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {

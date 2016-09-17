@@ -15,7 +15,7 @@
 			{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
 			{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable -}}
 			{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
-			{{- $usesBytes := eq "[]byte" $fkeyCol.Type -}}
+			{{- $usesBytes := or (eq "[]byte" $fkeyCol.Type) (eq "null.Bytes" $fkeyCol.Type)}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {

@@ -5,7 +5,7 @@
 {{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 {{- $foreignTable := getTable $dot.Tables .ForeignKey.ForeignTable -}}
 {{- $foreignTableFKeyCol := $foreignTable.GetColumn .ForeignKey.ForeignColumn -}}
-{{- $usesBytes := eq "[]byte" $foreignTableFKeyCol.Type -}}
+{{- $usesBytes := or (eq "[]byte" $foreignTableFKeyCol.Type) (eq "null.Bytes" $foreignTableFKeyCol.Type)}}
 func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	var err error
 

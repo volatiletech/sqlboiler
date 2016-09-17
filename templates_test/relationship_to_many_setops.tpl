@@ -11,7 +11,7 @@
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
 		{{- $fkeyCol := $dot.Table.GetColumn .Column -}}
-		{{- $usesBytes := eq "[]byte" $fkeyCol.Type}}
+		{{- $usesBytes := or (eq "[]byte" $fkeyCol.Type) (eq "null.Bytes" $fkeyCol.Type)}}
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 

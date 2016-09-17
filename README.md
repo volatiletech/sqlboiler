@@ -178,8 +178,8 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 * Go 1.6 minimum, and Go 1.7 for compatibility tests.
 * Table names and column names should use `snake_case` format.
-  * At the moment we require `snake_case` table names and column names. This
-  is a recommended default in Postgres. We can reassess this for future database drivers.
+  * We require `snake_case` table names and column names. This is a recommended default in Postgres, 
+  and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
 * Join tables should use a *composite primary key*.
   * For join tables to be used transparently for relationships your join table must have
   a *composite primary key* that encompasses both foreign table foreign keys. For example, on a

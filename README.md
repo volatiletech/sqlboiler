@@ -322,7 +322,7 @@ If you're still stuck and/or you think you've found a bug, feel free to leave an
 
 ## Features & Examples
 
-Most examples in this section will be demonstrated using the following schema, structs and variables:
+Most examples in this section will be demonstrated using the following Postgres schema, structs and variables:
 
 ```sql
 CREATE TABLE pilots (

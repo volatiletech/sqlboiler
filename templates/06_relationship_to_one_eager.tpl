@@ -1,18 +1,20 @@
-{{- define "relationship_to_one_eager_helper" -}}
-	{{- $dot := .Dot -}}{{/* .Dot holds the root templateData struct, passed in through preserveDot */}}
-	{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
-	{{- with .Rel -}}
-	{{- $arg := printf "maybe%s" .LocalTable.NameGo -}}
-	{{- $slice := printf "%sSlice" .LocalTable.NameGo}}
-// Load{{.Function.Name}} allows an eager lookup of values, cached into the
+{{- if .Table.IsJoinTable -}}
+{{- else -}}
+	{{- $dot := . -}}
+	{{- range .Table.FKeys -}}
+		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
+		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
+		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo}}
+// Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
-	var slice []*{{.LocalTable.NameGo}}
-	var object *{{.LocalTable.NameGo}}
+func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+	var slice []*{{$txt.LocalTable.NameGo}}
+	var object *{{$txt.LocalTable.NameGo}}
 
 	count := 1
 	if singular {
-		object = {{$arg}}.(*{{.LocalTable.NameGo}})
+		object = {{$arg}}.(*{{$txt.LocalTable.NameGo}})
 	} else {
 		slice = *{{$arg}}.(*{{$slice}})
 		count = len(slice)
@@ -20,10 +22,10 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
 	args := make([]interface{}, count)
 	if singular {
-		args[0] = object.{{.LocalTable.ColumnNameGo}}
+		args[0] = object.{{$txt.LocalTable.ColumnNameGo}}
 	} else {
 		for i, obj := range slice {
-			args[i] = obj.{{.LocalTable.ColumnNameGo}}
+			args[i] = obj.{{$txt.LocalTable.ColumnNameGo}}
 		}
 	}
 
@@ -38,17 +40,17 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load {{.ForeignTable.NameGo}}")
+		return errors.Wrap(err, "failed to eager load {{$txt.ForeignTable.NameGo}}")
 	}
 	defer results.Close()
 
-	var resultSlice []*{{.ForeignTable.NameGo}}
+	var resultSlice []*{{$txt.ForeignTable.NameGo}}
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable.NameGo}}")
+		return errors.Wrap(err, "failed to bind eager loaded slice {{$txt.ForeignTable.NameGo}}")
 	}
 
 	{{if not $dot.NoHooks -}}
-	if len({{.ForeignTable.Name | singular | camelCase}}AfterSelectHooks) != 0 {
+	if len({{$txt.ForeignTable.Name | singular | camelCase}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err
@@ -61,21 +63,21 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 		if object.R == nil {
 			object.R = &{{$varNameSingular}}R{}
 		}
-		object.R.{{.Function.Name}} = resultSlice[0]
+		object.R.{{$txt.Function.Name}} = resultSlice[0]
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			{{if .Function.UsesBytes -}}
-			if 0 == bytes.Compare(local.{{.Function.LocalAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
+			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
 			{{else -}}
-			if local.{{.Function.LocalAssignment}} == foreign.{{.Function.ForeignAssignment}} {
+			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
 			{{end -}}
 				if local.R == nil {
 					local.R = &{{$varNameSingular}}R{}
 				}
-				local.R.{{.Function.Name}} = foreign
+				local.R.{{$txt.Function.Name}} = foreign
 				break
 			}
 		}
@@ -83,14 +85,5 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 
 	return nil
 }
-	{{- end -}}{{- /* end with */ -}}
-{{end -}}{{- /* end define */ -}}
-
-{{- if .Table.IsJoinTable -}}
-{{- else -}}
-	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-		{{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
-	{{- end -}}
-{{end}}
+{{end -}}{{/* range */}}
+{{end}}{{/* join table */}}

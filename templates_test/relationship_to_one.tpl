@@ -1,12 +1,14 @@
-{{- define "relationship_to_one_test_helper"}}
-{{- $dot := .Dot -}}
-{{- with .Rel}}
-func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
+{{- if .Table.IsJoinTable -}}
+{{- else -}}
+	{{- $dot := . -}}
+	{{- range .Table.FKeys -}}
+		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
-	var foreign {{.ForeignTable.NameGo}}
-	var local {{.LocalTable.NameGo}}
+	var foreign {{$txt.ForeignTable.NameGo}}
+	var local {{$txt.LocalTable.NameGo}}
 	{{if .ForeignKey.Nullable -}}
 	local.{{.ForeignKey.Column | titleCase}}.Valid = true
 	{{end}}
@@ -14,12 +16,12 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 	foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
 	{{end}}
 
-	{{if not .Function.OneToOne -}}
+	{{if not $txt.Function.OneToOne -}}
 	if err := foreign.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 
-	local.{{.Function.LocalAssignment}} = foreign.{{.Function.ForeignAssignment}}
+	local.{{$txt.Function.LocalAssignment}} = foreign.{{$txt.Function.ForeignAssignment}}
 	if err := local.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
@@ -28,49 +30,40 @@ func test{{.LocalTable.NameGo}}ToOne{{.ForeignTable.NameGo}}_{{.Function.Name}}(
 		t.Fatal(err)
 	}
 
-	foreign.{{.Function.ForeignAssignment}} = local.{{.Function.LocalAssignment}}
+	foreign.{{$txt.Function.ForeignAssignment}} = local.{{$txt.Function.LocalAssignment}}
 	if err := foreign.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 	{{end -}}
 
-	check, err := local.{{.Function.Name}}(tx).One()
+	check, err := local.{{$txt.Function.Name}}(tx).One()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	{{if .Function.UsesBytes -}}
-	if 0 != bytes.Compare(check.{{.Function.ForeignAssignment}}, foreign.{{.Function.ForeignAssignment}}) {
+	{{if $txt.Function.UsesBytes -}}
+	if 0 != bytes.Compare(check.{{$txt.Function.ForeignAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
 	{{else -}}
-	if check.{{.Function.ForeignAssignment}} != foreign.{{.Function.ForeignAssignment}} {
+	if check.{{$txt.Function.ForeignAssignment}} != foreign.{{$txt.Function.ForeignAssignment}} {
 	{{end -}}
-		t.Errorf("want: %v, got %v", foreign.{{.Function.ForeignAssignment}}, check.{{.Function.ForeignAssignment}})
+		t.Errorf("want: %v, got %v", foreign.{{$txt.Function.ForeignAssignment}}, check.{{$txt.Function.ForeignAssignment}})
 	}
 
-	slice := {{.LocalTable.NameGo}}Slice{&local}
-	if err = local.L.Load{{.Function.Name}}(tx, false, &slice); err != nil {
+	slice := {{$txt.LocalTable.NameGo}}Slice{&local}
+	if err = local.L.Load{{$txt.Function.Name}}(tx, false, &slice); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.{{.Function.Name}} == nil {
+	if local.R.{{$txt.Function.Name}} == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.{{.Function.Name}} = nil
-	if err = local.L.Load{{.Function.Name}}(tx, true, &local); err != nil {
+	local.R.{{$txt.Function.Name}} = nil
+	if err = local.L.Load{{$txt.Function.Name}}(tx, true, &local); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.{{.Function.Name}} == nil {
+	if local.R.{{$txt.Function.Name}} == nil {
 		t.Error("struct should have been eager loaded")
 	}
 }
-
-{{end -}}
-{{- end -}}
-{{- if .Table.IsJoinTable -}}
-{{- else -}}
-	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-{{- template "relationship_to_one_test_helper" (preserveDot $dot $txt) -}}
-{{end -}}
-{{- end -}}
+{{end -}}{{/* range */}}
+{{- end -}}{{/* join table */}}

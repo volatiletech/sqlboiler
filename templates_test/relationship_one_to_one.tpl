@@ -3,7 +3,7 @@
 	{{- $dot := . -}}
 	{{- range .Table.ToOneRelationships -}}
 		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
-func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
@@ -25,7 +25,7 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Func
 		t.Fatal(err)
 	}
 
-	check, err := foreign.{{$txt.Function.Name}}(tx).One()
+	check, err := local.{{$txt.Function.Name}}(tx).One()
 	if err != nil {
 		t.Fatal(err)
 	}

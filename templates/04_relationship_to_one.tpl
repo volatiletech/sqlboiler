@@ -2,7 +2,7 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 // {{$txt.Function.Name}}G pointed to by the foreign key.
 func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {

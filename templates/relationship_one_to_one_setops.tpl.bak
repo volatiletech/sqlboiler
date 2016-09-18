@@ -124,7 +124,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(e
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
 		{{- template "relationship_to_one_setops_helper" (preserveDot $dot $txt) -}}
 	{{- end -}}
 {{- end -}}

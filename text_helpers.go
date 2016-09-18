@@ -141,7 +141,7 @@ type TxtToMany struct {
 	}
 }
 
-// textsFromRelationship creates a struct that does a lot of the text
+// txtsFromToMany creates a struct that does a lot of the text
 // transformation in advance for a given relationship.
 func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) TxtToMany {
 	r := TxtToMany{}

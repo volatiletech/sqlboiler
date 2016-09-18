@@ -3,7 +3,7 @@
 	{{- $dot := . }}
 	{{- $table := .Table }}
 	{{- range .Table.ToManyRelationships -}}
-	{{- $rel := textsFromRelationship $dot.Tables $table .}}
+	{{- $rel := txtsFromToMany $dot.Tables $table .}}
 func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())

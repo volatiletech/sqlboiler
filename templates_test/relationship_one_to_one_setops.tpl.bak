@@ -159,7 +159,7 @@ func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table .}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table .}}
 {{template "relationship_to_one_setops_test_helper" (preserveDot $dot $txt) -}}
 {{- end -}}
 {{- end -}}

@@ -2,7 +2,7 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table .}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table .}}
 {{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {

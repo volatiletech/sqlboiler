@@ -2,7 +2,7 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
 func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()

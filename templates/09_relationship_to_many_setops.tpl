@@ -5,7 +5,7 @@
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
+		{{- $rel := txtsFromToMany $dot.Tables $table . -}}
 		{{- $localNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships

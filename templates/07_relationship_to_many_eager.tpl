@@ -4,7 +4,7 @@
 	{{- $dot := . -}}
 	{{- range .Table.ToManyRelationships -}}
 		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
-		{{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromToMany $dot.Tables $dot.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
 		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}

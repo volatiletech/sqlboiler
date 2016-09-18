@@ -5,7 +5,7 @@
 	{{- range .Table.ToManyRelationships -}}
 	{{- $varNameSingular := .Table | singular | camelCase -}}
 	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-	{{- $rel := textsFromRelationship $dot.Tables $table .}}
+	{{- $rel := txtsFromToMany $dot.Tables $table .}}
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 

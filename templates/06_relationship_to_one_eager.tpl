@@ -2,7 +2,7 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo}}

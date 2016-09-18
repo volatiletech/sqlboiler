@@ -3,7 +3,7 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
 		{{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
 // Set{{$txt.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.

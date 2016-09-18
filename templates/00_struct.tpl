@@ -1,5 +1,4 @@
 {{- define "relationship_to_one_struct_helper" -}}
-	{{.Function.Name}} *{{.ForeignTable.NameGo}}
 {{- end -}}
 
 {{- $dot := . -}}
@@ -23,17 +22,19 @@ type {{$modelName}} struct {
 // {{$modelNameCamel}}R is where relationships are stored.
 type {{$modelNameCamel}}R struct {
 	{{range .Table.FKeys -}}
-		{{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $dot.Table . -}}
-		{{- template "relationship_to_one_struct_helper" $rel}}
+	{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+	{{$txt.Function.Name}} *{{$txt.ForeignTable.NameGo}}
 	{{end -}}
+
+	{{- range .Table.ToOneRelationships -}}
+	{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
+	{{$txt.Function.Name}} *{{$txt.ForeignTable.NameGo}}
+	{{end -}}
+
 	{{- range .Table.ToManyRelationships -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-			{{- template "relationship_to_one_struct_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table .)}}
-		{{else -}}
-		{{- $rel := textsFromRelationship $dot.Tables $dot.Table . -}}
-	{{$rel.Function.Name}} {{$rel.ForeignTable.Slice}}
-{{end -}}{{/* if ForeignColumnUnique */}}
-{{- end -}}{{/* range tomany */}}
+	{{- $txt := txtsFromToMany $dot.Tables $dot.Table . -}}
+	{{$txt.Function.Name}} {{$txt.ForeignTable.Slice}}
+	{{- end -}}{{/* range tomany */}}
 }
 
 // {{$modelNameCamel}}L is where Load methods for each relationship are stored.

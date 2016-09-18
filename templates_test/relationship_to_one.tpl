@@ -7,21 +7,21 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Func
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
-	var foreign {{$txt.ForeignTable.NameGo}}
 	var local {{$txt.LocalTable.NameGo}}
+	var foreign {{$txt.ForeignTable.NameGo}}
 	{{if .Nullable -}}
-	local.{{.Column | titleCase}}.Valid = true
-	{{end}}
-	{{- if .ForeignColumnNullable -}}
-	foreign.{{.ForeignColumn | titleCase}}.Valid = true
-	{{end}}
+	local.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
+	{{- end}}
+	{{if .ForeignColumnNullable -}}
+	foreign.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+	{{- end}}
 
-	if err := local.Insert(tx); err != nil {
+	if err := foreign.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 
-	foreign.{{$txt.Function.ForeignAssignment}} = local.{{$txt.Function.LocalAssignment}}
-	if err := foreign.Insert(tx); err != nil {
+	local.{{$txt.Function.LocalAssignment}} = foreign.{{$txt.Function.ForeignAssignment}}
+	if err := local.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 

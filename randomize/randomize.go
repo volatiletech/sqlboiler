@@ -463,7 +463,7 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeNullFloat64:
 		return null.NewFloat64(float64(s.nextInt()%10)/10.0+float64(s.nextInt()%10), true)
 	case typeNullInt:
-		return null.NewInt(s.nextInt(), true)
+		return null.NewInt(int(int32(s.nextInt())), true)
 	case typeNullInt8:
 		return null.NewInt8(int8(s.nextInt()), true)
 	case typeNullInt16:
@@ -483,7 +483,7 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeNullUint64:
 		return null.NewUint64(uint64(s.nextInt()), true)
 	case typeNullBytes:
-		return null.NewBytes(randByteSlice(s, 16), true)
+		return null.NewBytes(randByteSlice(s, 1), true)
 	}
 
 	return nil
@@ -565,7 +565,7 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 		if sliceVal.Kind() != reflect.Uint8 {
 			return errors.Errorf("unsupported slice type: %T, was expecting byte slice.", typ.String())
 		}
-		return randByteSlice(s, 5+s.nextInt()%20)
+		return randByteSlice(s, 1)
 	}
 
 	return nil

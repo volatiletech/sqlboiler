@@ -8,8 +8,9 @@ import (
 	"github.com/vattle/sqlboiler/strmangle"
 )
 
-// RelationshipToOneTexts contains text that will be used by templates.
-type RelationshipToOneTexts struct {
+// TxtToOne contains text that will be used by templates for a one-to-many or
+// a one-to-one relationship.
+type TxtToOne struct {
 	ForeignKey bdb.ForeignKey
 
 	LocalTable struct {
@@ -32,7 +33,6 @@ type RelationshipToOneTexts struct {
 
 		Varname   string
 		Receiver  string
-		OneToOne  bool
 		UsesBytes bool
 
 		LocalAssignment   string
@@ -40,8 +40,8 @@ type RelationshipToOneTexts struct {
 	}
 }
 
-func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) RelationshipToOneTexts {
-	r := RelationshipToOneTexts{}
+func txtsFromFKey(packageName string, tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtToOne {
+	r := TxtToOne{}
 
 	r.ForeignKey = fkey
 
@@ -85,32 +85,37 @@ func textsFromForeignKey(packageName string, tables []bdb.Table, table bdb.Table
 	return r
 }
 
-func textsFromOneToOneRelationship(packageName string, tables []bdb.Table, table bdb.Table, toMany bdb.ToManyRelationship) RelationshipToOneTexts {
+func txtsFromOneToOne(packageName string, tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRelationship) TxtToOne {
 	fkey := bdb.ForeignKey{
-		Table:    toMany.Table,
+		Table:    oneToOne.Table,
 		Name:     "none",
-		Column:   toMany.Column,
-		Nullable: toMany.Nullable,
-		Unique:   toMany.Unique,
+		Column:   oneToOne.Column,
+		Nullable: oneToOne.Nullable,
+		Unique:   oneToOne.Unique,
 
-		ForeignTable:          toMany.ForeignTable,
-		ForeignColumn:         toMany.ForeignColumn,
-		ForeignColumnNullable: toMany.ForeignColumnNullable,
-		ForeignColumnUnique:   toMany.ForeignColumnUnique,
+		ForeignTable:          oneToOne.ForeignTable,
+		ForeignColumn:         oneToOne.ForeignColumn,
+		ForeignColumnNullable: oneToOne.ForeignColumnNullable,
+		ForeignColumnUnique:   oneToOne.ForeignColumnUnique,
 	}
 
-	rel := textsFromForeignKey(packageName, tables, table, fkey)
-	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(toMany.ForeignTable))
-	rel.Function.ForeignName = mkFunctionName(strmangle.Singular(toMany.Table), strmangle.TitleCase(strmangle.Singular(toMany.Table)), toMany.ForeignColumn, false)
-	rel.Function.OneToOne = true
+	rel := txtsFromFKey(packageName, tables, table, fkey)
+	col := table.GetColumn(oneToOne.Column)
 
-	col := table.GetColumn(toMany.Column)
+	// Reverse foreign key
+	rel.ForeignKey.Table, rel.ForeignKey.ForeignTable = rel.ForeignKey.ForeignTable, rel.ForeignKey.Table
+	rel.ForeignKey.Column, rel.ForeignKey.ForeignColumn = rel.ForeignKey.ForeignColumn, rel.ForeignKey.Column
+	rel.ForeignKey.Nullable, rel.ForeignKey.ForeignColumnNullable = rel.ForeignKey.ForeignColumnNullable, rel.ForeignKey.Nullable
+	rel.ForeignKey.Unique, rel.ForeignKey.ForeignColumnUnique = rel.ForeignKey.ForeignColumnUnique, rel.ForeignKey.Unique
+
+	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(oneToOne.ForeignTable))
+	rel.Function.ForeignName = mkFunctionName(strmangle.Singular(oneToOne.Table), strmangle.TitleCase(strmangle.Singular(oneToOne.Table)), oneToOne.ForeignColumn, false)
 	rel.Function.UsesBytes = col.Type == "[]byte"
 	return rel
 }
 
-// RelationshipToManyTexts contains text that will be used by templates.
-type RelationshipToManyTexts struct {
+// TxtToMany contains text that will be used by many-to-one relationships.
+type TxtToMany struct {
 	LocalTable struct {
 		NameGo       string
 		NameSingular string
@@ -140,8 +145,8 @@ type RelationshipToManyTexts struct {
 
 // textsFromRelationship creates a struct that does a lot of the text
 // transformation in advance for a given relationship.
-func textsFromRelationship(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) RelationshipToManyTexts {
-	r := RelationshipToManyTexts{}
+func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) TxtToMany {
+	r := TxtToMany{}
 	r.LocalTable.NameSingular = strmangle.Singular(table.Name)
 	r.LocalTable.NameGo = strmangle.TitleCase(r.LocalTable.NameSingular)
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
@@ -193,18 +198,4 @@ func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, 
 	}
 
 	return strmangle.TitleCase(colName) + foreignTablePluralGo
-}
-
-// PreserveDot allows us to pass in templateData to relationship templates
-// called with the template function.
-type PreserveDot struct {
-	Dot templateData
-	Rel RelationshipToOneTexts
-}
-
-func preserveDot(data templateData, obj RelationshipToOneTexts) PreserveDot {
-	return PreserveDot{
-		Dot: data,
-		Rel: obj,
-	}
 }

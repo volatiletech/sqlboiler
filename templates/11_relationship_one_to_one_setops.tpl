@@ -1,9 +1,8 @@
-{{- /* Begin execution of template for one-to-one setops */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+	{{- range .Table.ToOneRelationships -}}
+		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $localNameSingular := .Table | singular | camelCase}}
 // Set{{$txt.Function.Name}} of the {{.Table | singular}} to the related item.

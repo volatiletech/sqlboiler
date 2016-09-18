@@ -1,8 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+	{{- range .Table.ToOneRelationships -}}
+		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo}}

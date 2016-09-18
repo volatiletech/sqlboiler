@@ -14,12 +14,25 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
 		}
 	}
 
-	oldVal := {{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}
-	{{.Function.Receiver}}.{{.Function.LocalAssignment}} = related.{{.Function.ForeignAssignment}}
-	if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
-		{{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}} = oldVal
+	{{if .Function.OneToOne -}}
+	oldVal := related.{{.Function.ForeignAssignment}}
+	related.{{.Function.ForeignAssignment}} = {{.Function.Receiver}}.{{.Function.LocalAssignment}}
+		{{if .ForeignKey.ForeignColumnNullable -}}
+	related.{{.ForeignTable.ColumnNameGo}}.Valid = true
+		{{end -}}
+	if err = related.Update(exec, "{{.ForeignKey.ForeignColumn}}"); err != nil {
+		related.{{.Function.ForeignAssignment}} = oldVal
 		return errors.Wrap(err, "failed to update local table")
 	}
+	{{else -}}
+	oldVal := {{.Function.Receiver}}.{{.Function.LocalAssignment}}
+	related.{{.Function.ForeignAssignment}} = {{.Function.Receiver}}.{{.Function.LocalAssignment}}
+	{{.Function.Receiver}}.{{.Function.LocalAssignment}} = related.{{.Function.ForeignAssignment}}
+	if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
+		{{.Function.Receiver}}.{{.Function.LocalAssignment}} = oldVal
+		return errors.Wrap(err, "failed to update local table")
+	}
+	{{end -}}
 
 	if {{.Function.Receiver}}.R == nil {
 		{{.Function.Receiver}}.R = &{{$localNameSingular}}R{
@@ -53,18 +66,26 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Set{{.Function.Name}}(exec
 	return nil
 }
 
-		{{- if .ForeignKey.Nullable}}
+		{{- if or (.ForeignKey.Nullable) (and .Function.OneToOne .ForeignKey.ForeignColumnNullable)}}
 // Remove{{.Function.Name}} relationship.
 // Sets {{.Function.Receiver}}.R.{{.Function.Name}} to nil.
 // Removes {{.Function.Receiver}} from all passed in related items' relationships struct (Optional).
 func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) Remove{{.Function.Name}}(exec boil.Executor, related *{{.ForeignTable.NameGo}}) error {
 	var err error
 
+	{{if .Function.OneToOne -}}
+	related.{{.ForeignTable.ColumnNameGo}}.Valid = false
+	if err = related.Update(exec, "{{.ForeignKey.ForeignColumn}}"); err != nil {
+		related.{{.ForeignTable.ColumnNameGo}}.Valid = true
+		return errors.Wrap(err, "failed to update local table")
+	}
+	{{else -}}
 	{{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = false
 	if err = {{.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
 		{{.Function.Receiver}}.{{.LocalTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}
+	{{end -}}
 
 	{{.Function.Receiver}}.R.{{.Function.Name}} = nil
 	if related == nil || related.R == nil {

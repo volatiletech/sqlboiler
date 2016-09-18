@@ -10,7 +10,10 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 	defer tx.Rollback()
 
 	var a {{.LocalTable.NameGo}}
-	var b, c {{.ForeignTable.NameGo}}
+	var b {{.ForeignTable.NameGo}}
+	{{if not .Function.OneToOne -}}
+	var c {{.ForeignTable.NameGo}}
+	{{- end}}
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
@@ -19,9 +22,11 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 	if err = randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
+	{{if not .Function.OneToOne -}}
 	if err = randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
+	{{- end}}
 
 	if err := a.Insert(tx); err != nil {
 		t.Fatal(err)
@@ -30,7 +35,7 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 		t.Fatal(err)
 	}
 
-	for i, x := range []*{{.ForeignTable.NameGo}}{&b, &c} {
+	for i, x := range []*{{.ForeignTable.NameGo}}{&b{{if not .Function.OneToOne}}, &c{{end}}} {
 		err = a.Set{{.Function.Name}}(tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
@@ -47,12 +52,23 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 			t.Error("relationship struct not set to correct value")
 		}
 
+		{{if .Function.OneToOne -}}
+		zero := reflect.Zero(reflect.TypeOf(x.{{.Function.ForeignAssignment}}))
+		reflect.Indirect(reflect.ValueOf(&x.{{.Function.ForeignAssignment}})).Set(zero)
+
+		xrel := x.R
+		if err = x.Reload(tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+		x.R = xrel
+		{{else -}}
 		zero := reflect.Zero(reflect.TypeOf(a.{{.Function.LocalAssignment}}))
 		reflect.Indirect(reflect.ValueOf(&a.{{.Function.LocalAssignment}})).Set(zero)
 
 		if err = a.Reload(tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
+		{{- end}}
 
 		{{if .Function.UsesBytes -}}
 		if 0 != bytes.Compare(a.{{.Function.LocalAssignment}}, x.{{.Function.ForeignAssignment}}) {
@@ -73,7 +89,7 @@ func test{{.LocalTable.NameGo}}ToOneSetOp{{.ForeignTable.NameGo}}_{{.Function.Na
 		{{end -}}
 	}
 }
-{{- if .ForeignKey.Nullable}}
+{{- if or (.ForeignKey.Nullable) (and .Function.OneToOne .ForeignKey.ForeignColumnNullable)}}
 
 func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function.Name}}(t *testing.T) {
 	var err error
@@ -116,9 +132,15 @@ func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function
 		t.Error("R struct entry should be nil")
 	}
 
+	{{if .Function.OneToOne -}}
+	if b.{{.ForeignTable.ColumnNameGo}}.Valid {
+		t.Error("R struct entry should be nil")
+	}
+	{{else -}}
 	if a.{{.LocalTable.ColumnNameGo}}.Valid {
 		t.Error("R struct entry should be nil")
 	}
+	{{- end}}
 
 	{{if .ForeignKey.Unique -}}
 	if b.R.{{.Function.ForeignName}} != nil {
@@ -128,7 +150,7 @@ func test{{.LocalTable.NameGo}}ToOneRemoveOp{{.ForeignTable.NameGo}}_{{.Function
 	if len(b.R.{{.Function.ForeignName}}) != 0 {
 		t.Error("failed to remove a from b's relationships")
 	}
-	{{end -}}
+	{{- end}}
 }
 {{end -}}{{/* end if foreign key nullable */}}
 {{- end -}}{{/* with rel */}}

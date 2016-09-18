@@ -200,7 +200,11 @@ func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$re
 			continue
 		}
 		for i, ri := range rel.R.{{$rel.Function.ForeignName}} {
+			{{if $rel.Function.UsesBytes -}}
+			if 0 != bytes.Compare({{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}}, ri.{{$rel.Function.LocalAssignment}}) {
+			{{else -}}
 			if {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}} != ri.{{$rel.Function.LocalAssignment}} {
+			{{end -}}
 				continue
 			}
 

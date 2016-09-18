@@ -246,3 +246,69 @@ create table worms (
   tiger_id  bytea null,
   foreign key (tiger_id) references tigers (id)
 );
+
+create table pilots (
+  id   serial primary key not null,
+  name character varying
+);
+
+create table airports (
+  id serial primary key not null,
+  name character varying
+);
+
+create table languages (
+  id serial primary key not null,
+  name character varying
+);
+
+create table jets (
+  id serial primary key not null,
+  name character varying,
+  pilot_id integer,
+  airport_id integer,
+  foreign key (pilot_id) references pilots (id),
+  foreign key (airport_id) references airports (id)
+);
+
+create table pilot_languages (
+  pilot_id    integer not null,
+  language_id integer not null,
+
+  primary key (pilot_id, language_id),
+  foreign key (pilot_id) references pilots (id),
+  foreign key (language_id) references languages (id)
+);
+
+create table byte_pilots (
+  id   bytea primary key not null,
+  name character varying
+);
+
+create table byte_airports (
+  id bytea primary key not null,
+  name character varying
+);
+
+create table byte_languages (
+  id bytea primary key not null,
+  name character varying
+);
+
+create table byte_jets (
+  id bytea primary key not null,
+  name character varying,
+  byte_pilot_id bytea unique,
+  byte_airport_id bytea,
+  foreign key (byte_pilot_id) references byte_pilots (id),
+  foreign key (byte_airport_id) references byte_airports (id)
+);
+
+create table byte_pilot_languages (
+  byte_pilot_id    bytea not null,
+  byte_language_id bytea not null,
+
+  primary key (byte_pilot_id, byte_language_id),
+  foreign key (byte_pilot_id) references byte_pilots (id),
+  foreign key (byte_language_id) references byte_languages (id)
+);

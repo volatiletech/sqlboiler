@@ -27,7 +27,6 @@ type TxtToOne struct {
 	}
 
 	Function struct {
-		PackageName string
 		Name        string
 		ForeignName string
 
@@ -40,7 +39,7 @@ type TxtToOne struct {
 	}
 }
 
-func txtsFromFKey(packageName string, tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtToOne {
+func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtToOne {
 	r := TxtToOne{}
 
 	r.ForeignKey = fkey
@@ -54,7 +53,6 @@ func txtsFromFKey(packageName string, tables []bdb.Table, table bdb.Table, fkey 
 	r.ForeignTable.ColumnName = fkey.ForeignColumn
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
 
-	r.Function.PackageName = packageName
 	r.Function.Name = strmangle.TitleCase(strmangle.Singular(strings.TrimSuffix(fkey.Column, "_id")))
 	plurality := strmangle.Plural
 	if fkey.Unique {
@@ -85,7 +83,7 @@ func txtsFromFKey(packageName string, tables []bdb.Table, table bdb.Table, fkey 
 	return r
 }
 
-func txtsFromOneToOne(packageName string, tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRelationship) TxtToOne {
+func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRelationship) TxtToOne {
 	fkey := bdb.ForeignKey{
 		Table:    oneToOne.Table,
 		Name:     "none",
@@ -99,7 +97,7 @@ func txtsFromOneToOne(packageName string, tables []bdb.Table, table bdb.Table, o
 		ForeignColumnUnique:   oneToOne.ForeignColumnUnique,
 	}
 
-	rel := txtsFromFKey(packageName, tables, table, fkey)
+	rel := txtsFromFKey(tables, table, fkey)
 	col := table.GetColumn(oneToOne.Column)
 
 	// Reverse foreign key

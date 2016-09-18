@@ -18,7 +18,7 @@ func TestTxtsFromOne(t *testing.T) {
 	}
 
 	jets := bdb.GetTable(tables, "jets")
-	texts := txtsFromFKey("models", tables, jets, jets.FKeys[0])
+	texts := txtsFromFKey(tables, jets, jets.FKeys[0])
 	expect := TxtToOne{}
 
 	expect.ForeignKey = jets.FKeys[0]
@@ -32,7 +32,6 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.ForeignTable.ColumnName = "id"
 	expect.ForeignTable.ColumnNameGo = "ID"
 
-	expect.Function.PackageName = "models"
 	expect.Function.Name = "Pilot"
 	expect.Function.ForeignName = "Jet"
 	expect.Function.Varname = "pilot"
@@ -45,7 +44,7 @@ func TestTxtsFromOne(t *testing.T) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
 	}
 
-	texts = txtsFromFKey("models", tables, jets, jets.FKeys[1])
+	texts = txtsFromFKey(tables, jets, jets.FKeys[1])
 	expect = TxtToOne{}
 	expect.ForeignKey = jets.FKeys[1]
 
@@ -58,7 +57,6 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.ForeignTable.ColumnName = "id"
 	expect.ForeignTable.ColumnNameGo = "ID"
 
-	expect.Function.PackageName = "models"
 	expect.Function.Name = "Airport"
 	expect.Function.ForeignName = "Jets"
 	expect.Function.Varname = "airport"
@@ -85,7 +83,7 @@ func TestTxtsFromOneToOne(t *testing.T) {
 	}
 
 	pilots := bdb.GetTable(tables, "pilots")
-	texts := txtsFromOneToOne("models", tables, pilots, pilots.ToOneRelationships[0])
+	texts := txtsFromOneToOne(tables, pilots, pilots.ToOneRelationships[0])
 	expect := TxtToOne{}
 
 	expect.ForeignKey = bdb.ForeignKey{
@@ -111,7 +109,6 @@ func TestTxtsFromOneToOne(t *testing.T) {
 	expect.ForeignTable.ColumnName = "pilot_id"
 	expect.ForeignTable.ColumnNameGo = "PilotID"
 
-	expect.Function.PackageName = "models"
 	expect.Function.Name = "Jet"
 	expect.Function.ForeignName = "Pilot"
 	expect.Function.Varname = "jet"

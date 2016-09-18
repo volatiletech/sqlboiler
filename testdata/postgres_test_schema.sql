@@ -253,19 +253,19 @@ create table pilots (
 );
 
 create table airports (
-  id serial primary key not null,
+  id   serial primary key not null,
   name character varying
 );
 
 create table languages (
-  id serial primary key not null,
+  id   serial primary key not null,
   name character varying
 );
 
 create table jets (
-  id serial primary key not null,
-  name character varying,
-  pilot_id integer,
+  id         serial primary key not null,
+  name       character varying,
+  pilot_id   integer,
   airport_id integer,
   foreign key (pilot_id) references pilots (id),
   foreign key (airport_id) references airports (id)
@@ -286,20 +286,21 @@ create table byte_pilots (
 );
 
 create table byte_airports (
-  id bytea primary key not null,
+  id   bytea primary key not null,
   name character varying
 );
 
 create table byte_languages (
-  id bytea primary key not null,
+  id   bytea primary key not null,
   name character varying
 );
 
 create table byte_jets (
-  id bytea primary key not null,
-  name character varying,
-  byte_pilot_id bytea unique,
+  id              bytea primary key not null,
+  name            character varying,
+  byte_pilot_id   bytea unique,
   byte_airport_id bytea,
+
   foreign key (byte_pilot_id) references byte_pilots (id),
   foreign key (byte_airport_id) references byte_airports (id)
 );

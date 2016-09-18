@@ -201,3 +201,71 @@ create table worms (
   tiger_id  binary null,
   foreign key (tiger_id) references tigers (id)
 );
+
+create table pilots (
+  id   int primary key not null auto_increment,
+  name varchar(255)
+);
+
+create table airports (
+  id   int primary key not null auto_increment,
+  name varchar(255)
+);
+
+create table languages (
+  id   int primary key not null auto_increment,
+  name varchar(255)
+);
+
+create table jets (
+  id         int primary key not null auto_increment,
+  name       varchar(255),
+  pilot_id   integer,
+  airport_id integer,
+
+  foreign key (pilot_id) references pilots (id),
+  foreign key (airport_id) references airports (id)
+);
+
+create table pilot_languages (
+  pilot_id    integer not null,
+  language_id integer not null,
+
+  primary key (pilot_id, language_id),
+  foreign key (pilot_id) references pilots (id),
+  foreign key (language_id) references languages (id)
+);
+
+create table byte_pilots (
+  id   binary primary key not null,
+  name varchar(255)
+);
+
+create table byte_airports (
+  id   binary primary key not null,
+  name varchar(255)
+);
+
+create table byte_languages (
+  id   binary primary key not null,
+  name varchar(255)
+);
+
+create table byte_jets (
+  id              binary primary key not null,
+  name            varchar(255),
+  byte_pilot_id   binary unique,
+  byte_airport_id binary,
+
+  foreign key (byte_pilot_id) references byte_pilots (id),
+  foreign key (byte_airport_id) references byte_airports (id)
+);
+
+create table byte_pilot_languages (
+  byte_pilot_id    binary not null,
+  byte_language_id binary not null,
+
+  primary key (byte_pilot_id, byte_language_id),
+  foreign key (byte_pilot_id) references byte_pilots (id),
+  foreign key (byte_language_id) references byte_languages (id)
+);

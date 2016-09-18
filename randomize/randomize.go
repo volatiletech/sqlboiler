@@ -135,7 +135,7 @@ func Struct(s *Seed, str interface{}, colTypes map[string]string, canBeNull bool
 // not cause mismatches in the test data comparisons.
 func randDate(s *Seed) time.Time {
 	t := time.Date(
-		1850+s.nextInt()%160,
+		1972+s.nextInt()%60,
 		time.Month(1+(s.nextInt()%12)),
 		1+(s.nextInt()%25),
 		0,
@@ -319,13 +319,13 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		// Retrieve the value to be returned
 	} else if kind == reflect.Struct {
 		if isNull {
-			value = getStructNullValue(typ)
+			value = getStructNullValue(s, typ)
 		} else {
 			value = getStructRandValue(s, typ)
 		}
 	} else {
 		if isNull {
-			value = getVariableZeroValue(kind)
+			value = getVariableZeroValue(s, kind)
 		} else {
 			value = getVariableRandValue(s, kind, typ)
 		}
@@ -404,10 +404,11 @@ func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} 
 }
 
 // getStructNullValue for the matching type.
-func getStructNullValue(typ reflect.Type) interface{} {
+func getStructNullValue(s *Seed, typ reflect.Type) interface{} {
 	switch typ {
 	case typeTime:
-		return time.Time{}
+		// MySQL does not support 0 value time.Time, so use rand
+		return randDate(s)
 	case typeNullBool:
 		return null.NewBool(false, false)
 	case typeNullString:
@@ -490,7 +491,7 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 }
 
 // getVariableZeroValue for the matching type.
-func getVariableZeroValue(kind reflect.Kind) interface{} {
+func getVariableZeroValue(s *Seed, kind reflect.Kind) interface{} {
 	switch kind {
 	case reflect.Float32:
 		return float32(0)
@@ -521,7 +522,7 @@ func getVariableZeroValue(kind reflect.Kind) interface{} {
 	case reflect.String:
 		return ""
 	case reflect.Slice:
-		return []byte(nil)
+		return []byte{}
 	}
 
 	return nil

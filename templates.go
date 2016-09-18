@@ -167,9 +167,9 @@ var templateFunctions = template.FuncMap{
 	"whereClause": strmangle.WhereClause,
 
 	// Relationship text helpers
-	"textsFromForeignKey":           txtsFromFKey,
-	"textsFromOneToOneRelationship": txtsFromOneToOne,
-	"textsFromRelationship":         txtsFromToMany,
+	"txtsFromFKey":     txtsFromFKey,
+	"txtsFromOneToOne": txtsFromOneToOne,
+	"txtsFromToMany":   txtsFromToMany,
 
 	// dbdrivers ops
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,

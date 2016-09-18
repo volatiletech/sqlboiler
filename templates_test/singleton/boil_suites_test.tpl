@@ -217,7 +217,7 @@ func TestOneToOneSet(t *testing.T) {
 	  {{- range $table.ToOneRelationships -}}
 		{{- if not .ForeignColumnNullable -}}
 		{{- else -}}
-		  {{- $txt := textsFrom $dot.Tables $table . -}}
+		  {{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
 	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.Function.Name}})
 		{{- end -}}{{- /* if foreign column nullable */ -}}
 	  {{- end -}}{{- /* range */ -}}

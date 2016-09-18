@@ -152,12 +152,7 @@ func TestToMany(t *testing.T) {
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
         {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-        {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-          {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-  t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-        {{else -}}
   t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}})
-        {{end -}}{{- /* if unique */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -205,10 +200,7 @@ func TestToManyAdd(t *testing.T) {
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
         {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-        {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-        {{- else -}}
   t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}})
-        {{end -}}{{- /* if unique */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -226,12 +218,7 @@ func TestToManySet(t *testing.T) {
         {{- if not .ForeignColumnNullable -}}
         {{- else -}}
           {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-          {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-            {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-    t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneSetOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-          {{else -}}
     t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}})
-          {{end -}}{{- /* if unique */ -}}
         {{- end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
@@ -250,14 +237,7 @@ func TestToManyRemove(t *testing.T) {
         {{- if not .ForeignColumnNullable -}}
         {{- else -}}
           {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-          {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-            {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-				{{- if or ($oneToOne.ForeignKey.Nullable) (and $oneToOne.Function.OneToOne $oneToOne.ForeignKey.ForeignColumnNullable)}}
-    t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneRemoveOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-				{{end -}}
-          {{- else -}}
     t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}})
-          {{end -}}{{- /* if unique */ -}}
         {{- end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}

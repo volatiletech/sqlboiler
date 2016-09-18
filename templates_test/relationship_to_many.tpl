@@ -3,11 +3,7 @@
 	{{- $dot := . }}
 	{{- $table := .Table }}
 	{{- range .Table.ToManyRelationships -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-		{{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-{{- template "relationship_to_one_test_helper" (preserveDot $dot $txt) -}}
-		{{- else -}}
-		{{- $rel := textsFromRelationship $dot.Tables $table .}}
+	{{- $rel := textsFromRelationship $dot.Tables $table .}}
 func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -105,6 +101,5 @@ func test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}(t *testing.T) {
 	}
 }
 
-{{end -}}{{- /* if unique */ -}}
-{{- end -}}{{- /* range */ -}}
+{{end -}}{{- /* range */ -}}
 {{- end -}}{{- /* outer if join table */ -}}

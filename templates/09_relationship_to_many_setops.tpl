@@ -5,14 +5,9 @@
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-			{{- /* Begin execution of template for many-to-one setops */ -}}
-			{{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-			{{- template "relationship_to_one_setops_helper" (preserveDot $dot $txt) -}}
-		{{- else -}}
-			{{- $rel := textsFromRelationship $dot.Tables $table . -}}
-			{{- $localNameSingular := .Table | singular | camelCase -}}
-			{{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
+		{{- $rel := textsFromRelationship $dot.Tables $table . -}}
+		{{- $localNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}.
@@ -219,6 +214,5 @@ func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$re
 }
 				{{end -}}{{- /* if ToJoinTable */ -}}
 			{{- end -}}{{- /* if nullable foreign key */ -}}
-		{{- end -}}{{- /* if unique foreign key */ -}}
 	{{- end -}}{{- /* range relationships */ -}}
 {{- end -}}{{- /* if IsJoinTable */ -}}

@@ -3,13 +3,9 @@
 	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-		{{- $txt := (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
-{{- template "relationship_to_one_setops_test_helper" (preserveDot $dot $txt) -}}
-		{{- else -}}
-		{{- $varNameSingular := .Table | singular | camelCase -}}
-		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $rel := textsFromRelationship $dot.Tables $table .}}
+	{{- $varNameSingular := .Table | singular | camelCase -}}
+	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
+	{{- $rel := textsFromRelationship $dot.Tables $table .}}
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -321,6 +317,5 @@ func test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}}(t *testi
 	}
 }
 {{end -}}
-{{- end -}}{{- /* if unique foreign key */ -}}
 {{- end -}}{{- /* range relationships */ -}}
 {{- end -}}{{- /* outer if join table */ -}}

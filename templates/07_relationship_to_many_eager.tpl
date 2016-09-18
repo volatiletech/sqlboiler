@@ -3,17 +3,11 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-			{{- /* Begin execution of template for many-to-one eager load */ -}}
-			{{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $dot.Table . -}}
-			{{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
-		{{- else -}}
-			{{- /* Begin execution of template for many-to-many eager load */ -}}
-			{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
-			{{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
-			{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
-			{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
-			{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}
+		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
+		{{- $txt := textsFromRelationship $dot.Tables $dot.Table . -}}
+		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
+		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo -}}
+		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -144,6 +138,5 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	return nil
 }
 
-{{end -}}{{/* if ForeignColumnUnique */}}
-{{- end -}}{{/* range tomany */}}
+{{end -}}{{/* range tomany */}}
 {{- end -}}{{/* if IsJoinTable */}}

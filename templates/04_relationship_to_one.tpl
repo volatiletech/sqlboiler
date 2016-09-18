@@ -23,7 +23,6 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
 	{{- end -}}{{/* end with */}}
 {{end -}}{{/* end define */}}
 
-{{- /* Begin execution of template for one-to-one relationship */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}

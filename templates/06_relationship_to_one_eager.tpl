@@ -86,7 +86,6 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 	{{- end -}}{{- /* end with */ -}}
 {{end -}}{{- /* end define */ -}}
 
-{{- /* Begin execution of template for one-to-one eager load */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}

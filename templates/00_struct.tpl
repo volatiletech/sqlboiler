@@ -26,15 +26,15 @@ type {{$modelNameCamel}}R struct {
 	{{$txt.Function.Name}} *{{$txt.ForeignTable.NameGo}}
 	{{end -}}
 
-	{{- range .Table.ToOneRelationships -}}
+	{{range .Table.ToOneRelationships -}}
 	{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
 	{{$txt.Function.Name}} *{{$txt.ForeignTable.NameGo}}
 	{{end -}}
 
-	{{- range .Table.ToManyRelationships -}}
+	{{range .Table.ToManyRelationships -}}
 	{{- $txt := txtsFromToMany $dot.Tables $dot.Table . -}}
 	{{$txt.Function.Name}} {{$txt.ForeignTable.Slice}}
-	{{- end -}}{{/* range tomany */}}
+	{{end -}}{{/* range tomany */}}
 }
 
 // {{$modelNameCamel}}L is where Load methods for each relationship are stored.

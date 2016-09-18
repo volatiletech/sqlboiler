@@ -28,7 +28,7 @@ func ({{.Function.Receiver}} *{{.LocalTable.NameGo}}) {{.Function.Name}}(exec bo
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 {{- template "relationship_to_one_helper" (preserveDot $dot $txt) -}}
 {{- end -}}
 {{- end -}}

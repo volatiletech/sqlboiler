@@ -3,10 +3,10 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
-		{{- $varNameSingular := .ForeignKey.ForeignTable | singular | camelCase -}}
-		{{- $localNameSingular := .ForeignKey.Table | singular | camelCase}}
-// Set{{$txt.Function.Name}} of the {{.ForeignKey.Table | singular}} to the related item.
+		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
+		{{- $localNameSingular := .Table | singular | camelCase}}
+// Set{{$txt.Function.Name}} of the {{.Table | singular}} to the related item.
 // Sets {{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} to related.
 // Adds {{$txt.Function.Receiver}} to related.R.{{$txt.Function.ForeignName}}.
 func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executor, insert bool, related *{{$txt.ForeignTable.NameGo}}) error {
@@ -20,7 +20,7 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 	oldVal := {{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}}
 	related.{{$txt.Function.ForeignAssignment}} = {{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}}
 	{{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} = related.{{$txt.Function.ForeignAssignment}}
-	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
+	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.Column}}"); err != nil {
 		{{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} = oldVal
 		return errors.Wrap(err, "failed to update local table")
 	}
@@ -33,7 +33,7 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 		{{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} = related
 	}
 
-	{{if .ForeignKey.Unique -}}
+	{{if .Unique -}}
 	if related.R == nil {
 		related.R = &{{$varNameSingular}}R{
 			{{$txt.Function.ForeignName}}: {{$txt.Function.Receiver}},
@@ -51,13 +51,13 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 	}
 	{{end -}}
 
-	{{if .ForeignKey.Nullable}}
+	{{if .Nullable}}
 	{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 	{{end -}}
 	return nil
 }
 
-		{{- if .ForeignKey.Nullable}}
+		{{- if .Nullable}}
 // Remove{{$txt.Function.Name}} relationship.
 // Sets {{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} to nil.
 // Removes {{$txt.Function.Receiver}} from all passed in related items' relationships struct (Optional).
@@ -65,7 +65,7 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Funct
 	var err error
 
 	{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
-	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.ForeignKey.Column}}"); err != nil {
+	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.Column}}"); err != nil {
 		{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}
@@ -75,7 +75,7 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Funct
 		return nil
 	}
 
-	{{if .ForeignKey.Unique -}}
+	{{if .Unique -}}
 	related.R.{{$txt.Function.ForeignName}} = nil
 	{{else -}}
 	for i, ri := range related.R.{{$txt.Function.ForeignName}} {

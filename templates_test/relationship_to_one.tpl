@@ -2,30 +2,20 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var foreign {{$txt.ForeignTable.NameGo}}
 	var local {{$txt.LocalTable.NameGo}}
-	{{if .ForeignKey.Nullable -}}
-	local.{{.ForeignKey.Column | titleCase}}.Valid = true
+	{{if .Nullable -}}
+	local.{{.Column | titleCase}}.Valid = true
 	{{end}}
-	{{- if .ForeignKey.ForeignColumnNullable -}}
-	foreign.{{.ForeignKey.ForeignColumn | titleCase}}.Valid = true
+	{{- if .ForeignColumnNullable -}}
+	foreign.{{.ForeignColumn | titleCase}}.Valid = true
 	{{end}}
 
-	{{if not $txt.Function.OneToOne -}}
-	if err := foreign.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-
-	local.{{$txt.Function.LocalAssignment}} = foreign.{{$txt.Function.ForeignAssignment}}
-	if err := local.Insert(tx); err != nil {
-		t.Fatal(err)
-	}
-	{{else -}}
 	if err := local.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +24,6 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Func
 	if err := foreign.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
-	{{end -}}
 
 	check, err := local.{{$txt.Function.Name}}(tx).One()
 	if err != nil {

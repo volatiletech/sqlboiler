@@ -2,7 +2,7 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo}}
@@ -30,7 +30,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 
 	query := fmt.Sprintf(
-		"select * from {{.ForeignKey.ForeignTable | $dot.SchemaTable}} where {{.ForeignKey.ForeignColumn | $dot.Quotes}} in (%s)",
+		"select * from {{.ForeignTable | $dot.SchemaTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
 		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
 	)
 
@@ -69,7 +69,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			{{if .Function.UsesBytes -}}
+			{{if $txt.Function.UsesBytes -}}
 			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
 			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {

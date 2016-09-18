@@ -91,7 +91,7 @@ func ({{$varNameSingular}}L) Load{{.Function.Name}}(e boil.Executor, singular bo
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 		{{- template "relationship_to_one_eager_helper" (preserveDot $dot $txt) -}}
 	{{- end -}}
 {{end}}

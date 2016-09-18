@@ -2,9 +2,9 @@
 {{- else -}}
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.PkgName $dot.Tables $dot.Table .}}
-{{- $varNameSingular := .ForeignKey.Table | singular | camelCase -}}
-{{- $foreignVarNameSingular := .ForeignKey.ForeignTable | singular | camelCase}}
+		{{- $txt := txtsFromFKey $dot.Tables $dot.Table .}}
+{{- $varNameSingular := .Table | singular | camelCase -}}
+{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -49,23 +49,12 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt
 			t.Error("relationship struct not set to correct value")
 		}
 
-		{{if $txt.Function.OneToOne -}}
-		zero := reflect.Zero(reflect.TypeOf(x.{{$txt.Function.ForeignAssignment}}))
-		reflect.Indirect(reflect.ValueOf(&x.{{$txt.Function.ForeignAssignment}})).Set(zero)
-
-		xrel := x.R
-		if err = x.Reload(tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-		x.R = xrel
-		{{else -}}
 		zero := reflect.Zero(reflect.TypeOf(a.{{$txt.Function.LocalAssignment}}))
 		reflect.Indirect(reflect.ValueOf(&a.{{$txt.Function.LocalAssignment}})).Set(zero)
 
 		if err = a.Reload(tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
-		{{- end}}
 
 		{{if $txt.Function.UsesBytes -}}
 		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}}) {
@@ -75,7 +64,7 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
 		}
 
-		{{if .ForeignKey.Unique -}}
+		{{if .Unique -}}
 		if x.R.{{$txt.Function.ForeignName}} != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
@@ -86,7 +75,7 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt
 		{{end -}}
 	}
 }
-{{- if or (.ForeignKey.Nullable) (and $txt.Function.OneToOne .ForeignKey.ForeignColumnNullable)}}
+{{- if .Nullable}}
 
 func test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	var err error
@@ -133,7 +122,7 @@ func test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}_{{$
 		t.Error("R struct entry should be nil")
 	}
 
-	{{if .ForeignKey.Unique -}}
+	{{if .Unique -}}
 	if b.R.{{$txt.Function.ForeignName}} != nil {
 		t.Error("failed to remove a from b's relationships")
 	}

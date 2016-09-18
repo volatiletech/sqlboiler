@@ -1,5 +1,17 @@
 package bdb
 
+type ToOneRelationship struct {
+	Table    string
+	Column   string
+	Nullable bool
+	Unique   bool
+
+	ForeignTable          string
+	ForeignColumn         string
+	ForeignColumnNullable bool
+	ForeignColumnUnique   bool
+}
+
 // ToManyRelationship describes a relationship between two tables where the
 // local table has no id, and the foreign table has an id that matches a column
 // in the local table.
@@ -26,12 +38,34 @@ type ToManyRelationship struct {
 	JoinForeignColumnUnique   bool
 }
 
+// ToOneRelationships relationship lookups
+// Input should be the sql name of a table like: videos
+func ToOneRelationships(table string, tables []Table) []ToOneRelationship {
+	localTable := GetTable(tables, table)
+	return toOneRelationships(localTable, tables)
+}
+
 // ToManyRelationships relationship lookups
 // Input should be the sql name of a table like: videos
 func ToManyRelationships(table string, tables []Table) []ToManyRelationship {
 	localTable := GetTable(tables, table)
-
 	return toManyRelationships(localTable, tables)
+}
+
+func toOneRelationships(table Table, tables []Table) []ToOneRelationship {
+	var relationships []ToOneRelationship
+
+	for _, t := range tables {
+		for _, f := range t.FKeys {
+			if f.ForeignTable != table.Name || t.IsJoinTable || !f.Unique {
+				continue
+			}
+
+			relationships = append(relationships, buildToOneRelationship(table, f, t, tables))
+		}
+	}
+
+	return relationships
 }
 
 func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
@@ -39,18 +73,32 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 
 	for _, t := range tables {
 		for _, f := range t.FKeys {
-			if f.ForeignTable != table.Name {
+			if f.ForeignTable != table.Name || f.Unique {
 				continue
 			}
 
-			relationships = append(relationships, buildRelationship(table, f, t, tables))
+			relationships = append(relationships, buildToManyRelationship(table, f, t, tables))
 		}
 	}
 
 	return relationships
 }
 
-func buildRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToManyRelationship {
+func buildToOneRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToOneRelationship {
+	return ToOneRelationship{
+		Table:    localTable.Name,
+		Column:   foreignKey.ForeignColumn,
+		Nullable: foreignKey.ForeignColumnNullable,
+		Unique:   foreignKey.ForeignColumnUnique,
+
+		ForeignTable:          foreignTable.Name,
+		ForeignColumn:         foreignKey.Column,
+		ForeignColumnNullable: foreignKey.Nullable,
+		ForeignColumnUnique:   foreignKey.Unique,
+	}
+}
+
+func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToManyRelationship {
 	if !foreignTable.IsJoinTable {
 		col := localTable.GetColumn(foreignKey.ForeignColumn)
 		return ToManyRelationship{

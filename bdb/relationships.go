@@ -1,5 +1,9 @@
 package bdb
 
+// ToOneRelationship describes a relationship between two tables where the local
+// table has no id, and the foregin table has an id that matches a column in the
+// local table, that column is also unique which changes the dynamic into a
+// one-to-one style, not a to-many.
 type ToOneRelationship struct {
 	Table    string
 	Column   string
@@ -57,11 +61,10 @@ func toOneRelationships(table Table, tables []Table) []ToOneRelationship {
 
 	for _, t := range tables {
 		for _, f := range t.FKeys {
-			if f.ForeignTable != table.Name || t.IsJoinTable || !f.Unique {
-				continue
+			if f.ForeignTable == table.Name && !t.IsJoinTable && f.Unique {
+				relationships = append(relationships, buildToOneRelationship(table, f, t, tables))
 			}
 
-			relationships = append(relationships, buildToOneRelationship(table, f, t, tables))
 		}
 	}
 
@@ -73,11 +76,9 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 
 	for _, t := range tables {
 		for _, f := range t.FKeys {
-			if f.ForeignTable != table.Name || f.Unique {
-				continue
+			if f.ForeignTable == table.Name && !f.Unique {
+				relationships = append(relationships, buildToManyRelationship(table, f, t, tables))
 			}
-
-			relationships = append(relationships, buildToManyRelationship(table, f, t, tables))
 		}
 	}
 

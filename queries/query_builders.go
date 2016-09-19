@@ -119,7 +119,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	where, whereArgs := whereClause(q, 1)
 	if len(whereArgs) != 0 {
-		args = append(args, whereArgs)
+		args = append(args, whereArgs...)
 	}
 	buf.WriteString(where)
 

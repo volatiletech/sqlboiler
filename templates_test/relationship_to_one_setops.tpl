@@ -38,15 +38,26 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt
 			t.Fatal(err)
 		}
 
+		if a.R.{{$txt.Function.Name}} != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		{{if .Unique -}}
+		if x.R.{{$txt.Function.ForeignName}} != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		{{else -}}
+		if x.R.{{$txt.Function.ForeignName}}[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		{{end -}}
+
 		{{if $txt.Function.UsesBytes -}}
 		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}}) {
 		{{else -}}
 		if a.{{$txt.Function.LocalAssignment}} != x.{{$txt.Function.ForeignAssignment}} {
 		{{end -}}
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}})
-		}
-		if a.R.{{$txt.Function.Name}} != x {
-			t.Error("relationship struct not set to correct value")
 		}
 
 		zero := reflect.Zero(reflect.TypeOf(a.{{$txt.Function.LocalAssignment}}))
@@ -63,16 +74,6 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt
 		{{end -}}
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
 		}
-
-		{{if .Unique -}}
-		if x.R.{{$txt.Function.ForeignName}} != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		{{else -}}
-		if x.R.{{$txt.Function.ForeignName}}[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		{{end -}}
 	}
 }
 {{- if .Nullable}}
@@ -119,7 +120,7 @@ func test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}_{{$
 	}
 
 	if a.{{$txt.LocalTable.ColumnNameGo}}.Valid {
-		t.Error("R struct entry should be nil")
+		t.Error("foreign key value should be nil")
 	}
 
 	{{if .Unique -}}

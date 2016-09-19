@@ -62,8 +62,12 @@ CREATE TABLE magic (
   time_nine   timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   time_eleven date NULL,
   time_twelve date NOT NULL,
-  time_fifteendate NULL DEFAULT '19990108',
-  time_sixteen date NOT NULL DEFAULT '1999-01-08',
+  time_fifteen date NULL DEFAULT '19990108',
+  time_sixteen date NOT NULL DEFAULT '1999-01-08'
+);
+
+CREATE TABLE magicest (
+  id   int primary key not null auto_increment,
   aa   json NULL,
   bb   json NOT NULL,
   kk   double precision NULL,

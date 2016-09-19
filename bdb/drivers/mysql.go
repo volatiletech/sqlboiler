@@ -47,6 +47,10 @@ func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 	config.Addr += ":" + strconv.Itoa(port)
 	config.TLSConfig = sslmode
 
+	// MySQL is a bad, and by default reads date/datetime into a []byte
+	// instead of a time.Time. Tell it to stop being a bad.
+	config.ParseTime = true
+
 	return config.FormatDSN()
 }
 
@@ -256,7 +260,9 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Int8"
 		case "smallint":
 			c.Type = "null.Int16"
-		case "mediumint", "int", "integer":
+		case "mediumint":
+			c.Type = "null.Int32"
+		case "int", "integer":
 			c.Type = "null.Int"
 		case "bigint":
 			c.Type = "null.Int64"
@@ -281,10 +287,12 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "int8"
 		case "smallint":
 			c.Type = "int16"
-		case "mediumint", "int", "integer":
+		case "mediumint":
+			c.Type = "int32"
+		case "int", "integer":
 			c.Type = "int"
 		case "bigint":
-			c.Type = "null.Int64"
+			c.Type = "int64"
 		case "float":
 			c.Type = "float32"
 		case "double", "double precision", "real":

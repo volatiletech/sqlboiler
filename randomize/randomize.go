@@ -49,7 +49,7 @@ var (
 	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
 	validatedTypes = []string{
-		"inet", "line", "uuid", "interval",
+		"inet", "line", "uuid", "interval", "mediumint",
 		"json", "jsonb", "box", "cidr", "circle",
 		"lseg", "macaddr", "path", "pg_lsn", "point",
 		"polygon", "txid_snapshot", "money", "hstore",
@@ -221,6 +221,13 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+			case typeNullInt32:
+				if fieldType == "mediumint" {
+					// 8388607 is the max for 3 byte int
+					value = null.NewInt32(int32(s.nextInt())%8388607, true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
 			case typeNullJSON:
 				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
 				field.Set(reflect.ValueOf(value))
@@ -284,6 +291,13 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				}
 				if fieldType == "money" {
 					value = randMoney(s)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+			case reflect.Int32:
+				if fieldType == "mediumint" {
+					// 8388607 is the max for 3 byte int
+					value = int32(s.nextInt()) % 8388607
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}

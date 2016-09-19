@@ -18,10 +18,15 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 	}
 
 	oldVal := {{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}}
-	related.{{$txt.Function.ForeignAssignment}} = {{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}}
 	{{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} = related.{{$txt.Function.ForeignAssignment}}
+	{{if .Nullable -}}
+	{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
+	{{- end}}
 	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.Column}}"); err != nil {
 		{{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} = oldVal
+		{{if .Nullable -}}
+		{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
+		{{- end}}
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -49,11 +54,8 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 	} else {
 		related.R.{{$txt.Function.ForeignName}} = append(related.R.{{$txt.Function.ForeignName}}, {{$txt.Function.Receiver}})
 	}
-	{{end -}}
+	{{- end}}
 
-	{{if .Nullable}}
-	{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
-	{{end -}}
 	return nil
 }
 

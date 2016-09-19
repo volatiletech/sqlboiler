@@ -75,7 +75,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$
 		{{end -}}
 	}
 }
-{{- if .Nullable}}
+{{- if .ForeignColumnNullable}}
 
 func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	var err error

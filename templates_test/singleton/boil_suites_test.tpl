@@ -1,3 +1,4 @@
+{{- $dot := .}}
 // This test suite runs each operation test in parallel.
 // Example, if your database has 3 tables, the suite will run:
 // table1, table2 and table3 Delete in parallel
@@ -130,7 +131,6 @@ func TestInsert(t *testing.T) {
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
-  {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
@@ -145,14 +145,12 @@ func TestToOne(t *testing.T) {
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOne(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-	{{- $tableName := $table.Name | plural | titleCase -}}
 	{{- if $table.IsJoinTable -}}
 	{{- else -}}
 	  {{- range $table.ToOneRelationships -}}
 		{{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
-  //t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.Function.Name}})
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.Function.Name}}_{{$txt.Function.Name}})
 	  {{end -}}{{- /* range */ -}}
 	{{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -161,9 +159,7 @@ func TestOneToOne(t *testing.T) {
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
@@ -177,7 +173,6 @@ func TestToMany(t *testing.T) {
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
-  {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
@@ -192,7 +187,6 @@ func TestToOneSet(t *testing.T) {
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
-  {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
@@ -209,18 +203,13 @@ func TestToOneRemove(t *testing.T) {
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOneSet(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-	{{- $tableName := $table.Name | plural | titleCase -}}
 	{{- if $table.IsJoinTable -}}
 	{{- else -}}
 	  {{- range $table.ToOneRelationships -}}
-		{{- if not .ForeignColumnNullable -}}
-		{{- else -}}
 		  {{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
-	//t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.Function.Name}})
-		{{end -}}{{- /* if foreign column nullable */ -}}
-	  {{- end -}}{{- /* range */ -}}
+	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.Function.Name}}_{{$txt.Function.Name}})
+	  {{end -}}{{- /* range to one relationships */ -}}
 	{{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
 }
@@ -228,16 +217,13 @@ func TestOneToOneSet(t *testing.T) {
 // TestOneToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOneRemove(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-	{{- $tableName := $table.Name | plural | titleCase -}}
 	{{- if $table.IsJoinTable -}}
 	{{- else -}}
 	  {{- range $table.ToOneRelationships -}}
-		{{- if not .ForeignColumnNullable -}}
-		{{- else -}}
+		{{- if .ForeignColumnNullable -}}
 		  {{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
-	//t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.Function.Name}})
+	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.Function.Name}}_{{$txt.Function.Name}})
 		{{end -}}{{- /* if foreign column nullable */ -}}
 	  {{- end -}}{{- /* range */ -}}
 	{{- end -}}{{- /* outer if join table */ -}}
@@ -247,9 +233,7 @@ func TestOneToOneRemove(t *testing.T) {
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
@@ -263,9 +247,7 @@ func TestToManyAdd(t *testing.T) {
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
@@ -282,9 +264,7 @@ func TestToManySet(t *testing.T) {
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}

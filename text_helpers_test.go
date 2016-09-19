@@ -23,6 +23,7 @@ func TestTxtsFromOne(t *testing.T) {
 
 	expect.ForeignKey = jets.FKeys[0]
 
+	expect.LocalTable.Name = "jets"
 	expect.LocalTable.NameGo = "Jet"
 	expect.LocalTable.ColumnNameGo = "PilotID"
 
@@ -48,6 +49,7 @@ func TestTxtsFromOne(t *testing.T) {
 	expect = TxtToOne{}
 	expect.ForeignKey = jets.FKeys[1]
 
+	expect.LocalTable.Name = "jets"
 	expect.LocalTable.NameGo = "Jet"
 	expect.LocalTable.ColumnNameGo = "AirportID"
 
@@ -100,6 +102,7 @@ func TestTxtsFromOneToOne(t *testing.T) {
 		ForeignColumnUnique:   false,
 	}
 
+	expect.LocalTable.Name = "pilots"
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
@@ -133,10 +136,12 @@ func TestTxtsFromMany(t *testing.T) {
 	pilots := bdb.GetTable(tables, "pilots")
 	texts := txtsFromToMany(tables, pilots, pilots.ToManyRelationships[0])
 	expect := TxtToMany{}
+	expect.LocalTable.Name = "pilots"
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
+	expect.ForeignTable.Name = "licenses"
 	expect.ForeignTable.NameGo = "License"
 	expect.ForeignTable.NameSingular = "license"
 	expect.ForeignTable.NamePluralGo = "Licenses"
@@ -156,10 +161,12 @@ func TestTxtsFromMany(t *testing.T) {
 
 	texts = txtsFromToMany(tables, pilots, pilots.ToManyRelationships[1])
 	expect = TxtToMany{}
+	expect.LocalTable.Name = "pilots"
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.NameSingular = "pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
+	expect.ForeignTable.Name = "languages"
 	expect.ForeignTable.NameGo = "Language"
 	expect.ForeignTable.NameSingular = "language"
 	expect.ForeignTable.NamePluralGo = "Languages"

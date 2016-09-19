@@ -14,6 +14,7 @@ type TxtToOne struct {
 	ForeignKey bdb.ForeignKey
 
 	LocalTable struct {
+		Name         string
 		NameGo       string
 		ColumnNameGo string
 	}
@@ -44,6 +45,7 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 
 	r.ForeignKey = fkey
 
+	r.LocalTable.Name = table.Name
 	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.Column))
 
@@ -115,12 +117,14 @@ func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRel
 // TxtToMany contains text that will be used by many-to-one relationships.
 type TxtToMany struct {
 	LocalTable struct {
+		Name         string
 		NameGo       string
 		NameSingular string
 		ColumnNameGo string
 	}
 
 	ForeignTable struct {
+		Name              string
 		NameGo            string
 		NameSingular      string
 		NamePluralGo      string
@@ -145,10 +149,12 @@ type TxtToMany struct {
 // transformation in advance for a given relationship.
 func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) TxtToMany {
 	r := TxtToMany{}
+	r.LocalTable.Name = table.Name
 	r.LocalTable.NameSingular = strmangle.Singular(table.Name)
 	r.LocalTable.NameGo = strmangle.TitleCase(r.LocalTable.NameSingular)
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
 
+	r.ForeignTable.Name = rel.ForeignTable
 	r.ForeignTable.NameSingular = strmangle.Singular(rel.ForeignTable)
 	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(rel.ForeignTable))
 	r.ForeignTable.NameGo = strmangle.TitleCase(r.ForeignTable.NameSingular)

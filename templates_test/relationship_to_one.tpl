@@ -3,12 +3,23 @@
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
 		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+		{{- $foreignNameSingular := $txt.ForeignTable.Name | singular | camelCase -}}
+		{{- $localNameSingular := $txt.LocalTable.Name | singular | camelCase -}}
 func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
 	var local {{$txt.LocalTable.NameGo}}
 	var foreign {{$txt.ForeignTable.NameGo}}
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, {{$foreignNameSingular}}DBTypes, true, {{$foreignNameSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$txt.ForeignTable.NameGo}} struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, {{$localNameSingular}}DBTypes, true, {{$localNameSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
+	}
+
 	{{if .Nullable -}}
 	local.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 	{{- end}}

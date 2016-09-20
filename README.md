@@ -488,7 +488,7 @@ when performing query building. Here is a list of all of your generated query mo
 
 ```go
 // Dot import so we can access query mods directly instead of prefixing with "qm."
-import . "github.com/vattle/sqlboiler/boil/qm"
+import . "github.com/vattle/sqlboiler/queries/qm"
 
 // Use a raw query against a generated struct (Pilot in this example)
 // If this query mod exists in your call, it will override the others.

@@ -3,10 +3,13 @@ test:
     - mkdir -p /home/ubuntu/.go_workspace/src/github.com/jstemmer
     - git clone git@github.com:nullbio/go-junit-report.git /home/ubuntu/.go_workspace/src/github.com/jstemmer/go-junit-report
     - go install github.com/jstemmer/go-junit-report
-    - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"" > sqlboiler.toml
+    - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"\n[mysql]\nhost=\"localhost\"\nport=3306\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"\nsslmode=\"false\"" > sqlboiler.toml
     - createdb -U ubuntu sqlboiler
     - psql -U ubuntu sqlboiler < ./testdata/postgres_test_schema.sql
-    - ./sqlboiler postgres
+    - echo "create database sqlboiler;" | mysql -u ubuntu
+    - mysql -u ubuntu sqlboiler < ./testdata/mysql_test_schema.sql
+    - ./sqlboiler postgres -o "postgres"
+    - ./sqlboiler postgres -o "mysql"
   override:
     - go test -v -race ./... > $CIRCLE_ARTIFACTS/gotest.txt
   post:

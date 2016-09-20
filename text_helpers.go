@@ -53,7 +53,7 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 	r.ForeignTable.ColumnName = fkey.ForeignColumn
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
 
-	r.Function.Name = strmangle.TitleCase(strmangle.Singular(strings.TrimSuffix(fkey.Column, "_id")))
+	r.Function.Name = strmangle.TitleCase(strmangle.Singular(trimSuffixes(fkey.Column)))
 	plurality := strmangle.Plural
 	if fkey.Unique {
 		plurality = strmangle.Singular
@@ -164,7 +164,7 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 		plurality = strmangle.Plural
 		foreignNamingColumn = rel.JoinLocalColumn
 	}
-	r.Function.ForeignName = strmangle.TitleCase(plurality(strings.TrimSuffix(foreignNamingColumn, "_id")))
+	r.Function.ForeignName = strmangle.TitleCase(plurality(trimSuffixes(foreignNamingColumn)))
 
 	col := table.GetColumn(rel.Column)
 	if rel.Nullable {
@@ -190,10 +190,25 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 // Simple case: yes - we can name the function the same as the plural table name
 // Not simple case: We have to name the function based off the foreign key and the foreign table name
 func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, toJoinTable bool) string {
-	colName := strings.TrimSuffix(fkeyColumn, "_id")
+	colName := trimSuffixes(fkeyColumn)
 	if toJoinTable || fkeyTableSingular == colName {
 		return foreignTablePluralGo
 	}
 
 	return strmangle.TitleCase(colName) + foreignTablePluralGo
+}
+
+var identifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid"}
+
+// trimSuffixes from the identifier
+func trimSuffixes(str string) string {
+	ln := len(str)
+	for _, s := range identifierSuffixes {
+		str = strings.TrimSuffix(str, s)
+		if len(str) != ln {
+			break
+		}
+	}
+
+	return str
 }

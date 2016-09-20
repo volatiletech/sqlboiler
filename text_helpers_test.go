@@ -177,3 +177,15 @@ func TestTxtsFromMany(t *testing.T) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
 	}
 }
+
+func TestTrimSuffixes(t *testing.T) {
+	t.Parallel()
+
+	for _, s := range identifierSuffixes {
+		a := "hello" + s
+
+		if z := trimSuffixes(a); z != "hello" {
+			t.Errorf("got %s", z)
+		}
+	}
+}

@@ -52,6 +52,9 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
+		if len(wl) == 0 {
+			return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
+		}
 
 		cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, wl),
@@ -61,10 +64,6 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		if err != nil {
 			return err
 		}
-	}
-
-	if len(cache.valueMapping) == 0 {
-		return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
 	}
 
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)

@@ -5,6 +5,10 @@
 func test{{$tableNamePlural}}Update(t *testing.T) {
 	t.Parallel()
 
+	if len({{$varNameSingular}}Columns) == len({{$varNameSingular}}PrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
 	seed := randomize.NewSeed()
 	var err error
 	{{$varNameSingular}} := &{{$tableNameSingular}}{}
@@ -31,23 +35,17 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	// If table only contains primary key columns, we need to pass
-	// them into a whitelist to get a valid test result,
-	// otherwise the Update method will error because it will not be able to
-	// generate a whitelist (due to it excluding primary key columns).
-	if strmangle.StringSliceMatch({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns) {
-		if err = {{$varNameSingular}}.Update(tx, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
-			t.Error(err)
-		}
-	} else {
-		if err = {{$varNameSingular}}.Update(tx); err != nil {
-			t.Error(err)
-		}
+	if err = {{$varNameSingular}}.Update(tx); err != nil {
+		t.Error(err)
 	}
 }
 
 func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 	t.Parallel()
+
+	if len({{$varNameSingular}}Columns) == len({{$varNameSingular}}PrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
 
 	seed := randomize.NewSeed()
 	var err error

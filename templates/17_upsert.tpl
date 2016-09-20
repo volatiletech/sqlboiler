@@ -85,6 +85,9 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 			{{$varNameSingular}}PrimaryKeyColumns,
 			updateColumns,
 		)
+		if len(update) == 0 {
+			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
+		}
 
 		{{if ne .DriverName "mysql" -}}
 		var conflict []string

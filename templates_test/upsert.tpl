@@ -5,6 +5,10 @@
 func test{{$tableNamePlural}}Upsert(t *testing.T) {
 	t.Parallel()
 
+	if len({{$varNameSingular}}Columns) == len({{$varNameSingular}}PrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
+
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT

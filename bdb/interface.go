@@ -119,5 +119,6 @@ func setForeignKeyConstraints(t *Table, tables []Table) {
 }
 
 func setRelationships(t *Table, tables []Table) {
+	t.ToOneRelationships = toOneRelationships(*t, tables)
 	t.ToManyRelationships = toManyRelationships(*t, tables)
 }

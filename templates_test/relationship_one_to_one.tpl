@@ -1,38 +1,38 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+	{{- range .Table.ToOneRelationships -}}
+		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 
-	var local {{$txt.LocalTable.NameGo}}
 	var foreign {{$txt.ForeignTable.NameGo}}
+	var local {{$txt.LocalTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
-	}
 	if err := randomize.Struct(seed, &foreign, {{$foreignVarNameSingular}}DBTypes, true, {{$foreignVarNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$txt.ForeignTable.NameGo}} struct: %s", err)
 	}
+	if err := randomize.Struct(seed, &local, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
+	}
 
-	{{if .Nullable -}}
-	local.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
-	{{- end}}
 	{{if .ForeignColumnNullable -}}
 	foreign.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
 	{{- end}}
+	{{if .Nullable -}}
+	local.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
+	{{- end}}
 
-	if err := foreign.Insert(tx); err != nil {
+	if err := local.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 
-	local.{{$txt.Function.LocalAssignment}} = foreign.{{$txt.Function.ForeignAssignment}}
-	if err := local.Insert(tx); err != nil {
+	foreign.{{$txt.Function.ForeignAssignment}} = local.{{$txt.Function.LocalAssignment}}
+	if err := foreign.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 

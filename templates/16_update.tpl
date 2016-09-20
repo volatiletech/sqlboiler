@@ -74,13 +74,9 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 
-	result, err := exec.Exec(cache.query, values...)
+	_, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
-	}
-
-	if r, err := result.RowsAffected(); err == nil && r != 1 {
-		return errors.Errorf("failed to update single row, updated %d rows", r)
 	}
 
 	if !cached {
@@ -172,13 +168,9 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 		fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
-	result, err := exec.Exec(sql, args...)
+	_, err := exec.Exec(sql, args...)
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")
-	}
-
-	if r, err := result.RowsAffected(); err == nil && r != ln {
-		return errors.Errorf("failed to update %d rows, only affected %d", ln, r)
 	}
 
 	return nil

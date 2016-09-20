@@ -3,9 +3,6 @@
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func test{{$tableNamePlural}}Upsert(t *testing.T) {
-	{{if not (eq .DriverName "postgres") -}}
-	t.Skip("not implemented for {{.DriverName}}")
-	{{end -}}
 	t.Parallel()
 
 	seed := randomize.NewSeed()

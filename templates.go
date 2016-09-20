@@ -166,11 +166,10 @@ var templateFunctions = template.FuncMap{
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
 
-	// Text helpers
-	"textsFromForeignKey":           textsFromForeignKey,
-	"textsFromOneToOneRelationship": textsFromOneToOneRelationship,
-	"textsFromRelationship":         textsFromRelationship,
-	"preserveDot":                   preserveDot,
+	// Relationship text helpers
+	"txtsFromFKey":     txtsFromFKey,
+	"txtsFromOneToOne": txtsFromOneToOne,
+	"txtsFromToMany":   txtsFromToMany,
 
 	// dbdrivers ops
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,

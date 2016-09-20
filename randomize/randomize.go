@@ -338,7 +338,9 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			value = getStructRandValue(s, typ)
 		}
 	} else {
-		if isNull {
+		// only get zero values for non byte slices
+		// to stop mysql from being a jerk
+		if isNull && kind != reflect.Slice {
 			value = getVariableZeroValue(s, kind)
 		} else {
 			value = getVariableRandValue(s, kind, typ)

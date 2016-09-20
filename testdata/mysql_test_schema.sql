@@ -158,19 +158,31 @@ create table spider_toys (
 );
 
 create table pals (
-  pal varchar(100) primary key
+  pal varchar(100) primary key,
+  name varchar(100)
 );
 
 create table friend (
-  friend varchar(100) primary key
+  friend varchar(100) primary key,
+  name varchar(100)
 );
 
 create table bro (
-  bros varchar(100) primary key
+  bros varchar(100) primary key,
+  name varchar(100)
 );
 
 create table enemies (
-  enemies varchar(100) primary key
+  enemies varchar(100) primary key,
+  name varchar(100)
+);
+
+create table chocolate (
+  dog varchar(100) primary key
+);
+
+create table waffles (
+  cat varchar(100) primary key
 );
 
 create table tigers (

@@ -177,22 +177,35 @@ create table spider_toys (
 
 create table pals (
   pal character varying,
+  name character varying,
   primary key (pal)
 );
 
 create table friend (
   friend character varying,
+  name character varying,
   primary key (friend)
 );
 
 create table bro (
   bros character varying,
+  name character varying,
   primary key (bros)
 );
 
 create table enemies (
   enemies character varying,
+  name character varying,
   primary key (enemies)
+);
+
+
+create table chocolate (
+  dog varchar(100) primary key
+);
+
+create table waffles (
+  cat varchar(100) primary key
 );
 
 create table fun_arrays (

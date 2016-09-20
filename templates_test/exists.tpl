@@ -23,7 +23,7 @@ func test{{$tableNamePlural}}Exists(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
 	}
-	if e != true {
+	if !e {
 		t.Errorf("Expected {{$tableNameSingular}}ExistsG to return true, but got false.")
 	}
 }

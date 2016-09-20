@@ -179,9 +179,9 @@ fmt.Println(len(users.R.FavoriteMovies))
   a *composite primary key* that encompasses both foreign table foreign keys. For example, on a
   join table named `user_videos` you should have: `primary key(user_id, video_id)`, with both `user_id`
   and `video_id` being foreign key columns to the users and videos tables respectively.
-* For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate 
+* For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate
   [time.Time parsing](https://github.com/go-sql-driver/mysql#timetime-support) when making your
-  MySQL database connection. SQLBoiler uses `time.Time` and `null.Time` to represent time in 
+  MySQL database connection. SQLBoiler uses `time.Time` and `null.Time` to represent time in
   it's models and without this enabled any models with `DATE`/`DATETIME` columns will not work.
 
 ### Pro Tips
@@ -1066,10 +1066,7 @@ Please note that multi-dimensional Postgres ARRAY types are not supported at thi
 
 #### Why aren't my time.Time or null.Time fields working in MySQL?
 
-For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate 
-[time.Time parsing](https://github.com/go-sql-driver/mysql#timetime-support) when making your
-MySQL database connection. SQLBoiler uses `time.Time` and `null.Time` to represent time in 
-it's models and without this enabled any models with `DATE`/`DATETIME` columns will not work.
+You *must* use a DSN flag in MySQL connections, see: [Requirements](#requirements)
 
 #### Where is the homepage?
 

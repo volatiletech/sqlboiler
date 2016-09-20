@@ -3,8 +3,8 @@
 	{{- $dot := . -}}
 	{{- range .Table.ToOneRelationships -}}
 		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
-		{{- $foreignNameSingular := $txt.ForeignTable.Name | singular | camelCase -}}
-		{{- $localNameSingular := $txt.LocalTable.Name | singular | camelCase -}}
+		{{- $varNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
 func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
@@ -13,10 +13,10 @@ func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}_{{$txt.F
 	var local {{$txt.LocalTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &foreign, {{$foreignNameSingular}}DBTypes, true, {{$foreignNameSingular}}ColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &foreign, {{$foreignVarNameSingular}}DBTypes, true, {{$foreignVarNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$txt.ForeignTable.NameGo}} struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &local, {{$localNameSingular}}DBTypes, true, {{$localNameSingular}}ColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
 	}
 

@@ -4,7 +4,7 @@
 	{{- $table := .Table }}
 	{{- range .Table.ToManyRelationships -}}
 	{{- $txt := txtsFromToMany $dot.Tables $table .}}
-	{{- $localNameSingular := $txt.LocalTable.Name | singular | camelCase -}}
+	{{- $varNameSingular := .Table | singular | camelCase -}}
 func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -14,7 +14,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	var b, c {{$txt.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$localNameSingular}}DBTypes, true, {{$localNameSingular}}ColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
 	}
 

@@ -50,7 +50,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 
 	{{if not $dot.NoHooks -}}
-	if len({{$txt.ForeignTable.Name | singular | camelCase}}AfterSelectHooks) != 0 {
+	if len({{$varNameSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
 				return err

@@ -26,7 +26,6 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.LocalTable.NameGo = "Jet"
 	expect.LocalTable.ColumnNameGo = "PilotID"
 
-	expect.ForeignTable.Name = "pilots"
 	expect.ForeignTable.NameGo = "Pilot"
 	expect.ForeignTable.NamePluralGo = "Pilots"
 	expect.ForeignTable.ColumnName = "id"
@@ -50,7 +49,6 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.LocalTable.NameGo = "Jet"
 	expect.LocalTable.ColumnNameGo = "AirportID"
 
-	expect.ForeignTable.Name = "airports"
 	expect.ForeignTable.NameGo = "Airport"
 	expect.ForeignTable.NamePluralGo = "Airports"
 	expect.ForeignTable.ColumnName = "id"
@@ -101,7 +99,6 @@ func TestTxtsFromOneToOne(t *testing.T) {
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
-	expect.ForeignTable.Name = "jets"
 	expect.ForeignTable.NameGo = "Jet"
 	expect.ForeignTable.NamePluralGo = "Jets"
 	expect.ForeignTable.ColumnName = "pilot_id"

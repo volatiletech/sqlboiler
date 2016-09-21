@@ -1026,10 +1026,10 @@ you will need to call the `Reload` methods on those yourself.
 jet, err := models.FindJet(db, 1)
 
 // Check if the pilot assigned to this jet exists.
-exists := jet.Pilot(db).Exists()
+exists, err := jet.Pilot(db).Exists()
 
 // Check if the pilot with ID 5 exists
-exists := models.Pilots(db, Where("id=?", 5)).Exists()
+exists, err := models.Pilots(db, Where("id=?", 5)).Exists()
 ```
 
 ## FAQ

@@ -94,6 +94,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		if len(conflictColumns) == 0 {
 			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
 			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
+		} else {
+			conflict = conflictColumns
 		}
 		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, whitelist)
 		{{- else -}}

@@ -5,7 +5,7 @@
 		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
 

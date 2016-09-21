@@ -5,7 +5,7 @@
 		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table .}}
 {{- $varNameSingular := .Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
-func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())
@@ -75,7 +75,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}_{{$
 }
 {{- if .ForeignColumnNullable}}
 
-func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}_{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())

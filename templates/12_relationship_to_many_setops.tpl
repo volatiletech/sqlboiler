@@ -4,10 +4,9 @@
 	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $rel := txtsFromToMany $dot.Tables $table . -}}
-		{{- $localNameSingular := .Table | singular | camelCase -}}
-		{{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
+		{{- $varNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to o.R.{{$rel.Function.Name}}.
@@ -50,7 +49,7 @@ func (o *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executo
 	{{end -}}
 
 	if o.R == nil {
-		o.R = &{{$localNameSingular}}R{
+		o.R = &{{$varNameSingular}}R{
 			{{$rel.Function.Name}}: related,
 		}
 	} else {
@@ -60,7 +59,7 @@ func (o *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executo
 	{{if .ToJoinTable -}}
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &{{$foreignNameSingular}}R{
+			rel.R = &{{$foreignVarNameSingular}}R{
 				{{$rel.Function.ForeignName}}: {{$rel.LocalTable.NameGo}}Slice{{"{"}}o{{"}"}},
 			}
 		} else {
@@ -70,7 +69,7 @@ func (o *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executo
 	{{else -}}
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &{{$foreignNameSingular}}R{
+			rel.R = &{{$foreignVarNameSingular}}R{
 				{{$rel.Function.ForeignName}}: o,
 			}
 		} else {

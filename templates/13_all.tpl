@@ -1,4 +1,3 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 // {{$tableNamePlural}}G retrieves all records.

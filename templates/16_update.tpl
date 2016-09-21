@@ -1,8 +1,5 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
-{{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
-{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.

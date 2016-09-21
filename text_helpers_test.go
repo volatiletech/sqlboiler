@@ -35,7 +35,6 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.Function.Name = "Pilot"
 	expect.Function.ForeignName = "Jet"
 	expect.Function.Varname = "pilot"
-	expect.Function.Receiver = "j"
 
 	expect.Function.LocalAssignment = "PilotID.Int"
 	expect.Function.ForeignAssignment = "ID"
@@ -60,7 +59,6 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.Function.Name = "Airport"
 	expect.Function.ForeignName = "Jets"
 	expect.Function.Varname = "airport"
-	expect.Function.Receiver = "j"
 
 	expect.Function.LocalAssignment = "AirportID"
 	expect.Function.ForeignAssignment = "ID"
@@ -112,7 +110,6 @@ func TestTxtsFromOneToOne(t *testing.T) {
 	expect.Function.Name = "Jet"
 	expect.Function.ForeignName = "Pilot"
 	expect.Function.Varname = "jet"
-	expect.Function.Receiver = "p"
 
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"
@@ -146,7 +143,6 @@ func TestTxtsFromMany(t *testing.T) {
 
 	expect.Function.Name = "Licenses"
 	expect.Function.ForeignName = "Pilot"
-	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID"
 
@@ -169,7 +165,6 @@ func TestTxtsFromMany(t *testing.T) {
 
 	expect.Function.Name = "Languages"
 	expect.Function.ForeignName = "Pilots"
-	expect.Function.Receiver = "p"
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "ID"
 

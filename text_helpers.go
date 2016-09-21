@@ -31,7 +31,6 @@ type TxtToOne struct {
 		ForeignName string
 
 		Varname   string
-		Receiver  string
 		UsesBytes bool
 
 		LocalAssignment   string
@@ -60,7 +59,6 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 	}
 	r.Function.ForeignName = mkFunctionName(strmangle.Singular(fkey.ForeignTable), strmangle.TitleCase(plurality(fkey.Table)), fkey.Column, false)
 	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
-	r.Function.Receiver = strings.ToLower(table.Name[:1])
 
 	if fkey.Nullable {
 		col := table.GetColumn(fkey.Column)
@@ -132,7 +130,6 @@ type TxtToMany struct {
 	Function struct {
 		Name        string
 		ForeignName string
-		Receiver    string
 
 		UsesBytes bool
 
@@ -156,7 +153,6 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(r.ForeignTable.NameSingular))
 	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
 
-	r.Function.Receiver = strings.ToLower(table.Name[:1])
 	r.Function.Name = mkFunctionName(r.LocalTable.NameSingular, r.ForeignTable.NamePluralGo, rel.ForeignColumn, rel.ToJoinTable)
 	plurality := strmangle.Singular
 	foreignNamingColumn := rel.ForeignColumn

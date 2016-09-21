@@ -7,9 +7,9 @@
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $localNameSingular := .Table | singular | camelCase}}
 // Set{{$txt.Function.Name}} of the {{.Table | singular}} to the related item.
-// Sets {{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} to related.
-// Adds {{$txt.Function.Receiver}} to related.R.{{$txt.Function.ForeignName}}.
-func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executor, insert bool, related *{{$txt.ForeignTable.NameGo}}) error {
+// Sets o.R.{{$txt.Function.Name}} to related.
+// Adds o to related.R.{{$txt.Function.ForeignName}}.
+func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executor, insert bool, related *{{$txt.ForeignTable.NameGo}}) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
@@ -17,42 +17,42 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 		}
 	}
 
-	oldVal := {{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}}
-	{{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} = related.{{$txt.Function.ForeignAssignment}}
+	oldVal := o.{{$txt.Function.LocalAssignment}}
+	o.{{$txt.Function.LocalAssignment}} = related.{{$txt.Function.ForeignAssignment}}
 	{{if .Nullable -}}
-	{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
+	o.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 	{{- end}}
-	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.Column}}"); err != nil {
-		{{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} = oldVal
+	if err = o.Update(exec, "{{.Column}}"); err != nil {
+		o.{{$txt.Function.LocalAssignment}} = oldVal
 		{{if .Nullable -}}
-		{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
+		o.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
 		{{- end}}
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	if {{$txt.Function.Receiver}}.R == nil {
-		{{$txt.Function.Receiver}}.R = &{{$localNameSingular}}R{
+	if o.R == nil {
+		o.R = &{{$localNameSingular}}R{
 			{{$txt.Function.Name}}: related,
 		}
 	} else {
-		{{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} = related
+		o.R.{{$txt.Function.Name}} = related
 	}
 
 	{{if .Unique -}}
 	if related.R == nil {
 		related.R = &{{$varNameSingular}}R{
-			{{$txt.Function.ForeignName}}: {{$txt.Function.Receiver}},
+			{{$txt.Function.ForeignName}}: o,
 		}
 	} else {
-		related.R.{{$txt.Function.ForeignName}} = {{$txt.Function.Receiver}}
+		related.R.{{$txt.Function.ForeignName}} = o
 	}
 	{{else -}}
 	if related.R == nil {
 		related.R = &{{$varNameSingular}}R{
-			{{$txt.Function.ForeignName}}: {{$txt.LocalTable.NameGo}}Slice{{"{"}}{{$txt.Function.Receiver}}{{"}"}},
+			{{$txt.Function.ForeignName}}: {{$txt.LocalTable.NameGo}}Slice{{"{"}}o{{"}"}},
 		}
 	} else {
-		related.R.{{$txt.Function.ForeignName}} = append(related.R.{{$txt.Function.ForeignName}}, {{$txt.Function.Receiver}})
+		related.R.{{$txt.Function.ForeignName}} = append(related.R.{{$txt.Function.ForeignName}}, o)
 	}
 	{{- end}}
 
@@ -61,18 +61,18 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function
 
 		{{- if .Nullable}}
 // Remove{{$txt.Function.Name}} relationship.
-// Sets {{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} to nil.
-// Removes {{$txt.Function.Receiver}} from all passed in related items' relationships struct (Optional).
-func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Executor, related *{{$txt.ForeignTable.NameGo}}) error {
+// Sets o.R.{{$txt.Function.Name}} to nil.
+// Removes o from all passed in related items' relationships struct (Optional).
+func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Executor, related *{{$txt.ForeignTable.NameGo}}) error {
 	var err error
 
-	{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
-	if err = {{$txt.Function.Receiver}}.Update(exec, "{{.Column}}"); err != nil {
-		{{$txt.Function.Receiver}}.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
+	o.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
+	if err = o.Update(exec, "{{.Column}}"); err != nil {
+		o.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	{{$txt.Function.Receiver}}.R.{{$txt.Function.Name}} = nil
+	o.R.{{$txt.Function.Name}} = nil
 	if related == nil || related.R == nil {
 		return nil
 	}
@@ -82,9 +82,9 @@ func ({{$txt.Function.Receiver}} *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Funct
 	{{else -}}
 	for i, ri := range related.R.{{$txt.Function.ForeignName}} {
 		{{if $txt.Function.UsesBytes -}}
-		if 0 != bytes.Compare({{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}}, ri.{{$txt.Function.LocalAssignment}}) {
+		if 0 != bytes.Compare(o.{{$txt.Function.LocalAssignment}}, ri.{{$txt.Function.LocalAssignment}}) {
 		{{else -}}
-		if {{$txt.Function.Receiver}}.{{$txt.Function.LocalAssignment}} != ri.{{$txt.Function.LocalAssignment}} {
+		if o.{{$txt.Function.LocalAssignment}} != ri.{{$txt.Function.LocalAssignment}} {
 		{{end -}}
 			continue
 		}

@@ -127,13 +127,13 @@ func TestTables(t *testing.T) {
 	if len(pilots.Columns) != 2 {
 		t.Error()
 	}
-	if pilots.ToManyRelationships[0].ForeignTable != "jets" {
+	if pilots.ToOneRelationships[0].ForeignTable != "jets" {
 		t.Error("want a to many to jets")
 	}
-	if pilots.ToManyRelationships[1].ForeignTable != "licenses" {
+	if pilots.ToManyRelationships[0].ForeignTable != "licenses" {
 		t.Error("want a to many to languages")
 	}
-	if pilots.ToManyRelationships[2].ForeignTable != "languages" {
+	if pilots.ToManyRelationships[1].ForeignTable != "languages" {
 		t.Error("want a to many to languages")
 	}
 

@@ -4,24 +4,18 @@
 	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-			{{- /* Begin execution of template for many-to-one setops */ -}}
-			{{- $txt := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-			{{- template "relationship_to_one_setops_helper" (preserveDot $dot $txt) -}}
-		{{- else -}}
-			{{- $rel := textsFromRelationship $dot.Tables $table . -}}
-			{{- $localNameSingular := .Table | singular | camelCase -}}
-			{{- $foreignNameSingular := .ForeignTable | singular | camelCase}}
+		{{- $rel := txtsFromToMany $dot.Tables $table . -}}
+		{{- $varNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 // Add{{$rel.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
-// Appends related to {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}.
+// Appends related to o.R.{{$rel.Function.Name}}.
 // Sets related.R.{{$rel.Function.ForeignName}} appropriately.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
+func (o *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
 	var err error
 	for _, rel := range related {
 		{{if not .ToJoinTable -}}
-		rel.{{$rel.Function.ForeignAssignment}} = {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}}
+		rel.{{$rel.Function.ForeignAssignment}} = o.{{$rel.Function.LocalAssignment}}
 			{{if .ForeignColumnNullable -}}
 		rel.{{$rel.ForeignTable.ColumnNameGo}}.Valid = true
 			{{end -}}
@@ -40,7 +34,7 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 	{{if .ToJoinTable -}}
 	for _, rel := range related {
 		query := "insert into {{.JoinTable | $dot.SchemaTable}} ({{.JoinLocalColumn | $dot.Quotes}}, {{.JoinForeignColumn | $dot.Quotes}}) values {{if $dot.Dialect.IndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}"
-		values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}, rel.{{$rel.ForeignTable.ColumnNameGo}}}
+		values := []interface{}{{"{"}}o.{{$rel.LocalTable.ColumnNameGo}}, rel.{{$rel.ForeignTable.ColumnNameGo}}}
 
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, query)
@@ -54,32 +48,32 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 	}
 	{{end -}}
 
-	if {{$rel.Function.Receiver}}.R == nil {
-		{{$rel.Function.Receiver}}.R = &{{$localNameSingular}}R{
+	if o.R == nil {
+		o.R = &{{$varNameSingular}}R{
 			{{$rel.Function.Name}}: related,
 		}
 	} else {
-		{{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = append({{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}, related...)
+		o.R.{{$rel.Function.Name}} = append(o.R.{{$rel.Function.Name}}, related...)
 	}
 
 	{{if .ToJoinTable -}}
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &{{$foreignNameSingular}}R{
-				{{$rel.Function.ForeignName}}: {{$rel.LocalTable.NameGo}}Slice{{"{"}}{{$rel.Function.Receiver}}{{"}"}},
+			rel.R = &{{$foreignVarNameSingular}}R{
+				{{$rel.Function.ForeignName}}: {{$rel.LocalTable.NameGo}}Slice{{"{"}}o{{"}"}},
 			}
 		} else {
-			rel.R.{{$rel.Function.ForeignName}} = append(rel.R.{{$rel.Function.ForeignName}}, {{$rel.Function.Receiver}})
+			rel.R.{{$rel.Function.ForeignName}} = append(rel.R.{{$rel.Function.ForeignName}}, o)
 		}
 	}
 	{{else -}}
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &{{$foreignNameSingular}}R{
-				{{$rel.Function.ForeignName}}: {{$rel.Function.Receiver}},
+			rel.R = &{{$foreignVarNameSingular}}R{
+				{{$rel.Function.ForeignName}}: o,
 			}
 		} else {
-			rel.R.{{$rel.Function.ForeignName}} = {{$rel.Function.Receiver}}
+			rel.R.{{$rel.Function.ForeignName}} = o
 		}
 	}
 	{{end -}}
@@ -91,16 +85,16 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Add{{$rel.Function
 // Set{{$rel.Function.Name}} removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
-// Sets {{$rel.Function.Receiver}}.R.{{$rel.Function.ForeignName}}'s {{$rel.Function.Name}} accordingly.
-// Replaces {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} with related.
+// Sets o.R.{{$rel.Function.ForeignName}}'s {{$rel.Function.Name}} accordingly.
+// Replaces o.R.{{$rel.Function.Name}} with related.
 // Sets related.R.{{$rel.Function.ForeignName}}'s {{$rel.Function.Name}} accordingly.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
+func (o *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$rel.ForeignTable.NameGo}}) error {
 	{{if .ToJoinTable -}}
 	query := "delete from {{.JoinTable | $dot.SchemaTable}} where {{.JoinLocalColumn | $dot.Quotes}} = {{if $dot.Dialect.IndexPlaceholders}}$1{{else}}?{{end}}"
-	values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
+	values := []interface{}{{"{"}}o.{{$rel.LocalTable.ColumnNameGo}}}
 	{{else -}}
 	query := "update {{.ForeignTable | $dot.SchemaTable}} set {{.ForeignColumn | $dot.Quotes}} = null where {{.ForeignColumn | $dot.Quotes}} = {{if $dot.Dialect.IndexPlaceholders}}$1{{else}}?{{end}}"
-	values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
+	values := []interface{}{{"{"}}o.{{$rel.LocalTable.ColumnNameGo}}}
 	{{end -}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
@@ -113,11 +107,11 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function
 	}
 
 	{{if .ToJoinTable -}}
-	remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}}, related)
-	{{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = nil
+	remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice(o, related)
+	o.R.{{$rel.Function.Name}} = nil
 	{{else -}}
-	if {{$rel.Function.Receiver}}.R != nil {
-		for _, rel := range {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} {
+	if o.R != nil {
+		for _, rel := range o.R.{{$rel.Function.Name}} {
 			rel.{{$rel.ForeignTable.ColumnNameGo}}.Valid = false
 			if rel.R == nil {
 				continue
@@ -126,24 +120,24 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function
 			rel.R.{{$rel.Function.ForeignName}} = nil
 		}
 
-		{{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = nil
+		o.R.{{$rel.Function.Name}} = nil
 	}
 	{{end -}}
 
-	return {{$rel.Function.Receiver}}.Add{{$rel.Function.Name}}(exec, insert, related...)
+	return o.Add{{$rel.Function.Name}}(exec, insert, related...)
 }
 
 // Remove{{$rel.Function.Name}} relationships from objects passed in.
 // Removes related items from R.{{$rel.Function.Name}} (uses pointer comparison, removal does not keep order)
 // Sets related.R.{{$rel.Function.ForeignName}}.
-func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Function.Name}}(exec boil.Executor, related ...*{{$rel.ForeignTable.NameGo}}) error {
+func (o *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Function.Name}}(exec boil.Executor, related ...*{{$rel.ForeignTable.NameGo}}) error {
 	var err error
 	{{if .ToJoinTable -}}
 	query := fmt.Sprintf(
 		"delete from {{.JoinTable | $dot.SchemaTable}} where {{.JoinLocalColumn | $dot.Quotes}} = {{if $dot.Dialect.IndexPlaceholders}}$1{{else}}?{{end}} and {{.JoinForeignColumn | $dot.Quotes}} in (%s)",
 		strmangle.Placeholders(dialect.IndexPlaceholders, len(related), 1, 1),
 	)
-	values := []interface{}{{"{"}}{{$rel.Function.Receiver}}.{{$rel.LocalTable.ColumnNameGo}}}
+	values := []interface{}{{"{"}}o.{{$rel.LocalTable.ColumnNameGo}}}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
@@ -169,23 +163,23 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Funct
 	{{end -}}
 
 	{{if .ToJoinTable -}}
-	remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}}, related)
+	remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice(o, related)
 	{{end -}}
-	if {{$rel.Function.Receiver}}.R == nil {
+	if o.R == nil {
 		return nil
 	}
 
 	for _, rel := range related {
-		for i, ri := range {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} {
+		for i, ri := range o.R.{{$rel.Function.Name}} {
 			if rel != ri {
 				continue
 			}
 
-			ln := len({{$rel.Function.Receiver}}.R.{{$rel.Function.Name}})
+			ln := len(o.R.{{$rel.Function.Name}})
 			if ln > 1 && i < ln-1 {
-				{{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}[i] = {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}[ln-1]
+				o.R.{{$rel.Function.Name}}[i] = o.R.{{$rel.Function.Name}}[ln-1]
 			}
-			{{$rel.Function.Receiver}}.R.{{$rel.Function.Name}} = {{$rel.Function.Receiver}}.R.{{$rel.Function.Name}}[:ln-1]
+			o.R.{{$rel.Function.Name}} = o.R.{{$rel.Function.Name}}[:ln-1]
 			break
 		}
 	}
@@ -194,13 +188,17 @@ func ({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Funct
 }
 
 				{{if .ToJoinTable -}}
-func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$rel.Function.Receiver}} *{{$rel.LocalTable.NameGo}}, related []*{{$rel.ForeignTable.NameGo}}) {
+func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice(o *{{$rel.LocalTable.NameGo}}, related []*{{$rel.ForeignTable.NameGo}}) {
 	for _, rel := range related {
 		if rel.R == nil {
 			continue
 		}
 		for i, ri := range rel.R.{{$rel.Function.ForeignName}} {
-			if {{$rel.Function.Receiver}}.{{$rel.Function.LocalAssignment}} != ri.{{$rel.Function.LocalAssignment}} {
+			{{if $rel.Function.UsesBytes -}}
+			if 0 != bytes.Compare(o.{{$rel.Function.LocalAssignment}}, ri.{{$rel.Function.LocalAssignment}}) {
+			{{else -}}
+			if o.{{$rel.Function.LocalAssignment}} != ri.{{$rel.Function.LocalAssignment}} {
+			{{end -}}
 				continue
 			}
 
@@ -215,6 +213,5 @@ func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice({{$re
 }
 				{{end -}}{{- /* if ToJoinTable */ -}}
 			{{- end -}}{{- /* if nullable foreign key */ -}}
-		{{- end -}}{{- /* if unique foreign key */ -}}
 	{{- end -}}{{- /* range relationships */ -}}
 {{- end -}}{{- /* if IsJoinTable */ -}}

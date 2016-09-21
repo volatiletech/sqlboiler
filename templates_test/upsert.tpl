@@ -3,10 +3,11 @@
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 func test{{$tableNamePlural}}Upsert(t *testing.T) {
-	{{if not (eq .DriverName "postgres") -}}
-	t.Skip("not implemented for {{.DriverName}}")
-	{{end -}}
 	t.Parallel()
+
+	if len({{$varNameSingular}}Columns) == len({{$varNameSingular}}PrimaryKeyColumns) {
+		t.Skip("Skipping table with only primary key columns")
+	}
 
 	seed := randomize.NewSeed()
 	var err error

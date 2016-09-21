@@ -15,6 +15,7 @@ type Table struct {
 
 	IsJoinTable bool
 
+	ToOneRelationships  []ToOneRelationship
 	ToManyRelationships []ToManyRelationship
 }
 

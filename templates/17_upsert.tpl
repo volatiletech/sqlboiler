@@ -35,6 +35,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	}
 	{{- end}}
 
+	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
+
 	// Build cache key in-line uglily - mysql vs postgres problems
 	buf := strmangle.GetBuffer()
 	{{if ne .DriverName "mysql" -}}
@@ -56,6 +58,10 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	for _, c := range whitelist {
 		buf.WriteString(c)
 	}
+	buf.WriteByte('.')
+	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
@@ -71,7 +77,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
-			queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o),
+			nzDefaults,
 			whitelist,
 		)
 		update := strmangle.UpdateColumnSet(
@@ -79,10 +85,13 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 			{{$varNameSingular}}PrimaryKeyColumns,
 			updateColumns,
 		)
+		if len(update) == 0 {
+			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
+		}
 
 		{{if ne .DriverName "mysql" -}}
-		var conflict []string
-		if len(conflictColumns) == 0 {
+		conflict := conflictColumns
+		if len(conflict) == 0 {
 			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
 			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
 		}
@@ -125,34 +134,35 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
 	}
 
+	var lastID int64
+	var identifierCols []interface{}
 	if len(cache.retMapping) == 0 {
-	{{if not .NoHooks -}}
-		return o.doAfterUpsertHooks(exec)
-	{{else -}}
-		return nil
-	{{end -}}
+		goto CacheNoHooks
 	}
 
-	lastID, err := result.LastInsertId()
+	lastID, err = result.LastInsertId()
 	if err != nil {
 		return ErrSyncFail
 	}
 
-	var identifierCols []interface{}
-	if lastID != 0 {
-		{{- $colName := index .Table.PKey.Columns 0 -}}
-		{{- $col := .Table.GetColumn $colName -}}
-		o.{{$colName | singular | titleCase}} = {{$col.Type}}(lastID)
-		identifierCols = []interface{}{lastID}
-	} else {
-		identifierCols = []interface{}{
-			{{range .Table.PKey.Columns -}}
-			o.{{. | singular | titleCase}},
-			{{end -}}
-		}
+	{{- $colName := index .Table.PKey.Columns 0 -}}
+	{{- $col := .Table.GetColumn $colName -}}
+	{{- $colTitled := $colName | singular | titleCase}}
+	{{if eq 1 (len .Table.PKey.Columns)}}
+		{{$cnames :=  .Table.Columns | filterColumnsByDefault true | columnNames}}
+		{{if setInclude $colName $cnames}}
+	o.{{$colTitled}} = {{$col.Type}}(lastID)
+	identifierCols = []interface{}{lastID}
+		{{end}}
+	{{else}}
+	identifierCols = []interface{}{
+		{{range .Table.PKey.Columns -}}
+		o.{{. | singular | titleCase}},
+		{{end -}}
 	}
+	{{end}}
 
-	if lastID != 0 && len(cache.retMapping) == 1 {
+	if lastID == 0 || len(cache.retMapping) != 1 || cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, cache.retQuery)
 			fmt.Fprintln(boil.DebugWriter, identifierCols...)
@@ -174,6 +184,9 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	}
 	{{- end}}
 
+{{if .UseLastInsertID -}}
+CacheNoHooks:
+{{end -}}
 	if !cached {
 		{{$varNameSingular}}UpsertCacheMut.Lock()
 		{{$varNameSingular}}UpsertCache[key] = cache

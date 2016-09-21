@@ -1,5 +1,4 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $dbName := singular .Table.Name -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}

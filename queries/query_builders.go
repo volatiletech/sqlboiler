@@ -119,7 +119,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	where, whereArgs := whereClause(q, 1)
 	if len(whereArgs) != 0 {
-		args = append(args, whereArgs)
+		args = append(args, whereArgs...)
 	}
 	buf.WriteString(where)
 
@@ -189,6 +189,17 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
+
+	if len(update) == 0 {
+		fmt.Fprintf(
+			buf,
+			"INSERT IGNORE INTO %s (%s) VALUES (%s)",
+			tableName,
+			strings.Join(whitelist, ", "),
+			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
+		)
+		return buf.String()
+	}
 
 	fmt.Fprintf(
 		buf,

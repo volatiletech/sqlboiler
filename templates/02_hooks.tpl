@@ -1,4 +1,4 @@
-{{- if eq .NoHooks false -}}
+{{- if not .NoHooks -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 var {{$varNameSingular}}BeforeInsertHooks []{{$tableNameSingular}}Hook

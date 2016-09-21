@@ -1,8 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+	{{- range .Table.ToOneRelationships -}}
+		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase}}
 // {{$txt.Function.Name}}G pointed to by the foreign key.
 func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {

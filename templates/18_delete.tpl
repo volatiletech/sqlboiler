@@ -42,8 +42,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 	}
 	{{- end}}
 
-	args := o.inPrimaryKeyArgs()
-
+	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), {{$varNameSingular}}PrimaryKeyMapping)
 	sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
 
 	if boil.DebugMode {
@@ -130,7 +129,11 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 	}
 	{{- end}}
 
-	args := o.inPrimaryKeyArgs()
+	var args []interface{}
+	for _, obj := range o {
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$varNameSingular}}PrimaryKeyMapping)
+		args = append(args, pkeyArgs...)
+	}
 
 	sql := fmt.Sprintf(
 		"DELETE FROM {{$schemaTable}} WHERE (%s) IN (%s)",

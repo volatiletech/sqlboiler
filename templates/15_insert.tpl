@@ -69,7 +69,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 		if len(cache.retMapping) != 0 {
 			{{if .UseLastInsertID -}}
-			cache.retQuery = fmt.Sprintf("SELECT %s FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.LQ}},{{.RQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
+			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.LQ}},{{.RQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
 			{{else -}}
 			cache.query += fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.LQ}},{{.RQ}}"))
 			{{end -}}
@@ -100,21 +100,25 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	if err != nil {
 		return ErrSyncFail
 	}
-
-	if lastID != 0 {
-		{{- $colName := index .Table.PKey.Columns 0 -}}
-		{{- $col := .Table.GetColumn $colName -}}
-		o.{{$colName | singular | titleCase}} = {{$col.Type}}(lastID)
-		identifierCols = []interface{}{lastID}
-	} else {
-		identifierCols = []interface{}{
-			{{range .Table.PKey.Columns -}}
-			o.{{. | singular | titleCase}},
-			{{end -}}
-		}
+	
+	{{- $colName := index .Table.PKey.Columns 0 -}}
+	{{- $col := .Table.GetColumn $colName -}}
+	{{- $colTitled := $colName | singular | titleCase}}
+	{{if eq 1 (len .Table.PKey.Columns)}}
+		{{$cnames :=  .Table.Columns | filterColumnsByDefault true | columnNames}}
+		{{if setInclude $colName $cnames}}
+	o.{{$colTitled}} = {{$col.Type}}(lastID)
+	identifierCols = []interface{}{lastID}
+		{{end}}
+	{{else}}
+	identifierCols = []interface{}{
+		{{range .Table.PKey.Columns -}}
+		o.{{. | singular | titleCase}},
+		{{end -}}
 	}
+	{{end}}
 
-	if lastID != 0 && len(cache.retMapping) == 1 {
+	if lastID == 0 || len(cache.retMapping) != 1 || cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, cache.retQuery)
 			fmt.Fprintln(boil.DebugWriter, identifierCols...)

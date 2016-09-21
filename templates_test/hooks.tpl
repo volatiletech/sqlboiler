@@ -1,4 +1,4 @@
-{{- if eq .NoHooks false -}}
+{{- if not .NoHooks -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}

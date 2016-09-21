@@ -143,10 +143,11 @@ func removeDuplicates(dedup []string) []string {
 
 var defaultTemplateImports = imports{
 	standard: importList{
-		`"fmt"`,
-		`"strings"`,
+		`"bytes"`,
 		`"database/sql"`,
+		`"fmt"`,
 		`"reflect"`,
+		`"strings"`,
 		`"sync"`,
 		`"time"`,
 	},
@@ -177,8 +178,9 @@ var defaultSingletonTemplateImports = map[string]imports{
 
 var defaultTestTemplateImports = imports{
 	standard: importList{
-		`"testing"`,
+		`"bytes"`,
 		`"reflect"`,
+		`"testing"`,
 	},
 	thirdParty: importList{
 		`"github.com/vattle/sqlboiler/boil"`,

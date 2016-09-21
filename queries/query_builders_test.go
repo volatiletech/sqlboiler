@@ -63,19 +63,19 @@ func TestBuildQuery(t *testing.T) {
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				{clause: "a=?", args: []interface{}{}},
-				{clause: "b=?", args: []interface{}{}},
-				{clause: "c=?", args: []interface{}{}},
+				{clause: "a=?", args: []interface{}{1}},
+				{clause: "b=?", args: []interface{}{2}},
+				{clause: "c=?", args: []interface{}{3}},
 			},
-		}, nil},
+		}, []interface{}{1, 2, 3}},
 		{&Query{
 			delete: true,
 			from:   []string{"thing happy", `upset as "sad"`, "fun", "thing as stuff", `"angry" as mad`},
 			where: []where{
-				{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{}},
+				{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{1, 2, 3}},
 			},
 			limit: 5,
-		}, nil},
+		}, []interface{}{1, 2, 3}},
 		{&Query{
 			from: []string{"thing happy", `"fun"`, `stuff`},
 			update: map[string]interface{}{

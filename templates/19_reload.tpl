@@ -73,7 +73,11 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 	}
 
 	{{$varNamePlural}} := {{$tableNameSingular}}Slice{}
-	args := o.inPrimaryKeyArgs()
+	var args []interface{}
+	for _, obj := range *o {
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$varNameSingular}}PrimaryKeyMapping)
+		args = append(args, pkeyArgs...)
+	}
 
 	sql := fmt.Sprintf(
 		"SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE (%s) IN (%s)",

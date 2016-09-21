@@ -1,3 +1,4 @@
+{{- $dot := .}}
 // This test suite runs each operation test in parallel.
 // Example, if your database has 3 tables, the suite will run:
 // table1, table2 and table3 Delete in parallel
@@ -104,18 +105,7 @@ func TestCount(t *testing.T) {
   {{- end -}}
 }
 
-func TestHelpers(t *testing.T) {
-  {{- range $index, $table := .Tables}}
-  {{- if $table.IsJoinTable -}}
-  {{- else -}}
-  {{- $tableName := $table.Name | plural | titleCase -}}
-  t.Run("{{$tableName}}", test{{$tableName}}InPrimaryKeyArgs)
-  t.Run("{{$tableName}}", test{{$tableName}}SliceInPrimaryKeyArgs)
-  {{end -}}
-  {{- end -}}
-}
-
-{{if eq .NoHooks false -}}
+{{if not .NoHooks -}}
 func TestHooks(t *testing.T) {
   {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
@@ -141,35 +131,41 @@ func TestInsert(t *testing.T) {
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
-  {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
     {{- range $table.FKeys -}}
-      {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
-  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOne{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+      {{- $txt := txtsFromFKey $dot.Tables $table . -}}
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
     {{end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
 {{- end -}}{{- /* tables range */ -}}
 }
 
+// TestOneToOne tests cannot be run in parallel
+// or deadlocks can occur.
+func TestOneToOne(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+	{{- if $table.IsJoinTable -}}
+	{{- else -}}
+	  {{- range $table.ToOneRelationships -}}
+		{{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+	  {{end -}}{{- /* range */ -}}
+	{{- end -}}{{- /* outer if join table */ -}}
+  {{- end -}}{{- /* outer tables range */ -}}
+}
+
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
-        {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-        {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-          {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-  t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-        {{else -}}
-  t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}})
-        {{end -}}{{- /* if unique */ -}}
-      {{- end -}}{{- /* range */ -}}
+        {{- $txt := txtsFromToMany $dot.Tables $table . -}}
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}})
+      {{end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
 }
@@ -177,13 +173,12 @@ func TestToMany(t *testing.T) {
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
-  {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
     {{- range $table.FKeys -}}
-      {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
-  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOneSetOp{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+      {{- $txt := txtsFromFKey $dot.Tables $table . -}}
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
     {{end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
 {{- end -}}{{- /* tables range */ -}}
@@ -192,35 +187,59 @@ func TestToOneSet(t *testing.T) {
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
-  {{- $dot := . -}}
 {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
   {{- else -}}
     {{- range $table.FKeys -}}
-      {{- $rel := textsFromForeignKey $dot.PkgName $dot.Tables $table . -}}
-      {{- if $rel.ForeignKey.Nullable -}}
-  t.Run("{{$rel.LocalTable.NameGo}}To{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToOneRemoveOp{{$rel.ForeignTable.NameGo}}_{{$rel.Function.Name}})
+      {{- $txt := txtsFromFKey $dot.Tables $table . -}}
+      {{- if $txt.ForeignKey.Nullable -}}
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
       {{end -}}{{- /* if foreign key nullable */ -}}
     {{- end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
 {{- end -}}{{- /* tables range */ -}}
 }
 
+// TestOneToOneSet tests cannot be run in parallel
+// or deadlocks can occur.
+func TestOneToOneSet(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+	{{- if $table.IsJoinTable -}}
+	{{- else -}}
+	  {{- range $table.ToOneRelationships -}}
+		  {{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
+	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+	  {{end -}}{{- /* range to one relationships */ -}}
+	{{- end -}}{{- /* outer if join table */ -}}
+  {{- end -}}{{- /* outer tables range */ -}}
+}
+
+// TestOneToOneRemove tests cannot be run in parallel
+// or deadlocks can occur.
+func TestOneToOneRemove(t *testing.T) {
+  {{- range $index, $table := .Tables}}
+	{{- if $table.IsJoinTable -}}
+	{{- else -}}
+	  {{- range $table.ToOneRelationships -}}
+		{{- if .ForeignColumnNullable -}}
+		  {{- $txt := txtsFromOneToOne $dot.Tables $table . -}}
+	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+		{{end -}}{{- /* if foreign column nullable */ -}}
+	  {{- end -}}{{- /* range */ -}}
+	{{- end -}}{{- /* outer if join table */ -}}
+  {{- end -}}{{- /* outer tables range */ -}}
+}
+
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
-        {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-        {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-        {{- else -}}
-  t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}})
-        {{end -}}{{- /* if unique */ -}}
-      {{- end -}}{{- /* range */ -}}
+        {{- $txt := txtsFromToMany $dot.Tables $table . -}}
+  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}})
+      {{end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
 }
@@ -228,22 +247,15 @@ func TestToManyAdd(t *testing.T) {
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
         {{- if not .ForeignColumnNullable -}}
         {{- else -}}
-          {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-          {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-            {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-    t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneSetOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-          {{else -}}
-    t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}})
-          {{end -}}{{- /* if unique */ -}}
-        {{- end -}}{{- /* if foreign column nullable */ -}}
+          {{- $txt := txtsFromToMany $dot.Tables $table . -}}
+    t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}})
+        {{end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -252,22 +264,15 @@ func TestToManySet(t *testing.T) {
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
-  {{- $dot := .}}
   {{- range $index, $table := .Tables}}
-    {{- $tableName := $table.Name | plural | titleCase -}}
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
         {{- if not .ForeignColumnNullable -}}
         {{- else -}}
-          {{- $rel := textsFromRelationship $dot.Tables $table . -}}
-          {{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-            {{- $oneToOne := textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table . -}}
-    t.Run("{{$oneToOne.LocalTable.NameGo}}OneToOne{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}}", test{{$oneToOne.LocalTable.NameGo}}ToOneRemoveOp{{$oneToOne.ForeignTable.NameGo}}_{{$oneToOne.Function.Name}})
-          {{else -}}
-    t.Run("{{$rel.LocalTable.NameGo}}ToMany{{$rel.Function.Name}}", test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}})
-          {{end -}}{{- /* if unique */ -}}
-        {{- end -}}{{- /* if foreign column nullable */ -}}
+          {{- $txt := txtsFromToMany $dot.Tables $table . -}}
+    t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}})
+        {{end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}

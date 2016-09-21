@@ -3,13 +3,9 @@
 	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- if (and .ForeignColumnUnique (not .ToJoinTable)) -}}
-{{- template "relationship_to_one_setops_test_helper" (textsFromOneToOneRelationship $dot.PkgName $dot.Tables $table .) -}}
-		{{- else -}}
-		{{- $varNameSingular := .Table | singular | camelCase -}}
-		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $rel := textsFromRelationship $dot.Tables $table .}}
-
+	{{- $varNameSingular := .Table | singular | camelCase -}}
+	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
+	{{- $rel := txtsFromToMany $dot.Tables $table .}}
 func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -20,12 +16,12 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
 	var b, c, d, e {{$rel.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	foreigners := []*{{$rel.ForeignTable.NameGo}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -63,12 +59,21 @@ func test{{$rel.LocalTable.NameGo}}ToManyAddOp{{$rel.Function.Name}}(t *testing.
 		}
 		{{- else}}
 
+		{{if $rel.Function.UsesBytes -}}
+		if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}}) {
+			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}})
+		}
+		if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, second.{{$rel.Function.ForeignAssignment}}) {
+			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, second.{{$rel.Function.ForeignAssignment}})
+		}
+		{{else -}}
 		if a.{{$rel.Function.LocalAssignment}} != first.{{$rel.Function.ForeignAssignment}} {
 			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, first.{{$rel.Function.ForeignAssignment}})
 		}
 		if a.{{$rel.Function.LocalAssignment}} != second.{{$rel.Function.ForeignAssignment}} {
 			t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, second.{{$rel.Function.ForeignAssignment}})
 		}
+		{{- end}}
 
 		if first.R.{{$rel.Function.ForeignName}} != &a {
 			t.Error("relationship was not added properly to the foreign slice")
@@ -106,12 +111,12 @@ func test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}}(t *testing.
 	var b, c, d, e {{$rel.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	foreigners := []*{{$rel.ForeignTable.NameGo}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -174,12 +179,21 @@ func test{{$rel.LocalTable.NameGo}}ToManySetOp{{$rel.Function.Name}}(t *testing.
 	if c.{{$rel.ForeignTable.ColumnNameGo}}.Valid {
 		t.Error("want c's foreign key value to be nil")
 	}
+	{{if $rel.Function.UsesBytes -}}
+	if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}}) {
+		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}})
+	}
+	if 0 != bytes.Compare(a.{{$rel.Function.LocalAssignment}}, e.{{$rel.Function.ForeignAssignment}}) {
+		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, e.{{$rel.Function.ForeignAssignment}})
+	}
+	{{else -}}
 	if a.{{$rel.Function.LocalAssignment}} != d.{{$rel.Function.ForeignAssignment}} {
 		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, d.{{$rel.Function.ForeignAssignment}})
 	}
 	if a.{{$rel.Function.LocalAssignment}} != e.{{$rel.Function.ForeignAssignment}} {
 		t.Error("foreign key was wrong value", a.{{$rel.Function.LocalAssignment}}, e.{{$rel.Function.ForeignAssignment}})
 	}
+	{{- end}}
 
 	if b.R.{{$rel.Function.ForeignName}} != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
@@ -213,12 +227,12 @@ func test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}}(t *testi
 	var b, c, d, e {{$rel.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 	foreigners := []*{{$rel.ForeignTable.NameGo}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}PrimaryKeyColumns...); err != nil {
+		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -303,6 +317,5 @@ func test{{$rel.LocalTable.NameGo}}ToManyRemoveOp{{$rel.Function.Name}}(t *testi
 	}
 }
 {{end -}}
-{{- end -}}{{- /* if unique foreign key */ -}}
 {{- end -}}{{- /* range relationships */ -}}
 {{- end -}}{{- /* outer if join table */ -}}

@@ -49,7 +49,7 @@ var (
 	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
 	validatedTypes = []string{
-		"inet", "line", "uuid", "interval",
+		"inet", "line", "uuid", "interval", "mediumint",
 		"json", "jsonb", "box", "cidr", "circle",
 		"lseg", "macaddr", "path", "pg_lsn", "point",
 		"polygon", "txid_snapshot", "money", "hstore",
@@ -135,7 +135,7 @@ func Struct(s *Seed, str interface{}, colTypes map[string]string, canBeNull bool
 // not cause mismatches in the test data comparisons.
 func randDate(s *Seed) time.Time {
 	t := time.Date(
-		1850+s.nextInt()%160,
+		1972+s.nextInt()%60,
 		time.Month(1+(s.nextInt()%12)),
 		1+(s.nextInt()%25),
 		0,
@@ -221,6 +221,13 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+			case typeNullInt32:
+				if fieldType == "mediumint" {
+					// 8388607 is the max for 3 byte int
+					value = null.NewInt32(int32(s.nextInt())%8388607, true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
 			case typeNullJSON:
 				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
 				field.Set(reflect.ValueOf(value))
@@ -287,6 +294,13 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+			case reflect.Int32:
+				if fieldType == "mediumint" {
+					// 8388607 is the max for 3 byte int
+					value = int32(s.nextInt()) % 8388607
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
 			}
 			switch typ {
 			case typeJSON:
@@ -319,13 +333,15 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		// Retrieve the value to be returned
 	} else if kind == reflect.Struct {
 		if isNull {
-			value = getStructNullValue(typ)
+			value = getStructNullValue(s, typ)
 		} else {
 			value = getStructRandValue(s, typ)
 		}
 	} else {
-		if isNull {
-			value = getVariableZeroValue(kind)
+		// only get zero values for non byte slices
+		// to stop mysql from being a jerk
+		if isNull && kind != reflect.Slice {
+			value = getVariableZeroValue(s, kind)
 		} else {
 			value = getVariableRandValue(s, kind, typ)
 		}
@@ -404,10 +420,11 @@ func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} 
 }
 
 // getStructNullValue for the matching type.
-func getStructNullValue(typ reflect.Type) interface{} {
+func getStructNullValue(s *Seed, typ reflect.Type) interface{} {
 	switch typ {
 	case typeTime:
-		return time.Time{}
+		// MySQL does not support 0 value time.Time, so use rand
+		return randDate(s)
 	case typeNullBool:
 		return null.NewBool(false, false)
 	case typeNullString:
@@ -463,7 +480,7 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeNullFloat64:
 		return null.NewFloat64(float64(s.nextInt()%10)/10.0+float64(s.nextInt()%10), true)
 	case typeNullInt:
-		return null.NewInt(s.nextInt(), true)
+		return null.NewInt(int(int32(s.nextInt())), true)
 	case typeNullInt8:
 		return null.NewInt8(int8(s.nextInt()), true)
 	case typeNullInt16:
@@ -483,14 +500,14 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeNullUint64:
 		return null.NewUint64(uint64(s.nextInt()), true)
 	case typeNullBytes:
-		return null.NewBytes(randByteSlice(s, 16), true)
+		return null.NewBytes(randByteSlice(s, 1), true)
 	}
 
 	return nil
 }
 
 // getVariableZeroValue for the matching type.
-func getVariableZeroValue(kind reflect.Kind) interface{} {
+func getVariableZeroValue(s *Seed, kind reflect.Kind) interface{} {
 	switch kind {
 	case reflect.Float32:
 		return float32(0)
@@ -521,7 +538,7 @@ func getVariableZeroValue(kind reflect.Kind) interface{} {
 	case reflect.String:
 		return ""
 	case reflect.Slice:
-		return []byte(nil)
+		return []byte{}
 	}
 
 	return nil
@@ -565,7 +582,7 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 		if sliceVal.Kind() != reflect.Uint8 {
 			return errors.Errorf("unsupported slice type: %T, was expecting byte slice.", typ.String())
 		}
-		return randByteSlice(s, 5+s.nextInt()%20)
+		return randByteSlice(s, 1)
 	}
 
 	return nil

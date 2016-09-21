@@ -1,8 +1,5 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
-{{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
-{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.
@@ -52,6 +49,9 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
+		if len(wl) == 0 {
+			return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
+		}
 
 		cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, wl),
@@ -63,10 +63,6 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		}
 	}
 
-	if len(cache.valueMapping) == 0 {
-		return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
-	}
-
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
 	if boil.DebugMode {
@@ -74,13 +70,9 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 
-	result, err := exec.Exec(cache.query, values...)
+	_, err = exec.Exec(cache.query, values...)
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
-	}
-
-	if r, err := result.RowsAffected(); err == nil && r != 1 {
-		return errors.Errorf("failed to update single row, updated %d rows", r)
 	}
 
 	if !cached {
@@ -156,7 +148,10 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 	}
 
 	// Append all of the primary key values for each column
-	args = append(args, o.inPrimaryKeyArgs()...)
+	for _, obj := range o {
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$varNameSingular}}PrimaryKeyMapping)
+		args = append(args, pkeyArgs...)
+	}
 
 	sql := fmt.Sprintf(
 		"UPDATE {{$schemaTable}} SET %s WHERE ({{.LQ}}{{.Table.PKey.Columns | join (printf "%s,%s" .LQ .RQ)}}{{.RQ}}) IN (%s)",
@@ -169,13 +164,9 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 		fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
-	result, err := exec.Exec(sql, args...)
+	_, err := exec.Exec(sql, args...)
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")
-	}
-
-	if r, err := result.RowsAffected(); err == nil && r != ln {
-		return errors.Errorf("failed to update %d rows, only affected %d", ln, r)
 	}
 
 	return nil

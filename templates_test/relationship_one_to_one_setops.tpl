@@ -1,11 +1,11 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table .}}
+	{{- range .Table.ToOneRelationships -}}
+		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table .}}
 {{- $varNameSingular := .Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
-func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())
@@ -41,16 +41,9 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 		if a.R.{{$txt.Function.Name}} != x {
 			t.Error("relationship struct not set to correct value")
 		}
-
-		{{if .Unique -}}
 		if x.R.{{$txt.Function.ForeignName}} != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		{{else -}}
-		if x.R.{{$txt.Function.ForeignName}}[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		{{end -}}
 
 		{{if $txt.Function.UsesBytes -}}
 		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}}) {
@@ -60,10 +53,10 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}})
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.{{$txt.Function.LocalAssignment}}))
-		reflect.Indirect(reflect.ValueOf(&a.{{$txt.Function.LocalAssignment}})).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(x.{{$txt.Function.ForeignAssignment}}))
+		reflect.Indirect(reflect.ValueOf(&x.{{$txt.Function.ForeignAssignment}})).Set(zero)
 
-		if err = a.Reload(tx); err != nil {
+		if err = x.Reload(tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
@@ -74,11 +67,15 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 		{{end -}}
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
 		}
+
+		if err = x.Delete(tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
 	}
 }
-{{- if .Nullable}}
+{{- if .ForeignColumnNullable}}
 
-func test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
+func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
 	tx := MustTx(boil.Begin())
@@ -119,19 +116,13 @@ func test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}Usin
 		t.Error("R struct entry should be nil")
 	}
 
-	if a.{{$txt.LocalTable.ColumnNameGo}}.Valid {
-		t.Error("foreign key value should be nil")
+	if b.{{$txt.ForeignTable.ColumnNameGo}}.Valid {
+		t.Error("foreign key column should be nil")
 	}
 
-	{{if .Unique -}}
 	if b.R.{{$txt.Function.ForeignName}} != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
-	{{else -}}
-	if len(b.R.{{$txt.Function.ForeignName}}) != 0 {
-		t.Error("failed to remove a from b's relationships")
-	}
-	{{- end}}
 }
 {{end -}}{{/* end if foreign key nullable */}}
 {{- end -}}{{/* range */}}

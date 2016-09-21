@@ -105,7 +105,7 @@ func TestCount(t *testing.T) {
   {{- end -}}
 }
 
-{{if eq .NoHooks false -}}
+{{if not .NoHooks -}}
 func TestHooks(t *testing.T) {
   {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}

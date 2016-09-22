@@ -107,7 +107,7 @@ func (o *{{$rel.LocalTable.NameGo}}) Set{{$rel.Function.Name}}(exec boil.Executo
 	}
 
 	{{if .ToJoinTable -}}
-	remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice(o, related)
+	remove{{$rel.Function.Name}}From{{$rel.Function.ForeignName}}Slice(o, related)
 	o.R.{{$rel.Function.Name}} = nil
 	{{else -}}
 	if o.R != nil {
@@ -163,7 +163,7 @@ func (o *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Function.Name}}(exec boil.Exec
 	{{end -}}
 
 	{{if .ToJoinTable -}}
-	remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice(o, related)
+	remove{{$rel.Function.Name}}From{{$rel.Function.ForeignName}}Slice(o, related)
 	{{end -}}
 	if o.R == nil {
 		return nil
@@ -188,7 +188,7 @@ func (o *{{$rel.LocalTable.NameGo}}) Remove{{$rel.Function.Name}}(exec boil.Exec
 }
 
 				{{if .ToJoinTable -}}
-func remove{{$rel.LocalTable.NameGo}}From{{$rel.ForeignTable.NameGo}}Slice(o *{{$rel.LocalTable.NameGo}}, related []*{{$rel.ForeignTable.NameGo}}) {
+func remove{{$rel.Function.Name}}From{{$rel.Function.ForeignName}}Slice(o *{{$rel.LocalTable.NameGo}}, related []*{{$rel.ForeignTable.NameGo}}) {
 	for _, rel := range related {
 		if rel.R == nil {
 			continue

@@ -170,6 +170,100 @@ func TestTxtsFromMany(t *testing.T) {
 	}
 }
 
+func TestTxtNameToOne(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Table               string
+		Column              string
+		Unique              bool
+		ForeignTable        string
+		ForeignColumn       string
+		ForeignColumnUnique bool
+
+		LocalFn   string
+		ForeignFn string
+	}{
+		{"jets", "airport_id", false, "airports", "id", true, "Airport", "Jets"},
+		{"jets", "airport_id", true, "airports", "id", true, "Airport", "Jet"},
+
+		{"jets", "holiday_id", false, "airports", "id", true, "Holiday", "HolidayJets"},
+		{"jets", "holiday_id", true, "airports", "id", true, "Holiday", "HolidayJet"},
+
+		{"jets", "holiday_airport_id", false, "airports", "id", true, "HolidayAirport", "HolidayAirportJets"},
+		{"jets", "holiday_airport_id", true, "airports", "id", true, "HolidayAirport", "HolidayAirportJet"},
+
+		{"jets", "jet_id", false, "jets", "id", true, "Jet", "Jets"},
+		{"jets", "jet_id", true, "jets", "id", true, "Jet", "Jet"},
+		{"jets", "plane_id", false, "jets", "id", true, "Plane", "PlaneJets"},
+		{"jets", "plane_id", true, "jets", "id", true, "Plane", "PlaneJet"},
+	}
+
+	for i, test := range tests {
+		fk := bdb.ForeignKey{
+			Table: test.Table, Column: test.Column, Unique: test.Unique,
+			ForeignTable: test.ForeignTable, ForeignColumn: test.ForeignColumn, ForeignColumnUnique: test.ForeignColumnUnique,
+		}
+
+		local, foreign := txtNameToOne(fk)
+		if local != test.LocalFn {
+			t.Error(i, "local wrong:", local, "want:", test.LocalFn)
+		}
+		if foreign != test.ForeignFn {
+			t.Error(i, "foreign wrong:", foreign, "want:", test.ForeignFn)
+		}
+	}
+}
+
+func TestTxtNameToMany(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Table  string
+		Column string
+
+		ForeignTable  string
+		ForeignColumn string
+
+		ToJoinTable       bool
+		JoinLocalColumn   string
+		JoinForeignColumn string
+
+		LocalFn   string
+		ForeignFn string
+	}{
+		{"airports", "id", "jets", "airport_id", false, "", "", "Jets", "Airport"},
+		{"airports", "id", "jets", "holiday_airport_id", false, "", "", "HolidayAirportJets", "HolidayAirport"},
+
+		{"jets", "id", "jets", "jet_id", false, "", "", "Jets", "Jet"},
+		{"jets", "id", "jets", "plane_id", false, "", "", "PlaneJets", "Plane"},
+
+		{"pilots", "id", "languages", "id", true, "pilot_id", "language_id", "Languages", "Pilots"},
+		{"pilots", "id", "languages", "id", true, "captain_id", "lingo_id", "LingoLanguages", "CaptainPilots"},
+
+		{"pilots", "id", "pilots", "id", true, "pilot_id", "mentor_id", "MentorPilots", "Pilots"},
+		{"pilots", "id", "pilots", "id", true, "mentor_id", "pilot_id", "Pilots", "MentorPilots"},
+		{"pilots", "id", "pilots", "id", true, "captain_id", "mentor_id", "MentorPilots", "CaptainPilots"},
+	}
+
+	for i, test := range tests {
+		fk := bdb.ToManyRelationship{
+			Table: test.Table, Column: test.Column,
+			ForeignTable: test.ForeignTable, ForeignColumn: test.ForeignColumn,
+			ToJoinTable:     test.ToJoinTable,
+			JoinLocalColumn: test.JoinLocalColumn, JoinForeignColumn: test.JoinForeignColumn,
+		}
+
+		local, foreign := txtNameToMany(fk)
+		if local != test.LocalFn {
+			t.Error(i, "local wrong:", local, "want:", test.LocalFn)
+		}
+		if foreign != test.ForeignFn {
+			t.Error(i, "foreign wrong:", foreign, "want:", test.ForeignFn)
+		}
+	}
+}
+
 func TestTrimSuffixes(t *testing.T) {
 	t.Parallel()
 

@@ -109,13 +109,11 @@ func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRel
 type TxtToMany struct {
 	LocalTable struct {
 		NameGo       string
-		NameSingular string
 		ColumnNameGo string
 	}
 
 	ForeignTable struct {
 		NameGo            string
-		NameSingular      string
 		NamePluralGo      string
 		NameHumanReadable string
 		ColumnNameGo      string
@@ -137,15 +135,14 @@ type TxtToMany struct {
 // transformation in advance for a given relationship.
 func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) TxtToMany {
 	r := TxtToMany{}
-	r.LocalTable.NameSingular = strmangle.Singular(table.Name)
-	r.LocalTable.NameGo = strmangle.TitleCase(r.LocalTable.NameSingular)
+	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
 
-	r.ForeignTable.NameSingular = strmangle.Singular(rel.ForeignTable)
+	foreignNameSingular := strmangle.Singular(rel.ForeignTable)
 	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(rel.ForeignTable))
-	r.ForeignTable.NameGo = strmangle.TitleCase(r.ForeignTable.NameSingular)
+	r.ForeignTable.NameGo = strmangle.TitleCase(foreignNameSingular)
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(rel.ForeignColumn)
-	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(r.ForeignTable.NameSingular))
+	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(foreignNameSingular))
 	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
 
 	r.Function.Name, r.Function.ForeignName = txtNameToMany(rel)

@@ -5,6 +5,7 @@
 	{{- range .Table.ToManyRelationships -}}
 	{{- $txt := txtsFromToMany $dot.Tables $table .}}
 	{{- $varNameSingular := .Table | singular | camelCase -}}
+	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
 func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 	tx := MustTx(boil.Begin())
@@ -22,8 +23,8 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, {{$txt.ForeignTable.NameSingular | camelCase}}DBTypes, false{{if not $txt.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
-	randomize.Struct(seed, &c, {{$txt.ForeignTable.NameSingular | camelCase}}DBTypes, false{{if not $txt.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
+	randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false{{if not $txt.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
+	randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false{{if not $txt.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
 	{{if .Nullable -}}
 	a.{{.Column | titleCase}}.Valid = true
 	{{- end}}

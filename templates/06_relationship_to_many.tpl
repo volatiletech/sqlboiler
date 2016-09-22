@@ -6,13 +6,13 @@
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $rel := txtsFromToMany $dot.Tables $table . -}}
 		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable -}}
-// {{$rel.Function.Name}}G retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}}
+// {{$rel.Function.Name}}G retrieves all the {{.ForeignTable | singular}}'s {{$rel.ForeignTable.NameHumanReadable}}
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func (o *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
 	return o.{{$rel.Function.Name}}(boil.GetDB(), mods...)
 }
 
-// {{$rel.Function.Name}} retrieves all the {{$rel.LocalTable.NameSingular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
+// {{$rel.Function.Name}} retrieves all the {{.ForeignTable | singular}}'s {{$rel.ForeignTable.NameHumanReadable}} with an executor
 {{- if not (eq $rel.Function.Name $rel.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func (o *{{$rel.LocalTable.NameGo}}) {{$rel.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) {{$varNameSingular}}Query {
 	queryMods := []qm.QueryMod{

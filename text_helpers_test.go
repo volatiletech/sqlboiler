@@ -125,11 +125,9 @@ func TestTxtsFromMany(t *testing.T) {
 	texts := txtsFromToMany(tables, pilots, pilots.ToManyRelationships[0])
 	expect := TxtToMany{}
 	expect.LocalTable.NameGo = "Pilot"
-	expect.LocalTable.NameSingular = "pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "License"
-	expect.ForeignTable.NameSingular = "license"
 	expect.ForeignTable.NamePluralGo = "Licenses"
 	expect.ForeignTable.NameHumanReadable = "licenses"
 	expect.ForeignTable.ColumnNameGo = "PilotID"
@@ -147,11 +145,9 @@ func TestTxtsFromMany(t *testing.T) {
 	texts = txtsFromToMany(tables, pilots, pilots.ToManyRelationships[1])
 	expect = TxtToMany{}
 	expect.LocalTable.NameGo = "Pilot"
-	expect.LocalTable.NameSingular = "pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
 	expect.ForeignTable.NameGo = "Language"
-	expect.ForeignTable.NameSingular = "language"
 	expect.ForeignTable.NamePluralGo = "Languages"
 	expect.ForeignTable.NameHumanReadable = "languages"
 	expect.ForeignTable.ColumnNameGo = "ID"

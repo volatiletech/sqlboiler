@@ -94,9 +94,14 @@ func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRel
 	rel.ForeignKey.Column, rel.ForeignKey.ForeignColumn = rel.ForeignKey.ForeignColumn, rel.ForeignKey.Column
 	rel.ForeignKey.Nullable, rel.ForeignKey.ForeignColumnNullable = rel.ForeignKey.ForeignColumnNullable, rel.ForeignKey.Nullable
 	rel.ForeignKey.Unique, rel.ForeignKey.ForeignColumnUnique = rel.ForeignKey.ForeignColumnUnique, rel.ForeignKey.Unique
-
-	rel.Function.Name, rel.Function.ForeignName = rel.Function.ForeignName, rel.Function.Name
 	rel.Function.UsesBytes = col.Type == "[]byte"
+	rel.Function.ForeignName, rel.Function.Name = txtNameToOne(bdb.ForeignKey{
+		Table:         oneToOne.ForeignTable,
+		Column:        oneToOne.ForeignColumn,
+		Unique:        true,
+		ForeignTable:  oneToOne.Table,
+		ForeignColumn: oneToOne.Column,
+	})
 	return rel
 }
 

@@ -173,7 +173,6 @@ var templateFunctions = template.FuncMap{
 
 	// dbdrivers ops
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,
-	"autoIncPrimaryKey":      bdb.AutoIncPrimaryKey,
 	"sqlColDefinitions":      bdb.SQLColDefinitions,
 	"columnNames":            bdb.ColumnNames,
 	"columnDBTypes":          bdb.ColumnDBTypes,

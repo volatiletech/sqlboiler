@@ -1,12 +1,6 @@
 package bdb
 
-import (
-	"fmt"
-	"regexp"
-	"strings"
-)
-
-var rgxAutoIncColumn = regexp.MustCompile(`^nextval\(.*\)`)
+import "fmt"
 
 // PrimaryKey represents a primary key constraint in a database
 type PrimaryKey struct {
@@ -79,31 +73,4 @@ func SQLColDefinitions(cols []Column, names []string) SQLColumnDefs {
 	}
 
 	return ret
-}
-
-// AutoIncPrimaryKey returns the auto-increment primary key column name or an
-// empty string. Primary key columns with default values are presumed
-// to be auto-increment, because pkeys need to be unique and a static
-// default value would cause collisions.
-func AutoIncPrimaryKey(cols []Column, pkey *PrimaryKey) *Column {
-	if pkey == nil {
-		return nil
-	}
-
-	for _, pkeyColumn := range pkey.Columns {
-		for _, c := range cols {
-			if c.Name != pkeyColumn {
-				continue
-			}
-
-			if c.Default != "auto_increment" || c.Nullable ||
-				!(strings.HasPrefix(c.Type, "int") || strings.HasPrefix(c.Type, "uint")) {
-				continue
-			}
-
-			return &c
-		}
-	}
-
-	return nil
 }

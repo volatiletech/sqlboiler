@@ -33,7 +33,6 @@ func TestTxtsFromOne(t *testing.T) {
 
 	expect.Function.Name = "Pilot"
 	expect.Function.ForeignName = "Jet"
-	expect.Function.Varname = "pilot"
 
 	expect.Function.LocalAssignment = "PilotID.Int"
 	expect.Function.ForeignAssignment = "ID"
@@ -56,7 +55,6 @@ func TestTxtsFromOne(t *testing.T) {
 
 	expect.Function.Name = "Airport"
 	expect.Function.ForeignName = "Jets"
-	expect.Function.Varname = "airport"
 
 	expect.Function.LocalAssignment = "AirportID"
 	expect.Function.ForeignAssignment = "ID"
@@ -106,7 +104,6 @@ func TestTxtsFromOneToOne(t *testing.T) {
 
 	expect.Function.Name = "Jet"
 	expect.Function.ForeignName = "Pilot"
-	expect.Function.Varname = "jet"
 
 	expect.Function.LocalAssignment = "ID"
 	expect.Function.ForeignAssignment = "PilotID.Int"

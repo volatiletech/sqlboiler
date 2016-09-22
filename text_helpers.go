@@ -29,7 +29,6 @@ type TxtToOne struct {
 		Name        string
 		ForeignName string
 
-		Varname   string
 		UsesBytes bool
 
 		LocalAssignment   string
@@ -51,7 +50,6 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
 
 	r.Function.Name, r.Function.ForeignName = txtNameToOne(fkey)
-	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
 
 	if fkey.Nullable {
 		col := table.GetColumn(fkey.Column)

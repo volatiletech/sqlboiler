@@ -76,7 +76,7 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 
 	for _, t := range tables {
 		for _, f := range t.FKeys {
-			if f.ForeignTable == table.Name && !f.Unique {
+			if f.ForeignTable == table.Name && (t.IsJoinTable || !f.Unique) {
 				relationships = append(relationships, buildToManyRelationship(table, f, t, tables))
 			}
 		}
@@ -101,12 +101,11 @@ func buildToOneRelationship(localTable Table, foreignKey ForeignKey, foreignTabl
 
 func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToManyRelationship {
 	if !foreignTable.IsJoinTable {
-		col := localTable.GetColumn(foreignKey.ForeignColumn)
 		return ToManyRelationship{
 			Table:                 localTable.Name,
 			Column:                foreignKey.ForeignColumn,
-			Nullable:              col.Nullable,
-			Unique:                col.Unique,
+			Nullable:              foreignKey.ForeignColumnNullable,
+			Unique:                foreignKey.ForeignColumnUnique,
 			ForeignTable:          foreignTable.Name,
 			ForeignColumn:         foreignKey.Column,
 			ForeignColumnNullable: foreignKey.Nullable,
@@ -115,33 +114,33 @@ func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTab
 		}
 	}
 
-	col := foreignTable.GetColumn(foreignKey.Column)
 	relationship := ToManyRelationship{
-		Table:       localTable.Name,
-		Column:      foreignKey.ForeignColumn,
-		Nullable:    col.Nullable,
-		Unique:      col.Unique,
+		Table:    localTable.Name,
+		Column:   foreignKey.ForeignColumn,
+		Nullable: foreignKey.ForeignColumnNullable,
+		Unique:   foreignKey.ForeignColumnUnique,
+
 		ToJoinTable: true,
 		JoinTable:   foreignTable.Name,
+
+		JoinLocalColumn:         foreignKey.Column,
+		JoinLocalColumnNullable: foreignKey.Nullable,
+		JoinLocalColumnUnique:   foreignKey.Unique,
 	}
 
 	for _, fk := range foreignTable.FKeys {
-		if fk.ForeignTable != localTable.Name {
-			relationship.JoinForeignColumn = fk.Column
-			relationship.JoinForeignColumnNullable = fk.Nullable
-			relationship.JoinForeignColumnUnique = fk.Unique
-
-			foreignTable := GetTable(tables, fk.ForeignTable)
-			foreignCol := foreignTable.GetColumn(fk.ForeignColumn)
-			relationship.ForeignTable = fk.ForeignTable
-			relationship.ForeignColumn = fk.ForeignColumn
-			relationship.ForeignColumnNullable = foreignCol.Nullable
-			relationship.ForeignColumnUnique = foreignCol.Unique
-		} else {
-			relationship.JoinLocalColumn = fk.Column
-			relationship.JoinLocalColumnNullable = fk.Nullable
-			relationship.JoinLocalColumnUnique = fk.Unique
+		if fk.Name == foreignKey.Name {
+			continue
 		}
+
+		relationship.JoinForeignColumn = fk.Column
+		relationship.JoinForeignColumnNullable = fk.Nullable
+		relationship.JoinForeignColumnUnique = fk.Unique
+
+		relationship.ForeignTable = fk.ForeignTable
+		relationship.ForeignColumn = fk.ForeignColumn
+		relationship.ForeignColumnNullable = fk.ForeignColumnNullable
+		relationship.ForeignColumnUnique = fk.ForeignColumnUnique
 	}
 
 	return relationship

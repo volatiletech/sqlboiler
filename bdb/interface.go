@@ -85,7 +85,7 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 // A composite primary key involving two columns
 // Both primary key columns are also foreign keys
 func setIsJoinTable(t *Table) {
-	if t.PKey == nil || len(t.PKey.Columns) != 2 || len(t.FKeys) < 2 {
+	if t.PKey == nil || len(t.PKey.Columns) != 2 || len(t.FKeys) < 2 || len(t.Columns) > 2 {
 		return
 	}
 

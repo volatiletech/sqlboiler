@@ -23,8 +23,8 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false{{if not $txt.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
-	randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false{{if not $txt.Function.UsesBytes}}, "{{.ForeignColumn}}"{{end}})
+	randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}ColumnsWithDefault...)
+	randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}ColumnsWithDefault...)
 	{{if .Nullable -}}
 	a.{{.Column | titleCase}}.Valid = true
 	{{- end}}

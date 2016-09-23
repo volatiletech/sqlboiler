@@ -1,4 +1,3 @@
-{{- /* Begin execution of template for one-to-one setops */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}

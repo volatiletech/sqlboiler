@@ -196,7 +196,7 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 // fk == table = industry.Industry | industry.Industry
 // fk != table = industry.ParentIndustry | industry.Industry
 func txtNameToOne(fk bdb.ForeignKey) (localFn, foreignFn string) {
-	localFn = trimSuffixes(fk.Column)
+	localFn = strmangle.Singular(trimSuffixes(fk.Column))
 	fkeyIsTableName := localFn != strmangle.Singular(fk.ForeignTable)
 	localFn = strmangle.TitleCase(localFn)
 
@@ -235,8 +235,8 @@ func txtNameToOne(fk bdb.ForeignKey) (localFn, foreignFn string) {
 // fk != table = industry.MappedIndustryIndustry
 func txtNameToMany(toMany bdb.ToManyRelationship) (localFn, foreignFn string) {
 	if toMany.ToJoinTable {
-		localFkey := trimSuffixes(toMany.JoinLocalColumn)
-		foreignFkey := trimSuffixes(toMany.JoinForeignColumn)
+		localFkey := strmangle.Singular(trimSuffixes(toMany.JoinLocalColumn))
+		foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))
 
 		if localFkey != strmangle.Singular(toMany.Table) {
 			foreignFn = strmangle.TitleCase(localFkey)
@@ -251,7 +251,7 @@ func txtNameToMany(toMany bdb.ToManyRelationship) (localFn, foreignFn string) {
 		return localFn, foreignFn
 	}
 
-	fkeyName := trimSuffixes(toMany.ForeignColumn)
+	fkeyName := strmangle.Singular(trimSuffixes(toMany.ForeignColumn))
 	if fkeyName != strmangle.Singular(toMany.Table) {
 		localFn = strmangle.TitleCase(fkeyName)
 	}

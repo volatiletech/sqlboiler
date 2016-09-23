@@ -190,6 +190,8 @@ func TestTxtNameToOne(t *testing.T) {
 		{"jets", "jet_id", true, "jets", "id", true, "Jet", "Jet"},
 		{"jets", "plane_id", false, "jets", "id", true, "Plane", "PlaneJets"},
 		{"jets", "plane_id", true, "jets", "id", true, "Plane", "PlaneJet"},
+
+		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "Result", "ResultRaceResultScratchings"},
 	}
 
 	for i, test := range tests {
@@ -237,6 +239,8 @@ func TestTxtNameToMany(t *testing.T) {
 		{"pilots", "id", "pilots", "id", true, "pilot_id", "mentor_id", "MentorPilots", "Pilots"},
 		{"pilots", "id", "pilots", "id", true, "mentor_id", "pilot_id", "Pilots", "MentorPilots"},
 		{"pilots", "id", "pilots", "id", true, "captain_id", "mentor_id", "MentorPilots", "CaptainPilots"},
+
+		{"race_results", "id", "race_result_scratchings", "results_id", false, "", "", "ResultRaceResultScratchings", "Result"},
 	}
 
 	for i, test := range tests {

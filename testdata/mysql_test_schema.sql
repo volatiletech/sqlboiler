@@ -285,3 +285,47 @@ create table byte_pilot_languages (
   foreign key (byte_pilot_id) references byte_pilots (id),
   foreign key (byte_language_id) references byte_languages (id)
 );
+
+create table cars (
+  id integer not null,
+  name text,
+  primary key (id)
+);
+
+create table car_cars (
+  car_id integer not null,
+  awesome_car_id integer not null,
+  relation text not null,
+  primary key (car_id, awesome_car_id),
+  foreign key (car_id) references cars(id),
+  foreign key (awesome_car_id) references cars(id)
+);
+
+create table trucks (
+  id integer not null,
+  parent_id integer,
+  name text,
+  primary key (id),
+  foreign key (parent_id) references trucks(id)
+);
+
+CREATE TABLE race (
+    id integer PRIMARY KEY NOT NULL,
+    race_date timestamp,
+    track text
+);
+
+CREATE TABLE race_results (
+    id integer PRIMARY KEY NOT NULL,
+    race_id integer,
+    name text, 
+    foreign key (race_id) references race(id)
+);
+
+CREATE TABLE race_result_scratchings (
+    id integer PRIMARY KEY NOT NULL,
+    results_id integer NOT NULL,
+    name text NOT NULL,
+    foreign key (results_id) references race_results(id)
+);
+

@@ -60,6 +60,13 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}})
 		}
 
+		{{if setInclude .Column $dot.Table.PKey.Columns -}}
+		if exists, err := {{$txt.LocalTable.NameGo}}Exists(tx, a.{{$dot.Table.PKey.Columns | stringMap $dot.StringFuncs.titleCase | join ", a."}}); err != nil {
+			t.Fatal(err)
+		} else if !exists {
+			t.Error("want 'a' to exist")
+		}
+		{{else -}}
 		zero := reflect.Zero(reflect.TypeOf(a.{{$txt.Function.LocalAssignment}}))
 		reflect.Indirect(reflect.ValueOf(&a.{{$txt.Function.LocalAssignment}})).Set(zero)
 
@@ -74,6 +81,7 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 		{{end -}}
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
 		}
+		{{- end}}
 	}
 }
 {{- if .Nullable}}

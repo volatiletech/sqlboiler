@@ -65,3 +65,56 @@ func TestGetColumnMissing(t *testing.T) {
 
 	table.GetColumn("missing")
 }
+
+func TestCanLastInsertID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Can   bool
+		PKeys []Column
+	}{
+		{true, []Column{
+			{Name: "id", Type: "int64", Default: "a"},
+		}},
+		{true, []Column{
+			{Name: "id", Type: "uint64", Default: "a"},
+		}},
+		{true, []Column{
+			{Name: "id", Type: "int", Default: "a"},
+		}},
+		{true, []Column{
+			{Name: "id", Type: "uint", Default: "a"},
+		}},
+		{true, []Column{
+			{Name: "id", Type: "uint", Default: "a"},
+		}},
+		{false, []Column{
+			{Name: "id", Type: "uint", Default: "a"},
+			{Name: "id2", Type: "uint", Default: "a"},
+		}},
+		{false, []Column{
+			{Name: "id", Type: "string", Default: "a"},
+		}},
+		{false, []Column{
+			{Name: "id", Type: "int", Default: ""},
+		}},
+		{false, nil},
+	}
+
+	for i, test := range tests {
+		table := Table{
+			Columns: test.PKeys,
+			PKey:    &PrimaryKey{},
+		}
+
+		var pkeyNames []string
+		for _, pk := range test.PKeys {
+			pkeyNames = append(pkeyNames, pk.Name)
+		}
+		table.PKey.Columns = pkeyNames
+
+		if got := table.CanLastInsertID(); got != test.Can {
+			t.Errorf("%d) wrong: %t", i, got)
+		}
+	}
+}

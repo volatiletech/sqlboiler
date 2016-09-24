@@ -1,6 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $schemaTable := .Table.Name | .SchemaTable}}
 // InsertG a single record. See Insert for whitelist behavior description.
 func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
 	return o.Insert(boil.GetDB(), whitelist...)

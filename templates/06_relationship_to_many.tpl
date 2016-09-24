@@ -5,7 +5,7 @@
 	{{- range .Table.ToManyRelationships -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $txt := txtsFromToMany $dot.Tables $table . -}}
-		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable -}}
+		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}
 // {{$txt.Function.Name}}G retrieves all the {{.ForeignTable | singular}}'s {{$txt.ForeignTable.NameHumanReadable}}
 {{- if not (eq $txt.Function.Name $txt.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {

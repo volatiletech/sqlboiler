@@ -1,6 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $schemaTable := .Table.Name | .SchemaTable}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) error {

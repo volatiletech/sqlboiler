@@ -5,7 +5,7 @@
 		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $varNameSingular := .Table | singular | camelCase}}
-		{{- $schemaTable := .Table | $dot.SchemaTable -}}
+		{{- $schemaTable := .Table | $dot.SchemaTable}}
 // Set{{$txt.Function.Name}} of the {{.Table | singular}} to the related item.
 // Sets o.R.{{$txt.Function.Name}} to related.
 // Adds o to related.R.{{$txt.Function.ForeignName}}.

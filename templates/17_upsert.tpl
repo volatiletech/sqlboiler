@@ -1,6 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $schemaTable := .Table.Name | .SchemaTable}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
 func (o *{{$tableNameSingular}}) UpsertG({{if ne .DriverName "mysql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) error {
 	return o.Upsert(boil.GetDB(), {{if ne .DriverName "mysql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...)

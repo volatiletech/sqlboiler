@@ -4,7 +4,8 @@
 	{{- range .Table.ToOneRelationships -}}
 		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table .}}
 {{- $varNameSingular := .Table | singular | camelCase -}}
-{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
+{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
+{{- $foreignPKeyCols := (getTable $dot.Tables .ForeignTable).PKey.Columns}}
 func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -53,12 +54,20 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}})
 		}
 
+		{{if setInclude .ForeignColumn $foreignPKeyCols -}}
+		if exists, err := {{$txt.ForeignTable.NameGo}}Exists(tx, x.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", x."}}); err != nil {
+			t.Fatal(err)
+		} else if !exists {
+			t.Error("want 'x' to exist")
+		}
+		{{else -}}
 		zero := reflect.Zero(reflect.TypeOf(x.{{$txt.Function.ForeignAssignment}}))
 		reflect.Indirect(reflect.ValueOf(&x.{{$txt.Function.ForeignAssignment}})).Set(zero)
 
 		if err = x.Reload(tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
+		{{- end}}
 
 		{{if $txt.Function.UsesBytes -}}
 		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}}) {

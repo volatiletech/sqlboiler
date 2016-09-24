@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go/build"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -159,6 +160,10 @@ func (s *State) Run(includeTests bool) error {
 		}
 	}
 
+	// Run gofmt on generated test templates
+	if err := s.runGofmt(); err != nil {
+		return errors.Wrap(err, "unable to run gofmt on generated output")
+	}
 	return nil
 }
 
@@ -313,5 +318,13 @@ func checkPKeys(tables []bdb.Table) error {
 		return errors.Errorf("primary key missing in tables (%s)", strings.Join(missingPkey, ", "))
 	}
 
+	return nil
+}
+
+func (s *State) runGofmt() error {
+	cmd := exec.Command("gofmt", "-w", "-s", filepath.Join(s.Config.BaseDir, s.Config.OutFolder))
+	if _, err := cmd.CombinedOutput(); err != nil {
+		return errors.Errorf("error running gofmt: %v", err)
+	}
 	return nil
 }

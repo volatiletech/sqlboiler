@@ -13,7 +13,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
+			return errors.Wrap(err, "failed to insert into foreign table {{$txt.ForeignTable}}")
 		}
 	}
 
@@ -30,7 +30,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	}
 
 	if _, err = exec.Exec(updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
+		return errors.Wrap(err, "failed to update local table {{.Table}}")
 	}
 
 	o.{{$txt.Function.LocalAssignment}} = related.{{$txt.Function.ForeignAssignment}}

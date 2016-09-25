@@ -4,7 +4,7 @@
 	{{- range .Table.FKeys -}}
 		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
-		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
+		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
@@ -65,5 +65,6 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.
 		t.Error("struct should have been eager loaded")
 	}
 }
+
 {{end -}}{{/* range */}}
 {{- end -}}{{/* join table */}}

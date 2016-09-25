@@ -1,7 +1,7 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
-{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $schemaTable := .Table.Name | .SchemaTable}}
 // ReloadGP refetches the object from the database and panics on error.
 func (o *{{$tableNameSingular}}) ReloadGP() {
 	if err := o.ReloadG(); err != nil {

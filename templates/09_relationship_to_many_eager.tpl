@@ -1,4 +1,3 @@
-{{- /* Begin execution of template for many-to-one or many-to-many eager load */ -}}
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $dot := . -}}

@@ -29,7 +29,6 @@ type TxtToOne struct {
 		Name        string
 		ForeignName string
 
-		Varname   string
 		UsesBytes bool
 
 		LocalAssignment   string
@@ -50,13 +49,7 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 	r.ForeignTable.ColumnName = fkey.ForeignColumn
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
 
-	r.Function.Name = strmangle.TitleCase(strmangle.Singular(trimSuffixes(fkey.Column)))
-	plurality := strmangle.Plural
-	if fkey.Unique {
-		plurality = strmangle.Singular
-	}
-	r.Function.ForeignName = mkFunctionName(strmangle.Singular(fkey.ForeignTable), strmangle.TitleCase(plurality(fkey.Table)), fkey.Column, false)
-	r.Function.Varname = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
+	r.Function.Name, r.Function.ForeignName = txtNameToOne(fkey)
 
 	if fkey.Nullable {
 		col := table.GetColumn(fkey.Column)
@@ -101,10 +94,14 @@ func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRel
 	rel.ForeignKey.Column, rel.ForeignKey.ForeignColumn = rel.ForeignKey.ForeignColumn, rel.ForeignKey.Column
 	rel.ForeignKey.Nullable, rel.ForeignKey.ForeignColumnNullable = rel.ForeignKey.ForeignColumnNullable, rel.ForeignKey.Nullable
 	rel.ForeignKey.Unique, rel.ForeignKey.ForeignColumnUnique = rel.ForeignKey.ForeignColumnUnique, rel.ForeignKey.Unique
-
-	rel.Function.Name = strmangle.TitleCase(strmangle.Singular(oneToOne.ForeignTable))
-	rel.Function.ForeignName = mkFunctionName(strmangle.Singular(oneToOne.Table), strmangle.TitleCase(strmangle.Singular(oneToOne.Table)), oneToOne.ForeignColumn, false)
 	rel.Function.UsesBytes = col.Type == "[]byte"
+	rel.Function.ForeignName, rel.Function.Name = txtNameToOne(bdb.ForeignKey{
+		Table:         oneToOne.ForeignTable,
+		Column:        oneToOne.ForeignColumn,
+		Unique:        true,
+		ForeignTable:  oneToOne.Table,
+		ForeignColumn: oneToOne.Column,
+	})
 	return rel
 }
 
@@ -112,13 +109,11 @@ func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRel
 type TxtToMany struct {
 	LocalTable struct {
 		NameGo       string
-		NameSingular string
 		ColumnNameGo string
 	}
 
 	ForeignTable struct {
 		NameGo            string
-		NameSingular      string
 		NamePluralGo      string
 		NameHumanReadable string
 		ColumnNameGo      string
@@ -140,25 +135,17 @@ type TxtToMany struct {
 // transformation in advance for a given relationship.
 func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) TxtToMany {
 	r := TxtToMany{}
-	r.LocalTable.NameSingular = strmangle.Singular(table.Name)
-	r.LocalTable.NameGo = strmangle.TitleCase(r.LocalTable.NameSingular)
+	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
 
-	r.ForeignTable.NameSingular = strmangle.Singular(rel.ForeignTable)
+	foreignNameSingular := strmangle.Singular(rel.ForeignTable)
 	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(rel.ForeignTable))
-	r.ForeignTable.NameGo = strmangle.TitleCase(r.ForeignTable.NameSingular)
+	r.ForeignTable.NameGo = strmangle.TitleCase(foreignNameSingular)
 	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(rel.ForeignColumn)
-	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(r.ForeignTable.NameSingular))
+	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(foreignNameSingular))
 	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
 
-	r.Function.Name = mkFunctionName(r.LocalTable.NameSingular, r.ForeignTable.NamePluralGo, rel.ForeignColumn, rel.ToJoinTable)
-	plurality := strmangle.Singular
-	foreignNamingColumn := rel.ForeignColumn
-	if rel.ToJoinTable {
-		plurality = strmangle.Plural
-		foreignNamingColumn = rel.JoinLocalColumn
-	}
-	r.Function.ForeignName = strmangle.TitleCase(plurality(trimSuffixes(foreignNamingColumn)))
+	r.Function.Name, r.Function.ForeignName = txtNameToMany(rel)
 
 	col := table.GetColumn(rel.Column)
 	if rel.Nullable {
@@ -178,6 +165,99 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 	r.Function.UsesBytes = col.Type == "[]byte"
 
 	return r
+}
+
+// txtNameToOne creates the local and foreign function names for
+// one-to-many and one-to-one relationships, where local == lhs (one).
+//
+// = many-to-one
+// users - videos : user_id
+// users - videos : producer_id
+//
+// fk == table = user.Videos         | video.User
+// fk != table = user.ProducerVideos | video.Producer
+//
+// = many-to-one
+// industries - industries : parent_id
+//
+// fk == table = industry.Industries | industry.Industry
+// fk != table = industry.ParentIndustries | industry.Parent
+//
+// = one-to-one
+// users - videos : user_id
+// users - videos : producer_id
+//
+// fk == table = user.Video         | video.User
+// fk != table = user.ProducerVideo | video.Producer
+//
+// = one-to-one
+// industries - industries : parent_id
+//
+// fk == table = industry.Industry | industry.Industry
+// fk != table = industry.ParentIndustry | industry.Industry
+func txtNameToOne(fk bdb.ForeignKey) (localFn, foreignFn string) {
+	localFn = strmangle.Singular(trimSuffixes(fk.Column))
+	fkeyIsTableName := localFn != strmangle.Singular(fk.ForeignTable)
+	localFn = strmangle.TitleCase(localFn)
+
+	if fkeyIsTableName {
+		foreignFn = localFn
+	}
+
+	plurality := strmangle.Plural
+	if fk.Unique {
+		plurality = strmangle.Singular
+	}
+	foreignFn += strmangle.TitleCase(plurality(fk.Table))
+
+	return localFn, foreignFn
+}
+
+// txtNameToMany creates the local and foreign function names for
+// many-to-one and many-to-many relationship, where local == lhs (many)
+//
+// cases:
+// = many-to-many
+// sponsors - constests
+// sponsor_id contest_id
+// fk == table = sponsor.Contests | contest.Sponsors
+//
+// = many-to-many
+// sponsors - constests
+// wiggle_id jiggle_id
+// fk != table = sponsor.JiggleSponsors | contest.WiggleContests
+//
+// = many-to-many
+// industries - industries
+// industry_id  mapped_industry_id
+//
+// fk == table = industry.Industries
+// fk != table = industry.MappedIndustryIndustry
+func txtNameToMany(toMany bdb.ToManyRelationship) (localFn, foreignFn string) {
+	if toMany.ToJoinTable {
+		localFkey := strmangle.Singular(trimSuffixes(toMany.JoinLocalColumn))
+		foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))
+
+		if localFkey != strmangle.Singular(toMany.Table) {
+			foreignFn = strmangle.TitleCase(localFkey)
+		}
+		foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.Table))
+
+		if foreignFkey != strmangle.Singular(toMany.ForeignTable) {
+			localFn = strmangle.TitleCase(foreignFkey)
+		}
+		localFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
+
+		return localFn, foreignFn
+	}
+
+	fkeyName := strmangle.Singular(trimSuffixes(toMany.ForeignColumn))
+	if fkeyName != strmangle.Singular(toMany.Table) {
+		localFn = strmangle.TitleCase(fkeyName)
+	}
+	localFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
+	foreignFn = strmangle.TitleCase(strmangle.Singular(fkeyName))
+	return localFn, foreignFn
 }
 
 // mkFunctionName checks to see if the foreign key name is the same as the local table name (minus _id suffix)

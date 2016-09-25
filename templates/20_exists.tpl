@@ -2,7 +2,7 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
-{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $schemaTable := .Table.Name | .SchemaTable}}
 // {{$tableNameSingular}}Exists checks if the {{$tableNameSingular}} row exists.
 func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error) {
 	var exists bool

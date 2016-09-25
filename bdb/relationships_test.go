@@ -213,15 +213,15 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			Name:    "jets",
 			Columns: []Column{{Name: "id", Nullable: true}, {Name: "pilot_id", Nullable: true}, {Name: "airport_id", Nullable: true}},
 			FKeys: []ForeignKey{
-				{Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true},
-				{Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id", Nullable: true},
+				{Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true, ForeignColumnNullable: true},
+				{Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id", Nullable: true, ForeignColumnNullable: true},
 			},
 		},
 		{
 			Name:    "licenses",
 			Columns: []Column{{Name: "id", Nullable: true}, {Name: "pilot_id", Nullable: true}},
 			FKeys: []ForeignKey{
-				{Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true},
+				{Name: "licenses_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true, ForeignColumnNullable: true},
 			},
 		},
 		{
@@ -237,8 +237,8 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			IsJoinTable: true,
 			Columns:     []Column{{Name: "pilot_id", Nullable: true}, {Name: "language_id", Nullable: true}},
 			FKeys: []ForeignKey{
-				{Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true},
-				{Name: "language_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id", Nullable: true},
+				{Name: "pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", Nullable: true, ForeignColumnNullable: true},
+				{Name: "language_id_fk", Column: "language_id", ForeignTable: "languages", ForeignColumn: "id", Nullable: true, ForeignColumnNullable: true},
 			},
 		},
 	}

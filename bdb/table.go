@@ -40,3 +40,27 @@ func (t Table) GetColumn(name string) (col Column) {
 
 	panic(fmt.Sprintf("could not find column name: %s", name))
 }
+
+// CanLastInsertID checks the following:
+// 1. Is there only one primary key?
+// 2. Does the primary key column have a default value?
+// 3. Is the primary key column type one of uintX/intX?
+// If the above is all true, this table can use LastInsertId
+func (t Table) CanLastInsertID() bool {
+	if t.PKey == nil || len(t.PKey.Columns) != 1 {
+		return false
+	}
+
+	col := t.GetColumn(t.PKey.Columns[0])
+	if len(col.Default) == 0 {
+		return false
+	}
+
+	switch col.Type {
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+	default:
+		return false
+	}
+
+	return true
+}

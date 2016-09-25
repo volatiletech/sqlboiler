@@ -1,6 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $schemaTable := .Table.Name | .SchemaTable}}
 // InsertG a single record. See Insert for whitelist behavior description.
 func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
 	return o.Insert(boil.GetDB(), whitelist...)
@@ -78,56 +78,61 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
-	{{if .UseLastInsertID}}
+
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, cache.query)
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
+	{{if .UseLastInsertID -}}
+	{{- $canLastInsertID := .Table.CanLastInsertID -}}
+	{{if $canLastInsertID -}}
 	result, err := exec.Exec(cache.query, vals...)
+	{{else -}}
+	_, err = exec.Exec(cache.query, vals...)
+	{{- end}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
 	}
 	
-	var lastID int64 
+	{{if $canLastInsertID -}}
+	var lastID int64
+	{{- end}}
 	var identifierCols []interface{}
 
 	if len(cache.retMapping) == 0 {
 		goto CacheNoHooks
 	}
 
+	{{if $canLastInsertID -}}
 	lastID, err = result.LastInsertId()
 	if err != nil {
 		return ErrSyncFail
 	}
-	
-	{{- $colName := index .Table.PKey.Columns 0 -}}
+
+	{{$colName := index .Table.PKey.Columns 0 -}}
 	{{- $col := .Table.GetColumn $colName -}}
-	{{- $colTitled := $colName | singular | titleCase}}
-	{{if eq 1 (len .Table.PKey.Columns)}}
-		{{$cnames :=  .Table.Columns | filterColumnsByDefault true | columnNames}}
-		{{if setInclude $colName $cnames}}
+	{{- $colTitled := $colName | titleCase}}
 	o.{{$colTitled}} = {{$col.Type}}(lastID)
-	identifierCols = []interface{}{lastID}
-		{{end}}
-	{{else}}
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
+		goto CacheNoHooks
+	}
+	{{- end}}
+
 	identifierCols = []interface{}{
 		{{range .Table.PKey.Columns -}}
-		o.{{. | singular | titleCase}},
+		o.{{. | titleCase}},
 		{{end -}}
 	}
-	{{end}}
 
-	if lastID == 0 || len(cache.retMapping) != 1 || cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
-		if boil.DebugMode {
-			fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-			fmt.Fprintln(boil.DebugWriter, identifierCols...)
-		}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
+		fmt.Fprintln(boil.DebugWriter, identifierCols...)
+	}
 
-		err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
-		if err != nil {
-			return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
-		}
+	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+	if err != nil {
+		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 	}
 	{{else}}
 	if len(cache.retMapping) != 0 {
@@ -136,15 +141,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		_, err = exec.Exec(cache.query, vals...)
 	}
 
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, vals)
-	}
-
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
 	}
 	{{end}}
+
 {{if .UseLastInsertID -}}
 CacheNoHooks:
 {{- end}}

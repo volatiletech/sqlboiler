@@ -242,8 +242,8 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.Foreign
 		ccu.table_name as dest_table,
 		ccu.column_name as dest_column
 	from information_schema.table_constraints as tc
-		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name
-		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name
+		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name and tc.constraint_schema = kcu.constraint_schema
+		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name and tc.constraint_schema = ccu.constraint_schema
 	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = $2;`
 
 	var rows *sql.Rows

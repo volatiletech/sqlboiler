@@ -1,202 +1,199 @@
 package queries
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/vattle/sqlboiler/boil"
 )
 
-var loadFunctionCalled bool
-var loadFunctionNestedCalled int
-
-type testRStruct struct {
+var testEagerCounters struct {
+	ChildOne   int
+	ChildMany  int
+	NestedOne  int
+	NestedMany int
 }
-type testLStruct struct {
-}
 
-type testNestedStruct struct {
+type testEager struct {
 	ID int
-	R  *testNestedRStruct
-	L  testNestedLStruct
-}
-type testNestedRStruct struct {
-	ToEagerLoad *testNestedStruct
-}
-type testNestedLStruct struct {
+	R  *testEagerR
+	L  testEagerL
 }
 
-type testNestedSlice struct {
+type testEagerR struct {
+	ChildOne  *testEagerChild
+	ChildMany []*testEagerChild
+}
+type testEagerL struct {
+}
+
+type testEagerChild struct {
 	ID int
-	R  *testNestedRSlice
-	L  testNestedLSlice
+	R  *testEagerChildR
+	L  testEagerChildL
 }
-type testNestedRSlice struct {
-	ToEagerLoad []*testNestedSlice
+type testEagerChildR struct {
+	NestedOne  *testEagerNested
+	NestedMany []*testEagerNested
 }
-type testNestedLSlice struct {
+type testEagerChildL struct {
 }
 
-func (testLStruct) LoadTestOne(exec boil.Executor, singular bool, obj interface{}) error {
-	loadFunctionCalled = true
+type testEagerNested struct {
+	ID int
+	R  *testEagerNestedR
+	L  testEagerNestedL
+}
+type testEagerNestedR struct {
+}
+type testEagerNestedL struct {
+}
+
+func (testEagerL) LoadChildOne(_ boil.Executor, singular bool, obj interface{}) error {
+	var toSetOn []*testEager
+	if singular {
+		toSetOn = []*testEager{obj.(*testEager)}
+	} else {
+		toSetOn = *obj.(*[]*testEager)
+	}
+
+	for _, o := range toSetOn {
+		if o.R == nil {
+			o.R = &testEagerR{}
+		}
+		o.R.ChildOne = &testEagerChild{ID: 1}
+	}
+
+	testEagerCounters.ChildOne++
+	fmt.Println("l! ChildOne")
+
 	return nil
 }
 
-func (testNestedLStruct) LoadToEagerLoad(exec boil.Executor, singular bool, obj interface{}) error {
-	switch x := obj.(type) {
-	case *testNestedStruct:
-		x.R = &testNestedRStruct{
-			&testNestedStruct{ID: 4},
+func (testEagerL) LoadChildMany(_ boil.Executor, singular bool, obj interface{}) error {
+	var toSetOn []*testEager
+	if singular {
+		toSetOn = []*testEager{obj.(*testEager)}
+	} else {
+		toSetOn = *obj.(*[]*testEager)
+	}
+
+	for _, o := range toSetOn {
+		if o.R == nil {
+			o.R = &testEagerR{}
 		}
-	case *[]*testNestedStruct:
-		for _, r := range *x {
-			r.R = &testNestedRStruct{
-				&testNestedStruct{ID: 4},
-			}
+		o.R.ChildMany = []*testEagerChild{
+			&testEagerChild{ID: 2},
+			&testEagerChild{ID: 3},
 		}
 	}
-	loadFunctionNestedCalled++
+
+	testEagerCounters.ChildMany++
+	fmt.Println("l! ChildMany")
+
 	return nil
 }
 
-func (testNestedLSlice) LoadToEagerLoad(exec boil.Executor, singular bool, obj interface{}) error {
-
-	switch x := obj.(type) {
-	case *testNestedSlice:
-		x.R = &testNestedRSlice{
-			[]*testNestedSlice{{ID: 5}},
-		}
-	case *[]*testNestedSlice:
-		for _, r := range *x {
-			r.R = &testNestedRSlice{
-				[]*testNestedSlice{{ID: 5}},
-			}
-		}
+func (testEagerChildL) LoadNestedOne(_ boil.Executor, singular bool, obj interface{}) error {
+	var toSetOn []*testEagerChild
+	if singular {
+		toSetOn = []*testEagerChild{obj.(*testEagerChild)}
+	} else {
+		toSetOn = *obj.(*[]*testEagerChild)
 	}
-	loadFunctionNestedCalled++
+
+	for _, o := range toSetOn {
+		if o.R == nil {
+			o.R = &testEagerChildR{}
+		}
+		o.R.NestedOne = &testEagerNested{ID: 6}
+	}
+
+	testEagerCounters.NestedOne++
+	fmt.Println("l! NestedOne")
+
 	return nil
 }
 
-func testFakeState(toLoad ...string) loadRelationshipState {
-	return loadRelationshipState{
-		loaded: map[string]struct{}{},
-		toLoad: toLoad,
+func (testEagerChildL) LoadNestedMany(_ boil.Executor, singular bool, obj interface{}) error {
+	var toSetOn []*testEagerChild
+	if singular {
+		toSetOn = []*testEagerChild{obj.(*testEagerChild)}
+	} else {
+		toSetOn = *obj.(*[]*testEagerChild)
+	}
+
+	for _, o := range toSetOn {
+		if o.R == nil {
+			o.R = &testEagerChildR{}
+		}
+		o.R.NestedMany = []*testEagerNested{
+			&testEagerNested{ID: 6},
+			&testEagerNested{ID: 7},
+		}
+	}
+
+	testEagerCounters.NestedMany++
+	fmt.Println("l! NestedMany")
+
+	return nil
+}
+
+func TestEagerLoadFromOne(t *testing.T) {
+	testEagerCounters.ChildOne = 0
+	testEagerCounters.ChildMany = 0
+	testEagerCounters.NestedOne = 0
+	testEagerCounters.NestedMany = 0
+
+	obj := &testEager{}
+
+	toLoad := []string{"ChildOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
+	err := eagerLoad(nil, toLoad, obj, kindStruct)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if testEagerCounters.ChildMany != 1 {
+		t.Error(testEagerCounters.ChildMany)
+	}
+	if testEagerCounters.ChildOne != 1 {
+		t.Error(testEagerCounters.ChildOne)
+	}
+	if testEagerCounters.NestedMany != 1 {
+		t.Error(testEagerCounters.NestedMany)
+	}
+	if testEagerCounters.NestedOne != 1 {
+		t.Error(testEagerCounters.NestedOne)
 	}
 }
 
-func TestLoadRelationshipsSlice(t *testing.T) {
-	// t.Parallel() Function uses globals
-	loadFunctionCalled = false
+func TestEagerLoadFromMany(t *testing.T) {
+	testEagerCounters.ChildOne = 0
+	testEagerCounters.ChildMany = 0
+	testEagerCounters.NestedOne = 0
+	testEagerCounters.NestedMany = 0
 
-	testSlice := []*struct {
-		ID int
-		R  *testRStruct
-		L  testLStruct
-	}{{}}
-
-	if err := testFakeState("TestOne").loadRelationships(0, &testSlice, kindPtrSliceStruct); err != nil {
-		t.Error(err)
+	slice := []*testEager{
+		{ID: -1},
+		{ID: -2},
 	}
 
-	if !loadFunctionCalled {
-		t.Errorf("Load function was not called for testSlice")
-	}
-}
-
-func TestLoadRelationshipsSingular(t *testing.T) {
-	// t.Parallel() Function uses globals
-	loadFunctionCalled = false
-
-	testSingular := struct {
-		ID int
-		R  *testRStruct
-		L  testLStruct
-	}{}
-
-	if err := testFakeState("TestOne").loadRelationships(0, &testSingular, kindStruct); err != nil {
-		t.Error(err)
+	toLoad := []string{"ChildOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
+	err := eagerLoad(nil, toLoad, &slice, kindPtrSliceStruct)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	if !loadFunctionCalled {
-		t.Errorf("Load function was not called for singular")
+	if testEagerCounters.ChildMany != 1 {
+		t.Error(testEagerCounters.ChildMany)
 	}
-}
-
-func TestLoadRelationshipsSliceNested(t *testing.T) {
-	// t.Parallel() Function uses globals
-	testSlice := []*testNestedStruct{
-		{
-			ID: 2,
-		},
+	if testEagerCounters.ChildOne != 1 {
+		t.Error(testEagerCounters.ChildOne)
 	}
-	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSlice, kindPtrSliceStruct); err != nil {
-		t.Error(err)
+	if testEagerCounters.NestedMany != 1 {
+		t.Error(testEagerCounters.NestedMany)
 	}
-	if loadFunctionNestedCalled != 3 {
-		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
-	}
-
-	testSliceSlice := []*testNestedSlice{
-		{
-			ID: 2,
-		},
-	}
-	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSliceSlice, kindPtrSliceStruct); err != nil {
-		t.Error(err)
-	}
-	if loadFunctionNestedCalled != 3 {
-		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
-	}
-}
-
-func TestLoadRelationshipsSingularNested(t *testing.T) {
-	// t.Parallel() Function uses globals
-	testSingular := testNestedStruct{
-		ID: 3,
-	}
-	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSingular, kindStruct); err != nil {
-		t.Error(err)
-	}
-	if loadFunctionNestedCalled != 3 {
-		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
-	}
-
-	testSingularSlice := testNestedSlice{
-		ID: 3,
-	}
-	loadFunctionNestedCalled = 0
-	if err := testFakeState("ToEagerLoad", "ToEagerLoad", "ToEagerLoad").loadRelationships(0, &testSingularSlice, kindStruct); err != nil {
-		t.Error(err)
-	}
-	if loadFunctionNestedCalled != 3 {
-		t.Error("Load function was called:", loadFunctionNestedCalled, "times")
-	}
-}
-
-func TestLoadRelationshipsNoReload(t *testing.T) {
-	// t.Parallel() Function uses globals
-	testSingular := testNestedStruct{
-		ID: 3,
-		R: &testNestedRStruct{
-			&testNestedStruct{},
-		},
-	}
-
-	loadFunctionNestedCalled = 0
-	state := loadRelationshipState{
-		loaded: map[string]struct{}{
-			"ToEagerLoad":             {},
-			"ToEagerLoad.ToEagerLoad": {},
-		},
-		toLoad: []string{"ToEagerLoad", "ToEagerLoad"},
-	}
-
-	if err := state.loadRelationships(0, &testSingular, kindStruct); err != nil {
-		t.Error(err)
-	}
-	if loadFunctionNestedCalled != 0 {
-		t.Error("didn't want this called")
+	if testEagerCounters.NestedOne != 1 {
+		t.Error(testEagerCounters.NestedOne)
 	}
 }

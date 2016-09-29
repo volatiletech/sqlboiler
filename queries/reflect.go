@@ -110,20 +110,10 @@ func (q *Query) Bind(obj interface{}) error {
 		return res
 	}
 
-	if len(q.load) == 0 {
-		return nil
+	if len(q.load) != 0 {
+		return eagerLoad(q.executor, q.load, obj, bkind)
 	}
 
-	state := loadRelationshipState{
-		exec:   q.executor,
-		loaded: map[string]struct{}{},
-	}
-	for _, toLoad := range q.load {
-		state.toLoad = strings.Split(toLoad, ".")
-		if err = state.loadRelationships(0, obj, bkind); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 

@@ -2,7 +2,6 @@ package queries
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -45,6 +44,9 @@ func (l loadRelationshipState) buildKey(depth int) string {
 //
 // toLoad should look like:
 // []string{"Relationship", "Relationship.NestedRelationship"} ... etc
+// obj should be one of:
+// *[]*struct or *struct
+// bkind should reflect what kind of thing it is above
 func eagerLoad(exec boil.Executor, toLoad []string, obj interface{}, bkind bindKind) error {
 	state := loadRelationshipState{
 		exec:   exec,
@@ -72,6 +74,18 @@ func eagerLoad(exec boil.Executor, toLoad []string, obj interface{}, bkind bindK
 //   - singular is passed in to identify whether or not this was a single object
 //     or a slice that must be loaded into.
 //   - obj is the object or slice of objects, always of the type *obj or *[]*obj as per bind.
+//
+// We start with a normal select before eager loading anything: select * from a;
+// Then we start eager loading things, it can be represented by a DAG
+//          a1, a2           select id, a_id from b where id in (a1, a2)
+//         / |    \
+//        b1 b2    b3        select id, b_id from c where id in (b2, b3, b4)
+//       /   | \     \
+//      c1  c2 c3    c4
+//
+// That's to say that we descend the graph of relationships, and at each level
+// we gather all the things up we want to load into, load them, and then move
+// to the next level of the graph.
 func (l loadRelationshipState) loadRelationships(depth int, obj interface{}, bkind bindKind) error {
 	typ := reflect.TypeOf(obj).Elem()
 	if bkind == kindPtrSliceStruct {
@@ -82,51 +96,11 @@ func (l loadRelationshipState) loadRelationships(depth int, obj interface{}, bki
 	if loadingFrom.IsNil() {
 		return nil
 	}
-	loadingFrom = reflect.Indirect(loadingFrom)
-
-	fmt.Println("load rels", typ.String(), l.toLoad[depth:])
 
 	if !l.hasLoaded(depth) {
-		fmt.Println("!loaded", l.toLoad[depth])
-		current := l.toLoad[depth]
-		ln, found := typ.FieldByName(loaderStructName)
-		// It's possible a Loaders struct doesn't exist on the struct.
-		if !found {
-			return errors.Errorf("attempted to load %s but no L struct was found", current)
+		if err := l.callLoadFunction(depth, loadingFrom, typ, bkind); err != nil {
+			return err
 		}
-
-		// Attempt to find the LoadRelationshipName function
-		loadMethod, found := ln.Type.MethodByName(loadMethodPrefix + current)
-		if !found {
-			return errors.Errorf("could not find %s%s method for eager loading", loadMethodPrefix, current)
-		}
-
-		// Hack to allow nil executors
-		execArg := reflect.ValueOf(l.exec)
-		if !execArg.IsValid() {
-			execArg = reflect.ValueOf((*sql.DB)(nil))
-		}
-
-		// Get a loader instance from anything we have, *struct, or *[]*struct
-		val := reflect.Indirect(loadingFrom)
-		if bkind == kindPtrSliceStruct {
-			val = reflect.Indirect(val.Index(0))
-		}
-
-		methodArgs := []reflect.Value{
-			val.FieldByName(loaderStructName),
-			execArg,
-			reflect.ValueOf(bkind == kindStruct),
-			reflect.ValueOf(obj),
-		}
-		resp := loadMethod.Func.Call(methodArgs)
-		if intf := resp[0].Interface(); intf != nil {
-			return errors.Wrapf(intf.(error), "failed to eager load %s", current)
-		}
-
-		l.setLoaded(depth)
-	} else {
-		fmt.Println("!loading", l.toLoad[depth])
 	}
 
 	// Check if we can stop
@@ -134,45 +108,165 @@ func (l loadRelationshipState) loadRelationships(depth int, obj interface{}, bki
 		return nil
 	}
 
+	// *[]*struct -> []*struct
+	// *struct -> struct
+	loadingFrom = reflect.Indirect(loadingFrom)
+
 	// If it's singular we can just immediately call without looping
 	if bkind == kindStruct {
 		return l.loadRelationshipsRecurse(depth, loadingFrom)
 	}
 
-	// Loop over all eager loaded objects
-	ln := loadingFrom.Len()
-	if ln == 0 {
+	// If we were an empty slice to begin with, bail, probably a useless check
+	if loadingFrom.Len() == 0 {
 		return nil
 	}
-	for i := 0; i < ln; i++ {
-		iter := reflect.Indirect(loadingFrom.Index(i))
-		if err := l.loadRelationshipsRecurse(depth, iter); err != nil {
-			return err
-		}
+
+	// Collect eagerly loaded things to send into next eager load call
+	slice, nextBKind, err := collectLoaded(l.toLoad[depth], loadingFrom)
+	if err != nil {
+		return err
 	}
 
+	// If we could collect nothing we're done
+	if slice.Len() == 0 {
+		return nil
+	}
+
+	ptr := reflect.New(slice.Type())
+	ptr.Elem().Set(slice)
+
+	return l.loadRelationships(depth+1, ptr.Interface(), nextBKind)
+}
+
+// callLoadFunction finds the loader struct, finds the method that we need
+// to call and calls it.
+func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.Value, typ reflect.Type, bkind bindKind) error {
+	current := l.toLoad[depth]
+	ln, found := typ.FieldByName(loaderStructName)
+	// It's possible a Loaders struct doesn't exist on the struct.
+	if !found {
+		return errors.Errorf("attempted to load %s but no L struct was found", current)
+	}
+
+	// Attempt to find the LoadRelationshipName function
+	loadMethod, found := ln.Type.MethodByName(loadMethodPrefix + current)
+	if !found {
+		return errors.Errorf("could not find %s%s method for eager loading", loadMethodPrefix, current)
+	}
+
+	// Hack to allow nil executors
+	execArg := reflect.ValueOf(l.exec)
+	if !execArg.IsValid() {
+		execArg = reflect.ValueOf((*sql.DB)(nil))
+	}
+
+	// Get a loader instance from anything we have, *struct, or *[]*struct
+	val := reflect.Indirect(loadingFrom)
+	if bkind == kindPtrSliceStruct {
+		val = reflect.Indirect(val.Index(0))
+	}
+
+	methodArgs := []reflect.Value{
+		val.FieldByName(loaderStructName),
+		execArg,
+		reflect.ValueOf(bkind == kindStruct),
+		loadingFrom,
+	}
+
+	ret := loadMethod.Func.Call(methodArgs)
+	if intf := ret[0].Interface(); intf != nil {
+		return errors.Wrapf(intf.(error), "failed to eager load %s", current)
+	}
+
+	l.setLoaded(depth)
 	return nil
 }
 
 // loadRelationshipsRecurse is a helper function for taking a reflect.Value and
-// Basically calls loadRelationships with: obj.R.EagerLoadedObj, and whether it's a string or slice
+// Basically calls loadRelationships with: obj.R.EagerLoadedObj
+// Called with an obj of *struct
 func (l loadRelationshipState) loadRelationshipsRecurse(depth int, obj reflect.Value) error {
-	// Get relationship struct, and if it's good to go, grab the value we just loaded.
-	relationshipStruct := obj.FieldByName(relationshipStructName)
-	if !relationshipStruct.IsValid() || relationshipStruct.IsNil() {
-		return errors.Errorf("could not traverse into loaded %s relationship to load more things", l.toLoad[depth])
+	key := l.toLoad[depth]
+	r, err := findRelationshipStruct(obj)
+	if err != nil {
+		return errors.Wrapf(err, "failed to append loaded %s", key)
 	}
 
-	loadedObject := reflect.Indirect(relationshipStruct).FieldByName(l.toLoad[depth])
-	fmt.Println("loadRecurse", l.toLoad[depth])
-
-	// Pop one off the queue
-	depth++
+	loadedObject := reflect.Indirect(r).FieldByName(key)
 
 	bkind := kindStruct
 	if reflect.Indirect(loadedObject).Kind() != reflect.Struct {
 		bkind = kindPtrSliceStruct
 		loadedObject = loadedObject.Addr()
 	}
-	return l.loadRelationships(depth, loadedObject.Interface(), bkind)
+	return l.loadRelationships(depth+1, loadedObject.Interface(), bkind)
+}
+
+// collectLoaded traverses the next level of the graph and picks up all
+// the values that we need for the next eager load query.
+//
+// For example when loadingFrom is [parent1, parent2]
+//
+//   parent1 -> child1
+//          \-> child2
+//   parent2 -> child3
+//
+// This should return [child1, child2, child3]
+func collectLoaded(key string, loadingFrom reflect.Value) (reflect.Value, bindKind, error) {
+	// Pull the first one so we can get the types out of it in order to
+	// create the proper type of slice.
+	current := reflect.Indirect(loadingFrom.Index(0))
+	lnFrom := loadingFrom.Len()
+
+	r, err := findRelationshipStruct(current)
+	if err != nil {
+		return reflect.Value{}, 0, errors.Wrapf(err, "failed to collect loaded %s", key)
+	}
+
+	loadedObject := reflect.Indirect(r).FieldByName(key)
+	loadedType := loadedObject.Type() // Should be *obj or []*obj
+
+	bkind := kindStruct
+	if loadedType.Elem().Kind() != reflect.Struct {
+		bkind = kindPtrSliceStruct
+	}
+
+	collection := reflect.MakeSlice(loadedType, 0, 0)
+
+	i := 0
+	for {
+		switch bkind {
+		case kindStruct:
+			collection = reflect.Append(collection, loadedObject)
+		case kindPtrSliceStruct:
+			collection = reflect.AppendSlice(collection, loadedObject)
+		}
+
+		i++
+		if i >= lnFrom {
+			break
+		}
+
+		current = reflect.Indirect(loadingFrom.Index(i))
+		r, err = findRelationshipStruct(current)
+		if err != nil {
+			return reflect.Value{}, 0, errors.Wrapf(err, "failed to collect loaded %s", key)
+		}
+
+		loadedObject = reflect.Indirect(r).FieldByName(key)
+	}
+
+	return collection, bkind, nil
+}
+
+func findRelationshipStruct(obj reflect.Value) (reflect.Value, error) {
+	relationshipStruct := obj.FieldByName(relationshipStructName)
+	if !relationshipStruct.IsValid() {
+		return reflect.Value{}, errors.New("relationship struct was invalid")
+	} else if relationshipStruct.IsNil() {
+		return reflect.Value{}, errors.New("relationship struct was nil")
+	}
+
+	return relationshipStruct, nil
 }

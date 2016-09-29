@@ -227,9 +227,10 @@ func collectLoaded(key string, loadingFrom reflect.Value) (reflect.Value, bindKi
 	loadedObject := reflect.Indirect(r).FieldByName(key)
 	loadedType := loadedObject.Type() // Should be *obj or []*obj
 
-	bkind := kindStruct
-	if loadedType.Elem().Kind() != reflect.Struct {
-		bkind = kindPtrSliceStruct
+	bkind := kindPtrSliceStruct
+	if loadedType.Elem().Kind() == reflect.Struct {
+		bkind = kindStruct
+		loadedType = reflect.SliceOf(loadedType)
 	}
 
 	collection := reflect.MakeSlice(loadedType, 0, 0)
@@ -257,7 +258,7 @@ func collectLoaded(key string, loadingFrom reflect.Value) (reflect.Value, bindKi
 		loadedObject = reflect.Indirect(r).FieldByName(key)
 	}
 
-	return collection, bkind, nil
+	return collection, kindPtrSliceStruct, nil
 }
 
 func findRelationshipStruct(obj reflect.Value) (reflect.Value, error) {

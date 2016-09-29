@@ -61,11 +61,10 @@ func (testEagerL) LoadChildOne(_ boil.Executor, singular bool, obj interface{}) 
 		if o.R == nil {
 			o.R = &testEagerR{}
 		}
-		o.R.ChildOne = &testEagerChild{ID: 1}
+		o.R.ChildOne = &testEagerChild{ID: 11}
 	}
 
 	testEagerCounters.ChildOne++
-	fmt.Println("l! ChildOne")
 
 	return nil
 }
@@ -83,13 +82,12 @@ func (testEagerL) LoadChildMany(_ boil.Executor, singular bool, obj interface{})
 			o.R = &testEagerR{}
 		}
 		o.R.ChildMany = []*testEagerChild{
-			&testEagerChild{ID: 2},
-			&testEagerChild{ID: 3},
+			&testEagerChild{ID: 12},
+			&testEagerChild{ID: 13},
 		}
 	}
 
 	testEagerCounters.ChildMany++
-	fmt.Println("l! ChildMany")
 
 	return nil
 }
@@ -106,11 +104,10 @@ func (testEagerChildL) LoadNestedOne(_ boil.Executor, singular bool, obj interfa
 		if o.R == nil {
 			o.R = &testEagerChildR{}
 		}
-		o.R.NestedOne = &testEagerNested{ID: 6}
+		o.R.NestedOne = &testEagerNested{ID: 21}
 	}
 
 	testEagerCounters.NestedOne++
-	fmt.Println("l! NestedOne")
 
 	return nil
 }
@@ -128,13 +125,12 @@ func (testEagerChildL) LoadNestedMany(_ boil.Executor, singular bool, obj interf
 			o.R = &testEagerChildR{}
 		}
 		o.R.NestedMany = []*testEagerNested{
-			&testEagerNested{ID: 6},
-			&testEagerNested{ID: 7},
+			&testEagerNested{ID: 22},
+			&testEagerNested{ID: 23},
 		}
 	}
 
 	testEagerCounters.NestedMany++
-	fmt.Println("l! NestedMany")
 
 	return nil
 }
@@ -147,7 +143,7 @@ func TestEagerLoadFromOne(t *testing.T) {
 
 	obj := &testEager{}
 
-	toLoad := []string{"ChildOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
+	toLoad := []string{"ChildOne.NestedMany", "ChildOne.NestedOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
 	err := eagerLoad(nil, toLoad, obj, kindStruct)
 	if err != nil {
 		t.Fatal(err)
@@ -159,12 +155,23 @@ func TestEagerLoadFromOne(t *testing.T) {
 	if testEagerCounters.ChildOne != 1 {
 		t.Error(testEagerCounters.ChildOne)
 	}
-	if testEagerCounters.NestedMany != 1 {
+	if testEagerCounters.NestedMany != 2 {
 		t.Error(testEagerCounters.NestedMany)
 	}
-	if testEagerCounters.NestedOne != 1 {
+	if testEagerCounters.NestedOne != 2 {
 		t.Error(testEagerCounters.NestedOne)
 	}
+
+	checkChildOne(obj.R.ChildOne)
+	checkChildMany(obj.R.ChildMany)
+
+	checkNestedOne(obj.R.ChildOne.R.NestedOne)
+	checkNestedOne(obj.R.ChildMany[0].R.NestedOne)
+	checkNestedOne(obj.R.ChildMany[1].R.NestedOne)
+
+	checkNestedMany(obj.R.ChildOne.R.NestedMany)
+	checkNestedMany(obj.R.ChildMany[0].R.NestedMany)
+	checkNestedMany(obj.R.ChildMany[1].R.NestedMany)
 }
 
 func TestEagerLoadFromMany(t *testing.T) {
@@ -178,7 +185,7 @@ func TestEagerLoadFromMany(t *testing.T) {
 		{ID: -2},
 	}
 
-	toLoad := []string{"ChildOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
+	toLoad := []string{"ChildOne.NestedMany", "ChildOne.NestedOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
 	err := eagerLoad(nil, toLoad, &slice, kindPtrSliceStruct)
 	if err != nil {
 		t.Fatal(err)
@@ -190,10 +197,75 @@ func TestEagerLoadFromMany(t *testing.T) {
 	if testEagerCounters.ChildOne != 1 {
 		t.Error(testEagerCounters.ChildOne)
 	}
-	if testEagerCounters.NestedMany != 1 {
+	if testEagerCounters.NestedMany != 2 {
 		t.Error(testEagerCounters.NestedMany)
 	}
-	if testEagerCounters.NestedOne != 1 {
+	if testEagerCounters.NestedOne != 2 {
 		t.Error(testEagerCounters.NestedOne)
+	}
+
+	checkChildOne(slice[0].R.ChildOne)
+	checkChildOne(slice[1].R.ChildOne)
+	checkChildMany(slice[0].R.ChildMany)
+	checkChildMany(slice[1].R.ChildMany)
+
+	checkNestedOne(slice[0].R.ChildOne.R.NestedOne)
+	checkNestedOne(slice[0].R.ChildMany[0].R.NestedOne)
+	checkNestedOne(slice[0].R.ChildMany[1].R.NestedOne)
+	checkNestedOne(slice[1].R.ChildOne.R.NestedOne)
+	checkNestedOne(slice[1].R.ChildMany[0].R.NestedOne)
+	checkNestedOne(slice[1].R.ChildMany[1].R.NestedOne)
+
+	checkNestedMany(slice[0].R.ChildOne.R.NestedMany)
+	checkNestedMany(slice[0].R.ChildMany[0].R.NestedMany)
+	checkNestedMany(slice[0].R.ChildMany[1].R.NestedMany)
+	checkNestedMany(slice[1].R.ChildOne.R.NestedMany)
+	checkNestedMany(slice[1].R.ChildMany[0].R.NestedMany)
+	checkNestedMany(slice[1].R.ChildMany[1].R.NestedMany)
+}
+
+func checkChildOne(c *testEagerChild) {
+	if c == nil {
+		panic("c was nil")
+	}
+
+	if c.ID != 11 {
+		panic(fmt.Sprintf("ChildOne id was not loaded correctly: %d", c.ID))
+	}
+}
+
+func checkChildMany(cs []*testEagerChild) {
+	if len(cs) != 2 {
+		panic("cs len was not 2")
+	}
+
+	if cs[0].ID != 12 {
+		panic(fmt.Sprintf("cs[0] had wrong id: %d", cs[0].ID))
+	}
+	if cs[1].ID != 13 {
+		panic(fmt.Sprintf("cs[1] had wrong id: %d", cs[1].ID))
+	}
+}
+
+func checkNestedOne(n *testEagerNested) {
+	if n == nil {
+		panic("n was nil")
+	}
+
+	if n.ID != 21 {
+		panic(fmt.Sprintf("NestedOne id was not loaded correctly: %d", n.ID))
+	}
+}
+
+func checkNestedMany(ns []*testEagerNested) {
+	if len(ns) != 2 {
+		panic("ns len was not 2")
+	}
+
+	if ns[0].ID != 22 {
+		panic(fmt.Sprintf("ns[0] had wrong id: %d", ns[0].ID))
+	}
+	if ns[1].ID != 23 {
+		panic(fmt.Sprintf("ns[1] had wrong id: %d", ns[1].ID))
 	}
 }

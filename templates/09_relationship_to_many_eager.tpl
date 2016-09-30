@@ -23,9 +23,11 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	args := make([]interface{}, count)
 	if singular {
+		object.R = &{{$varNameSingular}}R{}
 		args[0] = object.{{.Column | titleCase}}
 	} else {
 		for i, obj := range slice {
+			obj.R = &{{$varNameSingular}}R{}
 			args[i] = obj.{{.Column | titleCase}}
 		}
 	}
@@ -92,9 +94,6 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	{{- end}}
 	if singular {
-		if object.R == nil {
-			object.R = &{{$varNameSingular}}R{}
-		}
 		object.R.{{$txt.Function.Name}} = resultSlice
 		return nil
 	}
@@ -108,9 +107,6 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
 			{{end -}}
-				if local.R == nil {
-					local.R = &{{$varNameSingular}}R{}
-				}
 				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
 				break
 			}
@@ -124,9 +120,6 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
 			{{end -}}
-				if local.R == nil {
-					local.R = &{{$varNameSingular}}R{}
-				}
 				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
 				break
 			}

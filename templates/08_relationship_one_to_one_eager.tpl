@@ -22,9 +22,11 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	args := make([]interface{}, count)
 	if singular {
+		object.R = &{{$varNameSingular}}R{}
 		args[0] = object.{{$txt.LocalTable.ColumnNameGo}}
 	} else {
 		for i, obj := range slice {
+			obj.R = &{{$varNameSingular}}R{}
 			args[i] = obj.{{$txt.LocalTable.ColumnNameGo}}
 		}
 	}
@@ -60,9 +62,6 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	{{- end}}
 
 	if singular && len(resultSlice) != 0 {
-		if object.R == nil {
-			object.R = &{{$varNameSingular}}R{}
-		}
 		object.R.{{$txt.Function.Name}} = resultSlice[0]
 		return nil
 	}
@@ -74,9 +73,6 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 			{{else -}}
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
 			{{end -}}
-				if local.R == nil {
-					local.R = &{{$varNameSingular}}R{}
-				}
 				local.R.{{$txt.Function.Name}} = foreign
 				break
 			}

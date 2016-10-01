@@ -26,7 +26,7 @@ func SQL(sql string, args ...interface{}) QueryMod {
 // singular, you need to specify the singular form and vice versa.
 func Load(relationships ...string) QueryMod {
 	return func(q *queries.Query) {
-		queries.SetLoad(q, relationships...)
+		queries.AppendLoad(q, relationships...)
 	}
 }
 

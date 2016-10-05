@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const sqlBoilerVersion = "2.0.3"
+
 var (
 	cmdState  *State
 	cmdConfig *Config
@@ -19,6 +21,15 @@ var (
 
 func main() {
 	var err error
+
+	// Too much happens between here and cobra's argument handling, for
+	// something so simple just do it immediately.
+	for _, arg := range os.Args {
+		if arg == "--version" {
+			fmt.Println("SQLBoiler v" + sqlBoilerVersion)
+			return
+		}
+	}
 
 	viper.SetConfigName("sqlboiler")
 
@@ -70,6 +81,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
+	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")

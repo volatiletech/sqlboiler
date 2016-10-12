@@ -311,7 +311,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 				c.DBType = "hstore"
 			} else {
 				c.Type = "string"
-				fmt.Printf("Warning: Incompatible data type detected: %s", c.UDTName)
+				fmt.Printf("Warning: Incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
 			c.Type = "null.String"
@@ -348,7 +348,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 				c.DBType = "hstore"
 			} else {
 				c.Type = "string"
-				fmt.Printf("Warning: Incompatible data type detected: %s", c.UDTName)
+				fmt.Printf("Warning: Incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
 			c.Type = "string"

@@ -21,6 +21,7 @@ var (
 var uppercaseWords = map[string]struct{}{
 	"guid": {},
 	"id":   {},
+	"ip":   {},
 	"uid":  {},
 	"uuid": {},
 	"json": {},

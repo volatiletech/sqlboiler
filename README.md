@@ -199,6 +199,8 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ## Getting started
 
+[SQLBoiler Screencast #1: How to get started](https://www.youtube.com/watch?v=fKmRemtmi0Y)
+
 #### Download
 
 ```shell

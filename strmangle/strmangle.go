@@ -19,11 +19,24 @@ var (
 )
 
 var uppercaseWords = map[string]struct{}{
-	"guid": {},
-	"id":   {},
-	"uid":  {},
-	"uuid": {},
-	"json": {},
+	"acl":   {},
+	"api":   {},
+	"ascii": {},
+	"cpu":   {},
+	"eof":   {},
+	"guid":  {},
+	"id":    {},
+	"ip":    {},
+	"json":  {},
+	"ram":   {},
+	"sla":   {},
+	"udp":   {},
+	"ui":    {},
+	"uid":   {},
+	"uuid":  {},
+	"uri":   {},
+	"url":   {},
+	"utf8":  {},
 }
 
 func init() {

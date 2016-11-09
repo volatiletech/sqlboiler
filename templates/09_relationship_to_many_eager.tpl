@@ -23,11 +23,15 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	args := make([]interface{}, count)
 	if singular {
-		object.R = &{{$varNameSingular}}R{}
+		if object.R == nil {
+			object.R = &{{$varNameSingular}}R{}
+		}
 		args[0] = object.{{.Column | titleCase}}
 	} else {
 		for i, obj := range slice {
-			obj.R = &{{$varNameSingular}}R{}
+			if obj.R == nil {
+				obj.R = &{{$varNameSingular}}R{}
+			}
 			args[i] = obj.{{.Column | titleCase}}
 		}
 	}

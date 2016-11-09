@@ -71,7 +71,7 @@ func eagerLoad(exec boil.Executor, toLoad []string, obj interface{}, bkind bindK
 //   - t is not considered here, and is always passed nil. The function exists on a loaded
 //     struct to avoid a circular dependency with boil, and the receiver is ignored.
 //   - exec is used to perform additional queries that might be required for loading the relationships.
-//   - singular is passed in to identify whether or not this was a single object
+//   - bkind is passed in to identify whether or not this was a single object
 //     or a slice that must be loaded into.
 //   - obj is the object or slice of objects, always of the type *obj or *[]*obj as per bind.
 //

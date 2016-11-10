@@ -1,6 +1,7 @@
 package strmangle
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -511,5 +512,19 @@ func TestGenerateIgnoreTags(t *testing.T) {
 	exp = `xml:"-" db:"-" `
 	if tags != exp {
 		t.Errorf("expected %s, got %s", exp, tags)
+	}
+}
+
+func TestParseEnum(t *testing.T) {
+	t.Parallel()
+
+	vals := []string{"one", "two", "three"}
+	toParse := fmt.Sprintf("enum('%s')", strings.Join(vals, "','"))
+
+	gotVals := ParseEnum(toParse)
+	for i, v := range vals {
+		if gotVals[i] != v {
+			t.Errorf("%d) want: %s, got %s", i, v, gotVals[i])
+		}
 	}
 }

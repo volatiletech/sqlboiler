@@ -16,6 +16,8 @@ import (
 var (
 	idAlphabet    = []byte("abcdefghijklmnopqrstuvwxyz")
 	smartQuoteRgx = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
+
+	rgxEnum = regexp.MustCompile(`^enum\((,?'[^']+')+\)$`)
 )
 
 var uppercaseWords = map[string]struct{}{
@@ -573,4 +575,17 @@ func GenerateIgnoreTags(tags []string) string {
 	}
 
 	return buf.String()
+}
+
+// ParseEnum takes a string that looks like:
+// enum('one','two') and returns the strings one, two
+func ParseEnum(s string) []string {
+	if !rgxEnum.MatchString(s) {
+		return nil
+	}
+
+	s = strings.TrimPrefix(s, "enum('")
+	s = strings.TrimSuffix(s, "')")
+
+	return strings.Split(s, "','")
 }

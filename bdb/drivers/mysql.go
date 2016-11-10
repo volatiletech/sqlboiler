@@ -121,7 +121,11 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	var columns []bdb.Column
 
 	rows, err := m.dbConn.Query(`
-	select column_name, data_type, if(extra = 'auto_increment','auto_increment', column_default), is_nullable,
+	select
+	c.column_name,
+	if(c.data_type = 'enum', c.column_type, c.data_type),
+	if(extra = 'auto_increment','auto_increment', c.column_default),
+	c.is_nullable = 'YES',
 		exists (
 			select c.column_name
 			from information_schema.table_constraints tc
@@ -140,24 +144,23 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colDefault, nullable string
-		var unique bool
-		var defaultPtr *string
-		if err := rows.Scan(&colName, &colType, &defaultPtr, &nullable, &unique); err != nil {
+		var colName, colType string
+		var nullable, unique bool
+		var defaultValue *string
+		if err := rows.Scan(&colName, &colType, &defaultValue, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
-		}
-
-		if defaultPtr != nil && *defaultPtr != "NULL" {
-			colDefault = *defaultPtr
 		}
 
 		column := bdb.Column{
 			Name:     colName,
 			DBType:   colType,
-			Default:  colDefault,
-			Nullable: nullable == "YES",
+			Nullable: nullable,
 			Unique:   unique,
 		}
+		if defaultValue != nil && *defaultValue != "NULL" {
+			column.Default = *defaultValue
+		}
+
 		columns = append(columns, column)
 	}
 

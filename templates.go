@@ -121,6 +121,28 @@ func loadTemplate(dir string, filename string) (*template.Template, error) {
 	return tpl.Lookup(filename), err
 }
 
+// set is to stop duplication from named enums, allowing a template loop
+// to keep some state
+type once map[string]struct{}
+
+func newOnce() once {
+	return make(once)
+}
+
+func (o once) Has(s string) bool {
+	_, ok := o[s]
+	return ok
+}
+
+func (o once) Put(s string) bool {
+	if _, ok := o[s]; ok {
+		return false
+	}
+
+	o[s] = struct{}{}
+	return true
+}
+
 // templateStringMappers are placed into the data to make it easy to use the
 // stringMap function.
 var templateStringMappers = map[string]func(string) string{
@@ -157,6 +179,15 @@ var templateFunctions = template.FuncMap{
 	"generateTags":       strmangle.GenerateTags,
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 
+	// Enum ops
+	"parseEnumName":       strmangle.ParseEnumName,
+	"parseEnumVals":       strmangle.ParseEnumVals,
+	"isEnumNormal":        strmangle.IsEnumNormal,
+	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
+	"onceNew":             newOnce,
+	"oncePut":             once.Put,
+	"onceHas":             once.Has,
+
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,
 
@@ -173,6 +204,7 @@ var templateFunctions = template.FuncMap{
 
 	// dbdrivers ops
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,
+	"filterColumnsByEnum":    bdb.FilterColumnsByEnum,
 	"sqlColDefinitions":      bdb.SQLColDefinitions,
 	"columnNames":            bdb.ColumnNames,
 	"columnDBTypes":          bdb.ColumnDBTypes,

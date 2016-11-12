@@ -1,7 +1,6 @@
 package strmangle
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -518,13 +517,66 @@ func TestGenerateIgnoreTags(t *testing.T) {
 func TestParseEnum(t *testing.T) {
 	t.Parallel()
 
-	vals := []string{"one", "two", "three"}
-	toParse := fmt.Sprintf("enum('%s')", strings.Join(vals, "','"))
+	tests := []struct {
+		Enum string
+		Name string
+		Vals []string
+	}{
+		{"enum('one')", "", []string{"one"}},
+		{"enum('one','two')", "", []string{"one", "two"}},
+		{"enum.working('one')", "working", []string{"one"}},
+		{"enum.wor_king('one','two')", "wor_king", []string{"one", "two"}},
+	}
 
-	gotVals := ParseEnum(toParse)
-	for i, v := range vals {
-		if gotVals[i] != v {
-			t.Errorf("%d) want: %s, got %s", i, v, gotVals[i])
+	for i, test := range tests {
+		name := ParseEnumName(test.Enum)
+		vals := ParseEnumVals(test.Enum)
+		if name != test.Name {
+			t.Errorf("%d) name was wrong, want: %s got: %s (%s)", i, test.Name, name, test.Enum)
+		}
+		for j, v := range test.Vals {
+			if v != vals[j] {
+				t.Errorf("%d.%d) value was wrong, want: %s got: %s (%s)", i, j, v, vals[j], test.Enum)
+			}
+		}
+	}
+}
+
+func TestIsEnumNormal(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Vals []string
+		Ok   bool
+	}{
+		{[]string{"o1ne", "two2"}, true},
+		{[]string{"one", "t#wo2"}, false},
+		{[]string{"1one", "two2"}, false},
+	}
+
+	for i, test := range tests {
+		if got := IsEnumNormal(test.Vals); got != test.Ok {
+			t.Errorf("%d) want: %t got: %t, %#v", i, test.Ok, got, test.Vals)
+		}
+	}
+}
+
+func TestShouldTitleCaseEnum(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Val string
+		Ok  bool
+	}{
+		{"hello_there0", true},
+		{"hEllo", false},
+		{"_hello", false},
+		{"0hello", false},
+	}
+
+	for i, test := range tests {
+		if got := ShouldTitleCaseEnum(test.Val); got != test.Ok {
+			t.Errorf("%d) want: %t got: %t, %v", i, test.Ok, got, test.Val)
 		}
 	}
 }

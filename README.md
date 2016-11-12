@@ -97,6 +97,7 @@ Table of Contents
 - Debug logging
 - Schemas support
 - 1d arrays, json, hstore & more
+- Enum types
 
 ### Supported Databases
 

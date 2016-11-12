@@ -130,7 +130,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 			case when c.data_type = 'USER-DEFINED' and c.udt_name <> 'hstore'
 			then
 			(
-				select 'enum(''' || string_agg(labels.label, ''',''') || ''')'
+				select 'enum.' || c.udt_name || '(''' || string_agg(labels.label, ''',''') || ''')'
 				from (
 					select pg_enum.enumlabel as label
 					from pg_enum

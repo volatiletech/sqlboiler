@@ -24,6 +24,23 @@ CREATE TABLE magic (
   string_ten    VARCHAR(1000) NULL DEFAULT '',
   string_eleven VARCHAR(1000) NOT NULL DEFAULT '',
 
+  nonbyte_zero   CHAR(1),
+  nonbyte_one    CHAR(1) NULL,
+  nonbyte_two    CHAR(1) NOT NULL,
+  nonbyte_three  CHAR(1) NULL DEFAULT 'a',
+  nonbyte_four   CHAR(1) NOT NULL DEFAULT 'b',
+  nonbyte_five   CHAR(1000),
+  nonbyte_six    CHAR(1000) NULL,
+  nonbyte_seven    CHAR(1000) NOT NULL,
+  nonbyte_eight  CHAR(1000) NULL DEFAULT 'a',
+  nonbyte_nine   CHAR(1000) NOT NULL DEFAULT 'b',
+
+  byte_zero   "char",
+  byte_one    "char" NULL,
+  byte_two    "char" NOT NULL,
+  byte_three  "char" NULL DEFAULT 'a',
+  byte_four   "char" NOT NULL DEFAULT 'b',
+
   big_int_zero  bigint,
   big_int_one   bigint NULL,
   big_int_two   bigint NOT NULL,

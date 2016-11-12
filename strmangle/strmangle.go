@@ -380,7 +380,7 @@ func MakeStringMap(types map[string]string) string {
 	c := 0
 	for _, k := range keys {
 		v := types[k]
-		buf.WriteString(fmt.Sprintf(`"%s": "%s"`, k, v))
+		buf.WriteString(fmt.Sprintf("`%s`: `%s`", k, v))
 		if c < len(types)-1 {
 			buf.WriteString(", ")
 		}

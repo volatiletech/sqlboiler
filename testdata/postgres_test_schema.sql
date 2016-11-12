@@ -13,6 +13,15 @@ CREATE TABLE event_two (
   day    workday NOT NULL
 );
 
+CREATE TABLE event_three (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL,
+  face   faceyface NOT NULL,
+  thing  workday NULL,
+  stuff  faceyface NULL
+);
+
 CREATE TABLE facey (
   id serial PRIMARY KEY NOT NULL,
   name VARCHAR(255),

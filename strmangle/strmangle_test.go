@@ -291,8 +291,8 @@ func TestMakeStringMap(t *testing.T) {
 
 	r = MakeStringMap(m)
 
-	e1 := `"TestOne": "interval", "TestTwo": "integer"`
-	e2 := `"TestTwo": "integer", "TestOne": "interval"`
+	e1 := "`TestOne`: `interval`, `TestTwo`: `integer`"
+	e2 := "`TestTwo`: `integer`, `TestOne`: `interval`"
 
 	if r != e1 && r != e2 {
 		t.Errorf("Got %s", r)

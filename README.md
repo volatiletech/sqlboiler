@@ -1047,6 +1047,43 @@ exists, err := jet.Pilot(db).Exists()
 exists, err := models.Pilots(db, Where("id=?", 5)).Exists()
 ```
 
+### Enums
+
+If your MySQL or Postgres tables use enums we will generate constants that hold their values 
+that you can use in your queries. For example:
+
+```
+CREATE TYPE workday AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+
+CREATE TABLE event_one (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL
+);
+```
+
+An enum type defined like the above, being used by a table, will generate the following enums:
+
+```
+const (
+	WorkdayMonday    = "monday"
+	WorkdayTuesday   = "tuesday"
+	WorkdayWednesday = "wednesday"
+	WorkdayThursday  = "thursday"
+	WorkdayFriday    = "friday"
+)
+```
+
+For Postgres we use `enum type name + title cased` value to generate the const variable name.
+For MySQL we use `table name + column name + title cased value` to generate the const variable name.
+
+Note: If your enum holds a value we cannot parse correctly due, to non-alphabet characters for example, 
+it may not be generated. In this event, you will receive errors in your generated tests because
+the value randomizer in the test suite does not know how to generate valid enum values. You will
+still be able to use your generated library, and it will still work as expected, but the only way
+to get the tests to pass in this event is to either use a parsable enum value or use a regular column
+instead of an enum.
+
 ## FAQ
 
 #### Won't compiling models for a huge database be very slow?

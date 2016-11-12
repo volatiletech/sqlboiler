@@ -158,6 +158,16 @@ func randDate(s *Seed) time.Time {
 // If canBeNull is true:
 //  The value has the possibility of being null or non-zero at random.
 func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bool) error {
+	if strings.HasPrefix(fieldType, "enum") {
+		enum, err := randEnumValue(fieldType)
+		if err != nil {
+			return err
+		}
+
+		field.Set(reflect.ValueOf(enum))
+		return nil
+	}
+
 	kind := field.Kind()
 	typ := field.Type()
 
@@ -603,4 +613,13 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 	}
 
 	return nil
+}
+
+func randEnumValue(enum string) (string, error) {
+	vals := strmangle.ParseEnumVals(enum)
+	if vals == nil || len(vals) == 0 {
+		return "", fmt.Errorf("unable to parse enum string: %s", enum)
+	}
+
+	return vals[rand.Intn(len(vals)-1)], nil
 }

@@ -1,3 +1,24 @@
+CREATE TYPE workday AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+CREATE TYPE faceyface AS ENUM('angry', 'hungry', 'bitter');
+
+CREATE TABLE event_one (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL
+);
+
+CREATE TABLE event_two (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL
+);
+
+CREATE TABLE facey (
+  id serial PRIMARY KEY NOT NULL,
+  name VARCHAR(255),
+  face faceyface NOT NULL
+);
+
 CREATE TABLE magic (
   id       serial PRIMARY KEY NOT NULL,
   id_two   serial NOT NULL,

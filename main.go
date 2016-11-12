@@ -125,6 +125,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		OutFolder:        viper.GetString("output"),
 		Schema:           viper.GetString("schema"),
 		PkgName:          viper.GetString("pkgname"),
+		BaseDir:          viper.GetString("basedir"),
 		Debug:            viper.GetBool("debug"),
 		NoTests:          viper.GetBool("no-tests"),
 		NoHooks:          viper.GetBool("no-hooks"),

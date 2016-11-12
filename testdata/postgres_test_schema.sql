@@ -31,14 +31,14 @@ CREATE TABLE magic (
   nonbyte_four   CHAR(1) NOT NULL DEFAULT 'b',
   nonbyte_five   CHAR(1000),
   nonbyte_six    CHAR(1000) NULL,
-  nonbyte_seven    CHAR(1000) NOT NULL,
+  nonbyte_seven  CHAR(1000) NOT NULL,
   nonbyte_eight  CHAR(1000) NULL DEFAULT 'a',
   nonbyte_nine   CHAR(1000) NOT NULL DEFAULT 'b',
 
   byte_zero   "char",
   byte_one    "char" NULL,
-  byte_two    "char" NOT NULL,
-  byte_three  "char" NULL DEFAULT 'a',
+  byte_two    "char" NULL DEFAULT 'a',
+  byte_three  "char" NOT NULL,
   byte_four   "char" NOT NULL DEFAULT 'b',
 
   big_int_zero  bigint,

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	// Side-effect import sql driver
+
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
@@ -123,25 +124,55 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 	var columns []bdb.Column
 
 	rows, err := p.dbConn.Query(`
-		select column_name, c.data_type, e.data_type, column_default, c.udt_name, is_nullable,
-			(select exists(
-		    select 1
+		select
+		c.column_name,
+		(
+			case when c.data_type = 'USER-DEFINED' and c.udt_name <> 'hstore'
+			then
+			(
+				select 'enum.' || c.udt_name || '(''' || string_agg(labels.label, ''',''') || ''')'
+				from (
+					select pg_enum.enumlabel as label
+					from pg_enum
+					where pg_enum.enumtypid =
+					(
+						select typelem
+						from pg_type
+						where pg_type.typtype = 'b' and pg_type.typname = ('_' || c.udt_name)
+						limit 1
+					)
+					order by pg_enum.enumsortorder
+				) as labels
+			)
+			else c.data_type
+			end
+		) as column_type,
+
+		c.udt_name,
+		e.data_type as array_type,
+		c.column_default,
+
+		c.is_nullable = 'YES' as is_nullable,
+		(select exists(
+			select 1
 				from information_schema.constraint_column_usage as ccu
-		    inner join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name
-		    where ccu.table_name = c.table_name and ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
+			inner join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name
+			where ccu.table_name = c.table_name and ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
 			)) OR (select exists(
-		    select 1
-		    from
-		      pg_indexes pgix
-		      inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i'
-		      inner join pg_index pgi on pgi.indexrelid = pgc.oid
-		      inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
-		    where
-		      pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
+			select 1
+			from
+				pg_indexes pgix
+				inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i'
+				inner join pg_index pgi on pgi.indexrelid = pgc.oid
+				inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
+			where
+				pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
 		)) as is_unique
-		from information_schema.columns as c LEFT JOIN information_schema.element_types e
-			ON ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
-				= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
+
+		from information_schema.columns as c
+		left join information_schema.element_types e
+			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
+			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
 		where c.table_name=$2 and c.table_schema = $1;
 	`, schema, tableName)
 
@@ -151,29 +182,25 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, udtName, colType, colDefault, nullable string
-		var elementType *string
-		var unique bool
-		var defaultPtr *string
-		if err := rows.Scan(&colName, &colType, &elementType, &defaultPtr, &udtName, &nullable, &unique); err != nil {
+		var colName, colType, udtName string
+		var defaultValue, arrayType *string
+		var nullable, unique bool
+		if err := rows.Scan(&colName, &colType, &udtName, &arrayType, &defaultValue, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
-		}
-
-		if defaultPtr == nil {
-			colDefault = ""
-		} else {
-			colDefault = *defaultPtr
 		}
 
 		column := bdb.Column{
 			Name:     colName,
 			DBType:   colType,
-			ArrType:  elementType,
+			ArrType:  arrayType,
 			UDTName:  udtName,
-			Default:  colDefault,
-			Nullable: nullable == "YES",
+			Nullable: nullable,
 			Unique:   unique,
 		}
+		if defaultValue != nil {
+			column.Default = *defaultValue
+		}
+
 		columns = append(columns, column)
 	}
 
@@ -290,6 +317,8 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float32"
 		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "null.String"
+		case `"char"`:
+			c.Type = "null.Byte"
 		case "bytea":
 			c.Type = "null.Bytes"
 		case "json", "jsonb":
@@ -330,6 +359,8 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float32"
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
 			c.Type = "string"
+		case `"char"`:
+			c.Type = "types.Byte"
 		case "json", "jsonb":
 			c.Type = "types.JSON"
 		case "bytea":

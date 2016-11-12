@@ -66,3 +66,23 @@ func TestFilterColumnsByDefault(t *testing.T) {
 		t.Errorf("Invalid result: %#v", res)
 	}
 }
+
+func TestFilterColumnsByEnum(t *testing.T) {
+	t.Parallel()
+
+	cols := []Column{
+		{Name: "col1", DBType: "enum('hello')"},
+		{Name: "col2", DBType: "enum('hello','there')"},
+		{Name: "col3", DBType: "enum"},
+		{Name: "col4", DBType: ""},
+		{Name: "col5", DBType: "int"},
+	}
+
+	res := FilterColumnsByEnum(cols)
+	if res[0].Name != `col1` {
+		t.Errorf("Invalid result: %#v", res)
+	}
+	if res[1].Name != `col2` {
+		t.Errorf("Invalid result: %#v", res)
+	}
+}

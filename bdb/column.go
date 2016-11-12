@@ -1,6 +1,10 @@
 package bdb
 
-import "github.com/vattle/sqlboiler/strmangle"
+import (
+	"strings"
+
+	"github.com/vattle/sqlboiler/strmangle"
+)
 
 // Column holds information about a database column.
 // Types are Go types, converted by TranslateColumnType.
@@ -48,6 +52,19 @@ func FilterColumnsByDefault(defaults bool, columns []Column) []Column {
 
 	for _, c := range columns {
 		if (defaults && len(c.Default) != 0) || (!defaults && len(c.Default) == 0) {
+			cols = append(cols, c)
+		}
+	}
+
+	return cols
+}
+
+// FilterColumnsByEnum generates the list of columns that are enum values.
+func FilterColumnsByEnum(columns []Column) []Column {
+	var cols []Column
+
+	for _, c := range columns {
+		if strings.HasPrefix(c.DBType, "enum") {
 			cols = append(cols, c)
 		}
 	}

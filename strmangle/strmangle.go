@@ -16,15 +16,31 @@ import (
 var (
 	idAlphabet    = []byte("abcdefghijklmnopqrstuvwxyz")
 	smartQuoteRgx = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
+
+	rgxEnum            = regexp.MustCompile(`^enum(\.[a-z_]+)?\((,?'[^']+')+\)$`)
+	rgxEnumIsOK        = regexp.MustCompile(`^(?i)[a-z][a-z0-9_]*$`)
+	rgxEnumShouldTitle = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 )
 
 var uppercaseWords = map[string]struct{}{
-	"guid": {},
-	"id":   {},
-	"ip":   {},
-	"uid":  {},
-	"uuid": {},
-	"json": {},
+	"acl":   {},
+	"api":   {},
+	"ascii": {},
+	"cpu":   {},
+	"eof":   {},
+	"guid":  {},
+	"id":    {},
+	"ip":    {},
+	"json":  {},
+	"ram":   {},
+	"sla":   {},
+	"udp":   {},
+	"ui":    {},
+	"uid":   {},
+	"uuid":  {},
+	"uri":   {},
+	"url":   {},
+	"utf8":  {},
 }
 
 func init() {
@@ -364,7 +380,7 @@ func MakeStringMap(types map[string]string) string {
 	c := 0
 	for _, k := range keys {
 		v := types[k]
-		buf.WriteString(fmt.Sprintf(`"%s": "%s"`, k, v))
+		buf.WriteString(fmt.Sprintf("`%s`: `%s`", k, v))
 		if c < len(types)-1 {
 			buf.WriteString(", ")
 		}
@@ -561,4 +577,56 @@ func GenerateIgnoreTags(tags []string) string {
 	}
 
 	return buf.String()
+}
+
+// ParseEnumVals returns the values from an enum string
+//
+// Postgres and MySQL drivers return different values
+// psql:  enum.enum_name('values'...)
+// mysql: enum('values'...)
+func ParseEnumVals(s string) []string {
+	if !rgxEnum.MatchString(s) {
+		return nil
+	}
+
+	startIndex := strings.IndexByte(s, '(')
+	s = s[startIndex+2 : len(s)-2]
+	return strings.Split(s, "','")
+}
+
+// ParseEnumName returns the name portion of an enum if it exists
+//
+// Postgres and MySQL drivers return different values
+// psql:  enum.enum_name('values'...)
+// mysql: enum('values'...)
+// In the case of mysql, the name will never return anything
+func ParseEnumName(s string) string {
+	if !rgxEnum.MatchString(s) {
+		return ""
+	}
+
+	endIndex := strings.IndexByte(s, '(')
+	s = s[:endIndex]
+	startIndex := strings.IndexByte(s, '.')
+	if startIndex < 0 {
+		return ""
+	}
+
+	return s[startIndex+1:]
+}
+
+// IsEnumNormal checks a set of eval values to see if they're "normal"
+func IsEnumNormal(values []string) bool {
+	for _, v := range values {
+		if !rgxEnumIsOK.MatchString(v) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// ShouldTitleCaseEnum checks a value to see if it's title-case-able
+func ShouldTitleCaseEnum(value string) bool {
+	return rgxEnumShouldTitle.MatchString(value)
 }

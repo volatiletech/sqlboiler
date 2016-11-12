@@ -4,6 +4,7 @@ package randomize
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"regexp"
 	"sort"
@@ -12,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"gopkg.in/nullbio/null.v5"
+	null "gopkg.in/nullbio/null.v6"
 
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
@@ -34,6 +35,7 @@ var (
 	typeNullUint32   = reflect.TypeOf(null.Uint32{})
 	typeNullUint64   = reflect.TypeOf(null.Uint64{})
 	typeNullString   = reflect.TypeOf(null.String{})
+	typeNullByte     = reflect.TypeOf(null.Byte{})
 	typeNullBool     = reflect.TypeOf(null.Bool{})
 	typeNullTime     = reflect.TypeOf(null.Time{})
 	typeNullBytes    = reflect.TypeOf(null.Bytes{})
@@ -156,8 +158,25 @@ func randDate(s *Seed) time.Time {
 // If canBeNull is true:
 //  The value has the possibility of being null or non-zero at random.
 func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bool) error {
+
 	kind := field.Kind()
 	typ := field.Type()
+
+	if strings.HasPrefix(fieldType, "enum") {
+		enum, err := randEnumValue(fieldType)
+		if err != nil {
+			return err
+		}
+
+		if kind == reflect.Struct {
+			val := null.NewString(enum, rand.Intn(1) == 0)
+			field.Set(reflect.ValueOf(val))
+		} else {
+			field.Set(reflect.ValueOf(enum))
+		}
+
+		return nil
+	}
 
 	var value interface{}
 	var isNull bool
@@ -341,7 +360,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		// only get zero values for non byte slices
 		// to stop mysql from being a jerk
 		if isNull && kind != reflect.Slice {
-			value = getVariableZeroValue(s, kind)
+			value = getVariableZeroValue(s, kind, typ)
 		} else {
 			value = getVariableRandValue(s, kind, typ)
 		}
@@ -457,6 +476,8 @@ func getStructNullValue(s *Seed, typ reflect.Type) interface{} {
 		return null.NewUint64(0, false)
 	case typeNullBytes:
 		return null.NewBytes(nil, false)
+	case typeNullByte:
+		return null.NewByte(byte(0), false)
 	}
 
 	return nil
@@ -501,13 +522,21 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 		return null.NewUint64(uint64(s.nextInt()), true)
 	case typeNullBytes:
 		return null.NewBytes(randByteSlice(s, 1), true)
+	case typeNullByte:
+		return null.NewByte(byte(rand.Intn(125-65)+65), true)
 	}
 
 	return nil
 }
 
 // getVariableZeroValue for the matching type.
-func getVariableZeroValue(s *Seed, kind reflect.Kind) interface{} {
+func getVariableZeroValue(s *Seed, kind reflect.Kind, typ reflect.Type) interface{} {
+	switch typ.String() {
+	case "types.Byte":
+		// Decimal 65 is 'A'. 0 is not a valid UTF8, so cannot use a zero value here.
+		return types.Byte(65)
+	}
+
 	switch kind {
 	case reflect.Float32:
 		return float32(0)
@@ -548,6 +577,11 @@ func getVariableZeroValue(s *Seed, kind reflect.Kind) interface{} {
 // The randomness is really an incrementation of the global seed,
 // this is done to avoid duplicate key violations.
 func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interface{} {
+	switch typ.String() {
+	case "types.Byte":
+		return types.Byte(rand.Intn(125-65) + 65)
+	}
+
 	switch kind {
 	case reflect.Float32:
 		return float32(float32(s.nextInt()%10)/10.0 + float32(s.nextInt()%10))
@@ -586,4 +620,13 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 	}
 
 	return nil
+}
+
+func randEnumValue(enum string) (string, error) {
+	vals := strmangle.ParseEnumVals(enum)
+	if vals == nil || len(vals) == 0 {
+		return "", fmt.Errorf("unable to parse enum string: %s", enum)
+	}
+
+	return vals[rand.Intn(len(vals)-1)], nil
 }

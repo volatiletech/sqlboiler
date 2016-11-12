@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/nullbio/null.v5"
+	null "gopkg.in/nullbio/null.v6"
 )
 
 func TestRandomizeStruct(t *testing.T) {
@@ -142,5 +142,30 @@ func TestRandomizeField(t *testing.T) {
 				t.Errorf("%d) Field should not be null, got: %v -- type: %s\n", i, inputs[i].In, typ)
 			}
 		}
+	}
+}
+
+func TestRandEnumValue(t *testing.T) {
+	t.Parallel()
+
+	enum1 := "enum.workday('monday','tuesday')"
+	enum2 := "enum('monday','tuesday')"
+
+	r1, err := randEnumValue(enum1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if r1 != "monday" && r1 != "tuesday" {
+		t.Errorf("Expected monday or tueday, got: %q", r1)
+	}
+
+	r2, err := randEnumValue(enum2)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if r2 != "monday" && r2 != "tuesday" {
+		t.Errorf("Expected monday or tueday, got: %q", r2)
 	}
 }

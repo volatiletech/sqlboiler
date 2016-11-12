@@ -35,7 +35,7 @@ func (j *JSON) Marshal(obj interface{}) error {
 // UnmarshalJSON sets *j to a copy of data.
 func (j *JSON) UnmarshalJSON(data []byte) error {
 	if j == nil {
-		return errors.New("JSON: UnmarshalJSON on nil pointer")
+		return errors.New("json: unmarshal json on nil pointer to json")
 	}
 
 	*j = append((*j)[0:0], data...)
@@ -68,7 +68,7 @@ func (j *JSON) Scan(src interface{}) error {
 	case []byte:
 		source = src.([]byte)
 	default:
-		return errors.New("Incompatible type for JSON")
+		return errors.New("incompatible type for json")
 	}
 
 	*j = JSON(append((*j)[0:0], source...))

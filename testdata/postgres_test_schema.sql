@@ -1,3 +1,33 @@
+CREATE TYPE workday AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
+CREATE TYPE faceyface AS ENUM('angry', 'hungry', 'bitter');
+
+CREATE TABLE event_one (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL
+);
+
+CREATE TABLE event_two (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL
+);
+
+CREATE TABLE event_three (
+  id     serial PRIMARY KEY NOT NULL,
+  name   VARCHAR(255),
+  day    workday NOT NULL,
+  face   faceyface NOT NULL,
+  thing  workday NULL,
+  stuff  faceyface NULL
+);
+
+CREATE TABLE facey (
+  id serial PRIMARY KEY NOT NULL,
+  name VARCHAR(255),
+  face faceyface NOT NULL
+);
+
 CREATE TABLE magic (
   id       serial PRIMARY KEY NOT NULL,
   id_two   serial NOT NULL,
@@ -23,6 +53,23 @@ CREATE TABLE magic (
   string_nine   VARCHAR(1000) NOT NULL DEFAULT 'abcdefgh',
   string_ten    VARCHAR(1000) NULL DEFAULT '',
   string_eleven VARCHAR(1000) NOT NULL DEFAULT '',
+
+  nonbyte_zero   CHAR(1),
+  nonbyte_one    CHAR(1) NULL,
+  nonbyte_two    CHAR(1) NOT NULL,
+  nonbyte_three  CHAR(1) NULL DEFAULT 'a',
+  nonbyte_four   CHAR(1) NOT NULL DEFAULT 'b',
+  nonbyte_five   CHAR(1000),
+  nonbyte_six    CHAR(1000) NULL,
+  nonbyte_seven  CHAR(1000) NOT NULL,
+  nonbyte_eight  CHAR(1000) NULL DEFAULT 'a',
+  nonbyte_nine   CHAR(1000) NOT NULL DEFAULT 'b',
+
+  byte_zero   "char",
+  byte_one    "char" NULL,
+  byte_two    "char" NULL DEFAULT 'a',
+  byte_three  "char" NOT NULL,
+  byte_four   "char" NOT NULL DEFAULT 'b',
 
   big_int_zero  bigint,
   big_int_one   bigint NULL,

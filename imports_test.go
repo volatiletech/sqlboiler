@@ -75,7 +75,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
-			`"gopkg.in/nullbio/null.v5"`,
+			`"gopkg.in/nullbio/null.v6"`,
 		},
 	}
 
@@ -108,7 +108,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 		thirdParty: importList{
 			`"github.com/vattle/sqlboiler/boil"`,
-			`"gopkg.in/nullbio/null.v5"`,
+			`"gopkg.in/nullbio/null.v6"`,
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestCombineImports(t *testing.T) {
 
 	a := imports{
 		standard:   importList{"fmt"},
-		thirdParty: importList{"github.com/vattle/sqlboiler", "gopkg.in/nullbio/null.v5"},
+		thirdParty: importList{"github.com/vattle/sqlboiler", "gopkg.in/nullbio/null.v6"},
 	}
 	b := imports{
 		standard:   importList{"os"},
@@ -136,8 +136,8 @@ func TestCombineImports(t *testing.T) {
 	if c.standard[0] != "fmt" && c.standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.standard)
 	}
-	if c.thirdParty[0] != "github.com/vattle/sqlboiler" && c.thirdParty[1] != "gopkg.in/nullbio/null.v5" {
-		t.Errorf("Wanted: github.com/vattle/sqlboiler, gopkg.in/nullbio/null.v5 got: %#v", c.thirdParty)
+	if c.thirdParty[0] != "github.com/vattle/sqlboiler" && c.thirdParty[1] != "gopkg.in/nullbio/null.v6" {
+		t.Errorf("Wanted: github.com/vattle/sqlboiler, gopkg.in/nullbio/null.v6 got: %#v", c.thirdParty)
 	}
 }
 

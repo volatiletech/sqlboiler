@@ -299,6 +299,34 @@ func TestEagerLoadZeroParents(t *testing.T) {
 	}
 }
 
+func TestEagerLoadZeroParentsMany(t *testing.T) {
+	t.Parallel()
+
+	obj := []*testEager{
+		&testEager{},
+		&testEager{},
+	}
+
+	toLoad := []string{"ZeroMany.NestedMany", "ZeroOne.NestedOne", "ZeroMany.NestedMany", "ZeroOne.NestedOne"}
+	err := eagerLoad(nil, toLoad, &obj, kindPtrSliceStruct)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(obj[0].R.ZeroMany) != 0 {
+		t.Error("should have loaded nothing")
+	}
+	if obj[0].R.ZeroOne != nil {
+		t.Error("should have loaded nothing")
+	}
+	if len(obj[1].R.ZeroMany) != 0 {
+		t.Error("should have loaded nothing")
+	}
+	if obj[1].R.ZeroOne != nil {
+		t.Error("should have loaded nothing")
+	}
+}
+
 func checkChildOne(c *testEagerChild) {
 	if c == nil {
 		panic("c was nil")

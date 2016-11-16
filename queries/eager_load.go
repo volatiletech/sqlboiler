@@ -167,7 +167,11 @@ func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.V
 		if val.Len() == 0 {
 			return nil
 		}
-		val = reflect.Indirect(val.Index(0))
+		val = val.Index(0)
+		if val.IsNil() {
+			return nil
+		}
+		val = reflect.Indirect(val)
 	}
 
 	methodArgs := []reflect.Value{
@@ -197,6 +201,9 @@ func (l loadRelationshipState) loadRelationshipsRecurse(depth int, obj reflect.V
 	}
 
 	loadedObject := reflect.Indirect(r).FieldByName(key)
+	if loadedObject.IsNil() {
+		return nil
+	}
 
 	bkind := kindStruct
 	if reflect.Indirect(loadedObject).Kind() != reflect.Struct {

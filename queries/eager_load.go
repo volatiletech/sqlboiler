@@ -164,6 +164,9 @@ func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.V
 	// Get a loader instance from anything we have, *struct, or *[]*struct
 	val := reflect.Indirect(loadingFrom)
 	if bkind == kindPtrSliceStruct {
+		if val.Len() == 0 {
+			return nil
+		}
 		val = reflect.Indirect(val.Index(0))
 	}
 

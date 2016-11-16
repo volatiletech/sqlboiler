@@ -23,6 +23,8 @@ type testEager struct {
 type testEagerR struct {
 	ChildOne  *testEagerChild
 	ChildMany []*testEagerChild
+	ZeroOne   *testEagerZero
+	ZeroMany  []*testEagerZero
 }
 type testEagerL struct {
 }
@@ -47,6 +49,18 @@ type testEagerNested struct {
 type testEagerNestedR struct {
 }
 type testEagerNestedL struct {
+}
+
+type testEagerZero struct {
+	ID int
+	R  *testEagerZeroR
+	L  testEagerZeroL
+}
+type testEagerZeroR struct {
+	NestedOne  *testEagerNested
+	NestedMany []*testEagerNested
+}
+type testEagerZeroL struct {
 }
 
 func (testEagerL) LoadChildOne(_ boil.Executor, singular bool, obj interface{}) error {
@@ -132,6 +146,48 @@ func (testEagerChildL) LoadNestedMany(_ boil.Executor, singular bool, obj interf
 
 	testEagerCounters.NestedMany++
 
+	return nil
+}
+
+func (testEagerL) LoadZeroOne(_ boil.Executor, singular bool, obj interface{}) error {
+	var toSetOn []*testEager
+	if singular {
+		toSetOn = []*testEager{obj.(*testEager)}
+	} else {
+		toSetOn = *obj.(*[]*testEager)
+	}
+
+	for _, o := range toSetOn {
+		if o.R == nil {
+			o.R = &testEagerR{}
+		}
+	}
+
+	return nil
+}
+
+func (testEagerL) LoadZeroMany(_ boil.Executor, singular bool, obj interface{}) error {
+	var toSetOn []*testEager
+	if singular {
+		toSetOn = []*testEager{obj.(*testEager)}
+	} else {
+		toSetOn = *obj.(*[]*testEager)
+	}
+
+	for _, o := range toSetOn {
+		if o.R == nil {
+			o.R = &testEagerR{}
+		}
+		o.R.ZeroMany = []*testEagerZero{}
+	}
+	return nil
+}
+
+func (testEagerZeroL) LoadNestedOne(_ boil.Executor, singular bool, obj interface{}) error {
+	return nil
+}
+
+func (testEagerZeroL) LoadNestedMany(_ boil.Executor, singular bool, obj interface{}) error {
 	return nil
 }
 
@@ -222,6 +278,25 @@ func TestEagerLoadFromMany(t *testing.T) {
 	checkNestedMany(slice[1].R.ChildOne.R.NestedMany)
 	checkNestedMany(slice[1].R.ChildMany[0].R.NestedMany)
 	checkNestedMany(slice[1].R.ChildMany[1].R.NestedMany)
+}
+
+func TestEagerLoadZeroParents(t *testing.T) {
+	t.Parallel()
+
+	obj := &testEager{}
+
+	toLoad := []string{"ZeroMany.NestedMany", "ZeroOne.NestedOne", "ZeroMany.NestedMany", "ZeroOne.NestedOne"}
+	err := eagerLoad(nil, toLoad, obj, kindStruct)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(obj.R.ZeroMany) != 0 {
+		t.Error("should have loaded nothing")
+	}
+	if obj.R.ZeroOne != nil {
+		t.Error("should have loaded nothing")
+	}
 }
 
 func checkChildOne(c *testEagerChild) {

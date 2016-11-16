@@ -12,7 +12,7 @@ func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod
 // {{$txt.Function.Name}} pointed to by the foreign key.
 func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) ({{$varNameSingular}}Query) {
 	queryMods := []qm.QueryMod{
-		qm.Where("{{$txt.ForeignTable.ColumnName}}={{if $dot.Dialect.IndexPlaceholders}}$1{{else}}?{{end}}", o.{{$txt.LocalTable.ColumnNameGo}}),
+		qm.Where("{{$txt.ForeignTable.ColumnName}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
 	}
 
 	queryMods = append(queryMods, mods...)

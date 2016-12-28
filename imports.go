@@ -342,6 +342,9 @@ var importsBasedOnType = map[string]imports{
 	"types.BoolArray": {
 		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},
+	"types.StringArray": {
+		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+	},
 	"types.Hstore": {
 		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
 	},

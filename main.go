@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const sqlBoilerVersion = "2.1.1"
+const sqlBoilerVersion = "2.1.3"
 
 var (
 	cmdState  *State

@@ -23,6 +23,12 @@ type Column struct {
 	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
 	ArrType *string
 	UDTName string
+
+	// MySQL only bits
+	// Used to get full type, ex:
+	// tinyint(1) instead of tinyint
+	// Used for "tinyint-as-bool" flag
+	FullDBType string
 }
 
 // ColumnNames of the columns.

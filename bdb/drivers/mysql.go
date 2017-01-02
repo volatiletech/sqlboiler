@@ -11,6 +11,12 @@ import (
 	"github.com/vattle/sqlboiler/bdb"
 )
 
+// TinyintAsBool is a global that is set from main.go if a user specifies
+// this flag when generating. This flag only applies to MySQL so we're using
+// a global instead, to avoid breaking the interface. If TinyintAsBool is true
+// then tinyint(1) will be mapped in your generated structs to bool opposed to int8.
+var TinyintAsBool bool
+
 // MySQLDriver holds the database connection string and a handle
 // to the database connection.
 type MySQLDriver struct {
@@ -123,6 +129,7 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	rows, err := m.dbConn.Query(`
 	select
 	c.column_name,
+	c.column_type,
 	if(c.data_type = 'enum', c.column_type, c.data_type),
 	if(extra = 'auto_increment','auto_increment', c.column_default),
 	c.is_nullable = 'YES',
@@ -144,19 +151,21 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType string
+		var colName, colType, colFullType string
 		var nullable, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colType, &defaultValue, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colType, &defaultValue, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := bdb.Column{
-			Name:     colName,
-			DBType:   colType,
-			Nullable: nullable,
-			Unique:   unique,
+			Name:       colName,
+			FullDBType: colFullType, // example: tinyint(1) instead of tinyint
+			DBType:     colType,
+			Nullable:   nullable,
+			Unique:     unique,
 		}
+
 		if defaultValue != nil && *defaultValue != "NULL" {
 			column.Default = *defaultValue
 		}
@@ -260,7 +269,12 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	if c.Nullable {
 		switch c.DBType {
 		case "tinyint":
-			c.Type = "null.Int8"
+			// map tinyint(1) to bool if TinyintAsBool is true
+			if TinyintAsBool && c.FullDBType == "tinyint(1)" {
+				c.Type = "null.Bool"
+			} else {
+				c.Type = "null.Int8"
+			}
 		case "smallint":
 			c.Type = "null.Int16"
 		case "mediumint":
@@ -287,7 +301,12 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	} else {
 		switch c.DBType {
 		case "tinyint":
-			c.Type = "int8"
+			// map tinyint(1) to bool if TinyintAsBool is true
+			if TinyintAsBool && c.FullDBType == "tinyint(1)" {
+				c.Type = "bool"
+			} else {
+				c.Type = "int8"
+			}
 		case "smallint":
 			c.Type = "int16"
 		case "mediumint":

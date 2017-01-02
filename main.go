@@ -10,9 +10,10 @@ import (
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/vattle/sqlboiler/bdb/drivers"
 )
 
-const sqlBoilerVersion = "2.1.3"
+const sqlBoilerVersion = "2.1.4"
 
 var (
 	cmdState  *State
@@ -82,6 +83,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
+	rootCmd.PersistentFlags().BoolP("tinyint-as-bool", "", false, "Map MySQL tinyint(1) in Go to bool instead of int8")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
@@ -205,6 +207,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 			DBName:  viper.GetString("mysql.dbname"),
 			SSLMode: viper.GetString("mysql.sslmode"),
 		}
+
+		// Set MySQL TinyintAsBool global var. This flag only applies to MySQL.
+		drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
 
 		// MySQL doesn't have schemas, just databases
 		cmdConfig.Schema = cmdConfig.MySQL.DBName

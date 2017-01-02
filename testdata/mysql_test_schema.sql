@@ -135,7 +135,9 @@ CREATE TABLE magicest (
   aaaa char NULL,
   bbbb char NOT NULL,
   cccc text NULL,
-  dddd text NOT NULL
+  dddd text NOT NULL,
+  eeee tinyint(2) NULL,
+  ffff tinyint(2) NOT NULL
 );
 
 create table owner (

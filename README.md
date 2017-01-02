@@ -256,19 +256,20 @@ not to pass them through the command line or environment variables:
 Example:
 
 ```toml
+blacklist=["migrations", "other"]
+schema="myschema"
 [postgres]
-dbname="dbname"
-host="localhost"
-port=5432
-user="dbusername"
-pass="dbpassword"
-
+  dbname="dbname"
+  host="localhost"
+  port=5432
+  user="dbusername"
+  pass="dbpassword"
 [mysql]
-dbname="dbname"
-host="localhost"
-port=3306
-user="dbusername"
-pass="dbpassword"
+  dbname="dbname"
+  host="localhost"
+  port=3306
+  user="dbusername"
+  pass="dbpassword"
 sslmode="false"
 ```
 

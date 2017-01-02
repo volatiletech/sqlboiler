@@ -270,7 +270,7 @@ schema="myschema"
   port=3306
   user="dbusername"
   pass="dbpassword"
-sslmode="false"
+  sslmode="false"
 ```
 
 #### Initial Generation

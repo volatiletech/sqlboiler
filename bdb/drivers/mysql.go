@@ -127,23 +127,33 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	var columns []bdb.Column
 
 	rows, err := m.dbConn.Query(`
-	select
-	c.column_name,
-	c.column_type,
-	if(c.data_type = 'enum', c.column_type, c.data_type),
-	if(extra = 'auto_increment','auto_increment', c.column_default),
-	c.is_nullable = 'YES',
-		exists (
-			select c.column_name
-			from information_schema.table_constraints tc
-			inner join information_schema.key_column_usage kcu
-				on tc.constraint_name = kcu.constraint_name and tc.table_name = kcu.table_name and tc.table_schema = kcu.table_schema
-			where c.column_name = kcu.column_name and tc.table_name = c.table_name and
-				(tc.constraint_type = 'PRIMARY KEY' or tc.constraint_type = 'UNIQUE')
-		) as is_unique
-	from information_schema.columns as c
-	where table_name = ? and table_schema = ?;
-	`, tableName, schema)
+select
+  c.column_name,
+  c.column_type,
+  if(c.data_type = 'enum', c.column_type, c.data_type),
+  if(extra = 'auto_increment','auto_increment', c.column_default),
+  c.is_nullable = 'YES',
+    exists (
+      select c.column_name from information_schema.key_column_usage kcu1 inner join
+   	   (
+		select kcu.table_schema, kcu.table_name, kcu.constraint_name, count(1) AS cnt
+			from information_schema.table_constraints tc inner join information_schema.key_column_usage kcu
+        		on tc.constraint_name = kcu.constraint_name and
+        			tc.table_name = kcu.table_name and 
+        			tc.table_schema = kcu.table_schema
+      	where tc.table_name = ? and
+        		(tc.constraint_type = 'PRIMARY KEY' or tc.constraint_type = 'UNIQUE') and
+        		tc.table_schema = ?
+        group by kcu.constraint_name, kcu.table_schema, kcu.table_name 
+        	having cnt = 1
+      ) uc on kcu1.table_schema = uc.table_schema
+        		and kcu1.table_name = uc.table_name
+        		and kcu1.constraint_name = uc.constraint_name 
+        where kcu1.column_name = c.column_name
+    ) as is_unique
+from information_schema.columns as c
+where table_name = ? and table_schema = ?;
+	`, tableName, schema, tableName, schema)
 
 	if err != nil {
 		return nil, err

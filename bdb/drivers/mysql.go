@@ -139,7 +139,8 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 			inner join information_schema.key_column_usage kcu
 				on tc.constraint_name = kcu.constraint_name and tc.table_name = kcu.table_name and tc.table_schema = kcu.table_schema
 			where c.column_name = kcu.column_name and tc.table_name = c.table_name and
-				(tc.constraint_type = 'PRIMARY KEY' or tc.constraint_type = 'UNIQUE')
+				(tc.constraint_type = 'PRIMARY KEY' or tc.constraint_type = 'UNIQUE') and
+				(select count(*) from information_schema.key_column_usage where constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
 	where table_name = ? and table_schema = ?;

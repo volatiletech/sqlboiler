@@ -155,16 +155,17 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		c.is_nullable = 'YES' as is_nullable,
 		(select exists(
 			select 1
-				from information_schema.constraint_column_usage as ccu
-			inner join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name
-			where ccu.table_name = c.table_name and ccu.column_name = c.column_name and tc.constraint_type = 'UNIQUE'
-			)) OR (select exists(
+			from information_schema.table_constraints tc
+			inner join information_schema.constraint_column_usage as ccu on tc.constraint_name = ccu.constraint_name
+			where tc.table_schema = $1 and tc.constraint_type = 'UNIQUE' and ccu.constraint_schema = $1 and ccu.table_name = c.table_name and ccu.column_name = c.column_name and
+				(select count(*) from information_schema.constraint_column_usage where constraint_schema = $1 and constraint_name = tc.constraint_name) = 1
+		)) OR
+		(select exists(
 			select 1
-			from
-				pg_indexes pgix
-				inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i'
-				inner join pg_index pgi on pgi.indexrelid = pgc.oid
-				inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
+			from pg_indexes pgix
+			inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i' and pgc.relnatts = 1
+			inner join pg_index pgi on pgi.indexrelid = pgc.oid
+			inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
 			where
 				pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
 		)) as is_unique
@@ -173,7 +174,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		left join information_schema.element_types e
 			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
 			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
-		where c.table_name=$2 and c.table_schema = $1;
+		where c.table_name = $2 and c.table_schema = $1;
 	`, schema, tableName)
 
 	if err != nil {

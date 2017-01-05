@@ -6,6 +6,8 @@
 		{{- $txt := txtsFromToMany $dot.Tables $table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
+		{{- $foreignPKeyCols := (getTable $dot.Tables .ForeignTable).PKey.Columns -}}
+		{{- $foreignSchemaTable := .ForeignTable | $dot.SchemaTable}}
 // Add{{$txt.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to o.R.{{$txt.Function.Name}}.
@@ -13,20 +15,38 @@
 func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$txt.ForeignTable.NameGo}}) error {
 	var err error
 	for _, rel := range related {
-		{{if not .ToJoinTable -}}
-		rel.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
-			{{if .ForeignColumnNullable -}}
-		rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
-			{{end -}}
-		{{end -}}
 		if insert {
+			{{if not .ToJoinTable -}}
+			rel.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
+				{{if .ForeignColumnNullable -}}
+			rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+				{{end -}}
+			{{end -}}
+
 			if err = rel.Insert(exec); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		}{{if not .ToJoinTable}} else {
-			if err = rel.Update(exec, "{{.ForeignColumn}}"); err != nil {
+			updateQuery := fmt.Sprintf(
+				"UPDATE {{$foreignSchemaTable}} SET %s WHERE %s",
+				strmangle.SetParamNames("{{$dot.LQ}}", "{{$dot.RQ}}", {{if $dot.Dialect.IndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.ForeignColumn}}"{{"}"}}),
+				strmangle.WhereClause("{{$dot.LQ}}", "{{$dot.RQ}}", {{if $dot.Dialect.IndexPlaceholders}}2{{else}}0{{end}}, {{$foreignVarNameSingular}}PrimaryKeyColumns),
+			)
+			values := []interface{}{o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", rel."}}{{"}"}}
+
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
 				return errors.Wrap(err, "failed to update foreign table")
 			}
+
+			rel.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
+			{{if .ForeignColumnNullable -}}
+			rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+			{{end -}}
 		}{{end -}}
 	}
 

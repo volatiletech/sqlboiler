@@ -342,7 +342,7 @@ Most examples in this section will be demonstrated using the following Postgres 
 ```sql
 CREATE TABLE pilots (
   id integer NOT NULL,
-  name text NOT NULL,
+  name text NOT NULL
 );
 
 ALTER TABLE pilots ADD CONSTRAINT pilot_pkey PRIMARY KEY (id);
@@ -352,7 +352,7 @@ CREATE TABLE jets (
   pilot_id integer NOT NULL,
   age integer NOT NULL,
   name text NOT NULL,
-  color text NOT NULL,
+  color text NOT NULL
 );
 
 ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);

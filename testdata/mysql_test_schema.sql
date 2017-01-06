@@ -240,40 +240,6 @@ create table worms (
   foreign key (tiger_id) references tigers (id)
 );
 
-create table pilots (
-  id   int primary key not null auto_increment,
-  name varchar(255)
-);
-
-create table airports (
-  id   int primary key not null auto_increment,
-  name varchar(255)
-);
-
-create table languages (
-  id   int primary key not null auto_increment,
-  name varchar(255)
-);
-
-create table jets (
-  id         int primary key not null auto_increment,
-  name       varchar(255),
-  pilot_id   integer,
-  airport_id integer,
-
-  foreign key (pilot_id) references pilots (id),
-  foreign key (airport_id) references airports (id)
-);
-
-create table pilot_languages (
-  pilot_id    integer not null,
-  language_id integer not null,
-
-  primary key (pilot_id, language_id),
-  foreign key (pilot_id) references pilots (id),
-  foreign key (language_id) references languages (id)
-);
-
 create table byte_pilots (
   id   binary primary key not null,
   name varchar(255)
@@ -351,3 +317,38 @@ CREATE TABLE race_result_scratchings (
     foreign key (results_id) references race_results(id)
 );
 
+CREATE TABLE pilots (
+  id integer NOT NULL,
+  name text NOT NULL
+);
+
+ALTER TABLE pilots ADD CONSTRAINT pilot_pkey PRIMARY KEY (id);
+
+CREATE TABLE jets (
+  id integer NOT NULL,
+  pilot_id integer NOT NULL,
+  age integer NOT NULL,
+  name text NOT NULL,
+  color text NOT NULL
+);
+
+ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);
+ALTER TABLE jets ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+
+CREATE TABLE languages (
+  id integer NOT NULL,
+  language text NOT NULL
+);
+
+ALTER TABLE languages ADD CONSTRAINT language_pkey PRIMARY KEY (id);
+
+-- Join table
+CREATE TABLE pilot_languages (
+  pilot_id integer NOT NULL,
+  language_id integer NOT NULL
+);
+
+-- Composite primary key
+ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilot_id, language_id);
+ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);

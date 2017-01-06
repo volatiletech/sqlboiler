@@ -13,7 +13,7 @@ import (
 	"github.com/vattle/sqlboiler/bdb/drivers"
 )
 
-const sqlBoilerVersion = "2.1.4"
+const sqlBoilerVersion = "2.1.5"
 
 var (
 	cmdState  *State

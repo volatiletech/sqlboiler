@@ -181,11 +181,14 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if ne .DriverName 
 	{{- else}}
 	if len(cache.retMapping) != 0 {
 		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
+		if err == sql.ErrNoRows {
+			err = nil // Postgres doesn't return anything when there's no update
+		}
 	} else {
 		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
+		return errors.Wrap(err, "{{.PkgName}}: unable to upsert {{.Table.Name}}")
 	}
 	{{- end}}
 

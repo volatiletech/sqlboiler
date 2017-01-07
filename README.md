@@ -356,7 +356,7 @@ CREATE TABLE jets (
 );
 
 ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);
-ALTER TABLE jets ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+ALTER TABLE jets ADD CONSTRAINT jet_pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
 
 CREATE TABLE languages (
   id integer NOT NULL,
@@ -373,8 +373,8 @@ CREATE TABLE pilot_languages (
 
 -- Composite primary key
 ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilot_id, language_id);
-ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
-ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
+ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
 ```
 
 The generated model structs for this schema look like the following. Note that we've included the relationship

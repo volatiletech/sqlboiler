@@ -400,6 +400,7 @@ CREATE TABLE jets (
 );
 
 ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);
+-- The following fkey remains poorly named to avoid regressions related to psql naming
 ALTER TABLE jets ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
 
 CREATE TABLE languages (
@@ -417,5 +418,6 @@ CREATE TABLE pilot_languages (
 
 -- Composite primary key
 ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilot_id, language_id);
+-- The following fkey remains poorly named to avoid regressions related to psql naming
 ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);

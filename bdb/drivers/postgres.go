@@ -264,15 +264,18 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.Foreign
 
 	query := `
 	select
-		tc.constraint_name,
-		kcu.table_name as source_table,
-		kcu.column_name as source_column,
-		ccu.table_name as dest_table,
-		ccu.column_name as dest_column
-	from information_schema.table_constraints as tc
-		inner join information_schema.key_column_usage as kcu ON tc.constraint_name = kcu.constraint_name and tc.constraint_schema = kcu.constraint_schema
-		inner join information_schema.constraint_column_usage as ccu ON tc.constraint_name = ccu.constraint_name and tc.constraint_schema = ccu.constraint_schema
-	where tc.table_name = $1 and tc.constraint_type = 'FOREIGN KEY' and tc.table_schema = $2;`
+		pgcon.conname,
+		pgc.relname as source_table,
+		pgasrc.attname as source_column,
+		dstlookupname.relname as dest_table,
+		pgadst.attname as dest_column
+	from pg_namespace pgn
+		inner join pg_class pgc on pgn.oid = pgc.relnamespace and pgc.relkind = 'r'
+		inner join pg_constraint pgcon on pgn.oid = pgcon.connamespace and pgc.oid = pgcon.conrelid
+		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid
+		inner join pg_attribute pgasrc on pgc.oid = pgasrc.attrelid and pgasrc.attnum = ANY(pgcon.conkey)
+		inner join pg_attribute pgadst on pgcon.confrelid = pgadst.attrelid and pgadst.attnum = ANY(pgcon.confkey)
+	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'`
 
 	var rows *sql.Rows
 	var err error

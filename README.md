@@ -558,6 +558,9 @@ err := pilot.Delete(db) // Regular variant, takes a db handle (boil.Executor int
 pilot.DeleteP(db)       // Panic variant, takes a db handle and panics on error.
 err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil.SetDB()).
 pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
+
+db.Begin()              // Normal sql package way of creating a transaction
+boil.Begin()            // Uses the global database handle set by boil.SetDB()
 ```
 
 Note that it's slightly different for query building.
@@ -856,6 +859,10 @@ users.DeleteAll(tx)
 tx.Commit()
 tx.Rollback()
 ```
+
+It's also worth noting that there's a way to take advantage of `boil.SetDB()`
+by using the [boil.Begin()](https://godoc.org/github.com/vattle/sqlboiler/boil#Begin) function.
+This opens a transaction using the globally stored database.
 
 ### Debug Logging
 

@@ -8,6 +8,37 @@
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 		{{- $foreignPKeyCols := (getTable $dot.Tables .ForeignTable).PKey.Columns -}}
 		{{- $foreignSchemaTable := .ForeignTable | $dot.SchemaTable}}
+// Add{{$txt.Function.Name}}G adds the given related objects to the existing relationships
+// of the {{$table.Name | singular}}, optionally inserting them as new records.
+// Appends related to o.R.{{$txt.Function.Name}}.
+// Sets related.R.{{$txt.Function.ForeignName}} appropriately.
+// Uses the global database handle.
+func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}G(insert bool, related ...*{{$txt.ForeignTable.NameGo}}) error {
+	return o.Add{{$txt.Function.Name}}(boil.GetDB(), insert, related...)
+}
+
+// Add{{$txt.Function.Name}}P adds the given related objects to the existing relationships
+// of the {{$table.Name | singular}}, optionally inserting them as new records.
+// Appends related to o.R.{{$txt.Function.Name}}.
+// Sets related.R.{{$txt.Function.ForeignName}} appropriately.
+// Panics on error.
+func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}P(exec boil.Executor, insert bool, related ...*{{$txt.ForeignTable.NameGo}}) {
+	if err := o.Add{{$txt.Function.Name}}(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// Add{{$txt.Function.Name}}GP adds the given related objects to the existing relationships
+// of the {{$table.Name | singular}}, optionally inserting them as new records.
+// Appends related to o.R.{{$txt.Function.Name}}.
+// Sets related.R.{{$txt.Function.ForeignName}} appropriately.
+// Uses the global database handle and panics on error.
+func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}GP(insert bool, related ...*{{$txt.ForeignTable.NameGo}}) {
+	if err := o.Add{{$txt.Function.Name}}(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
 // Add{{$txt.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to o.R.{{$txt.Function.Name}}.
@@ -101,6 +132,43 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 }
 
 			{{- if (or .ForeignColumnNullable .ToJoinTable)}}
+// Set{{$txt.Function.Name}}G removes all previously related items of the
+// {{$table.Name | singular}} replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
+// Replaces o.R.{{$txt.Function.Name}} with related.
+// Sets related.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
+// Uses the global database handle.
+func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}G(insert bool, related ...*{{$txt.ForeignTable.NameGo}}) error {
+	return o.Set{{$txt.Function.Name}}(boil.GetDB(), insert, related...)
+}
+
+// Set{{$txt.Function.Name}}P removes all previously related items of the
+// {{$table.Name | singular}} replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
+// Replaces o.R.{{$txt.Function.Name}} with related.
+// Sets related.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
+// Panics on error.
+func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}P(exec boil.Executor, insert bool, related ...*{{$txt.ForeignTable.NameGo}}) {
+	if err := o.Set{{$txt.Function.Name}}(exec, insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// Set{{$txt.Function.Name}}GP removes all previously related items of the
+// {{$table.Name | singular}} replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
+// Replaces o.R.{{$txt.Function.Name}} with related.
+// Sets related.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
+// Uses the global database handle and panics on error.
+func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}GP(insert bool, related ...*{{$txt.ForeignTable.NameGo}}) {
+	if err := o.Set{{$txt.Function.Name}}(boil.GetDB(), insert, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
 // Set{{$txt.Function.Name}} removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -144,6 +212,34 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	{{end -}}
 
 	return o.Add{{$txt.Function.Name}}(exec, insert, related...)
+}
+
+// Remove{{$txt.Function.Name}}G relationships from objects passed in.
+// Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)
+// Sets related.R.{{$txt.Function.ForeignName}}.
+// Uses the global database handle.
+func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}G(related ...*{{$txt.ForeignTable.NameGo}}) error {
+	return o.Remove{{$txt.Function.Name}}(boil.GetDB(), related...)
+}
+
+// Remove{{$txt.Function.Name}}P relationships from objects passed in.
+// Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)
+// Sets related.R.{{$txt.Function.ForeignName}}.
+// Panics on error.
+func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}P(exec boil.Executor, related ...*{{$txt.ForeignTable.NameGo}}) {
+	if err := o.Remove{{$txt.Function.Name}}(exec, related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// Remove{{$txt.Function.Name}}GP relationships from objects passed in.
+// Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)
+// Sets related.R.{{$txt.Function.ForeignName}}.
+// Uses the global database handle and panics on error.
+func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}GP(related ...*{{$txt.ForeignTable.NameGo}}) {
+	if err := o.Remove{{$txt.Function.Name}}(boil.GetDB(), related...); err != nil {
+		panic(boil.WrapErr(err))
+	}
 }
 
 // Remove{{$txt.Function.Name}} relationships from objects passed in.

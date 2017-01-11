@@ -28,7 +28,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	{{if .Nullable -}}
 	a.{{.Column | titleCase}}.Valid = true
 	{{- end}}
-	{{- if .ForeignColumnNullable -}}
+	{{- if .ForeignColumnNullable}}
 	b.{{.ForeignColumn | titleCase}}.Valid = true
 	c.{{.ForeignColumn | titleCase}}.Valid = true
 	{{- end}}

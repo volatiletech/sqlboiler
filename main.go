@@ -140,7 +140,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	// detect a malformed value coming out of viper.
 	// Once the bug is fixed we'll be able to move this into the init above
 	cmdConfig.BlacklistTables = viper.GetStringSlice("blacklist")
-	if len(cmdConfig.BlacklistTables) == 1 && strings.HasPrefix(cmdConfig.BlacklistTables[0], "[") {
+	if len(cmdConfig.BlacklistTables) == 1 && strings.ContainsRune(cmdConfig.BlacklistTables[0], ',') {
 		cmdConfig.BlacklistTables, err = cmd.PersistentFlags().GetStringSlice("blacklist")
 		if err != nil {
 			return err
@@ -148,7 +148,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdConfig.WhitelistTables = viper.GetStringSlice("whitelist")
-	if len(cmdConfig.WhitelistTables) == 1 && strings.HasPrefix(cmdConfig.WhitelistTables[0], "[") {
+	if len(cmdConfig.WhitelistTables) == 1 && strings.ContainsRune(cmdConfig.WhitelistTables[0], ',') {
 		cmdConfig.WhitelistTables, err = cmd.PersistentFlags().GetStringSlice("whitelist")
 		if err != nil {
 			return err
@@ -156,7 +156,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdConfig.Tags = viper.GetStringSlice("tag")
-	if len(cmdConfig.Tags) == 1 && strings.HasPrefix(cmdConfig.Tags[0], "[") {
+	if len(cmdConfig.Tags) == 1 && strings.ContainsRune(cmdConfig.Tags[0], ',') {
 		cmdConfig.Tags, err = cmd.PersistentFlags().GetStringSlice("tag")
 		if err != nil {
 			return err

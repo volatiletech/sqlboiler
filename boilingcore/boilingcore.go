@@ -1,4 +1,4 @@
-// Package sqlboiler has types and methods useful for generating code that
+// Package boilingcore has types and methods useful for generating code that
 // acts as a fully dynamic ORM might.
 package boilingcore
 

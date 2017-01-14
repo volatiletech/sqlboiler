@@ -1,4 +1,4 @@
-package main
+package core
 
 // Config for the running of the commands
 type Config struct {

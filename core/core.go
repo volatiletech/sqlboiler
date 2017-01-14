@@ -1,6 +1,6 @@
 // Package sqlboiler has types and methods useful for generating code that
 // acts as a fully dynamic ORM might.
-package main
+package core
 
 import (
 	"encoding/json"

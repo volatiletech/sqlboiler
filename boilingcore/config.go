@@ -1,4 +1,4 @@
-package core
+package boilingcore
 
 // Config for the running of the commands
 type Config struct {

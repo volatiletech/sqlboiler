@@ -11,14 +11,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/vattle/sqlboiler/core"
+	"github.com/vattle/sqlboiler/boilingcore"
 )
 
 const sqlBoilerVersion = "2.1.5"
 
 var (
-	cmdState  *core.State
-	cmdConfig *core.Config
+	cmdState  *boilingcore.State
+	cmdConfig *boilingcore.Config
 )
 
 func main() {
@@ -123,7 +123,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	driverName := args[0]
 
-	cmdConfig = &core.Config{
+	cmdConfig = &boilingcore.Config{
 		DriverName:       driverName,
 		OutFolder:        viper.GetString("output"),
 		Schema:           viper.GetString("schema"),
@@ -164,7 +164,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if driverName == "postgres" {
-		cmdConfig.Postgres = core.PostgresConfig{
+		cmdConfig.Postgres = boilingcore.PostgresConfig{
 			User:    viper.GetString("postgres.user"),
 			Pass:    viper.GetString("postgres.pass"),
 			Host:    viper.GetString("postgres.host"),
@@ -200,7 +200,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if driverName == "mysql" {
-		cmdConfig.MySQL = core.MySQLConfig{
+		cmdConfig.MySQL = boilingcore.MySQLConfig{
 			User:    viper.GetString("mysql.user"),
 			Pass:    viper.GetString("mysql.pass"),
 			Host:    viper.GetString("mysql.host"),
@@ -241,7 +241,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	cmdState, err = core.New(cmdConfig)
+	cmdState, err = boilingcore.New(cmdConfig)
 	return err
 }
 

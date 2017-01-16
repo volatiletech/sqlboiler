@@ -10,6 +10,7 @@ type Config struct {
 	WhitelistTables  []string
 	BlacklistTables  []string
 	Tags             []string
+	Replacements     []string
 	Debug            bool
 	NoTests          bool
 	NoHooks          bool

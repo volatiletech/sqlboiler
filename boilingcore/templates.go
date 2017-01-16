@@ -2,11 +2,13 @@ package boilingcore
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
 
+	"github.com/pkg/errors"
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/queries"
 	"github.com/vattle/sqlboiler/strmangle"
@@ -109,16 +111,24 @@ func loadTemplates(dir string) (*templateList, error) {
 	return &templateList{Template: tpl}, err
 }
 
-// loadTemplate loads a single template file.
-func loadTemplate(dir string, filename string) (*template.Template, error) {
-	pattern := filepath.Join(dir, filename)
-	tpl, err := template.New("").Funcs(templateFunctions).ParseFiles(pattern)
-
+// loadTemplate loads a single template, uses tpl as a base template if provided
+// and creates a new base template if not.
+func loadTemplate(tpl *template.Template, name, filename string) (*template.Template, error) {
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed reading template file: %s", filename)
 	}
 
-	return tpl.Lookup(filename), err
+	if tpl == nil {
+		tpl = template.New(name)
+	} else {
+		tpl = tpl.New(name)
+	}
+	if tpl, err = tpl.Funcs(templateFunctions).Parse(string(b)); err != nil {
+		return nil, errors.Wrapf(err, "failed to parse template file: %s", filename)
+	}
+
+	return tpl, nil
 }
 
 // set is to stop duplication from named enums, allowing a template loop

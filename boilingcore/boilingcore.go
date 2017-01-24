@@ -47,6 +47,10 @@ type State struct {
 
 // New creates a new state based off of the config
 func New(config *Config) (*State, error) {
+	if config.FileExtension == "" {
+		config.FileExtension = ".go"
+	}
+
 	s := &State{
 		Config: config,
 	}

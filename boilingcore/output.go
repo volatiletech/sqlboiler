@@ -34,7 +34,7 @@ func generateOutput(state *State, data *templateData) error {
 		templates:            state.Templates,
 		importSet:            defaultTemplateImports,
 		combineImportsOnType: true,
-		fileSuffix:           ".go",
+		fileSuffix:           state.Config.FileExtension,
 	})
 }
 
@@ -46,7 +46,7 @@ func generateTestOutput(state *State, data *templateData) error {
 		templates:            state.TestTemplates,
 		importSet:            defaultTestTemplateImports,
 		combineImportsOnType: false,
-		fileSuffix:           "_test.go",
+		fileSuffix:           fmt.Sprintf("_test%s", state.Config.FileExtension),
 	})
 }
 
@@ -58,7 +58,7 @@ func generateSingletonOutput(state *State, data *templateData) error {
 		data:           data,
 		templates:      state.SingletonTemplates,
 		importNamedSet: defaultSingletonTemplateImports,
-		fileSuffix:     ".go",
+		fileSuffix:     state.Config.FileExtension,
 	})
 }
 
@@ -70,7 +70,7 @@ func generateSingletonTestOutput(state *State, data *templateData) error {
 		data:           data,
 		templates:      state.SingletonTestTemplates,
 		importNamedSet: defaultSingletonTestTemplateImports,
-		fileSuffix:     ".go",
+		fileSuffix:     state.Config.FileExtension,
 	})
 }
 
@@ -172,7 +172,7 @@ func generateTestMainOutput(state *State, data *templateData) error {
 		return err
 	}
 
-	if err := writeFile(state.Config.OutFolder, "main_test.go", out); err != nil {
+	if err := writeFile(state.Config.OutFolder, fmt.Sprintf("main_test%s", state.Config.FileExtension), out); err != nil {
 		return err
 	}
 

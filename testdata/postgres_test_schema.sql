@@ -306,6 +306,17 @@ create table worms (
   foreign key (tiger_id) references tigers (id)
 );
 
+create table addresses (
+  id bytea primary key,
+  name bytea null
+);
+
+create table houses (
+  id bytea primary key,
+  name bytea not null,
+  address_id bytea not null unique,
+  foreign key (address_id) references addresses (id)
+);
 
 create table byte_pilots (
   id   bytea primary key not null,

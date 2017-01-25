@@ -250,7 +250,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 	{{if .ToJoinTable -}}
 	query := fmt.Sprintf(
 		"delete from {{.JoinTable | $dot.SchemaTable}} where {{.JoinLocalColumn | $dot.Quotes}} = {{if $dot.Dialect.IndexPlaceholders}}$1{{else}}?{{end}} and {{.JoinForeignColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, len(related), 1, 1),
+		strmangle.Placeholders(dialect.IndexPlaceholders, len(related), 2, 1),
 	)
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}
 

@@ -251,7 +251,7 @@ func TestToManySet(t *testing.T) {
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
-        {{- if not .ForeignColumnNullable -}}
+        {{- if not (or .ForeignColumnNullable .ToJoinTable)}}
         {{- else -}}
           {{- $txt := txtsFromToMany $dot.Tables $table . -}}
     t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}})
@@ -268,7 +268,7 @@ func TestToManyRemove(t *testing.T) {
     {{- if $table.IsJoinTable -}}
     {{- else -}}
       {{- range $table.ToManyRelationships -}}
-        {{- if not .ForeignColumnNullable -}}
+        {{- if not (or .ForeignColumnNullable .ToJoinTable)}}
         {{- else -}}
           {{- $txt := txtsFromToMany $dot.Tables $table . -}}
     t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}})

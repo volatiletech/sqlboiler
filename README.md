@@ -292,6 +292,7 @@ Flags:
       --basedir string          The base directory has the templates and templates_test folders
   -b, --blacklist stringSlice   Do not include these tables in your generated package
   -d, --debug                   Debug mode prints stack traces on error
+  -e, --extension string        The extension to use for output files (default ".go")
       --no-auto-timestamps      Disable automatic timestamps for created_at/updated_at
       --no-hooks                Disable hooks feature for your models
       --no-tests                Disable generated go test files

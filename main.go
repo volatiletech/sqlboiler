@@ -76,6 +76,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("schema", "s", "public", "The name of your database schema, for databases that support real schemas")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")
+	rootCmd.PersistentFlags().StringP("extension", "e", ".go", "The extension to use for output files")
 	rootCmd.PersistentFlags().StringSliceP("blacklist", "b", nil, "Do not include these tables in your generated package")
 	rootCmd.PersistentFlags().StringSliceP("whitelist", "w", nil, "Only include these tables in your generated package")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
@@ -129,6 +130,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		OutFolder:        viper.GetString("output"),
 		Schema:           viper.GetString("schema"),
 		PkgName:          viper.GetString("pkgname"),
+		FileExtension:    viper.GetString("extension"),
 		BaseDir:          viper.GetString("basedir"),
 		Debug:            viper.GetBool("debug"),
 		NoTests:          viper.GetBool("no-tests"),

@@ -195,7 +195,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 
 	{{if .ToJoinTable -}}
 	remove{{$txt.Function.Name}}From{{$txt.Function.ForeignName}}Slice(o, related)
-	o.R.{{$txt.Function.Name}} = nil
+	if o.R != nil {
+		o.R.{{$txt.Function.Name}} = nil
+	}
 	{{else -}}
 	if o.R != nil {
 		for _, rel := range o.R.{{$txt.Function.Name}} {

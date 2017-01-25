@@ -253,6 +253,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 		strmangle.Placeholders(dialect.IndexPlaceholders, len(related), 2, 1),
 	)
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}
+	for _, rel := range related {
+		values = append(values, rel.{{$txt.ForeignTable.ColumnNameGo}})
+	}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)

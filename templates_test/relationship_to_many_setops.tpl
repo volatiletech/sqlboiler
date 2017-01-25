@@ -159,12 +159,16 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 
 	{{- if .ToJoinTable}}
 
-	if len(b.R.{{$txt.Function.ForeignName}}) != 0 {
-		t.Error("relationship was not removed properly from the slice")
-	}
-	if len(c.R.{{$txt.Function.ForeignName}}) != 0 {
-		t.Error("relationship was not removed properly from the slice")
-	}
+	// The following checks cannot be implemented since we have no handle
+	// to these when we call Set(). Leaving them here as wishful thinking
+	// and to let people know there's dragons.
+	//
+	// if len(b.R.{{$txt.Function.ForeignName}}) != 0 {
+	// 	t.Error("relationship was not removed properly from the slice")
+	// }
+	// if len(c.R.{{$txt.Function.ForeignName}}) != 0 {
+	// 	t.Error("relationship was not removed properly from the slice")
+	// }
 	if d.R.{{$txt.Function.ForeignName}}[0] != &a {
 		t.Error("relationship was not added properly to the slice")
 	}

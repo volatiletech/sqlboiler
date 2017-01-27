@@ -48,6 +48,8 @@ Table of Contents
         * [Download](#download)
         * [Configuration](#configuration)
         * [Initial Generation](#initial-generation)
+        * [Regeneration](#regeneration)
+        * [Extending Generated Models](#extending-generated-models)
     * [Diagnosing Problems](#diagnosing-problems)
     * [Features &amp; Examples](#features--examples)
       * [Automatic CreatedAt/UpdatedAt](#automatic-createdatupdatedat)
@@ -316,6 +318,116 @@ sqlboiler -b goose_migrations postgres
 # Run the generated tests
 go test ./models
 ```
+
+You can use `go generate` for SQLBoiler if you want to to make it easy to
+run the command.
+
+It's important to not modify anything in the output folder, which brings us to
+the next topic: regeneration.
+
+#### Regeneration
+
+When regenerating the models it's recommended that you completely delete the
+generated directory in a build script or use the `--wipe` flag in SQLBoiler.
+The reasons for this are that sqlboiler doesn't try to diff your files in any
+smart way, it simply writes the files it's going to write whether they're there
+or not and doesn't delete any files that were added by you or previous runs of
+SQLBoiler. In the best case this can cause compilation errors, in the worst case
+this may leave extraneous and unusable code that was generated against tables
+that are no longer in the database.
+
+The bottom line is that this tool should always produce the same result from
+the same source. And the intention is to always regenerate from a pure state.
+The only reason the `--wipe` flag isn't defaulted to on is because we don't
+like programs that `rm -rf` things on the filesystem without being asked to.
+
+#### Extending generated models
+
+There will probably come a time when you want to extend the generated models
+with some kinds of helper functions. A general guideline is to put your
+extension functions into a separate package so that your functions aren't
+accidentally deleted when regenerating. Past that there are 3 main ways to
+extend the models, the first way is the most desirable:
+
+**Method 1: Simple Functions**
+
+```go
+// Package modext is for SQLBoiler helper methods
+package modext
+
+// UserFirstTimeSetup is an extension of the user model.
+func UserFirstTimeSetup(db *sql.DB, u *models.User) error { ... }
+```
+
+Code organization is accomplished by using multiple files, and everything
+is passed as a parameter so these kinds of methods are very easy to test.
+
+Calling code is also very straightforward:
+
+```go
+user, err := Users(db).One()
+// elided error check
+
+err = modext.UserFirstTimeSetup(db, user)
+// elided error check
+```
+
+**Method 2: Empty struct methods**
+
+The above is the best way to code extensions for SQLBoiler, however there may
+be times when the number of methods grows too large and code completion is
+not as helpful anymore. In these cases you may consider structuring the code
+like this:
+
+```go
+// Package modext is for SQLBoiler helper methods
+package modext
+
+type users struct {}
+
+var Users = users{}
+
+// FirstTimeSetup is an extension of the user model.
+func (u users) FirstTimeSetup(db *sql.DB, u *models.User) error { ... }
+```
+
+Calling code then looks a little bit different:
+
+```go
+user, err := Users(db).One()
+// elided error check
+
+err = modext.Users.FirstTimeSetup(db, user)
+// elided error check
+```
+
+This is almost identical to the method above, but gives slight amounts more
+organization at virtually no cost at runtime. It is however not as desirable
+as the first method since it does have some runtime cost and doesn't offer that
+much benefit over it.
+
+**Method 3: Embedding**
+
+This pattern is not for the feint of heart, what it provides in benefits it
+more than makes up for in downsides. It's possible to embed the SQLBoiler
+structs inside your own to enhance them. However it's subject to easy breakages
+and a dependency on these additional objects. It can also introduce
+inconsistencies as some objects may have no extended functionality and therefore
+have no reason to be embedded so you either have to have a struct for each
+generated struct even if it's empty, or have inconsistencies, some places where
+you use the enhanced model, and some where you do not.
+
+```go
+user, err := Users(db).One()
+// elided error check
+
+enhUser := modext.User{user}
+err = ehnUser.FirstTimeSetup(db)
+// elided error check
+```
+
+I don't recommend this pattern, but included it so that people know it's an
+option and also know the problems with it.
 
 ## Diagnosing Problems
 

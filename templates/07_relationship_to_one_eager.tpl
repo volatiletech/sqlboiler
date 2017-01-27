@@ -65,13 +65,17 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 	{{- end}}
 
-	if singular && len(resultSlice) != 0 {
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
 		object.R.{{$txt.Function.Name}} = resultSlice[0]
 		return nil
 	}
 
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
 			{{if $txt.Function.UsesBytes -}}
 			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
 			{{else -}}

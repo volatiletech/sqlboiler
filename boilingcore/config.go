@@ -15,6 +15,7 @@ type Config struct {
 	NoTests          bool
 	NoHooks          bool
 	NoAutoTimestamps bool
+	Wipe             bool
 
 	Postgres PostgresConfig
 	MySQL    MySQLConfig

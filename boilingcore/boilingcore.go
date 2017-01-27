@@ -333,6 +333,12 @@ func (s *State) initTags(tags []string) error {
 
 // initOutFolder creates the folder that will hold the generated output.
 func (s *State) initOutFolder() error {
+	if s.Config.Wipe {
+		if err := os.RemoveAll(s.Config.OutFolder); err != nil {
+			return err
+		}
+	}
+
 	return os.MkdirAll(s.Config.OutFolder, os.ModePerm)
 }
 

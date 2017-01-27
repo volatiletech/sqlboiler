@@ -86,6 +86,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("tinyint-as-bool", "", false, "Map MySQL tinyint(1) in Go to bool instead of int8")
+	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 
 	viper.SetDefault("postgres.sslmode", "require")
 	viper.SetDefault("postgres.port", "5432")
@@ -134,6 +135,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoTests:          viper.GetBool("no-tests"),
 		NoHooks:          viper.GetBool("no-hooks"),
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
+		Wipe:             viper.GetBool("wipe"),
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200

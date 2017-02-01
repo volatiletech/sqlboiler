@@ -6,9 +6,49 @@ import (
 	"plugin"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"github.com/vattle/sqlboiler/bdb"
 	"github.com/vattle/sqlboiler/bdb/drivers"
 )
+
+type driverPlugin struct {
+	*plugin.Plugin
+}
+
+func (d *driverPlugin) getDriver() (bdb.Interface, error) {
+	sym, err := d.Lookup("InitDriver")
+	if err != nil {
+		return nil, errors.Wrap(err, "could not find symbol InitDriver in plugin")
+	}
+
+	initializer, ok := sym.(func() (bdb.Interface, error))
+	if !ok {
+		return nil, errors.New("symbol InitDriver is not `func() (bdb.Interface, error)`")
+	}
+
+	driver, err := initializer()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize driver")
+	}
+
+	return driver, nil
+}
+
+func (d *driverPlugin) injectConfig() error {
+	sym, err := d.Lookup("SetConfig")
+	if err != nil {
+		return nil
+	}
+
+	injector, ok := sym.(func(interface{}) error)
+	if !ok {
+		return errors.New("symbol SetConfig is not `func(interface{}) error")
+	}
+
+	injector(viper.GetViper())
+
+	return nil
+}
 
 // initDriver attempts to set the state Interface based off the passed in
 // driver flag value. If an invalid flag string is provided an error is returned.
@@ -36,24 +76,19 @@ func (s *State) initDriver(driverName string) error {
 	case "mock":
 		s.Driver = &drivers.MockDriver{}
 	default:
-		driverPlugin, err := plugin.Open(driverName)
+		plg, err := plugin.Open(driverName)
 		if err != nil {
 			return errors.Wrap(err, "unable to open plugin")
 		}
 
-		sym, err := driverPlugin.Lookup("InitDriver")
-		if err != nil {
-			return errors.Wrap(err, "could not find symbol InitDriver in plugin")
+		driverPlg := &driverPlugin{Plugin: plg}
+		if err := driverPlg.injectConfig(); err != nil {
+			return err
 		}
 
-		initializer, ok := sym.(func() (bdb.Interface, error))
-		if !ok {
-			return errors.New("symbol InitDriver is not `func() (bdb.Interface, error)`")
-		}
-
-		driver, err := initializer()
+		driver, err := driverPlg.getDriver()
 		if err != nil {
-			return errors.Wrap(err, "failed to initialize driver")
+			return err
 		}
 
 		s.Driver = driver

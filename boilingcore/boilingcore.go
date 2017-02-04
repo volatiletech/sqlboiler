@@ -198,8 +198,7 @@ func (s *State) initTemplates() error {
 			return err
 		}
 
-		testMain := s.Config.DriverName + "_main.tpl"
-		s.TestMainTemplate, err = loadTemplate(nil, testMain, filepath.Join(basePath, templatesTestMainDirectory, testMain))
+		s.TestMainTemplate, err = loadTemplate(filepath.Join(basePath, templatesTestMainDirectory), s.Config.DriverName+"_main.tpl")
 		if err != nil {
 			return err
 		}
@@ -218,18 +217,21 @@ func (s *State) processReplacements() error {
 
 		toReplace, replaceWith := splits[0], splits[1]
 
+		toReplaceSplit := strings.Split(toReplace, string(filepath.Separator))
+		fileName := toReplaceSplit[len(toReplaceSplit)-1]
+
 		var err error
 		switch filepath.Dir(toReplace) {
 		case templatesDirectory:
-			_, err = loadTemplate(s.Templates.Template, toReplace, replaceWith)
+			err = replaceTemplate(s.Templates.Template, fileName, replaceWith)
 		case templatesSingletonDirectory:
-			_, err = loadTemplate(s.SingletonTemplates.Template, toReplace, replaceWith)
+			err = replaceTemplate(s.SingletonTemplates.Template, fileName, replaceWith)
 		case templatesTestDirectory:
-			_, err = loadTemplate(s.TestTemplates.Template, toReplace, replaceWith)
+			err = replaceTemplate(s.TestTemplates.Template, fileName, replaceWith)
 		case templatesSingletonTestDirectory:
-			_, err = loadTemplate(s.SingletonTestTemplates.Template, toReplace, replaceWith)
+			err = replaceTemplate(s.SingletonTestTemplates.Template, fileName, replaceWith)
 		case templatesTestMainDirectory:
-			s.TestMainTemplate, err = loadTemplate(nil, toReplace, replaceWith)
+			err = replaceTemplate(s.TestMainTemplate, fileName, replaceWith)
 		default:
 			return errors.Errorf("replace file's directory not part of any known folder: %s", toReplace)
 		}

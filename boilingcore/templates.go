@@ -111,24 +111,35 @@ func loadTemplates(dir string) (*templateList, error) {
 	return &templateList{Template: tpl}, err
 }
 
-// loadTemplate loads a single template, uses tpl as a base template if provided
-// and creates a new base template if not.
-func loadTemplate(tpl *template.Template, name, filename string) (*template.Template, error) {
+// loadTemplate loads a single template file
+func loadTemplate(dir string, filename string) (*template.Template, error) {
+	pattern := filepath.Join(dir, filename)
+	tpl, err := template.New("").Funcs(templateFunctions).ParseFiles(pattern)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tpl.Lookup(filename), err
+}
+
+// replaceTemplate finds the template matching with name and replaces its
+// contents with the contents of the template located at filename
+func replaceTemplate(tpl *template.Template, name, filename string) error {
+	if tpl == nil {
+		return fmt.Errorf("template for %s is nil", name)
+	}
+
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed reading template file: %s", filename)
+		return errors.Wrapf(err, "failed reading template file: %s", filename)
 	}
 
-	if tpl == nil {
-		tpl = template.New(name)
-	} else {
-		tpl = tpl.New(name)
-	}
-	if tpl, err = tpl.Funcs(templateFunctions).Parse(string(b)); err != nil {
-		return nil, errors.Wrapf(err, "failed to parse template file: %s", filename)
+	if tpl, err = tpl.New(name).Funcs(templateFunctions).Parse(string(b)); err != nil {
+		return errors.Wrapf(err, "failed to parse template file: %s", filename)
 	}
 
-	return tpl, nil
+	return nil
 }
 
 // set is to stop duplication from named enums, allowing a template loop

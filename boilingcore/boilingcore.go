@@ -211,7 +211,6 @@ func (s *State) initTemplates() error {
 // processReplacements loads any replacement templates
 func (s *State) processReplacements() error {
 	for _, replace := range s.Config.Replacements {
-		fmt.Println(replace)
 		splits := strings.Split(replace, ":")
 		if len(splits) != 2 {
 			return errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)

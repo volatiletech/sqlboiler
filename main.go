@@ -14,7 +14,7 @@ import (
 	"github.com/vattle/sqlboiler/boilingcore"
 )
 
-const sqlBoilerVersion = "2.1.9"
+const sqlBoilerVersion = "2.1.10"
 
 var (
 	cmdState  *boilingcore.State

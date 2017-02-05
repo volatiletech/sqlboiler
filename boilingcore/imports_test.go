@@ -267,7 +267,7 @@ func TestCombineTypeImports(t *testing.T) {
 
 	imps := newImporter()
 
-	res1 := combineTypeImports(imports1, imps.basedOnType, cols)
+	res1 := combineTypeImports(imports1, imps.BasedOnType, cols)
 
 	if !reflect.DeepEqual(res1, importsExpected) {
 		t.Errorf("Expected res1 to match importsExpected, got:\n\n%#v\n", res1)
@@ -285,7 +285,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 	}
 
-	res2 := combineTypeImports(imports2, imps.basedOnType, cols)
+	res2 := combineTypeImports(imports2, imps.BasedOnType, cols)
 
 	if !reflect.DeepEqual(res2, importsExpected) {
 		t.Errorf("Expected res2 to match importsExpected, got:\n\n%#v\n", res1)

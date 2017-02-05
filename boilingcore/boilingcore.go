@@ -213,6 +213,11 @@ func (s *State) initTemplates() error {
 
 // processReplacements loads any replacement templates
 func (s *State) processReplacements() error {
+	basePath, err := getBasePath(s.Config.BaseDir)
+	if err != nil {
+		return err
+	}
+
 	for _, replace := range s.Config.Replacements {
 		splits := strings.Split(replace, ":")
 		if len(splits) != 2 {
@@ -222,7 +227,7 @@ func (s *State) processReplacements() error {
 		var toReplaceFname string
 		toReplace, replaceWith := splits[0], splits[1]
 
-		inf, err := os.Stat(toReplace)
+		inf, err := os.Stat(filepath.Join(basePath, toReplace))
 		if err != nil {
 			return errors.Errorf("cannot stat %q", toReplace)
 		}

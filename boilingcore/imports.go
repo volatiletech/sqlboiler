@@ -144,22 +144,22 @@ func removeDuplicates(dedup []string) []string {
 type mapImports map[string]imports
 
 type importer struct {
-	standard     imports
-	testStandard imports
+	Standard     imports
+	TestStandard imports
 
-	singleton     mapImports
-	testSingleton mapImports
+	Singleton     mapImports
+	TestSingleton mapImports
 
-	testMain mapImports
+	TestMain mapImports
 
-	basedOnType mapImports
+	BasedOnType mapImports
 }
 
 // newImporter returns an importer struct with default import values
 func newImporter() importer {
 	var imp importer
 
-	imp.standard = imports{
+	imp.Standard = imports{
 		standard: importList{
 			`"bytes"`,
 			`"database/sql"`,
@@ -178,7 +178,7 @@ func newImporter() importer {
 		},
 	}
 
-	imp.singleton = mapImports{
+	imp.Singleton = mapImports{
 		"boil_queries": {
 			thirdParty: importList{
 				`"github.com/vattle/sqlboiler/boil"`,
@@ -194,7 +194,7 @@ func newImporter() importer {
 		},
 	}
 
-	imp.testStandard = imports{
+	imp.TestStandard = imports{
 		standard: importList{
 			`"bytes"`,
 			`"reflect"`,
@@ -207,7 +207,7 @@ func newImporter() importer {
 		},
 	}
 
-	imp.testSingleton = mapImports{
+	imp.TestSingleton = mapImports{
 		"boil_main_test": {
 			standard: importList{
 				`"database/sql"`,
@@ -246,7 +246,7 @@ func newImporter() importer {
 		},
 	}
 
-	imp.testMain = mapImports{
+	imp.TestMain = mapImports{
 		"postgres": {
 			standard: importList{
 				`"bytes"`,
@@ -290,7 +290,7 @@ func newImporter() importer {
 	// basedOnType imports are only included in the template output if the
 	// database requires one of the following special types. Check
 	// TranslateColumnType to see the type assignments.
-	imp.basedOnType = mapImports{
+	imp.BasedOnType = mapImports{
 		"null.Float32": {
 			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
 		},

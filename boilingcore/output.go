@@ -38,7 +38,7 @@ func generateOutput(state *State, data *templateData) error {
 		state:                state,
 		data:                 data,
 		templates:            state.Templates,
-		importSet:            state.Importer.standard,
+		importSet:            state.Importer.Standard,
 		combineImportsOnType: true,
 		fileSuffix:           ".go",
 	})
@@ -50,7 +50,7 @@ func generateTestOutput(state *State, data *templateData) error {
 		state:                state,
 		data:                 data,
 		templates:            state.TestTemplates,
-		importSet:            state.Importer.testStandard,
+		importSet:            state.Importer.TestStandard,
 		combineImportsOnType: false,
 		fileSuffix:           "_test.go",
 	})
@@ -63,7 +63,7 @@ func generateSingletonOutput(state *State, data *templateData) error {
 		state:          state,
 		data:           data,
 		templates:      state.SingletonTemplates,
-		importNamedSet: state.Importer.singleton,
+		importNamedSet: state.Importer.Singleton,
 		fileSuffix:     ".go",
 	})
 }
@@ -75,7 +75,7 @@ func generateSingletonTestOutput(state *State, data *templateData) error {
 		state:          state,
 		data:           data,
 		templates:      state.SingletonTestTemplates,
-		importNamedSet: state.Importer.testSingleton,
+		importNamedSet: state.Importer.TestSingleton,
 		fileSuffix:     ".go",
 	})
 }
@@ -106,7 +106,7 @@ func executeTemplates(e executeTemplateData) error {
 	imps.standard = e.importSet.standard
 	imps.thirdParty = e.importSet.thirdParty
 	if e.combineImportsOnType {
-		imps = combineTypeImports(imps, e.state.Importer.basedOnType, e.data.Table.Columns)
+		imps = combineTypeImports(imps, e.state.Importer.BasedOnType, e.data.Table.Columns)
 	}
 
 	writeFileDisclaimer(out)
@@ -170,8 +170,8 @@ func generateTestMainOutput(state *State, data *templateData) error {
 	out.Reset()
 
 	var imps imports
-	imps.standard = state.Importer.testMain[state.Config.DriverName].standard
-	imps.thirdParty = state.Importer.testMain[state.Config.DriverName].thirdParty
+	imps.standard = state.Importer.TestMain[state.Config.DriverName].standard
+	imps.thirdParty = state.Importer.TestMain[state.Config.DriverName].thirdParty
 
 	writeFileDisclaimer(out)
 	writePackageName(out, state.Config.PkgName)

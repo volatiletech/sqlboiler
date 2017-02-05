@@ -43,6 +43,8 @@ type State struct {
 	SingletonTestTemplates *templateList
 
 	TestMainTemplate *template.Template
+
+	Importer importer
 }
 
 // New creates a new state based off of the config
@@ -88,6 +90,8 @@ func New(config *Config) (*State, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize struct tags")
 	}
+
+	s.Importer = newImporter()
 
 	return s, nil
 }

@@ -54,6 +54,177 @@ func TestImportsSort(t *testing.T) {
 	}
 }
 
+func TestImportsAddAndRemove(t *testing.T) {
+	t.Parallel()
+
+	var imp imports
+	imp.Add("value", false)
+	if len(imp.standard) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp.standard))
+	}
+	if imp.standard[0] != "value" {
+		t.Errorf("expected %q to be added", "value")
+	}
+	imp.Add("value2", true)
+	if len(imp.thirdParty) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp.thirdParty))
+	}
+	if imp.thirdParty[0] != "value2" {
+		t.Errorf("expected %q to be added", "value2")
+	}
+
+	imp.Remove("value")
+	if len(imp.standard) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp.standard))
+	}
+	imp.Remove("value")
+	if len(imp.standard) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp.standard))
+	}
+	imp.Remove("value2")
+	if len(imp.thirdParty) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp.thirdParty))
+	}
+
+	// Test deleting last element in len 2 slice
+	imp.Add("value3", false)
+	imp.Add("value4", false)
+	if len(imp.standard) != 2 {
+		t.Errorf("expected len 2, got %d", len(imp.standard))
+	}
+	imp.Remove("value4")
+	if len(imp.standard) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp.standard))
+	}
+	if imp.standard[0] != "value3" {
+		t.Errorf("expected %q, got %q", "value3", imp.standard[0])
+	}
+	// Test deleting first element in len 2 slice
+	imp.Add("value4", false)
+	imp.Remove("value3")
+	if len(imp.standard) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp.standard))
+	}
+	if imp.standard[0] != "value4" {
+		t.Errorf("expected %q, got %q", "value4", imp.standard[0])
+	}
+	imp.Remove("value2")
+	if len(imp.thirdParty) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp.thirdParty))
+	}
+
+	// Test deleting last element in len 2 slice
+	imp.Add("value5", true)
+	imp.Add("value6", true)
+	if len(imp.thirdParty) != 2 {
+		t.Errorf("expected len 2, got %d", len(imp.thirdParty))
+	}
+	imp.Remove("value6")
+	if len(imp.thirdParty) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp.thirdParty))
+	}
+	if imp.thirdParty[0] != "value5" {
+		t.Errorf("expected %q, got %q", "value5", imp.thirdParty[0])
+	}
+	// Test deleting first element in len 2 slice
+	imp.Add("value6", true)
+	imp.Remove("value5")
+	if len(imp.thirdParty) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp.thirdParty))
+	}
+	if imp.thirdParty[0] != "value6" {
+		t.Errorf("expected %q, got %q", "value6", imp.thirdParty[0])
+	}
+}
+
+func TestMapImportsAddAndRemove(t *testing.T) {
+	t.Parallel()
+
+	imp := mapImports{}
+	imp.Add("cat", "value", false)
+	if len(imp["cat"].standard) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp["cat"].standard))
+	}
+	if imp["cat"].standard[0] != "value" {
+		t.Errorf("expected %q to be added", "value")
+	}
+	imp.Add("cat", "value2", true)
+	if len(imp["cat"].thirdParty) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp["cat"].thirdParty))
+	}
+	if imp["cat"].thirdParty[0] != "value2" {
+		t.Errorf("expected %q to be added", "value2")
+	}
+
+	imp.Remove("cat", "value")
+	if len(imp["cat"].standard) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp["cat"].standard))
+	}
+	imp.Remove("cat", "value")
+	if len(imp["cat"].standard) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp["cat"].standard))
+	}
+	imp.Remove("cat", "value2")
+	if len(imp["cat"].thirdParty) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp["cat"].thirdParty))
+	}
+	// If there are no elements left in key, test key is deleted
+	_, ok := imp["cat"]
+	if ok {
+		t.Errorf("expected cat key to be deleted when list empty")
+	}
+
+	// Test deleting last element in len 2 slice
+	imp.Add("cat", "value3", false)
+	imp.Add("cat", "value4", false)
+	if len(imp["cat"].standard) != 2 {
+		t.Errorf("expected len 2, got %d", len(imp["cat"].standard))
+	}
+	imp.Remove("cat", "value4")
+	if len(imp["cat"].standard) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp["cat"].standard))
+	}
+	if imp["cat"].standard[0] != "value3" {
+		t.Errorf("expected %q, got %q", "value3", imp["cat"].standard[0])
+	}
+	// Test deleting first element in len 2 slice
+	imp.Add("cat", "value4", false)
+	imp.Remove("cat", "value3")
+	if len(imp["cat"].standard) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp["cat"].standard))
+	}
+	if imp["cat"].standard[0] != "value4" {
+		t.Errorf("expected %q, got %q", "value4", imp["cat"].standard[0])
+	}
+	imp.Remove("cat", "value2")
+	if len(imp["cat"].thirdParty) != 0 {
+		t.Errorf("expected len 0, got %d", len(imp["cat"].thirdParty))
+	}
+
+	// Test deleting last element in len 2 slice
+	imp.Add("dog", "value5", true)
+	imp.Add("dog", "value6", true)
+	if len(imp["dog"].thirdParty) != 2 {
+		t.Errorf("expected len 2, got %d", len(imp["dog"].thirdParty))
+	}
+	imp.Remove("dog", "value6")
+	if len(imp["dog"].thirdParty) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp["dog"].thirdParty))
+	}
+	if imp["dog"].thirdParty[0] != "value5" {
+		t.Errorf("expected %q, got %q", "value5", imp["dog"].thirdParty[0])
+	}
+	// Test deleting first element in len 2 slice
+	imp.Add("dog", "value6", true)
+	imp.Remove("dog", "value5")
+	if len(imp["dog"].thirdParty) != 1 {
+		t.Errorf("expected len 1, got %d", len(imp["dog"].thirdParty))
+	}
+	if imp["dog"].thirdParty[0] != "value6" {
+		t.Errorf("expected %q, got %q", "value6", imp["dog"].thirdParty[0])
+	}
+}
+
 func TestCombineTypeImports(t *testing.T) {
 	t.Parallel()
 
@@ -94,7 +265,9 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 	}
 
-	res1 := combineTypeImports(imports1, importsBasedOnType, cols)
+	imps := newImporter()
+
+	res1 := combineTypeImports(imports1, imps.basedOnType, cols)
 
 	if !reflect.DeepEqual(res1, importsExpected) {
 		t.Errorf("Expected res1 to match importsExpected, got:\n\n%#v\n", res1)
@@ -112,7 +285,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 	}
 
-	res2 := combineTypeImports(imports2, importsBasedOnType, cols)
+	res2 := combineTypeImports(imports2, imps.basedOnType, cols)
 
 	if !reflect.DeepEqual(res2, importsExpected) {
 		t.Errorf("Expected res2 to match importsExpected, got:\n\n%#v\n", res1)

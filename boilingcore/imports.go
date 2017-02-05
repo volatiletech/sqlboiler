@@ -141,211 +141,302 @@ func removeDuplicates(dedup []string) []string {
 	return dedup
 }
 
-var defaultTemplateImports = imports{
-	standard: importList{
-		`"bytes"`,
-		`"database/sql"`,
-		`"fmt"`,
-		`"reflect"`,
-		`"strings"`,
-		`"sync"`,
-		`"time"`,
-	},
-	thirdParty: importList{
-		`"github.com/pkg/errors"`,
-		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/queries"`,
-		`"github.com/vattle/sqlboiler/queries/qm"`,
-		`"github.com/vattle/sqlboiler/strmangle"`,
-	},
+type mapImports map[string]imports
+
+type importer struct {
+	standard     imports
+	testStandard imports
+
+	singleton     mapImports
+	testSingleton mapImports
+
+	testMain mapImports
+
+	basedOnType mapImports
 }
 
-var defaultSingletonTemplateImports = map[string]imports{
-	"boil_queries": {
-		thirdParty: importList{
-			`"github.com/vattle/sqlboiler/boil"`,
-			`"github.com/vattle/sqlboiler/queries"`,
-			`"github.com/vattle/sqlboiler/queries/qm"`,
-		},
-	},
-	"boil_types": {
-		thirdParty: importList{
-			`"github.com/pkg/errors"`,
-			`"github.com/vattle/sqlboiler/strmangle"`,
-		},
-	},
-}
+// newImporter returns an importer struct with default import values
+func newImporter() importer {
+	var imp importer
 
-var defaultTestTemplateImports = imports{
-	standard: importList{
-		`"bytes"`,
-		`"reflect"`,
-		`"testing"`,
-	},
-	thirdParty: importList{
-		`"github.com/vattle/sqlboiler/boil"`,
-		`"github.com/vattle/sqlboiler/randomize"`,
-		`"github.com/vattle/sqlboiler/strmangle"`,
-	},
-}
-
-var defaultSingletonTestTemplateImports = map[string]imports{
-	"boil_main_test": {
+	imp.standard = imports{
 		standard: importList{
+			`"bytes"`,
 			`"database/sql"`,
-			`"flag"`,
 			`"fmt"`,
-			`"math/rand"`,
-			`"os"`,
-			`"path/filepath"`,
-			`"testing"`,
+			`"reflect"`,
+			`"strings"`,
+			`"sync"`,
 			`"time"`,
 		},
 		thirdParty: importList{
-			`"github.com/kat-co/vala"`,
 			`"github.com/pkg/errors"`,
-			`"github.com/spf13/viper"`,
 			`"github.com/vattle/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/queries"`,
+			`"github.com/vattle/sqlboiler/queries/qm"`,
+			`"github.com/vattle/sqlboiler/strmangle"`,
 		},
-	},
-	"boil_queries_test": {
+	}
+
+	imp.singleton = mapImports{
+		"boil_queries": {
+			thirdParty: importList{
+				`"github.com/vattle/sqlboiler/boil"`,
+				`"github.com/vattle/sqlboiler/queries"`,
+				`"github.com/vattle/sqlboiler/queries/qm"`,
+			},
+		},
+		"boil_types": {
+			thirdParty: importList{
+				`"github.com/pkg/errors"`,
+				`"github.com/vattle/sqlboiler/strmangle"`,
+			},
+		},
+	}
+
+	imp.testStandard = imports{
 		standard: importList{
 			`"bytes"`,
-			`"fmt"`,
-			`"io"`,
-			`"io/ioutil"`,
-			`"math/rand"`,
-			`"regexp"`,
-		},
-		thirdParty: importList{
-			`"github.com/vattle/sqlboiler/boil"`,
-		},
-	},
-	"boil_suites_test": {
-		standard: importList{
+			`"reflect"`,
 			`"testing"`,
 		},
-	},
+		thirdParty: importList{
+			`"github.com/vattle/sqlboiler/boil"`,
+			`"github.com/vattle/sqlboiler/randomize"`,
+			`"github.com/vattle/sqlboiler/strmangle"`,
+		},
+	}
+
+	imp.testSingleton = mapImports{
+		"boil_main_test": {
+			standard: importList{
+				`"database/sql"`,
+				`"flag"`,
+				`"fmt"`,
+				`"math/rand"`,
+				`"os"`,
+				`"path/filepath"`,
+				`"testing"`,
+				`"time"`,
+			},
+			thirdParty: importList{
+				`"github.com/kat-co/vala"`,
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/vattle/sqlboiler/boil"`,
+			},
+		},
+		"boil_queries_test": {
+			standard: importList{
+				`"bytes"`,
+				`"fmt"`,
+				`"io"`,
+				`"io/ioutil"`,
+				`"math/rand"`,
+				`"regexp"`,
+			},
+			thirdParty: importList{
+				`"github.com/vattle/sqlboiler/boil"`,
+			},
+		},
+		"boil_suites_test": {
+			standard: importList{
+				`"testing"`,
+			},
+		},
+	}
+
+	imp.testMain = mapImports{
+		"postgres": {
+			standard: importList{
+				`"bytes"`,
+				`"database/sql"`,
+				`"fmt"`,
+				`"io"`,
+				`"io/ioutil"`,
+				`"os"`,
+				`"os/exec"`,
+				`"strings"`,
+			},
+			thirdParty: importList{
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/vattle/sqlboiler/bdb/drivers"`,
+				`"github.com/vattle/sqlboiler/randomize"`,
+				`_ "github.com/lib/pq"`,
+			},
+		},
+		"mysql": {
+			standard: importList{
+				`"bytes"`,
+				`"database/sql"`,
+				`"fmt"`,
+				`"io"`,
+				`"io/ioutil"`,
+				`"os"`,
+				`"os/exec"`,
+				`"strings"`,
+			},
+			thirdParty: importList{
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/vattle/sqlboiler/bdb/drivers"`,
+				`"github.com/vattle/sqlboiler/randomize"`,
+				`_ "github.com/go-sql-driver/mysql"`,
+			},
+		},
+	}
+
+	// basedOnType imports are only included in the template output if the
+	// database requires one of the following special types. Check
+	// TranslateColumnType to see the type assignments.
+	imp.basedOnType = mapImports{
+		"null.Float32": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Float64": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Int": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Int8": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Int16": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Int32": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Int64": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Uint": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Uint8": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Uint16": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Uint32": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Uint64": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.String": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Bool": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Time": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.JSON": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"null.Bytes": {
+			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+		},
+		"time.Time": {
+			standard: importList{`"time"`},
+		},
+		"types.JSON": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+		"types.BytesArray": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+		"types.Int64Array": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+		"types.Float64Array": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+		"types.BoolArray": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+		"types.StringArray": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+		"types.Hstore": {
+			thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
+		},
+	}
+
+	return imp
 }
 
-var defaultTestMainImports = map[string]imports{
-	"postgres": {
-		standard: importList{
-			`"bytes"`,
-			`"database/sql"`,
-			`"fmt"`,
-			`"io"`,
-			`"io/ioutil"`,
-			`"os"`,
-			`"os/exec"`,
-			`"strings"`,
-		},
-		thirdParty: importList{
-			`"github.com/pkg/errors"`,
-			`"github.com/spf13/viper"`,
-			`"github.com/vattle/sqlboiler/bdb/drivers"`,
-			`"github.com/vattle/sqlboiler/randomize"`,
-			`_ "github.com/lib/pq"`,
-		},
-	},
-	"mysql": {
-		standard: importList{
-			`"bytes"`,
-			`"database/sql"`,
-			`"fmt"`,
-			`"io"`,
-			`"io/ioutil"`,
-			`"os"`,
-			`"os/exec"`,
-			`"strings"`,
-		},
-		thirdParty: importList{
-			`"github.com/pkg/errors"`,
-			`"github.com/spf13/viper"`,
-			`"github.com/vattle/sqlboiler/bdb/drivers"`,
-			`"github.com/vattle/sqlboiler/randomize"`,
-			`_ "github.com/go-sql-driver/mysql"`,
-		},
-	},
+// Remove an import matching the match string under the specified key.
+// Remove will search both standard and thirdParty import lists for a match.
+func (m mapImports) Remove(key string, match string) {
+	mp := m[key]
+	for idx := 0; idx < len(mp.standard); idx++ {
+		if mp.standard[idx] == match {
+			mp.standard[idx] = mp.standard[len(mp.standard)-1]
+			mp.standard = mp.standard[:len(mp.standard)-1]
+			break
+		}
+	}
+	for idx := 0; idx < len(mp.thirdParty); idx++ {
+		if mp.thirdParty[idx] == match {
+			mp.thirdParty[idx] = mp.thirdParty[len(mp.thirdParty)-1]
+			mp.thirdParty = mp.thirdParty[:len(mp.thirdParty)-1]
+			break
+		}
+	}
+
+	// delete the key and return if both import lists are empty
+	if len(mp.thirdParty) == 0 && len(mp.standard) == 0 {
+		delete(m, key)
+		return
+	}
+
+	m[key] = mp
 }
 
-// importsBasedOnType imports are only included in the template output if the
-// database requires one of the following special types. Check
-// TranslateColumnType to see the type assignments.
-var importsBasedOnType = map[string]imports{
-	"null.Float32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Float64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Int": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Int8": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Int16": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Int32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Int64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Uint": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Uint8": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Uint16": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Uint32": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Uint64": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.String": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Bool": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Time": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.JSON": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"null.Bytes": {
-		thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
-	},
-	"time.Time": {
-		standard: importList{`"time"`},
-	},
-	"types.JSON": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
-	"types.BytesArray": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
-	"types.Int64Array": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
-	"types.Float64Array": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
-	"types.BoolArray": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
-	"types.StringArray": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
-	"types.Hstore": {
-		thirdParty: importList{`"github.com/vattle/sqlboiler/types"`},
-	},
+// Add an import under the specified key. If the key does not exist, it
+// will be created.
+func (m mapImports) Add(key string, value string, thirdParty bool) {
+	mp := m[key]
+	if thirdParty {
+		mp.thirdParty = append(mp.thirdParty, value)
+	} else {
+		mp.standard = append(mp.standard, value)
+	}
+
+	m[key] = mp
+}
+
+// Remove an import matching the match string under the specified key.
+// Remove will search both standard and thirdParty import lists for a match.
+func (i *imports) Remove(match string) {
+	for idx := 0; idx < len(i.standard); idx++ {
+		if i.standard[idx] == match {
+			i.standard[idx] = i.standard[len(i.standard)-1]
+			i.standard = i.standard[:len(i.standard)-1]
+			break
+		}
+	}
+	for idx := 0; idx < len(i.thirdParty); idx++ {
+		if i.thirdParty[idx] == match {
+			i.thirdParty[idx] = i.thirdParty[len(i.thirdParty)-1]
+			i.thirdParty = i.thirdParty[:len(i.thirdParty)-1]
+			break
+		}
+	}
+}
+
+// Add an import under the specified key. If the key does not exist, it
+// will be created.
+func (i *imports) Add(value string, thirdParty bool) {
+	if thirdParty {
+		i.thirdParty = append(i.thirdParty, value)
+	} else {
+		i.standard = append(i.standard, value)
+	}
 }

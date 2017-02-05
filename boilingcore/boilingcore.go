@@ -215,23 +215,37 @@ func (s *State) processReplacements() error {
 			return errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)
 		}
 
+		var toReplaceFname string
 		toReplace, replaceWith := splits[0], splits[1]
 
-		toReplaceSplit := strings.Split(toReplace, string(filepath.Separator))
-		fileName := toReplaceSplit[len(toReplaceSplit)-1]
+		inf, err := os.Stat(toReplace)
+		if err != nil {
+			return errors.Errorf("cannot stat %q", toReplace)
+		}
+		if inf.IsDir() {
+			return errors.Errorf("replace argument must be a path to a file not a dir: %q", toReplace)
+		}
+		toReplaceFname = inf.Name()
 
-		var err error
+		inf, err = os.Stat(replaceWith)
+		if err != nil {
+			return errors.Errorf("cannot stat %q", replaceWith)
+		}
+		if inf.IsDir() {
+			return errors.Errorf("replace argument must be a path to a file not a dir: %q", replaceWith)
+		}
+
 		switch filepath.Dir(toReplace) {
 		case templatesDirectory:
-			err = replaceTemplate(s.Templates.Template, fileName, replaceWith)
+			err = replaceTemplate(s.Templates.Template, toReplaceFname, replaceWith)
 		case templatesSingletonDirectory:
-			err = replaceTemplate(s.SingletonTemplates.Template, fileName, replaceWith)
+			err = replaceTemplate(s.SingletonTemplates.Template, toReplaceFname, replaceWith)
 		case templatesTestDirectory:
-			err = replaceTemplate(s.TestTemplates.Template, fileName, replaceWith)
+			err = replaceTemplate(s.TestTemplates.Template, toReplaceFname, replaceWith)
 		case templatesSingletonTestDirectory:
-			err = replaceTemplate(s.SingletonTestTemplates.Template, fileName, replaceWith)
+			err = replaceTemplate(s.SingletonTestTemplates.Template, toReplaceFname, replaceWith)
 		case templatesTestMainDirectory:
-			err = replaceTemplate(s.TestMainTemplate, fileName, replaceWith)
+			err = replaceTemplate(s.TestMainTemplate, toReplaceFname, replaceWith)
 		default:
 			return errors.Errorf("replace file's directory not part of any known folder: %s", toReplace)
 		}

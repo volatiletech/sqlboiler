@@ -43,6 +43,34 @@ var uppercaseWords = map[string]struct{}{
 	"utf8":  {},
 }
 
+var reservedWords = map[string]struct{}{
+	"break":       {},
+	"case":        {},
+	"chan":        {},
+	"const":       {},
+	"continue":    {},
+	"default":     {},
+	"defer":       {},
+	"else":        {},
+	"fallthrough": {},
+	"for":         {},
+	"func":        {},
+	"go":          {},
+	"goto":        {},
+	"if":          {},
+	"import":      {},
+	"interface":   {},
+	"map":         {},
+	"package":     {},
+	"range":       {},
+	"return":      {},
+	"select":      {},
+	"struct":      {},
+	"switch":      {},
+	"type":        {},
+	"var":         {},
+}
+
 func init() {
 	// Our Boil inflection Ruleset does not include uncountable inflections.
 	// This way, people using words like Sheep will not have
@@ -629,4 +657,13 @@ func IsEnumNormal(values []string) bool {
 // ShouldTitleCaseEnum checks a value to see if it's title-case-able
 func ShouldTitleCaseEnum(value string) bool {
 	return rgxEnumShouldTitle.MatchString(value)
+}
+
+// ReplaceReservedWords takes a word and replaces it with word_ if it's found
+// in the list of reserved words.
+func ReplaceReservedWords(word string) string {
+	if _, ok := reservedWords[word]; ok {
+		return word + "_"
+	}
+	return word
 }

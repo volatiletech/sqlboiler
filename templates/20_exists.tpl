@@ -1,6 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
-{{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase -}}
+{{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 // {{$tableNameSingular}}Exists checks if the {{$tableNameSingular}} row exists.

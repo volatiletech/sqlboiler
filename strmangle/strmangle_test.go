@@ -580,3 +580,23 @@ func TestShouldTitleCaseEnum(t *testing.T) {
 		}
 	}
 }
+
+func TestReplaceReservedWords(t *testing.T) {
+	tests := []struct {
+		Word    string
+		Replace bool
+	}{
+		{"break", true},
+		{"id", false},
+		{"type", true},
+	}
+
+	for i, test := range tests {
+		got := ReplaceReservedWords(test.Word)
+		if test.Replace && !strings.HasSuffix(got, "_") {
+			t.Errorf("%i) want suffixed (%s), got: %s", i, test.Word, got)
+		} else if !test.Replace && strings.HasSuffix(got, "_") {
+			t.Errorf("%i) want normal (%s), got: %s", i, test.Word, got)
+		}
+	}
+}

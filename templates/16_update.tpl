@@ -49,6 +49,11 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
+		{{- if not .NoAutoTimestamps}}
+		if len(whitelist) == 0 {
+			wl = strmangle.SetComplement(wl, []string{"created_at"})
+		}
+		{{end -}}
 		if len(wl) == 0 {
 			return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
 		}

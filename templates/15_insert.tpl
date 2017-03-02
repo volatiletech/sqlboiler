@@ -65,7 +65,15 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		if err != nil {
 			return err
 		}
-		cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) VALUES (%s)", strings.Join(wl, "{{.LQ}},{{.RQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
+		if len(wl) != 0 {
+			cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) VALUES (%s)", strings.Join(wl, "{{.LQ}},{{.RQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
+		} else {
+			{{if eq .DriverName "mysql" -}}
+			cache.query = "INSERT INTO {{$schemaTable}} () VALUES ()"
+			{{else -}}
+			cache.query = "INSERT INTO {{$schemaTable}} DEFAULT VALUES"
+			{{end -}}
+		}
 
 		if len(cache.retMapping) != 0 {
 			{{if .UseLastInsertID -}}

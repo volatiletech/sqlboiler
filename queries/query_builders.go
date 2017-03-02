@@ -190,12 +190,17 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
 
+	var columns string
+	if len(whitelist) != 0 {
+		columns = strings.Join(whitelist, ", ")
+	}
+
 	if len(update) == 0 {
 		fmt.Fprintf(
 			buf,
 			"INSERT IGNORE INTO %s (%s) VALUES (%s)",
 			tableName,
-			strings.Join(whitelist, ", "),
+			columns,
 			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
 		)
 		return buf.String()
@@ -205,7 +210,7 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 		buf,
 		"INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE ",
 		tableName,
-		strings.Join(whitelist, ", "),
+		columns,
 		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
 	)
 
@@ -232,12 +237,18 @@ func BuildUpsertQueryPostgres(dia Dialect, tableName string, updateOnConflict bo
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
 
+	columns := "DEFAULT VALUES"
+	if len(whitelist) != 0 {
+		columns = fmt.Sprintf("(%s) VALUES (%s)",
+			strings.Join(whitelist, ", "),
+			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1))
+	}
+
 	fmt.Fprintf(
 		buf,
-		"INSERT INTO %s (%s) VALUES (%s) ON CONFLICT ",
+		"INSERT INTO %s %s ON CONFLICT ",
 		tableName,
-		strings.Join(whitelist, ", "),
-		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
+		columns,
 	)
 
 	if !updateOnConflict || len(update) == 0 {

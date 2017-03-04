@@ -352,3 +352,16 @@ CREATE TABLE pilot_languages (
 ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilot_id, language_id);
 ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
+
+CREATE TABLE powers_of_two (
+  vid int(10) unsigned NOT NULL AUTO_INCREMENT, 
+  name varchar(255) NOT NULL DEFAULT '',
+  machine_name varchar(255) NOT NULL DEFAULT '',
+  description longtext,
+  hierarchy tinyint(3) unsigned NOT NULL DEFAULT '0',
+  module varchar(255) NOT NULL DEFAULT '',
+  weight int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (vid),
+  UNIQUE KEY machine_name (machine_name),
+  KEY list (weight,name)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;

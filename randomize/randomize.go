@@ -72,7 +72,7 @@ func NewSeed() *Seed {
 }
 
 func (s *Seed) nextInt() int {
-	return int(atomic.AddInt64((*int64)(s), 1)) % math.MaxInt32
+	return int(atomic.AddInt64((*int64)(s), 1) % math.MaxInt32)
 }
 
 // Struct gets its fields filled with random data based on the seed.
@@ -502,23 +502,23 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeNullFloat64:
 		return null.NewFloat64(float64(s.nextInt()%10)/10.0+float64(s.nextInt()%10), true)
 	case typeNullInt:
-		return null.NewInt(int(int32(s.nextInt()))%math.MaxInt32, true)
+		return null.NewInt(int(int32(s.nextInt()%math.MaxInt32)), true)
 	case typeNullInt8:
-		return null.NewInt8(int8(s.nextInt())%math.MaxInt8, true)
+		return null.NewInt8(int8(s.nextInt()%math.MaxInt8), true)
 	case typeNullInt16:
-		return null.NewInt16(int16(s.nextInt())%math.MaxInt16, true)
+		return null.NewInt16(int16(s.nextInt()%math.MaxInt16), true)
 	case typeNullInt32:
-		return null.NewInt32(int32(s.nextInt())%math.MaxInt32, true)
+		return null.NewInt32(int32(s.nextInt()%math.MaxInt32), true)
 	case typeNullInt64:
 		return null.NewInt64(int64(s.nextInt()), true)
 	case typeNullUint:
 		return null.NewUint(uint(s.nextInt()), true)
 	case typeNullUint8:
-		return null.NewUint8(uint8(s.nextInt())%math.MaxUint8, true)
+		return null.NewUint8(uint8(s.nextInt()%math.MaxUint8), true)
 	case typeNullUint16:
-		return null.NewUint16(uint16(s.nextInt())%math.MaxUint16, true)
+		return null.NewUint16(uint16(s.nextInt()%math.MaxUint16), true)
 	case typeNullUint32:
-		return null.NewUint32(uint32(s.nextInt())%math.MaxUint32, true)
+		return null.NewUint32(uint32(s.nextInt()%math.MaxUint32), true)
 	case typeNullUint64:
 		return null.NewUint64(uint64(s.nextInt()), true)
 	case typeNullBytes:

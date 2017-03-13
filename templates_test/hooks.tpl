@@ -38,6 +38,7 @@ func {{$varNameSingular}}AfterDeleteHook(e boil.Executor, o *{{$tableNameSingula
 	return nil
 }
 
+{{if ne .DriverName "mssql" -}}
 func {{$varNameSingular}}BeforeUpsertHook(e boil.Executor, o *{{$tableNameSingular}}) error {
 	*o = {{$tableNameSingular}}{}
 	return nil
@@ -47,6 +48,7 @@ func {{$varNameSingular}}AfterUpsertHook(e boil.Executor, o *{{$tableNameSingula
 	*o = {{$tableNameSingular}}{}
 	return nil
 }
+{{- end}}
 
 func test{{$tableNamePlural}}Hooks(t *testing.T) {
 	t.Parallel()
@@ -124,6 +126,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
 	}
 	{{$varNameSingular}}AfterDeleteHooks = []{{$tableNameSingular}}Hook{}
 
+	{{- if ne .DriverName "mssql" -}}
 	Add{{$tableNameSingular}}Hook(boil.BeforeUpsertHook, {{$varNameSingular}}BeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
@@ -141,5 +144,6 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
 	{{$varNameSingular}}AfterUpsertHooks = []{{$tableNameSingular}}Hook{}
+	{{- end}}
 }
 {{- end}}

@@ -1,3 +1,4 @@
+{{- if ne .DriverName "mssql" -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
@@ -207,3 +208,4 @@ CacheNoHooks:
 	return nil
 	{{- end}}
 }
+{{- end}}

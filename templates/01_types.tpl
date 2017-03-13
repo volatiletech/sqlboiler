@@ -32,8 +32,10 @@ var (
 	{{$varNameSingular}}InsertCache = make(map[string]insertCache)
 	{{$varNameSingular}}UpdateCacheMut sync.RWMutex
 	{{$varNameSingular}}UpdateCache = make(map[string]updateCache)
+	{{if ne .DriverName "mssql"}}
 	{{$varNameSingular}}UpsertCacheMut sync.RWMutex
 	{{$varNameSingular}}UpsertCache = make(map[string]insertCache)
+	{{end}}
 )
 
 var (

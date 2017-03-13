@@ -4,13 +4,17 @@
 var {{$varNameSingular}}BeforeInsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeDeleteHooks []{{$tableNameSingular}}Hook
+{{- if ne .DriverName "mssql" -}}
 var {{$varNameSingular}}BeforeUpsertHooks []{{$tableNameSingular}}Hook
+{{- end}}
 
 var {{$varNameSingular}}AfterInsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterSelectHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterDeleteHooks []{{$tableNameSingular}}Hook
+{{- if ne .DriverName "mssql" -}}
 var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
+{{- end}}
 
 // doBeforeInsertHooks executes all "before insert" hooks.
 func (o *{{$tableNameSingular}}) doBeforeInsertHooks(exec boil.Executor) (err error) {
@@ -45,6 +49,7 @@ func (o *{{$tableNameSingular}}) doBeforeDeleteHooks(exec boil.Executor) (err er
 	return nil
 }
 
+{{- if ne .DriverName "mssql" -}}
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
 func (o *{{$tableNameSingular}}) doBeforeUpsertHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}BeforeUpsertHooks {
@@ -55,6 +60,7 @@ func (o *{{$tableNameSingular}}) doBeforeUpsertHooks(exec boil.Executor) (err er
 
 	return nil
 }
+{{- end}}
 
 // doAfterInsertHooks executes all "after Insert" hooks.
 func (o *{{$tableNameSingular}}) doAfterInsertHooks(exec boil.Executor) (err error) {
@@ -100,6 +106,7 @@ func (o *{{$tableNameSingular}}) doAfterDeleteHooks(exec boil.Executor) (err err
 	return nil
 }
 
+{{- if ne .DriverName "mssql" -}}
 // doAfterUpsertHooks executes all "after Upsert" hooks.
 func (o *{{$tableNameSingular}}) doAfterUpsertHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}AfterUpsertHooks {
@@ -110,6 +117,7 @@ func (o *{{$tableNameSingular}}) doAfterUpsertHooks(exec boil.Executor) (err err
 
 	return nil
 }
+{{- end}}
 
 // Add{{$tableNameSingular}}Hook registers your hook function for all future operations.
 func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
@@ -120,8 +128,10 @@ func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}
 			{{$varNameSingular}}BeforeUpdateHooks = append({{$varNameSingular}}BeforeUpdateHooks, {{$varNameSingular}}Hook)
 		case boil.BeforeDeleteHook:
 			{{$varNameSingular}}BeforeDeleteHooks = append({{$varNameSingular}}BeforeDeleteHooks, {{$varNameSingular}}Hook)
+		{{if ne .DriverName "mssql" -}}
 		case boil.BeforeUpsertHook:
 			{{$varNameSingular}}BeforeUpsertHooks = append({{$varNameSingular}}BeforeUpsertHooks, {{$varNameSingular}}Hook)
+		{{- end}}
 		case boil.AfterInsertHook:
 			{{$varNameSingular}}AfterInsertHooks = append({{$varNameSingular}}AfterInsertHooks, {{$varNameSingular}}Hook)
 		case boil.AfterSelectHook:
@@ -130,8 +140,10 @@ func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}
 			{{$varNameSingular}}AfterUpdateHooks = append({{$varNameSingular}}AfterUpdateHooks, {{$varNameSingular}}Hook)
 		case boil.AfterDeleteHook:
 			{{$varNameSingular}}AfterDeleteHooks = append({{$varNameSingular}}AfterDeleteHooks, {{$varNameSingular}}Hook)
+		{{- if ne .DriverName "mssql" -}}
 		case boil.AfterUpsertHook:
 			{{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
+		{{- end}}
 	}
 }
 {{- end}}

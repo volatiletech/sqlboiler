@@ -255,6 +255,42 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if driverName == "mssql" {
+		cmdConfig.MSSQL = boilingcore.MSSQLConfig{
+			User:    viper.GetString("mssql.user"),
+			Pass:    viper.GetString("mssql.pass"),
+			Host:    viper.GetString("mssql.host"),
+			Port:    viper.GetInt("mssql.port"),
+			DBName:  viper.GetString("mssql.dbname"),
+			SSLMode: viper.GetString("mssql.sslmode"),
+		}
+
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
+		if cmdConfig.MSSQL.SSLMode == "" {
+			cmdConfig.MSSQL.SSLMode = "true"
+			viper.Set("mssql.sslmode", cmdConfig.MSSQL.SSLMode)
+		}
+
+		if cmdConfig.MSSQL.Port == 0 {
+			cmdConfig.MSSQL.Port = 3306
+			viper.Set("mssql.port", cmdConfig.MSSQL.Port)
+		}
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.MSSQL.User, "mssql.user"),
+			vala.StringNotEmpty(cmdConfig.MSSQL.Host, "mssql.host"),
+			vala.Not(vala.Equals(cmdConfig.MSSQL.Port, 0, "mssql.port")),
+			vala.StringNotEmpty(cmdConfig.MSSQL.DBName, "mssql.dbname"),
+			vala.StringNotEmpty(cmdConfig.MSSQL.SSLMode, "mssql.sslmode"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
+	}
+
 	cmdState, err = boilingcore.New(cmdConfig)
 	return err
 }

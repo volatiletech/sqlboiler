@@ -305,6 +305,15 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.MySQL.Port,
 			s.Config.MySQL.SSLMode,
 		)
+	case "mssql":
+		s.Driver = drivers.NewMSSQLDriver(
+			s.Config.MSSQL.User,
+			s.Config.MSSQL.Pass,
+			s.Config.MSSQL.DBName,
+			s.Config.MSSQL.Host,
+			s.Config.MSSQL.Port,
+			s.Config.MSSQL.SSLMode,
+		)
 	case "mock":
 		s.Driver = &drivers.MockDriver{}
 	}

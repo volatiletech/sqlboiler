@@ -279,13 +279,10 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	if c.Nullable {
 		switch c.DBType {
+		case "bit":
+			c.Type = "bool"
 		case "tinyint":
-			// map tinyint(1) to bool if TinyintAsBool is true
-			if TinyintAsBool && c.FullDBType == "tinyint(1)" {
-				c.Type = "null.Bool"
-			} else {
-				c.Type = "null.Int8"
-			}
+			c.Type = "int8"
 		case "smallint":
 			c.Type = "null.Int16"
 		case "mediumint":
@@ -311,13 +308,10 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 		}
 	} else {
 		switch c.DBType {
+		case "bit":
+			c.Type = "bool"
 		case "tinyint":
-			// map tinyint(1) to bool if TinyintAsBool is true
-			if TinyintAsBool && c.FullDBType == "tinyint(1)" {
-				c.Type = "bool"
-			} else {
-				c.Type = "int8"
-			}
+			c.Type = "int8"
 		case "smallint":
 			c.Type = "int16"
 		case "mediumint":

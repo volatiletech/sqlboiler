@@ -1,12 +1,11 @@
 type mssqlTester struct {
-	dbConn *sql.DB
-	dbName	string
-	host	string
-	user	string
-	pass	string
-	sslmode	string
-	port	int
-	optionFile string
+	dbConn     *sql.DB
+	dbName     string
+	host       string
+	user       string
+	pass       string
+	sslmode    string
+	port       int
 	testDBName string
 }
 
@@ -24,9 +23,6 @@ func (m *mssqlTester) setup() error {
 	m.sslmode = viper.GetString("mssql.sslmode")
 	// Create a randomized db name.
 	m.testDBName = randomize.StableDBName(m.dbName)
-	if err = m.makeOptionFile(); err != nil {
-		return errors.Wrap(err, "couldn't make option file")
-	}
 
 	if err = m.dropTestDB(); err != nil {
 		return err
@@ -35,30 +31,20 @@ func (m *mssqlTester) setup() error {
 		return err
 	}
 
-	dumpCmd := exec.Command("mssqldump", m.defaultsFile(), "--no-data", m.dbName)
-	createCmd := exec.Command("mssql", m.defaultsFile(), "--database", m.testDBName)
+	createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
-	r, w := io.Pipe()
-	dumpCmd.Stdout = w
-	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, r)
+	f, err := os.Open("tables.sql")
+	defer f.Close()
 
-	if err = dumpCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start mssqldump command")
-	}
+	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
+
 	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start mssql command")
+		return errors.Wrap(err, "failed to start sqlcmd command")
 	}
-
-	if err = dumpCmd.Wait(); err != nil {
-		fmt.Println(err)
-		return errors.Wrap(err, "failed to wait for mssqldump command")
-	}
-
-	w.Close() // After dumpCmd is done, close the write end of the pipe
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
-		return errors.Wrap(err, "failed to wait for mssql command")
+		return errors.Wrap(err, "failed to wait for sqlcmd command")
 	}
 
 	return nil
@@ -75,43 +61,20 @@ func (m *mssqlTester) sslMode(mode string) string {
 	}
 }
 
-func (m *mssqlTester) defaultsFile() string {
-	return fmt.Sprintf("--defaults-file=%s", m.optionFile)
-}
-
-func (m *mssqlTester) makeOptionFile() error {
-	tmp, err := ioutil.TempFile("", "optionfile")
-	if err != nil {
-		return errors.Wrap(err, "failed to create option file")
-	}
-
-	fmt.Fprintln(tmp, "[client]")
-	fmt.Fprintf(tmp, "host=%s\n", m.host)
-	fmt.Fprintf(tmp, "port=%d\n", m.port)
-	fmt.Fprintf(tmp, "user=%s\n", m.user)
-	fmt.Fprintf(tmp, "password=%s\n", m.pass)
-	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
-
-	fmt.Fprintln(tmp, "[mssqldump]")
-	fmt.Fprintf(tmp, "host=%s\n", m.host)
-	fmt.Fprintf(tmp, "port=%d\n", m.port)
-	fmt.Fprintf(tmp, "user=%s\n", m.user)
-	fmt.Fprintf(tmp, "password=%s\n", m.pass)
-	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
-
-	m.optionFile = tmp.Name()
-
-	return tmp.Close()
-}
-
 func (m *mssqlTester) createTestDB() error {
 	sql := fmt.Sprintf("create database %s;", m.testDBName)
-	return m.runCmd(sql, "mssql")
+	return m.runCmd(sql, "sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass)
 }
 
 func (m *mssqlTester) dropTestDB() error {
-	sql := fmt.Sprintf("drop database if exists %s;", m.testDBName)
-	return m.runCmd(sql, "mssql")
+	// Since MS SQL 2016 it can be done with
+	// DROP DATABASE [ IF EXISTS ] { database_name | database_snapshot_name } [ ,...n ] [;]
+	sql := fmt.Sprintf(`
+	IF EXISTS(SELECT name FROM sys.databases 
+		WHERE name = '%s')
+		DROP DATABASE %s
+	GO`, m.testDBName, m.testDBName)
+	return m.runCmd(sql, "sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass)
 }
 
 func (m *mssqlTester) teardown() error {
@@ -123,12 +86,10 @@ func (m *mssqlTester) teardown() error {
 		return err
 	}
 
-	return os.Remove(m.optionFile)
+	return nil
 }
 
 func (m *mssqlTester) runCmd(stdin, command string, args ...string) error {
-	args = append([]string{m.defaultsFile()}, args...)
-
 	cmd := exec.Command(command, args...)
 	cmd.Stdin = strings.NewReader(stdin)
 
@@ -137,10 +98,10 @@ func (m *mssqlTester) runCmd(stdin, command string, args ...string) error {
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	if err := cmd.Run(); err != nil {
-	fmt.Println("failed running:", command, args)
-	fmt.Println(stdout.String())
-	fmt.Println(stderr.String())
-	return err
+		fmt.Println("failed running:", command, args)
+		fmt.Println(stdout.String())
+		fmt.Println(stderr.String())
+		return err
 	}
 
 	return nil
@@ -148,13 +109,13 @@ func (m *mssqlTester) runCmd(stdin, command string, args ...string) error {
 
 func (m *mssqlTester) conn() (*sql.DB, error) {
 	if m.dbConn != nil {
-	return m.dbConn, nil
+		return m.dbConn, nil
 	}
 
 	var err error
 	m.dbConn, err = sql.Open("mssql", drivers.MSSQLBuildQueryString(m.user, m.pass, m.testDBName, m.host, m.port, m.sslmode))
 	if err != nil {
-	return nil, err
+		return nil, err
 	}
 
 	return m.dbConn, nil

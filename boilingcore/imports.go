@@ -290,8 +290,6 @@ func newImporter() importer {
 				`"bytes"`,
 				`"database/sql"`,
 				`"fmt"`,
-				`"io"`,
-				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
 				`"strings"`,

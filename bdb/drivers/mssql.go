@@ -305,13 +305,13 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Int64"
 		case "float":
 			c.Type = "null.Float32"
-		case "double", "double precision", "real":
+		case "real":
 			c.Type = "null.Float64"
 		case "boolean", "bool":
 			c.Type = "null.Bool"
-		case "date", "datetime", "time":
+		case "date", "datetime", "datetime2", "smalldatetime", "time":
 			c.Type = "null.Time"
-		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+		case "binary", "varbinary":
 			c.Type = "null.Bytes"
 		case "timestamp", "rowversion":
 			c.Type = "null.Bytes"
@@ -334,13 +334,13 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "int64"
 		case "float":
 			c.Type = "float32"
-		case "double", "double precision", "real":
+		case "real":
 			c.Type = "float64"
 		case "boolean", "bool":
 			c.Type = "bool"
-		case "date", "datetime", "time":
+		case "date", "datetime", "datetime2", "smalldatetime", "time":
 			c.Type = "time.Time"
-		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+		case "binary", "varbinary":
 			c.Type = "[]byte"
 		case "timestamp", "rowversion":
 			c.Type = "[]byte"

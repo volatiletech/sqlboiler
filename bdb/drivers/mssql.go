@@ -355,7 +355,7 @@ func (m *MSSQLDriver) LeftQuote() byte {
 	return '"'
 }
 
-// IndexPlaceholders returns false to indicate MS SQL doesnt support indexed placeholders
+// IndexPlaceholders returns true to indicate MS SQL supports indexed placeholders
 func (m *MSSQLDriver) IndexPlaceholders() bool {
-	return false
+	return true
 }

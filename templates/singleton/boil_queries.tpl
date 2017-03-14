@@ -2,6 +2,7 @@ var dialect = queries.Dialect{
 	LQ: 0x{{printf "%x" .Dialect.LQ}},
 	RQ: 0x{{printf "%x" .Dialect.RQ}},
 	IndexPlaceholders: {{.Dialect.IndexPlaceholders}},
+	UseTopClause: {{.Dialect.UseTopClause}},
 }
 
 // NewQueryG initializes a new Query using the passed in QueryMods

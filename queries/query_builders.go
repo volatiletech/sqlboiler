@@ -328,6 +328,16 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 		// OFFSET N ROWS
 		// FETCH NEXT M ROWS ONLY
 		if q.offset != 0 {
+
+			// Hack from https://www.microsoftpressstore.com/articles/article.aspx?p=2314819
+			// ...
+			// As mentioned, the OFFSET-FETCH filter requires an ORDER BY clause. If you want to use arbitrary order,
+			// like TOP without an ORDER BY clause, you can use the trick with ORDER BY (SELECT NULL)
+			// ...
+			if len(q.orderBy) == 0 {
+				buf.WriteString(" ORDER BY (SELECT NULL)")
+			}
+
 			fmt.Fprintf(buf, " OFFSET %d", q.offset)
 
 			if q.limit != 0 {

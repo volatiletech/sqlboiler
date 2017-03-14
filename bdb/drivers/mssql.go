@@ -80,15 +80,19 @@ func (m *MSSQLDriver) UseTopClause() bool {
 func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`)
+	query := `
+		SELECT table_name
+		FROM   information_schema.tables
+		WHERE  table_schema = ? AND table_type = 'BASE TABLE'`
+
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s);", strings.Repeat(",?", len(whitelist))[1:])
+		query += fmt.Sprintf(" AND table_name IN (%s);", strings.Repeat(",?", len(whitelist))[1:])
 		for _, w := range whitelist {
 			args = append(args, w)
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
+		query += fmt.Sprintf(" AND table_name not IN (%s);", strings.Repeat(",?", len(blacklist))[1:])
 		for _, b := range blacklist {
 			args = append(args, b)
 		}
@@ -122,13 +126,13 @@ func (m *MSSQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	rows, err := m.dbConn.Query(`
 	SELECT column_name,
        CASE
-         WHEN CHARACTER_MAXIMUM_LENGTH IS NULL THEN data_type
-         ELSE data_type + '(' + CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR) + ')'
+         WHEN character_maximum_length IS NULL THEN data_type
+         ELSE data_type + '(' + CAST(character_maximum_length AS VARCHAR) + ')'
        END AS full_type,
        data_type,
 	   column_default,
        CASE
-         WHEN IS_NULLABLE = 'YES' THEN 1
+         WHEN is_nullable = 'YES' THEN 1
          ELSE 0
        END AS is_nullable,
        CASE
@@ -148,8 +152,8 @@ func (m *MSSQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
                              AND   constraint_name = tc.constraint_name) = 1) THEN 1
          ELSE 0
        END AS is_unique
-	FROM INFORMATION_SCHEMA.columns c
-	where table_name = ? and table_schema = ?;
+	FROM information_schema.columns c
+	WHERE table_name = ? AND table_schema = ?;
 	`, tableName, schema)
 
 	if err != nil {
@@ -189,9 +193,9 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey,
 	var err error
 
 	query := `
-	select tc.constraint_name
-	from information_schema.table_constraints as tc
-	where tc.table_name = ? and tc.constraint_type = 'PRIMARY KEY' and tc.table_schema = ?;`
+	SELECT constraint_name
+	FROM   information_schema.table_constraints
+	WHERE  table_name = ? AND constraint_type = 'PRIMARY KEY' AND table_schema = ?;`
 
 	row := m.dbConn.QueryRow(query, tableName, schema)
 	if err = row.Scan(&pkey.Name); err != nil {
@@ -202,9 +206,9 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey,
 	}
 
 	queryColumns := `
-	select kcu.column_name
-	from   information_schema.key_column_usage as kcu
-	where  table_name = ? and constraint_name = ? and table_schema = ?;`
+	SELECT column_name
+	FROM   information_schema.key_column_usage
+	WHERE  table_name = ? AND constraint_name = ? AND table_schema = ?;`
 
 	var rows *sql.Rows
 	if rows, err = m.dbConn.Query(queryColumns, tableName, pkey.Name, schema); err != nil {
@@ -239,17 +243,17 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 
 	query := `
 	SELECT 
-		ccu.constraint_name AS SourceConstraint
-		,ccu.table_name AS SourceTable
-		,ccu.column_name AS SourceColumn
-		,kcu.table_name AS TargetTable
-		,kcu.column_name AS TargetColumn
-	FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu
-    INNER JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-        ON ccu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME 
-    INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu 
-        ON kcu.CONSTRAINT_NAME = rc.UNIQUE_CONSTRAINT_NAME  
-	where ccu.table_schema = ? and ccu.constraint_schema = ? and ccu.table_name = ?
+		ccu.constraint_name
+		,ccu.table_name AS local_table
+		,ccu.column_name AS local_column
+		,kcu.table_name AS foreign_table
+		,kcu.column_name AS foreign_column
+	FROM information_schema.constraint_column_usage ccu
+    INNER JOIN information_schema.referential_constraints rc
+        ON ccu.constraint_name = rc.constraint_name 
+    INNER JOIN information_schema.key_column_usage kcu 
+        ON kcu.constraint_name = rc.unique_constraint_name  
+	WHERE ccu.table_schema = ? AND ccu.constraint_schema = ? AND ccu.table_name = ?
 	`
 
 	var rows *sql.Rows

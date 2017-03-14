@@ -303,9 +303,9 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Int"
 		case "bigint":
 			c.Type = "null.Int64"
-		case "float":
-			c.Type = "null.Float32"
 		case "real":
+			c.Type = "null.Float32"
+		case "float":
 			c.Type = "null.Float64"
 		case "boolean", "bool":
 			c.Type = "null.Bool"
@@ -332,9 +332,9 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "int"
 		case "bigint":
 			c.Type = "int64"
-		case "float":
-			c.Type = "float32"
 		case "real":
+			c.Type = "float32"
+		case "float":
 			c.Type = "float64"
 		case "boolean", "bool":
 			c.Type = "bool"

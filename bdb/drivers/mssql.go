@@ -347,15 +347,15 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 
 // RightQuote is the quoting character for the right side of the identifier
 func (m *MSSQLDriver) RightQuote() byte {
-	return '\''
+	return '"'
 }
 
 // LeftQuote is the quoting character for the left side of the identifier
 func (m *MSSQLDriver) LeftQuote() byte {
-	return '\''
+	return '"'
 }
 
-// IndexPlaceholders returns false to indicate MSSQL doesnt support indexed placeholders
+// IndexPlaceholders returns false to indicate MS SQL doesnt support indexed placeholders
 func (m *MSSQLDriver) IndexPlaceholders() bool {
 	return false
 }

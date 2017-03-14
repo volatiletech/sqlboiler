@@ -48,7 +48,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	if q.dialect.UseTopClause {
 		if q.limit != 0 && q.offset == 0 {
-			fmt.Fprintf(buf, " TOP (%d)", q.limit)
+			fmt.Fprintf(buf, " TOP (%d) ", q.limit)
 		}
 	}
 

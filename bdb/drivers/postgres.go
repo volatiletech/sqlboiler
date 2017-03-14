@@ -78,6 +78,11 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 	return false
 }
 
+// UseTopClause returns false to indicate PSQL doesnt support SQL TOP clause
+func (m *PostgresDriver) UseTopClause() bool {
+	return false
+}
+
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.

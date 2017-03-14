@@ -118,6 +118,9 @@ func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey, 
 // UseLastInsertID returns a database mock LastInsertID compatibility flag
 func (m *MockDriver) UseLastInsertID() bool { return false }
 
+// UseTopClause returns a database mock SQL TOP clause compatibility flag
+func (m *MockDriver) UseTopClause() bool { return false }
+
 // Open mimics a database open call and returns nil for no error
 func (m *MockDriver) Open() error { return nil }
 

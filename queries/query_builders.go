@@ -46,6 +46,12 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	buf.WriteString("SELECT ")
 
+	if q.dialect.UseTopClause {
+		if q.limit != 0 && q.offset == 0 {
+			fmt.Fprintf(buf, " TOP (%d)", q.limit)
+		}
+	}
+
 	if q.count {
 		buf.WriteString("COUNT(")
 	}
@@ -308,11 +314,26 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 		buf.WriteString(strings.Join(q.orderBy, ", "))
 	}
 
-	if q.limit != 0 {
-		fmt.Fprintf(buf, " LIMIT %d", q.limit)
-	}
-	if q.offset != 0 {
-		fmt.Fprintf(buf, " OFFSET %d", q.offset)
+	if !q.dialect.UseTopClause {
+		if q.limit != 0 {
+			fmt.Fprintf(buf, " LIMIT %d", q.limit)
+		}
+
+		if q.offset != 0 {
+			fmt.Fprintf(buf, " OFFSET %d", q.offset)
+		}
+	} else {
+		// From MS SQL 2012 and above: https://technet.microsoft.com/en-us/library/ms188385(v=sql.110).aspx
+		// ORDER BY ...
+		// OFFSET N ROWS
+		// FETCH NEXT M ROWS ONLY
+		if q.offset != 0 {
+			fmt.Fprintf(buf, " OFFSET %d", q.offset)
+
+			if q.limit != 0 {
+				fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", q.limit)
+			}
+		}
 	}
 
 	if len(q.forlock) != 0 {

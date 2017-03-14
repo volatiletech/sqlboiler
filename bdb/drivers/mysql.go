@@ -81,6 +81,11 @@ func (m *MySQLDriver) UseLastInsertID() bool {
 	return true
 }
 
+// UseTopClause returns false to indicate MySQL doesnt support SQL TOP clause
+func (m *MySQLDriver) UseTopClause() bool {
+	return false
+}
+
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is public.

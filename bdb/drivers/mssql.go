@@ -64,8 +64,13 @@ func (m *MSSQLDriver) Close() {
 	m.dbConn.Close()
 }
 
-// UseLastInsertID returns false for postgres
+// UseLastInsertID returns false for mssql
 func (m *MSSQLDriver) UseLastInsertID() bool {
+	return false
+}
+
+// UseTopClause returns true to indicate MS SQL supports SQL TOP clause
+func (m *MSSQLDriver) UseTopClause() bool {
 	return true
 }
 

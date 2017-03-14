@@ -177,10 +177,13 @@ func (m *MSSQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 			Unique:     unique,
 		}
 
-		if defaultValue != nil && *defaultValue != "NULL" {
+		// Hack to exclude columns with types timestamp and rowversion from inserts
+		// Values for this columns provides by SQL Server on Insert clause
+		if (strings.EqualFold(colType, "timestamp") || strings.EqualFold(colType, "rowversion")) && defaultValue == nil {
+			column.Default = colType
+		} else if defaultValue != nil && *defaultValue != "NULL" {
 			column.Default = *defaultValue
 		}
-
 		columns = append(columns, column)
 	}
 
@@ -306,12 +309,12 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float64"
 		case "boolean", "bool":
 			c.Type = "null.Bool"
-		case "date", "datetime", "timestamp", "time":
+		case "date", "datetime", "time":
 			c.Type = "null.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "null.Bytes"
-		case "json":
-			c.Type = "types.JSON"
+		case "timestamp", "rowversion":
+			c.Type = "null.Bytes"
 		default:
 			c.Type = "null.String"
 		}
@@ -335,12 +338,12 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float64"
 		case "boolean", "bool":
 			c.Type = "bool"
-		case "date", "datetime", "timestamp", "time":
+		case "date", "datetime", "time":
 			c.Type = "time.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "[]byte"
-		case "json":
-			c.Type = "types.JSON"
+		case "timestamp", "rowversion":
+			c.Type = "[]byte"
 		default:
 			c.Type = "string"
 		}

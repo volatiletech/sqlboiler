@@ -66,7 +66,15 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			return err
 		}
 		if len(wl) != 0 {
+			{{if ne .DriverName "mssql" -}}
 			cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) VALUES (%s)", strings.Join(wl, "{{.RQ}},{{.LQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
+			{{- else -}}
+			if len(cache.retMapping) == 0 {
+				cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) VALUES (%s)", strings.Join(wl, "{{.RQ}},{{.LQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))			
+			} else {
+				cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} VALUES (%s)", strings.Join(wl, "{{.RQ}},{{.LQ}}"), strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))			
+			}
+			{{- end}}
 		} else {
 			{{if eq .DriverName "mysql" -}}
 			cache.query = "INSERT INTO {{$schemaTable}} () VALUES ()"
@@ -75,17 +83,15 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			{{end -}}
 		}
 
+		{{if ne .DriverName "mssql" -}}
 		if len(cache.retMapping) != 0 {
 			{{if .UseLastInsertID -}}
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
-			{{else -}}
-				{{if ne .DriverName "mssql" -}}
+			{{else -}}	
 			cache.query += fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
-				{{- else -}}
-			cache.query += fmt.Sprintf(" OUTPUT {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
-				{{- end}}
-			{{end -}}
+			{{- end}}
 		}
+		{{end -}}
 	}
 
 	value := reflect.Indirect(reflect.ValueOf(o))

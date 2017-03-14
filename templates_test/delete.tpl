@@ -8,7 +8,7 @@ func test{{$tableNamePlural}}Delete(t *testing.T) {
 	seed := randomize.NewSeed()
 	var err error
 	{{$varNameSingular}} := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
@@ -38,7 +38,7 @@ func test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 	seed := randomize.NewSeed()
 	var err error
 	{{$varNameSingular}} := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
@@ -68,7 +68,7 @@ func test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
 	seed := randomize.NewSeed()
 	var err error
 	{{$varNameSingular}} := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 

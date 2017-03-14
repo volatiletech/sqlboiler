@@ -82,7 +82,8 @@ func init() {
 
 // SchemaTable returns a table name with a schema prefixed if
 // using a database that supports real schemas, for example,
-// for Postgres: "schema_name"."table_name", versus
+// for Postgres: "schema_name"."table_name",
+// for MS SQL: [schema_name].[table_name], versus
 // simply "table_name" for MySQL (because it does not support real schemas)
 func SchemaTable(lq, rq string, driver string, schema string, table string) string {
 	if (driver == "postgres" && schema != "public") || driver == "mssql" {

@@ -144,7 +144,7 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 	{{- else -}}
 	startIndex := 1
 
-	if dialect.IndexPlaceholders {
+	if !dialect.IndexPlaceholders {
 		startIndex = 0
 	}
 

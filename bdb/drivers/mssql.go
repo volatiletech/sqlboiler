@@ -291,15 +291,13 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 	if c.Nullable {
 		switch c.DBType {
-		case "bit":
-			c.Type = "bool"
 		case "tinyint":
-			c.Type = "int8"
+			c.Type = "null.Int8"
 		case "smallint":
 			c.Type = "null.Int16"
 		case "mediumint":
 			c.Type = "null.Int32"
-		case "int", "integer":
+		case "int":
 			c.Type = "null.Int"
 		case "bigint":
 			c.Type = "null.Int64"
@@ -307,7 +305,7 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float32"
 		case "float":
 			c.Type = "null.Float64"
-		case "boolean", "bool":
+		case "boolean", "bool", "bit":
 			c.Type = "null.Bool"
 		case "date", "datetime", "datetime2", "smalldatetime", "time":
 			c.Type = "null.Time"
@@ -320,15 +318,13 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 		}
 	} else {
 		switch c.DBType {
-		case "bit":
-			c.Type = "bool"
 		case "tinyint":
 			c.Type = "int8"
 		case "smallint":
 			c.Type = "int16"
 		case "mediumint":
 			c.Type = "int32"
-		case "int", "integer":
+		case "int":
 			c.Type = "int"
 		case "bigint":
 			c.Type = "int64"
@@ -336,7 +332,7 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float32"
 		case "float":
 			c.Type = "float64"
-		case "boolean", "bool":
+		case "boolean", "bool", "bit":
 			c.Type = "bool"
 		case "date", "datetime", "datetime2", "smalldatetime", "time":
 			c.Type = "time.Time"

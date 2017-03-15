@@ -126,7 +126,7 @@ func test{{$tableNamePlural}}Hooks(t *testing.T) {
 	}
 	{{$varNameSingular}}AfterDeleteHooks = []{{$tableNameSingular}}Hook{}
 
-	{{- if ne .DriverName "mssql" -}}
+	{{if ne .DriverName "mssql" -}}
 	Add{{$tableNameSingular}}Hook(boil.BeforeUpsertHook, {{$varNameSingular}}BeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks(nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)

@@ -4,7 +4,7 @@
 var {{$varNameSingular}}BeforeInsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}BeforeDeleteHooks []{{$tableNameSingular}}Hook
-{{- if ne .DriverName "mssql" -}}
+{{if ne .DriverName "mssql" -}}
 var {{$varNameSingular}}BeforeUpsertHooks []{{$tableNameSingular}}Hook
 {{- end}}
 
@@ -12,7 +12,7 @@ var {{$varNameSingular}}AfterInsertHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterSelectHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterUpdateHooks []{{$tableNameSingular}}Hook
 var {{$varNameSingular}}AfterDeleteHooks []{{$tableNameSingular}}Hook
-{{- if ne .DriverName "mssql" -}}
+{{if ne .DriverName "mssql" -}}
 var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
 {{- end}}
 
@@ -140,7 +140,7 @@ func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}
 			{{$varNameSingular}}AfterUpdateHooks = append({{$varNameSingular}}AfterUpdateHooks, {{$varNameSingular}}Hook)
 		case boil.AfterDeleteHook:
 			{{$varNameSingular}}AfterDeleteHooks = append({{$varNameSingular}}AfterDeleteHooks, {{$varNameSingular}}Hook)
-		{{- if ne .DriverName "mssql" -}}
+		{{if ne .DriverName "mssql" -}}
 		case boil.AfterUpsertHook:
 			{{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
 		{{- end}}

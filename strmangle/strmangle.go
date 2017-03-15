@@ -521,6 +521,37 @@ func WhereClause(lq, rq string, start int, cols []string) string {
 	return buf.String()
 }
 
+// WhereClauseRepeated returns the where clause repeated with OR clause using start as the $ flag index
+// For example, if start was 2 output would be: "(colthing=$2 AND colstuff=$3) OR (colthing=$4 AND colstuff=$5)"
+func WhereClauseRepeated(lq, rq string, start int, cols []string, count int) string {
+
+	var startIndex int
+
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+
+	buf.WriteByte('(')
+
+	for i := 0; i < count; i++ {
+
+		if i != 0 {
+			buf.WriteString(") OR (")
+		}
+
+		if start > 0 {
+			startIndex = start + i*len(cols)
+		} else {
+			startIndex = 0
+		}
+
+		buf.WriteString(WhereClause(lq, rq, startIndex, cols))
+	}
+
+	buf.WriteByte(')')
+
+	return buf.String()
+}
+
 // JoinSlices merges two string slices of equal length
 func JoinSlices(sep string, a, b []string) []string {
 	lna, lnb := len(a), len(b)

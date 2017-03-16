@@ -313,6 +313,8 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Bytes"
 		case "timestamp", "rowversion":
 			c.Type = "null.Bytes"
+		case "uniqueidentifier", "xml":
+			c.Type = "null.String"
 		default:
 			c.Type = "null.String"
 		}
@@ -340,6 +342,8 @@ func (m *MSSQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "[]byte"
 		case "timestamp", "rowversion":
 			c.Type = "[]byte"
+		case "uniqueidentifier", "xml":
+			c.Type = "null.String"
 		default:
 			c.Type = "string"
 		}

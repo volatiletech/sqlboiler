@@ -41,7 +41,11 @@ func test{{$tableNamePlural}}InsertWhitelist(t *testing.T) {
 
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
+	{{if ne .DriverName "mssql"}}
 	if err = {{$varNameSingular}}.Insert(tx, {{$varNameSingular}}Columns...); err != nil {
+	{{- else -}}
+	if err = {{$varNameSingular}}.Insert(tx, {{$varNameSingular}}ColumnsWithoutDefault...); err != nil {
+	{{- end}}
 		t.Error(err)
 	}
 

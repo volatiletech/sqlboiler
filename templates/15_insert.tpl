@@ -50,7 +50,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl, returnColumns := strmangle.InsertColumnSet(
-			{{$varNameSingular}}Columns,
+			{{$varNameSingular}}ColumnsWithoutAuto,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,

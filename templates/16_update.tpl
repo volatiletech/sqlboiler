@@ -48,7 +48,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	{{$varNameSingular}}UpdateCacheMut.RUnlock()
 
 	if !cached {
-		wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
+		wl := strmangle.UpdateColumnSet({{$varNameSingular}}ColumnsWithoutAuto, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
 		{{- if not .NoAutoTimestamps}}
 		if len(whitelist) == 0 {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})

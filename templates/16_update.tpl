@@ -48,7 +48,15 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	{{$varNameSingular}}UpdateCacheMut.RUnlock()
 
 	if !cached {
-		wl := strmangle.UpdateColumnSet({{$varNameSingular}}ColumnsWithoutAuto, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
+		wl := strmangle.UpdateColumnSet(
+			{{if ne .DriverName "mssql" -}}
+			{{$varNameSingular}}Columns,
+			{{- else -}}
+			{{$varNameSingular}}ColumnsWithoutAuto,
+			{{- end}}
+			{{$varNameSingular}}PrimaryKeyColumns,
+			whitelist,
+		)
 		{{- if not .NoAutoTimestamps}}
 		if len(whitelist) == 0 {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})

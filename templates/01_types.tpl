@@ -4,7 +4,9 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 var (
 	{{$varNameSingular}}Columns               = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+	{{if eq .DriverName "mssql" -}}
 	{{$varNameSingular}}ColumnsWithoutAuto = []string{{"{"}}{{.Table.Columns | filterColumnsByAuto false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
+	{{- end}}
 	{{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{$varNameSingular}}ColumnsWithDefault    = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{$varNameSingular}}PrimaryKeyColumns     = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}

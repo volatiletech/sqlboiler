@@ -50,7 +50,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl, returnColumns := strmangle.InsertColumnSet(
+			{{if ne .DriverName "mssql" -}}
+			{{$varNameSingular}}Columns,
+			{{- else -}}
 			{{$varNameSingular}}ColumnsWithoutAuto,
+			{{- end}}
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,

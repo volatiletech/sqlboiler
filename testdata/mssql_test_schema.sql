@@ -62,6 +62,7 @@ CREATE TABLE magic
   time_fifteen date NULL DEFAULT '19990108',
   time_sixteen date NOT NULL DEFAULT '1999-01-08'
 );
+GO
 
 CREATE TABLE magicest
 (
@@ -108,12 +109,14 @@ CREATE TABLE magicest
   eeee tinyint NULL,
   ffff tinyint NOT NULL
 );
+GO
 
 create table owner
 (
   id int NOT NULL IDENTITY (1,1) PRIMARY KEY,
   name varchar(255) not null
 );
+GO
 
 create table cats
 (
@@ -121,12 +124,14 @@ create table cats
   name varchar(255) not null,
   owner_id int references owner (id)
 );
+GO
 
 create table toys
 (
   id int NOT NULL IDENTITY (1,1) PRIMARY KEY,
   name varchar(255) not null
 );
+GO
 
 create table cat_toys
 (
@@ -134,6 +139,7 @@ create table cat_toys
   toy_id int not null references toys (id),
   primary key (cat_id, toy_id)
 );
+GO
 
 create table dog_toys
 (
@@ -141,6 +147,7 @@ create table dog_toys
   toy_id int not null,
   primary key (dog_id, toy_id)
 );
+GO
 
 create table dragon_toys
 (
@@ -148,52 +155,61 @@ create table dragon_toys
   toy_id varchar(100),
   primary key (dragon_id, toy_id)
 );
+GO
 
 create table spider_toys
 (
   spider_id varchar(100) primary key,
   name varchar(100)
 );
+GO
 
 create table pals
 (
   pal varchar(100) primary key,
   name varchar(100)
 );
+GO
 
 create table friend
 (
   friend varchar(100) primary key,
   name varchar(100)
 );
+GO
 
 create table bro
 (
   bros varchar(100) primary key,
   name varchar(100)
 );
+GO
 
 create table enemies
 (
   enemies varchar(100) primary key,
   name varchar(100)
 );
+GO
 
 create table chocolate
 (
   dog varchar(100) primary key
 );
+GO
 
 create table waffles
 (
   cat varchar(100) primary key
 );
+GO
 
 create table tigers
 (
   id binary primary key,
   name binary NOT NULL
 );
+GO
 
 create table elephants
 (
@@ -202,6 +218,7 @@ create table elephants
   tiger_id binary NOT NULL unique,
   foreign key (tiger_id) references tigers (id)
 );
+GO
 
 create table wolves
 (
@@ -210,6 +227,7 @@ create table wolves
   tiger_id binary not null unique,
   foreign key (tiger_id) references tigers (id)
 );
+GO
 
 create table ants
 (
@@ -218,6 +236,7 @@ create table ants
   tiger_id binary not null,
   foreign key (tiger_id) references tigers (id)
 );
+GO
 
 create table worms
 (
@@ -226,24 +245,28 @@ create table worms
   tiger_id binary NOT NULL,
   foreign key (tiger_id) references tigers (id)
 );
+GO
 
 create table byte_pilots
 (
   id binary primary key not null,
   name varchar(255)
 );
+GO
 
 create table byte_airports
 (
   id binary primary key not null,
   name varchar(255)
 );
+GO
 
 create table byte_languages
 (
   id binary primary key not null,
   name varchar(255)
 );
+GO
 
 create table byte_jets
 (
@@ -255,6 +278,7 @@ create table byte_jets
   foreign key (byte_pilot_id) references byte_pilots (id),
   foreign key (byte_airport_id) references byte_airports (id)
 );
+GO
 
 create table byte_pilot_languages
 (
@@ -265,6 +289,7 @@ create table byte_pilot_languages
   foreign key (byte_pilot_id) references byte_pilots (id),
   foreign key (byte_language_id) references byte_languages (id)
 );
+GO
 
 create table cars
 (
@@ -272,6 +297,7 @@ create table cars
   name VARCHAR(MAX),
   primary key (id)
 );
+GO
 
 create table car_cars
 (
@@ -282,6 +308,7 @@ create table car_cars
   foreign key (car_id) references cars(id),
   foreign key (awesome_car_id) references cars(id)
 );
+GO
 
 create table trucks
 (
@@ -291,6 +318,7 @@ create table trucks
   primary key (id),
   foreign key (parent_id) references trucks(id)
 );
+GO
 
 CREATE TABLE race
 (
@@ -298,6 +326,7 @@ CREATE TABLE race
   race_date datetime,
   track VARCHAR(MAX)
 );
+GO
 
 CREATE TABLE race_results
 (
@@ -306,6 +335,7 @@ CREATE TABLE race_results
   name VARCHAR(MAX),
   foreign key (race_id) references race(id)
 );
+GO
 
 CREATE TABLE race_result_scratchings
 (
@@ -314,14 +344,17 @@ CREATE TABLE race_result_scratchings
   name VARCHAR(MAX) NOT NULL,
   foreign key (results_id) references race_results(id)
 );
+GO
 
 CREATE TABLE pilots
 (
   id integer NOT NULL,
   name VARCHAR(MAX) NOT NULL
 );
+GO
 
 ALTER TABLE pilots ADD CONSTRAINT pilot_pkey PRIMARY KEY (id);
+GO
 
 CREATE TABLE jets
 (
@@ -331,17 +364,22 @@ CREATE TABLE jets
   name VARCHAR(MAX) NOT NULL,
   color VARCHAR(MAX) NOT NULL
 );
+GO
 
 ALTER TABLE jets ADD CONSTRAINT jet_pkey PRIMARY KEY (id);
+GO
 ALTER TABLE jets ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+GO
 
 CREATE TABLE languages
 (
   id integer NOT NULL,
   language VARCHAR(MAX) NOT NULL
 );
+GO
 
 ALTER TABLE languages ADD CONSTRAINT language_pkey PRIMARY KEY (id);
+GO
 
 -- Join table
 CREATE TABLE pilot_languages
@@ -350,11 +388,15 @@ CREATE TABLE pilot_languages
   language_id integer NOT NULL,
   uniqueid uniqueidentifier NOT NULL,
 );
+GO
 
 -- Composite primary key
 ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilot_id, language_id);
+GO
 ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
+GO
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
+GO
 
 CREATE TABLE powers_of_two
 (
@@ -368,3 +410,4 @@ CREATE TABLE powers_of_two
   PRIMARY KEY (vid),
   CONSTRAINT machine_name UNIQUE(machine_name)
 );
+GO

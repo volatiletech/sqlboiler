@@ -533,10 +533,9 @@ func WhereClauseRepeated(lq, rq string, start int, cols []string, count int) str
 			buf.WriteString(") OR (")
 		}
 
+		startIndex = 0
 		if start > 0 {
 			startIndex = start + i*len(cols)
-		} else {
-			startIndex = 0
 		}
 
 		buf.WriteString(WhereClause(lq, rq, startIndex, cols))

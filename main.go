@@ -274,7 +274,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 
 		if cmdConfig.MSSQL.Port == 0 {
-			cmdConfig.MSSQL.Port = 3306
+			cmdConfig.MSSQL.Port = 1433
 			viper.Set("mssql.port", cmdConfig.MSSQL.Port)
 		}
 

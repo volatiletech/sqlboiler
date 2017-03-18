@@ -95,6 +95,8 @@ func main() {
 	viper.SetDefault("postgres.port", "5432")
 	viper.SetDefault("mysql.sslmode", "true")
 	viper.SetDefault("mysql.port", "3306")
+	viper.SetDefault("mssql.sslmode", "true")
+	viper.SetDefault("mssql.port", "1433")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.AutomaticEnv()

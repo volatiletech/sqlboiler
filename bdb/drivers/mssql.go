@@ -32,7 +32,6 @@ func NewMSSQLDriver(user, pass, dbname, host string, port int, sslmode string) *
 
 // MSSQLBuildQueryString builds a query string for MSSQL.
 func MSSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
-
 	query := url.Values{}
 	query.Add("database", dbname)
 	query.Add("encrypt", sslmode)

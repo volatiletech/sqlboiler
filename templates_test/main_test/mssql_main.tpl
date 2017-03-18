@@ -34,7 +34,6 @@ func (m *mssqlTester) setup() error {
 	createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
 	f, err := os.Open("tables_schema.sql")
-
 	if err != nil {
 		return errors.Wrap(err, "failed to open tables_schema.sql file")
 	}

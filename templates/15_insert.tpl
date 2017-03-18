@@ -91,7 +91,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		if len(cache.retMapping) != 0 {
 			{{if .UseLastInsertID -}}
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
-			{{else -}}	
+			{{else -}}
 			cache.query += fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
 			{{- end}}
 		}

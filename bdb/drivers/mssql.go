@@ -244,18 +244,17 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 	var fkeys []bdb.ForeignKey
 
 	query := `
-	SELECT 
-		ccu.constraint_name
-		,ccu.table_name AS local_table
-		,ccu.column_name AS local_column
-		,kcu.table_name AS foreign_table
-		,kcu.column_name AS foreign_column
+	SELECT ccu.constraint_name ,
+		ccu.table_name AS local_table ,
+		ccu.column_name AS local_column ,
+		kcu.table_name AS foreign_table ,
+		kcu.column_name AS foreign_column
 	FROM information_schema.constraint_column_usage ccu
-    INNER JOIN information_schema.referential_constraints rc
-        ON ccu.constraint_name = rc.constraint_name 
-    INNER JOIN information_schema.key_column_usage kcu 
-        ON kcu.constraint_name = rc.unique_constraint_name  
-	WHERE ccu.table_schema = ? AND ccu.constraint_schema = ? AND ccu.table_name = ?
+	INNER JOIN information_schema.referential_constraints rc ON ccu.constraint_name = rc.constraint_name
+	INNER JOIN information_schema.key_column_usage kcu ON kcu.constraint_name = rc.unique_constraint_name
+	WHERE ccu.table_schema = ?
+	  AND ccu.constraint_schema = ?
+	  AND ccu.table_name =
 	`
 
 	var rows *sql.Rows

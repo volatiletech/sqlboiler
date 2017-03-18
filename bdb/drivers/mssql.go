@@ -254,7 +254,7 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 	INNER JOIN information_schema.key_column_usage kcu ON kcu.constraint_name = rc.unique_constraint_name
 	WHERE ccu.table_schema = ?
 	  AND ccu.constraint_schema = ?
-	  AND ccu.table_name =
+	  AND ccu.table_name = ?
 	`
 
 	var rows *sql.Rows

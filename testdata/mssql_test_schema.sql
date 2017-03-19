@@ -122,8 +122,11 @@ create table cats
 (
   id int NOT NULL IDENTITY (1,1) PRIMARY KEY,
   name varchar(255) not null,
-  owner_id int references owner (id)
+  owner_id int
 );
+GO
+
+ALTER TABLE cats ADD CONSTRAINT cats_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES owner(id);
 GO
 
 create table toys
@@ -215,36 +218,44 @@ create table elephants
 (
   id binary primary key,
   name binary not null,
-  tiger_id binary NOT NULL unique,
-  foreign key (tiger_id) references tigers (id)
+  tiger_id binary NOT NULL unique
 );
+GO
+
+ALTER TABLE elephants ADD CONSTRAINT elephants_tiger_id_fkey FOREIGN KEY (tiger_id) REFERENCES tigers(id);
 GO
 
 create table wolves
 (
   id binary primary key,
   name binary not null,
-  tiger_id binary not null unique,
-  foreign key (tiger_id) references tigers (id)
+  tiger_id binary not null unique
 );
+GO
+
+ALTER TABLE wolves ADD CONSTRAINT wolves_tiger_id_fkey FOREIGN KEY (tiger_id) REFERENCES tigers(id);
 GO
 
 create table ants
 (
   id binary primary key,
   name binary not null,
-  tiger_id binary not null,
-  foreign key (tiger_id) references tigers (id)
+  tiger_id binary not null
 );
+GO
+
+ALTER TABLE ants ADD CONSTRAINT ants_tiger_id_fkey FOREIGN KEY (tiger_id) REFERENCES tigers(id);
 GO
 
 create table worms
 (
   id binary primary key,
   name binary not null,
-  tiger_id binary NOT NULL,
-  foreign key (tiger_id) references tigers (id)
+  tiger_id binary NOT NULL
 );
+GO
+
+ALTER TABLE worms ADD CONSTRAINT worms_tiger_id_fkey FOREIGN KEY (tiger_id) REFERENCES tigers(id);
 GO
 
 create table byte_pilots
@@ -273,22 +284,28 @@ create table byte_jets
   id binary primary key not null,
   name varchar(255),
   byte_pilot_id binary unique NOT NULL,
-  byte_airport_id binary NOT NULL,
-
-  foreign key (byte_pilot_id) references byte_pilots (id),
-  foreign key (byte_airport_id) references byte_airports (id)
+  byte_airport_id binary NOT NULL
 );
+GO
+
+ALTER TABLE byte_jets ADD CONSTRAINT byte_pilot_id_fkey FOREIGN KEY (byte_pilot_id) REFERENCES byte_pilots(id);
+GO
+ALTER TABLE byte_jets ADD CONSTRAINT byte_airport_id_fkey FOREIGN KEY (byte_airport_id) REFERENCES byte_airports(id);
 GO
 
 create table byte_pilot_languages
 (
   byte_pilot_id binary not null,
-  byte_language_id binary not null,
-
-  primary key (byte_pilot_id, byte_language_id),
-  foreign key (byte_pilot_id) references byte_pilots (id),
-  foreign key (byte_language_id) references byte_languages (id)
+  byte_language_id binary not null
 );
+GO
+
+ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_pilot_languages_pkey PRIMARY KEY (byte_pilot_id,byte_language_id);
+GO
+
+ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_pilot_id_fkey FOREIGN KEY (byte_pilot_id) REFERENCES byte_pilots(id);
+GO
+ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_language_id_fkey FOREIGN KEY (byte_language_id) REFERENCES byte_languages(id);
 GO
 
 create table cars
@@ -304,10 +321,13 @@ create table car_cars
   car_id integer not null,
   awesome_car_id integer not null,
   relation VARCHAR(MAX) not null,
-  primary key (car_id, awesome_car_id),
-  foreign key (car_id) references cars(id),
-  foreign key (awesome_car_id) references cars(id)
+  primary key (car_id, awesome_car_id)
 );
+GO
+
+ALTER TABLE car_cars ADD CONSTRAINT car_id_fkey FOREIGN KEY (car_id) REFERENCES cars(id);
+GO
+ALTER TABLE car_cars ADD CONSTRAINT awesome_car_id_fkey FOREIGN KEY (awesome_car_id) REFERENCES cars(id);
 GO
 
 create table trucks
@@ -315,9 +335,11 @@ create table trucks
   id integer not null,
   parent_id integer,
   name VARCHAR(MAX),
-  primary key (id),
-  foreign key (parent_id) references trucks(id)
+  primary key (id)
 );
+GO
+
+ALTER TABLE trucks ADD CONSTRAINT parent_id_fkey FOREIGN KEY (parent_id) REFERENCES trucks(id);
 GO
 
 CREATE TABLE race
@@ -332,18 +354,22 @@ CREATE TABLE race_results
 (
   id integer PRIMARY KEY NOT NULL,
   race_id integer,
-  name VARCHAR(MAX),
-  foreign key (race_id) references race(id)
+  name VARCHAR(MAX)
 );
+GO
+
+ALTER TABLE race_results ADD CONSTRAINT race_id_fkey FOREIGN KEY (race_id) REFERENCES race(id);
 GO
 
 CREATE TABLE race_result_scratchings
 (
   id integer PRIMARY KEY NOT NULL,
   results_id integer NOT NULL,
-  name VARCHAR(MAX) NOT NULL,
-  foreign key (results_id) references race_results(id)
+  name VARCHAR(MAX) NOT NULL
 );
+GO
+
+ALTER TABLE race_result_scratchings ADD CONSTRAINT results_id_fkey FOREIGN KEY (results_id) REFERENCES race_results(id);
 GO
 
 CREATE TABLE pilots

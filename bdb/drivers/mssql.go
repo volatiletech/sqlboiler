@@ -169,7 +169,7 @@ func (m *MSSQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
-		auto = identity || strings.EqualFold(colType, "timestamp") || strings.EqualFold(colType, "rowversion")
+		auto = strings.EqualFold(colType, "timestamp") || strings.EqualFold(colType, "rowversion")
 
 		column := bdb.Column{
 			Name:          colName,
@@ -182,6 +182,8 @@ func (m *MSSQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 
 		if defaultValue != nil && *defaultValue != "NULL" {
 			column.Default = *defaultValue
+		} else if identity || auto {
+			column.Default = "auto"
 		}
 		columns = append(columns, column)
 	}

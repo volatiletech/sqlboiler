@@ -50,11 +50,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl, returnColumns := strmangle.InsertColumnSet(
-			{{if ne .DriverName "mssql" -}}
 			{{$varNameSingular}}Columns,
-			{{- else -}}
-			{{$varNameSingular}}ColumnsWithoutAuto,
-			{{- end}}
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,
@@ -87,7 +83,6 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			{{end -}}
 		}
 
-		{{if ne .DriverName "mssql" -}}
 		if len(cache.retMapping) != 0 {
 			{{if .UseLastInsertID -}}
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
@@ -95,7 +90,6 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			cache.query += fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
 			{{- end}}
 		}
-		{{end -}}
 	}
 
 	value := reflect.Indirect(reflect.ValueOf(o))

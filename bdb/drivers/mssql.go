@@ -65,7 +65,7 @@ func (m *MSSQLDriver) Close() {
 
 // UseLastInsertID returns false for mssql
 func (m *MSSQLDriver) UseLastInsertID() bool {
-	return false
+	return true
 }
 
 // UseTopClause returns true to indicate MS SQL supports SQL TOP clause

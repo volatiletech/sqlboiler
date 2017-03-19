@@ -49,14 +49,13 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
 	if !cached {
 		wl := strmangle.UpdateColumnSet(
-			{{if ne .DriverName "mssql" -}}
 			{{$varNameSingular}}Columns,
-			{{- else -}}
-			{{$varNameSingular}}ColumnsWithoutAuto,
-			{{- end}}
 			{{$varNameSingular}}PrimaryKeyColumns,
 			whitelist,
 		)
+		{{if eq .DriverName "mssql"}}
+		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
+		{{end}}
 		{{- if not .NoAutoTimestamps}}
 		if len(whitelist) == 0 {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})

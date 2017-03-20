@@ -288,9 +288,9 @@ create table byte_jets
 );
 GO
 
-ALTER TABLE byte_jets ADD CONSTRAINT byte_pilot_id_fkey FOREIGN KEY (byte_pilot_id) REFERENCES byte_pilots(id);
+ALTER TABLE byte_jets ADD CONSTRAINT byte_jets_byte_pilot_id_fkey FOREIGN KEY (byte_pilot_id) REFERENCES byte_pilots(id);
 GO
-ALTER TABLE byte_jets ADD CONSTRAINT byte_airport_id_fkey FOREIGN KEY (byte_airport_id) REFERENCES byte_airports(id);
+ALTER TABLE byte_jets ADD CONSTRAINT byte_jets_byte_airport_id_fkey FOREIGN KEY (byte_airport_id) REFERENCES byte_airports(id);
 GO
 
 create table byte_pilot_languages
@@ -303,9 +303,9 @@ GO
 ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_pilot_languages_pkey PRIMARY KEY (byte_pilot_id,byte_language_id);
 GO
 
-ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_pilot_id_fkey FOREIGN KEY (byte_pilot_id) REFERENCES byte_pilots(id);
+ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_pilot_languages_byte_pilot_id_fkey FOREIGN KEY (byte_pilot_id) REFERENCES byte_pilots(id);
 GO
-ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_language_id_fkey FOREIGN KEY (byte_language_id) REFERENCES byte_languages(id);
+ALTER TABLE byte_pilot_languages ADD CONSTRAINT byte_pilot_languages_byte_language_id_fkey FOREIGN KEY (byte_language_id) REFERENCES byte_languages(id);
 GO
 
 create table cars

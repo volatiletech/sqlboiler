@@ -327,7 +327,7 @@ func TestSliceUpdateAll(t *testing.T) {
   {{end -}}
   {{- end -}}
 }
-{{if ne .DriverName "mssql" -}}
+
 func TestUpsert(t *testing.T) {
   {{- range $index, $table := .Tables}}
   {{- if $table.IsJoinTable -}}
@@ -337,4 +337,3 @@ func TestUpsert(t *testing.T) {
   {{end -}}
   {{- end -}}
 }
-{{- end -}}

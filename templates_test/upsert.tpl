@@ -1,4 +1,3 @@
-{{- if ne .DriverName "mssql" -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
@@ -49,4 +48,3 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 }
-{{- end}}

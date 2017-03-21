@@ -305,12 +305,12 @@ func BuildUpsertQueryMSSQL(dia Dialect, tableName string, primary, update, inser
 	}
 	fmt.Fprint(buf, ")\n")
 
-	startIndex = len(primary) + 1
+	startIndex += len(primary)
 
 	fmt.Fprint(buf, "WHEN MATCHED THEN ")
 	fmt.Fprintf(buf, "UPDATE SET %s\n", strmangle.SetParamNames(string(dia.LQ), string(dia.RQ), startIndex, update))
 
-	startIndex = len(primary) + 1 + len(update)
+	startIndex += len(update)
 
 	fmt.Fprint(buf, "WHEN NOT MATCHED THEN ")
 	fmt.Fprintf(buf, "INSERT (%s) VALUES (%s)",

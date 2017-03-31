@@ -115,17 +115,13 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
 		}
 		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
-		{{- end -}}
-
-		{{if eq .DriverName "mysql"}}
+		{{else if eq .DriverName "mysql"}}
 		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
 		cache.retQuery = fmt.Sprintf(
 			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),
 		)
-		{{- end -}}
-
-		{{if eq .DriverName "mssql"}}
+		{{else if eq .DriverName "mssql"}}
 		cache.query = queries.BuildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$varNameSingular}}PrimaryKeyColumns, update, insert, ret)
 
 		whitelist = append({{$varNameSingular}}PrimaryKeyColumns, update...)

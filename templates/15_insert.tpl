@@ -75,21 +75,20 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			{{end -}}
 		}
 
-		queryOutput := ""
-		qyeryReturning := ""
+		var queryOutput, queryReturning string
 
 		if len(cache.retMapping) != 0 {
 			{{if .UseLastInsertID -}}
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
 			{{else -}}
 				{{if ne .DriverName "mssql" -}}
-			qyeryReturning = fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
+			queryReturning = fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
 				{{else -}}
 			queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
 				{{end -}}
 			{{- end}}
 		}
-		cache.query = fmt.Sprintf(cache.query, queryOutput, qyeryReturning)
+		cache.query = fmt.Sprintf(cache.query, queryOutput, queryReturning)
 	}
 
 	value := reflect.Indirect(reflect.ValueOf(o))

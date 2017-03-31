@@ -52,7 +52,7 @@ var (
 	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
 	validatedTypes = []string{
-		"inet", "line", "uuid", "uniqueidentifier", "interval", "mediumint",
+		"inet", "line", "uuid", "interval", "mediumint",
 		"json", "jsonb", "box", "cidr", "circle",
 		"lseg", "macaddr", "path", "pg_lsn", "point",
 		"polygon", "txid_snapshot", "money", "hstore",
@@ -195,7 +195,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
-				if fieldType == "uuid" || fieldType == "uniqueidentifier" {
+				if fieldType == "uuid" {
 					value = null.NewString(uuid.NewV4().String(), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
@@ -268,7 +268,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
-				if fieldType == "uuid" || fieldType == "uniqueidentifier" {
+				if fieldType == "uuid" {
 					value = uuid.NewV4().String()
 					field.Set(reflect.ValueOf(value))
 					return nil
@@ -390,7 +390,7 @@ func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} 
 			value := strconv.Itoa((s.nextInt()%26)+2) + " days"
 			return types.StringArray{value, value}
 		}
-		if fieldType == "uuid" || fieldType == "uniqueidentifier" {
+		if fieldType == "uuid" {
 			value := uuid.NewV4().String()
 			return types.StringArray{value, value}
 		}

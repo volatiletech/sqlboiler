@@ -87,7 +87,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 			}
 		}
 		if len(insert) == 0 {
-			return errors.New("models: unable to upsert {{.Table.Name}}, could not build insert column list")
+			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build insert column list")
 		}
 
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)

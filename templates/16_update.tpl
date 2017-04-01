@@ -171,15 +171,9 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 		strmangle.Placeholders(dialect.IndexPlaceholders, len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(colNames)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
 	)
 	{{- else -}}
-	startIndex := len(colNames) + 1
-
-	if !dialect.IndexPlaceholders {
-		startIndex = 0
-	}
-
 	sql := fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
 		strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), startIndex, {{$varNameSingular}}PrimaryKeyColumns, len(o)))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}len(colNames)+1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(o)))
 	{{- end}}
 
 	if boil.DebugMode {

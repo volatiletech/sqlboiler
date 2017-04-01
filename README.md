@@ -408,7 +408,7 @@ much benefit over it.
 
 **Method 3: Embedding**
 
-This pattern is not for the feint of heart, what it provides in benefits it
+This pattern is not for the faint of heart, what it provides in benefits it
 more than makes up for in downsides. It's possible to embed the SQLBoiler
 structs inside your own to enhance them. However it's subject to easy breakages
 and a dependency on these additional objects. It can also introduce

@@ -79,7 +79,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 			nzDefaults,
 			whitelist,
 		)
-		{{- if eq .DriverName "mssql"}}
+		{{if eq .DriverName "mssql" -}}
 		insert = strmangle.SetComplement(insert, {{$varNameSingular}}ColumnsWithAuto)
 		for i, v := range insert {
 			if strmangle.ContainsAny({{$varNameSingular}}PrimaryKeyColumns, v) && strmangle.ContainsAny({{$varNameSingular}}ColumnsWithDefault, v) {
@@ -93,17 +93,16 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithDefault)
 		
-		{{end -}}
+		{{end}}
 		update := strmangle.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
 			updateColumns,
 		)
-
-		{{- if eq .DriverName "mssql"}}
+		{{if eq .DriverName "mssql" -}}
 		update = strmangle.SetComplement(update, {{$varNameSingular}}ColumnsWithAuto)
 		{{end -}}
-
+		
 		if len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
@@ -128,7 +127,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		whitelist = append(whitelist, insert...)
 		{{- end}}
 
-		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, whitelist)
+		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, {{if eq .DriverName "mssql"}}whitelist{{else}}insert{{end}})
 		if err != nil {
 			return err
 		}

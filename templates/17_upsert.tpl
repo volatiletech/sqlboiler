@@ -92,7 +92,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithDefault)
-		
+
 		{{end}}
 		update := strmangle.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
@@ -102,7 +102,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		{{if eq .DriverName "mssql" -}}
 		update = strmangle.SetComplement(update, {{$varNameSingular}}ColumnsWithAuto)
 		{{end -}}
-		
+
 		if len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}

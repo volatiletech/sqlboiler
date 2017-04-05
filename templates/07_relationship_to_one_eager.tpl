@@ -5,7 +5,6 @@
 		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
 		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
-		{{- $slice := printf "%sSlice" $txt.LocalTable.NameGo}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -16,7 +15,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	if singular {
 		object = {{$arg}}.(*{{$txt.LocalTable.NameGo}})
 	} else {
-		slice = *{{$arg}}.(*{{$slice}})
+		slice = *{{$arg}}.(*[]*{{$txt.LocalTable.NameGo}})
 		count = len(slice)
 	}
 

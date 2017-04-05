@@ -45,7 +45,7 @@ func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
 
 // All returns all {{$tableNameSingular}} records from the query.
 func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
-	var o {{$tableNameSingular}}Slice
+	var o []*{{$tableNameSingular}}
 
 	err := q.Bind(&o)
 	if err != nil {

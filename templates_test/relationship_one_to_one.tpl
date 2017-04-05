@@ -50,7 +50,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$t
 	}
 
 	slice := {{$txt.LocalTable.NameGo}}Slice{&local}
-	if err = local.L.Load{{$txt.Function.Name}}(tx, false, &slice); err != nil {
+	if err = local.L.Load{{$txt.Function.Name}}(tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice)); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.{{$txt.Function.Name}} == nil {

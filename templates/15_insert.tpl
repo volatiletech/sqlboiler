@@ -86,9 +86,12 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 				{{else -}}
 			queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
 				{{end -}}
-			{{- end}}
+			{{end -}}
 		}
-		cache.query = fmt.Sprintf(cache.query, queryOutput, queryReturning)
+
+		if len(wl) != 0 {
+			cache.query = fmt.Sprintf(cache.query, queryOutput, queryReturning)
+		}
 	}
 
 	value := reflect.Indirect(reflect.ValueOf(o))

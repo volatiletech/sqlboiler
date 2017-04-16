@@ -1,6 +1,7 @@
 package boil
 
 import (
+	"io"
 	"os"
 	"time"
 )
@@ -20,7 +21,7 @@ var (
 var DebugMode = false
 
 // DebugWriter is where the debug output will be sent if DebugMode is true
-var DebugWriter = os.Stdout
+var DebugWriter io.Writer = os.Stdout
 
 // SetDB initializes the database handle for all template db interactions
 func SetDB(db Executor) {

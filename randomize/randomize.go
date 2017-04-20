@@ -151,6 +151,11 @@ func randDate(s *Seed) time.Time {
 	return t
 }
 
+// setField assigns a field, but also casts to the field's real type.
+func setField(field, value reflect.Value) {
+	field.Set(value.Convert(field.Type()))
+}
+
 // randomizeField changes the value at field to a "randomized" value.
 //
 // If canBeNull is false:
@@ -171,9 +176,9 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 
 		if kind == reflect.Struct {
 			val := null.NewString(enum, rand.Intn(1) == 0)
-			field.Set(reflect.ValueOf(val))
+			setField(field, reflect.ValueOf(val))
 		} else {
-			field.Set(reflect.ValueOf(enum))
+			setField(field, reflect.ValueOf(enum))
 		}
 
 		return nil
@@ -192,71 +197,71 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			case typeNullString:
 				if fieldType == "interval" {
 					value = null.NewString(strconv.Itoa((s.nextInt()%26)+2)+" days", true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "uuid" {
 					value = null.NewString(uuid.NewV4().String(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
 					fieldType == "path" || fieldType == "polygon" {
 					value = null.NewString(randBox(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "cidr" || fieldType == "inet" {
 					value = null.NewString(randNetAddr(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "macaddr" {
 					value = null.NewString(randMacAddr(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "circle" {
 					value = null.NewString(randCircle(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "pg_lsn" {
 					value = null.NewString(randLsn(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "point" {
 					value = null.NewString(randPoint(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "txid_snapshot" {
 					value = null.NewString(randTxID(), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "money" {
 					value = null.NewString(randMoney(s), true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 			case typeNullInt32:
 				if fieldType == "mediumint" {
 					// 8388607 is the max for 3 byte int
 					value = null.NewInt32(int32(s.nextInt())%8388607, true)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 			case typeNullJSON:
 				value = null.NewJSON([]byte(fmt.Sprintf(`"%s"`, randStr(s, 1))), true)
-				field.Set(reflect.ValueOf(value))
+				setField(field, reflect.ValueOf(value))
 				return nil
 			case typeHStore:
 				value := types.HStore{}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
-				field.Set(reflect.ValueOf(value))
+				setField(field, reflect.ValueOf(value))
 				return nil
 			}
 
@@ -265,73 +270,73 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			case reflect.String:
 				if fieldType == "interval" {
 					value = strconv.Itoa((s.nextInt()%26)+2) + " days"
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "uuid" {
 					value = uuid.NewV4().String()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
 					fieldType == "path" || fieldType == "polygon" {
 					value = randBox()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "cidr" || fieldType == "inet" {
 					value = randNetAddr()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "macaddr" {
 					value = randMacAddr()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "circle" {
 					value = randCircle()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "pg_lsn" {
 					value = randLsn()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "point" {
 					value = randPoint()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "txid_snapshot" {
 					value = randTxID()
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "money" {
 					value = randMoney(s)
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 			case reflect.Int32:
 				if fieldType == "mediumint" {
 					// 8388607 is the max for 3 byte int
 					value = int32(s.nextInt()) % 8388607
-					field.Set(reflect.ValueOf(value))
+					setField(field, reflect.ValueOf(value))
 					return nil
 				}
 			}
 			switch typ {
 			case typeJSON:
 				value = []byte(fmt.Sprintf(`"%s"`, randStr(s, 1)))
-				field.Set(reflect.ValueOf(value))
+				setField(field, reflect.ValueOf(value))
 				return nil
 			case typeHStore:
 				value := types.HStore{}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
-				field.Set(reflect.ValueOf(value))
+				setField(field, reflect.ValueOf(value))
 				return nil
 			}
 		}
@@ -371,7 +376,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		return errors.Errorf("unsupported type: %s", typ.String())
 	}
 
-	field.Set(reflect.ValueOf(value))
+	setField(field, reflect.ValueOf(value))
 
 	return nil
 }

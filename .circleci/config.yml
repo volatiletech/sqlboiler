@@ -117,7 +117,7 @@ jobs:
       - run:
           name: Build SQLBoiler
           command: |
-            cd $ROOTPATH; go get -v
+            cd $ROOTPATH; go get -v -t
             cd $ROOTPATH; go build -v github.com/vattle/sqlboiler
 
       - run:
@@ -141,16 +141,26 @@ jobs:
           command: cd $ROOTPATH; ./sqlboiler -o mssql mssql
 
       - run:
+          name: Download generated and test deps
+          command: |
+            cd $ROOTPATH
+            go get -v -t ./...
+
+      - run:
           name: Run Tests
           command: |
             cd $ROOTPATH
             cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql
-            mkdir -p test_results/go
-            go test -v -race ./... > test_out.txt
-            cat test_out | go-junit-report > $ROOTPATH/test_results/go/out.xml
+            go test -v -race ./... | tee test_out.txt
+
+      - run:
+          name: Convert test output to JUNIT
+          command: |
+            mkdir -p $HOME/test_results/go
+            cat $ROOTPATH/test_out.txt | go-junit-report > $HOME/test_results/go/out.xml
 
       - store_test_results:
-          path: $ROOTPATH/test_results
+          path: test_results
 #test:
 #  pre:
 #    - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"\n" > sqlboiler.toml

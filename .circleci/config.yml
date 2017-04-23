@@ -122,13 +122,13 @@ jobs:
 
       - run:
           name: 'Configure SQLBoiler: PSQL'
-          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
+          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
       - run:
           name: 'Configure SQLBoiler: MySQL'
-          command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml
+          command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\npass="mysqlpassword"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml
       - run:
           name: 'Configure SQLBoiler: MSSQL'
-          command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npassword="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
+          command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npass="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
 
       - run:
           name: 'Generate: PSQL'

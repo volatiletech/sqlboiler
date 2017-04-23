@@ -121,27 +121,27 @@ jobs:
             cd $ROOTPATH; go build -v github.com/vattle/sqlboiler
 
       - run:
-          name: Configure SQLBoiler: PSQL
+          name: 'Configure SQLBoiler: PSQL'
           command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\ndbname="sqlboiler"\n' > $ROOTPATH/sqlboiler.toml
       - run:
-          name: Configure SQLBoiler: MySQL
+          name: 'Configure SQLBoiler: MySQL'
           command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml
       - run:
-          name: Configure SQLBoiler: MSSQL
+          name: 'Configure SQLBoiler: MSSQL'
           command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npassword="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
 
       - run:
-          name: Generate: PSQL
+          name: 'Generate: PSQL'
           command: cd $ROOTPATH; ./sqlboiler -o postgres postgres
       - run:
-          name: Generate: MySQL
+          name: 'Generate: MySQL'
           command: cd $ROOTPATH; ./sqlboiler -o mysql mysql
       - run:
-          name: Generate: MSSQL
+          name: 'Generate: MSSQL'
           command: cd $ROOTPATH; ./sqlboiler -o mssql mssql
 
       - run:
-          name: Test
+          name: Run Tests
           command: |
             cd $ROOTPATH
             cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql

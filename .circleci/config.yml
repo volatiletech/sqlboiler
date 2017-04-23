@@ -122,7 +122,7 @@ jobs:
 
       - run:
           name: 'Configure SQLBoiler: PSQL'
-          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\ndbname="sqlboiler"\n' > $ROOTPATH/sqlboiler.toml
+          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
       - run:
           name: 'Configure SQLBoiler: MySQL'
           command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml

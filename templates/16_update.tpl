@@ -56,7 +56,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		{{if eq .DriverName "mssql"}}
 		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
 		{{end}}
-		{{- if not .NoAutoTimestamps}}
+		{{if not .NoAutoTimestamps}}
 		if len(whitelist) == 0 {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}

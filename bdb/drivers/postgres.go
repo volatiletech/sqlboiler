@@ -131,7 +131,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 	rows, err := p.dbConn.Query(`
 		select
 		c.column_name,
-		(
+		COALESCE(
 			case when c.data_type = 'USER-DEFINED' and c.udt_name <> 'hstore'
 			then
 			(
@@ -151,7 +151,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 			)
 			else c.data_type
 			end
-		) as column_type,
+		, c.udt_name) as column_type,
 
 		c.udt_name,
 		e.data_type as array_type,

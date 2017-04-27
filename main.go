@@ -293,6 +293,19 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if driverName == "sqlite" {
+		cmdConfig.SQLite = boilingcore.SQLiteConfig{
+			File: viper.GetString("sqlite.file"),
+		}
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.SQLite.File, "sqlite.file"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
+	}
+
 	cmdState, err = boilingcore.New(cmdConfig)
 	return err
 }

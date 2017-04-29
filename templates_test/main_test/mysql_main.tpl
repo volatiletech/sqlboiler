@@ -90,12 +90,23 @@ func (m *mysqlTester) makeOptionFile() error {
 		return errors.Wrap(err, "failed to create option file")
 	}
 
+	isTCP := false
+	_, err = os.Stat(m.host)
+	if os.IsNotExist(err) {
+		isTCP = true
+	} else if err != nil {
+		return errors.Wrap(err, "could not stat m.host")
+	}
+
 	fmt.Fprintln(tmp, "[client]")
 	fmt.Fprintf(tmp, "host=%s\n", m.host)
 	fmt.Fprintf(tmp, "port=%d\n", m.port)
 	fmt.Fprintf(tmp, "user=%s\n", m.user)
 	fmt.Fprintf(tmp, "password=%s\n", m.pass)
 	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
+	if isTCP {
+		fmt.Fprintln(tmp, "protocol=tcp")
+	}
 
 	fmt.Fprintln(tmp, "[mysqldump]")
 	fmt.Fprintf(tmp, "host=%s\n", m.host)
@@ -103,6 +114,9 @@ func (m *mysqlTester) makeOptionFile() error {
 	fmt.Fprintf(tmp, "user=%s\n", m.user)
 	fmt.Fprintf(tmp, "password=%s\n", m.pass)
 	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
+	if isTCP {
+		fmt.Fprintln(tmp, "protocol=tcp")
+	}
 
 	m.optionFile = tmp.Name()
 

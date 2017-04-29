@@ -1,0 +1,208 @@
+version: 2
+jobs:
+  build:
+    working_directory: /root
+    docker:
+      - image: aarondl0/sqlboiler-test:latest
+
+      - image: postgres:9.6
+        environment:
+          POSTGRES_PASSWORD: psqlpassword
+
+      - image: mysql:5.7
+        environment:
+          MYSQL_ROOT_PASSWORD: mysqlpassword
+
+      - image: microsoft/mssql-server-linux:ctp1-4
+        environment:
+          ACCEPT_EULA: 'Y'
+          SA_PASSWORD: 'R@@tr@@t1234'
+
+    environment:
+      GOPATH: /go
+      ROOTPATH: /go/src/github.com/vattle/sqlboiler
+
+    steps:
+      - run:
+          name: Add PSQL Creds
+          command: |
+            echo "*:*:*:*:psqlpassword" > /root/.pgpass
+            chmod 600 /root/.pgpass
+      - run:
+          name: Add MySQL Creds
+          command: |
+            echo -e "[client]\nuser = root\npassword = mysqlpassword\nhost = localhost\nprotocol = tcp" > /root/.my.cnf
+            chmod 600 /root/.my.cnf
+
+      - run:
+          name: Wait for PSQL
+          command: >
+            for i in `seq 30`; do
+              echo "Waiting for psql"
+              set +o errexit
+              psql --host localhost --username postgres --dbname template1 -c 'select * from information_schema.tables;' > /dev/null
+              status=$?
+              set -o errexit
+              if [ $status -eq 0 ]; then
+                break
+              fi
+              if [ $i -eq 30 ]; then
+                echo "Failed to wait for psql"
+                exit 1
+              fi
+              sleep 1
+            done
+
+      - run:
+          name: Wait for MySQL
+          command: >
+            for i in `seq 30`; do
+              echo "Waiting for mysql"
+              set +o errexit
+              mysql --execute 'select * from information_schema.tables;' > /dev/null
+              status=$?
+              set -o errexit
+              if [ $status -eq 0 ]; then
+                break
+              fi
+              if [ $i -eq 30 ]; then
+                echo "Failed to wait for mysql"
+                exit 1
+              fi
+              sleep 1
+            done
+
+      - run:
+          name: Wait for MSSQL
+          command: >
+            for i in `seq 30`; do
+              echo "Waiting for mssql"
+              set +o errexit
+              sqlcmd -H localhost -U sa -P R@@tr@@t1234 -Q "select * from information_schema.tables;" > /dev/null
+              status=$?
+              set -o errexit
+              if [ $status -eq 0 ]; then
+                break
+              fi
+              if [ $i -eq 30 ]; then
+                echo "Failed to wait for mssql"
+                exit 1
+              fi
+              sleep 1
+            done
+
+      - run:
+          name: Make GOPATH
+          command: mkdir -p /go/src/github.com/vattle/sqlboiler
+
+      - checkout:
+          path: /go/src/github.com/vattle/sqlboiler
+
+      - run:
+          name: Create PSQL DB
+          command: |
+            createdb --host localhost --username postgres --owner postgres sqlboiler
+            psql --host localhost --username postgres --dbname sqlboiler < $ROOTPATH/testdata/postgres_test_schema.sql
+      - run:
+          name: Create MySQL DB
+          command: |
+            mysql --host localhost --execute 'create database sqlboiler;'
+            mysql --host localhost --database sqlboiler < $ROOTPATH/testdata/mysql_test_schema.sql
+      - run:
+          name: Create MSSQL DB
+          command: |
+            sqlcmd -S localhost -U sa -P R@@tr@@t1234 -Q "create database sqlboiler;"
+            sqlcmd -S localhost -U sa -P R@@tr@@t1234 -d sqlboiler -i $ROOTPATH/testdata/mssql_test_schema.sql
+
+      - run:
+          name: Build SQLBoiler
+          command: |
+            cd $ROOTPATH; go get -v -t
+            cd $ROOTPATH; go build -v github.com/vattle/sqlboiler
+
+      - run:
+          name: 'Configure SQLBoiler: PSQL'
+          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
+      - run:
+          name: 'Configure SQLBoiler: MySQL'
+          command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\npass="mysqlpassword"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml
+      - run:
+          name: 'Configure SQLBoiler: MSSQL'
+          command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npass="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
+
+      - run:
+          name: 'Generate: PSQL'
+          command: cd $ROOTPATH; ./sqlboiler -o postgres postgres
+      - run:
+          name: 'Generate: MySQL'
+          command: cd $ROOTPATH; ./sqlboiler -o mysql mysql
+      - run:
+          name: 'Generate: MSSQL'
+          command: cd $ROOTPATH; ./sqlboiler -o mssql mssql
+
+      - run:
+          name: Download generated and test deps
+          command: |
+            cd $ROOTPATH
+            go get -v -t ./...
+
+      - run:
+          name: Run Tests
+          command: |
+            cd $ROOTPATH
+            cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql
+            go test -v -race ./... | tee test_out.txt
+
+      - run:
+          name: Convert test output to JUNIT
+          command: |
+            mkdir -p $HOME/test_results/go
+            cat $ROOTPATH/test_out.txt | go-junit-report > $HOME/test_results/go/out.xml
+
+      - store_test_results:
+          path: test_results
+#test:
+#  pre:
+#    - echo -e "[postgres]\nhost=\"localhost\"\nport=5432\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"\n" > sqlboiler.toml
+#    - createdb -U ubuntu sqlboiler
+#    - psql -U ubuntu sqlboiler < ./testdata/postgres_test_schema.sql
+#
+#    - echo -e "[mysql]\nhost=\"localhost\"\nport=3306\nuser=\"ubuntu\"\ndbname=\"sqlboiler\"\nsslmode=\"false\"\n" >> sqlboiler.toml
+#    - echo "create database sqlboiler;" | mysql -u ubuntu
+#    - mysql -u ubuntu sqlboiler < ./testdata/mysql_test_schema.sql
+#
+#    - echo -e "[mssql]\nhost=\"localhost\"\nport=1433\nuser=\"sa\"\ndbname=\"sqlboiler\"\nsslmode=\"disable\"\n" >> sqlboiler.toml
+#    - docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=R@@tr@@t1234' -p 1433:1433 -d --name mssql microsoft/mssql-server-linux
+#    - sqlcmd -S localhost -U sa -P R@@tr@@t1234 -Q "create database sqlboiler;"
+#    - sqlcmd -S localhost -U sa -P R@@tr@@t1234 -d sqlboiler -i ./testdata/mssql_test_schema.sql
+#
+#    - ./sqlboiler -o postgres postgres
+#    - ./sqlboiler -o mysql    mysql
+#    - ./sqlboiler -o mssql    mssql
+#    - cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql
+#  override:
+#    - go test -v -race ./... > $CIRCLE_ARTIFACTS/gotest.txt
+#  post:
+#    - cat $CIRCLE_ARTIFACTS/gotest.txt | go-junit-report > $CIRCLE_TEST_REPORTS/junit.xml
+#
+#machine:
+#  environment:
+#    GODIST: go1.7.linux-amd64.tar.gz
+#    PATH: /home/ubuntu/.go_workspace/bin:/usr/local/go/bin:/home/ubuntu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/mssql-tools/bin
+#  post:
+#    - mkdir -p download
+#    - test -e download/$GODIST || curl -o download/$GODIST https://storage.googleapis.com/golang/$GODIST
+#    - sudo rm -rf /usr/local/go
+#    - sudo tar -C /usr/local -xzf download/$GODIST
+#
+#dependencies:
+#  pre:
+#    - mkdir -p /home/ubuntu/.go_workspace/src/github.com/jstemmer
+#    - go get -u github.com/jstemmer/go-junit-report
+#
+#    - curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+#    - curl https://packages.microsoft.com/config/ubuntu/14.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
+#    - sudo apt-get update; sudo apt-get install mssql-tools unixodbc-dev
+#    - docker pull microsoft/mssql-server-linux
+#  cache_directories:
+#    - ~/download

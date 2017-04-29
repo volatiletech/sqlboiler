@@ -73,7 +73,7 @@ func main() {
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
-	rootCmd.PersistentFlags().StringP("schema", "s", "public", "The name of your database schema, for databases that support real schemas")
+	rootCmd.PersistentFlags().StringP("schema", "s", "", "schema name for drivers that support it (default psql: public, mssql: dbo)")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")
 	rootCmd.PersistentFlags().StringSliceP("blacklist", "b", nil, "Do not include these tables in your generated package")
@@ -202,6 +202,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 			viper.Set("postgres.port", cmdConfig.Postgres.Port)
 		}
 
+		if len(cmdConfig.Schema) == 0 {
+			cmdConfig.Schema = "public"
+		}
+
 		err = vala.BeginValidation().Validate(
 			vala.StringNotEmpty(cmdConfig.Postgres.User, "postgres.user"),
 			vala.StringNotEmpty(cmdConfig.Postgres.Host, "postgres.host"),
@@ -278,6 +282,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 		if cmdConfig.MSSQL.Port == 0 {
 			cmdConfig.MSSQL.Port = 1433
 			viper.Set("mssql.port", cmdConfig.MSSQL.Port)
+		}
+
+		if len(cmdConfig.Schema) == 0 {
+			cmdConfig.Schema = "dbo"
 		}
 
 		err = vala.BeginValidation().Validate(

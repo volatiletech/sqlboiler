@@ -68,6 +68,9 @@ func (m *mssqlTester) sslMode(mode string) string {
 func (m *mssqlTester) createTestDB() error {
 	sql := fmt.Sprintf(`
 	CREATE DATABASE %s;
+	GO
+	ALTER DATABASE %[1]s
+	SET READ_COMMITTED_SNAPSHOT ON;
 	GO`, m.testDBName)
 	return m.runCmd(sql, "sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass)
 }

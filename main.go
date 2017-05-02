@@ -73,7 +73,7 @@ func main() {
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
-	rootCmd.PersistentFlags().StringP("schema", "s", "public", "The name of your database schema, for databases that support real schemas")
+	rootCmd.PersistentFlags().StringP("schema", "s", "", "schema name for drivers that support it (default psql: public, mssql: dbo)")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")
 	rootCmd.PersistentFlags().StringSliceP("blacklist", "b", nil, "Do not include these tables in your generated package")
@@ -95,6 +95,8 @@ func main() {
 	viper.SetDefault("postgres.port", "5432")
 	viper.SetDefault("mysql.sslmode", "true")
 	viper.SetDefault("mysql.port", "3306")
+	viper.SetDefault("mssql.sslmode", "true")
+	viper.SetDefault("mssql.port", "1433")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.AutomaticEnv()
@@ -200,6 +202,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 			viper.Set("postgres.port", cmdConfig.Postgres.Port)
 		}
 
+		if len(cmdConfig.Schema) == 0 {
+			cmdConfig.Schema = "public"
+		}
+
 		err = vala.BeginValidation().Validate(
 			vala.StringNotEmpty(cmdConfig.Postgres.User, "postgres.user"),
 			vala.StringNotEmpty(cmdConfig.Postgres.Host, "postgres.host"),
@@ -248,6 +254,46 @@ func preRun(cmd *cobra.Command, args []string) error {
 			vala.Not(vala.Equals(cmdConfig.MySQL.Port, 0, "mysql.port")),
 			vala.StringNotEmpty(cmdConfig.MySQL.DBName, "mysql.dbname"),
 			vala.StringNotEmpty(cmdConfig.MySQL.SSLMode, "mysql.sslmode"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
+	}
+
+	if driverName == "mssql" {
+		cmdConfig.MSSQL = boilingcore.MSSQLConfig{
+			User:    viper.GetString("mssql.user"),
+			Pass:    viper.GetString("mssql.pass"),
+			Host:    viper.GetString("mssql.host"),
+			Port:    viper.GetInt("mssql.port"),
+			DBName:  viper.GetString("mssql.dbname"),
+			SSLMode: viper.GetString("mssql.sslmode"),
+		}
+
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
+		if cmdConfig.MSSQL.SSLMode == "" {
+			cmdConfig.MSSQL.SSLMode = "true"
+			viper.Set("mssql.sslmode", cmdConfig.MSSQL.SSLMode)
+		}
+
+		if cmdConfig.MSSQL.Port == 0 {
+			cmdConfig.MSSQL.Port = 1433
+			viper.Set("mssql.port", cmdConfig.MSSQL.Port)
+		}
+
+		if len(cmdConfig.Schema) == 0 {
+			cmdConfig.Schema = "dbo"
+		}
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.MSSQL.User, "mssql.user"),
+			vala.StringNotEmpty(cmdConfig.MSSQL.Host, "mssql.host"),
+			vala.Not(vala.Equals(cmdConfig.MSSQL.Port, 0, "mssql.port")),
+			vala.StringNotEmpty(cmdConfig.MSSQL.DBName, "mssql.dbname"),
+			vala.StringNotEmpty(cmdConfig.MSSQL.SSLMode, "mssql.sslmode"),
 		).Check()
 
 		if err != nil {

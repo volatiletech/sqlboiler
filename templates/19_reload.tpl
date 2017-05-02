@@ -79,11 +79,8 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf(
-		"SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE (%s) IN (%s)",
-		strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, {{$varNameSingular}}PrimaryKeyColumns), ","),
-		strmangle.Placeholders(dialect.IndexPlaceholders, len(*o) * len({{$varNameSingular}}PrimaryKeyColumns), 1, len({{$varNameSingular}}PrimaryKeyColumns)),
-	)
+	sql := "SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(exec, sql, args...)
 

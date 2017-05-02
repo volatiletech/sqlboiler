@@ -87,7 +87,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	}
 
 	slice := {{$txt.LocalTable.NameGo}}Slice{&a}
-	if err = a.L.Load{{$txt.Function.Name}}(tx, false, &slice); err != nil {
+	if err = a.L.Load{{$txt.Function.Name}}(tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice)); err != nil {
 		t.Fatal(err)
 	}
 	if got := len(a.R.{{$txt.Function.Name}}); got != 2 {

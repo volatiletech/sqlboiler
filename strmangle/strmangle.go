@@ -82,10 +82,11 @@ func init() {
 
 // SchemaTable returns a table name with a schema prefixed if
 // using a database that supports real schemas, for example,
-// for Postgres: "schema_name"."table_name", versus
+// for Postgres: "schema_name"."table_name",
+// for MS SQL: [schema_name].[table_name], versus
 // simply "table_name" for MySQL (because it does not support real schemas)
 func SchemaTable(lq, rq string, driver string, schema string, table string) string {
-	if driver == "postgres" && schema != "public" {
+	if (driver == "postgres" && schema != "public") || driver == "mssql" {
 		return fmt.Sprintf(`%s%s%s.%s%s%s`, lq, schema, rq, lq, table, rq)
 	}
 
@@ -516,6 +517,30 @@ func WhereClause(lq, rq string, start int, cols []string) string {
 			buf.WriteString(" AND ")
 		}
 	}
+
+	return buf.String()
+}
+
+// WhereClauseRepeated returns the where clause repeated with OR clause using start as the $ flag index
+// For example, if start was 2 output would be: "(colthing=$2 AND colstuff=$3) OR (colthing=$4 AND colstuff=$5)"
+func WhereClauseRepeated(lq, rq string, start int, cols []string, count int) string {
+	var startIndex int
+	buf := GetBuffer()
+	defer PutBuffer(buf)
+	buf.WriteByte('(')
+	for i := 0; i < count; i++ {
+		if i != 0 {
+			buf.WriteString(") OR (")
+		}
+
+		startIndex = 0
+		if start > 0 {
+			startIndex = start + i*len(cols)
+		}
+
+		buf.WriteString(WhereClause(lq, rq, startIndex, cols))
+	}
+	buf.WriteByte(')')
 
 	return buf.String()
 }

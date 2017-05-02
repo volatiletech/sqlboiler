@@ -285,6 +285,23 @@ func newImporter() importer {
 				`_ "github.com/go-sql-driver/mysql"`,
 			},
 		},
+		"mssql": {
+			standard: importList{
+				`"bytes"`,
+				`"database/sql"`,
+				`"fmt"`,
+				`"os"`,
+				`"os/exec"`,
+				`"strings"`,
+			},
+			thirdParty: importList{
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/vattle/sqlboiler/bdb/drivers"`,
+				`"github.com/vattle/sqlboiler/randomize"`,
+				`_ "github.com/denisenkom/go-mssqldb"`,
+			},
+		},
 	}
 
 	// basedOnType imports are only included in the template output if the

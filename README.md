@@ -107,8 +107,11 @@ Table of Contents
 
 - PostgreSQL
 - MySQL
+- Microsoft SQL Server
 
 *Note: Seeking contributors for other database engines.*
+
+*Microsoft SQL Server: Limit with offset support only for SQL Server 2012 and above.*
 
 ### A Small Taste
 
@@ -274,6 +277,13 @@ schema="myschema"
   user="dbusername"
   pass="dbpassword"
   sslmode="false"
+[mssql]
+  dbname="dbname"
+  host="localhost"
+  port=1433
+  user="dbusername"
+  pass="dbpassword"
+  sslmode="disable"
 ```
 
 #### Initial Generation
@@ -319,6 +329,9 @@ sqlboiler -b goose_migrations postgres
 # Run the generated tests
 go test ./models
 ```
+
+*Note: No `mysqldump` or `pg_dump` equivalent for Microsoft SQL Server, so generated tests must be supplemented by `tables_schema.sql` with `CREATE TABLE ...` queries*
+
 
 You can use `go generate` for SQLBoiler if you want to to make it easy to
 run the command.

@@ -3,6 +3,7 @@ package drivers
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 
 	// Side-effect import sql driver
@@ -78,6 +79,11 @@ func (p *PostgresDriver) UseLastInsertID() bool {
 	return false
 }
 
+// UseTopClause returns false to indicate PSQL doesnt support SQL TOP clause
+func (m *PostgresDriver) UseTopClause() bool {
+	return false
+}
+
 // TableNames connects to the postgres database and
 // retrieves all table names from the information_schema where the
 // table schema is schema. It uses a whitelist and blacklist.
@@ -127,7 +133,7 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		select
 		c.column_name,
 		(
-			case when c.data_type = 'USER-DEFINED' and c.udt_name <> 'hstore'
+			case when pgt.typtype = 'e'
 			then
 			(
 				select 'enum.' || c.udt_name || '(''' || string_agg(labels.label, ''',''') || ''')'
@@ -171,6 +177,8 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]bdb.Column, error)
 		)) as is_unique
 
 		from information_schema.columns as c
+		inner join pg_namespace as pgn on pgn.nspname = c.udt_schema
+		left join pg_type pgt on c.data_type = 'USER-DEFINED' and pgn.oid = pgt.typnamespace and c.udt_name = pgt.typname
 		left join information_schema.element_types e
 			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
 			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
@@ -344,7 +352,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 				c.DBType = "hstore"
 			} else {
 				c.Type = "string"
-				fmt.Printf("Warning: Incompatible data type detected: %s\n", c.UDTName)
+				fmt.Fprintln(os.Stderr, "Warning: Incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
 			c.Type = "null.String"

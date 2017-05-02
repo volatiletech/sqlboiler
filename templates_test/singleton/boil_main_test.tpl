@@ -104,6 +104,12 @@ func setConfigDefaults() {
 	if viper.GetInt("mysql.port") == 0 {
 		viper.Set("mysql.port", 3306)
 	}
+	if viper.GetString("mssql.sslmode") == "" {
+		viper.Set("mssql.sslmode", "true")
+	}
+	if viper.GetInt("mssql.port") == 0 {
+		viper.Set("mssql.port", 1433)
+	}
 }
 
 func validateConfig(driverName string) error {
@@ -124,6 +130,16 @@ func validateConfig(driverName string) error {
 			vala.Not(vala.Equals(viper.GetInt("mysql.port"), 0, "mysql.port")),
 			vala.StringNotEmpty(viper.GetString("mysql.dbname"), "mysql.dbname"),
 			vala.StringNotEmpty(viper.GetString("mysql.sslmode"), "mysql.sslmode"),
+		).Check()
+	}
+
+	if driverName == "mssql" {
+		return vala.BeginValidation().Validate(
+			vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),
+			vala.StringNotEmpty(viper.GetString("mssql.host"), "mssql.host"),
+			vala.Not(vala.Equals(viper.GetInt("mssql.port"), 0, "mssql.port")),
+			vala.StringNotEmpty(viper.GetString("mssql.dbname"), "mssql.dbname"),
+			vala.StringNotEmpty(viper.GetString("mssql.sslmode"), "mssql.sslmode"),
 		).Check()
 	}
 

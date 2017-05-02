@@ -48,8 +48,15 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	{{$varNameSingular}}UpdateCacheMut.RUnlock()
 
 	if !cached {
-		wl := strmangle.UpdateColumnSet({{$varNameSingular}}Columns, {{$varNameSingular}}PrimaryKeyColumns, whitelist)
-		{{- if not .NoAutoTimestamps}}
+		wl := strmangle.UpdateColumnSet(
+			{{$varNameSingular}}Columns,
+			{{$varNameSingular}}PrimaryKeyColumns,
+			whitelist,
+		)
+		{{if eq .DriverName "mssql"}}
+		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
+		{{end}}
+		{{if not .NoAutoTimestamps}}
 		if len(whitelist) == 0 {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
@@ -157,12 +164,10 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$varNameSingular}}PrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
-
-	sql := fmt.Sprintf(
-		"UPDATE {{$schemaTable}} SET %s WHERE ({{.LQ}}{{.Table.PKey.Columns | join (printf "%s,%s" .LQ .RQ)}}{{.RQ}}) IN (%s)",
+	
+	sql := fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
 		strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, colNames),
-		strmangle.Placeholders(dialect.IndexPlaceholders, len(o) * len({{$varNameSingular}}PrimaryKeyColumns), len(colNames)+1, len({{$varNameSingular}}PrimaryKeyColumns)),
-	)
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}len(colNames)+1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(o)))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)

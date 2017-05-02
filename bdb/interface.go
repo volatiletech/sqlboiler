@@ -18,6 +18,10 @@ type Interface interface {
 	// the sql.Exec result's LastInsertId
 	UseLastInsertID() bool
 
+	// UseTopClause should return true if the Database is capable of using
+	// the SQL TOP clause
+	UseTopClause() bool
+
 	// Open the database connection
 	Open() error
 	// Close the database connection

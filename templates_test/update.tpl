@@ -12,7 +12,7 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 	seed := randomize.NewSeed()
 	var err error
 	{{$varNameSingular}} := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
@@ -50,7 +50,7 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 	seed := randomize.NewSeed()
 	var err error
 	{{$varNameSingular}} := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
@@ -82,6 +82,12 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
 		)
+		{{- if eq .DriverName "mssql"}}
+		fields = strmangle.SetComplement(
+			fields,
+			{{$varNameSingular}}ColumnsWithAuto,
+		)
+		{{- end}}
 	}
 
 	value := reflect.Indirect(reflect.ValueOf({{$varNameSingular}}))

@@ -52,6 +52,9 @@ type Dialect struct {
 	// Bool flag indicating whether indexed
 	// placeholders ($1) are used, or ? placeholders.
 	IndexPlaceholders bool
+	// Bool flag indicating whether "TOP" or "LIMIT" clause
+	// must be used for rows limitation
+	UseTopClause bool
 }
 
 type where struct {

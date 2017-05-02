@@ -41,7 +41,7 @@ func test{{$tableNamePlural}}InsertWhitelist(t *testing.T) {
 
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx, {{$varNameSingular}}Columns...); err != nil {
+	if err = {{$varNameSingular}}.Insert(tx, {{$varNameSingular}}ColumnsWithoutDefault...); err != nil {
 		t.Error(err)
 	}
 

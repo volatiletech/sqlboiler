@@ -225,6 +225,7 @@ var templateFunctions = template.FuncMap{
 	"txtsFromToMany":   txtsFromToMany,
 
 	// dbdrivers ops
+	"filterColumnsByAuto":    bdb.FilterColumnsByAuto,
 	"filterColumnsByDefault": bdb.FilterColumnsByDefault,
 	"filterColumnsByEnum":    bdb.FilterColumnsByEnum,
 	"sqlColDefinitions":      bdb.SQLColDefinitions,

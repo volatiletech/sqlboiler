@@ -1,7 +1,11 @@
 // Package bdb supplies the sql(b)oiler (d)ata(b)ase abstractions.
 package bdb
 
-import "github.com/pkg/errors"
+import (
+	"sort"
+
+	"github.com/pkg/errors"
+)
 
 // Interface for a database driver. Functionality required to support a specific
 // database type (eg, MySQL, Postgres etc.)
@@ -44,6 +48,8 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get table names")
 	}
+
+	sort.Strings(names)
 
 	var tables []Table
 	for _, name := range names {

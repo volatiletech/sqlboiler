@@ -124,6 +124,14 @@ func TestTables(t *testing.T) {
 		t.Errorf("Expected len 7, got: %d\n", len(tables))
 	}
 
+	prev := ""
+	for i := range tables {
+		if prev >= tables[i].Name {
+			t.Error("tables are not sorted")
+		}
+		prev = tables[i].Name
+	}
+
 	pilots := GetTable(tables, "pilots")
 	if len(pilots.Columns) != 2 {
 		t.Error()

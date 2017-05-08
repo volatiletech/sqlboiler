@@ -272,23 +272,42 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
+	unsigned := strings.Contains(c.FullDBType, "unsigned")
 	if c.Nullable {
 		switch c.DBType {
 		case "tinyint":
 			// map tinyint(1) to bool if TinyintAsBool is true
 			if TinyintAsBool && c.FullDBType == "tinyint(1)" {
 				c.Type = "null.Bool"
+			} else if unsigned {
+				c.Type = "null.Uint8"
 			} else {
 				c.Type = "null.Int8"
 			}
 		case "smallint":
-			c.Type = "null.Int16"
+			if unsigned {
+				c.Type = "null.Uint16"
+			} else {
+				c.Type = "null.Int16"
+			}
 		case "mediumint":
-			c.Type = "null.Int32"
+			if unsigned {
+				c.Type = "null.Uint32"
+			} else {
+				c.Type = "null.Int32"
+			}
 		case "int", "integer":
-			c.Type = "null.Int"
+			if unsigned {
+				c.Type = "null.Uint"
+			} else {
+				c.Type = "null.Int"
+			}
 		case "bigint":
-			c.Type = "null.Int64"
+			if unsigned {
+				c.Type = "null.Uint64"
+			} else {
+				c.Type = "null.Uint64"
+			}
 		case "float":
 			c.Type = "null.Float32"
 		case "double", "double precision", "real":
@@ -310,17 +329,35 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			// map tinyint(1) to bool if TinyintAsBool is true
 			if TinyintAsBool && c.FullDBType == "tinyint(1)" {
 				c.Type = "bool"
+			} else if unsigned {
+				c.Type = "uint8"
 			} else {
 				c.Type = "int8"
 			}
 		case "smallint":
-			c.Type = "int16"
+			if unsigned {
+				c.Type = "uint16"
+			} else {
+				c.Type = "int16"
+			}
 		case "mediumint":
-			c.Type = "int32"
+			if unsigned {
+				c.Type = "uint32"
+			} else {
+				c.Type = "int32"
+			}
 		case "int", "integer":
-			c.Type = "int"
+			if unsigned {
+				c.Type = "uint"
+			} else {
+				c.Type = "int"
+			}
 		case "bigint":
-			c.Type = "int64"
+			if unsigned {
+				c.Type = "uint64"
+			} else {
+				c.Type = "int64"
+			}
 		case "float":
 			c.Type = "float32"
 		case "double", "double precision", "real":

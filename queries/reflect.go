@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/vattle/sqlboiler/boil"
-	"github.com/vattle/sqlboiler/strmangle"
+	"github.com/lbryio/sqlboiler/boil"
+	"github.com/lbryio/sqlboiler/strmangle"
 )
 
 var (

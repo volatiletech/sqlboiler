@@ -10,8 +10,8 @@ import (
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/vattle/sqlboiler/boilingcore"
+	"github.com/lbryio/sqlboiler/bdb/drivers"
+	"github.com/lbryio/sqlboiler/boilingcore"
 )
 
 const sqlBoilerVersion = "2.3.0"
@@ -62,7 +62,7 @@ func main() {
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
-			`Complete documentation is available at http://github.com/vattle/sqlboiler`,
+			`Complete documentation is available at http://github.com/lbryio/sqlboiler`,
 		Example:       `sqlboiler postgres`,
 		PreRunE:       preRun,
 		RunE:          run,

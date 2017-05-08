@@ -17,6 +17,13 @@ type {{$modelName}} struct {
 	{{end -}}
 }
 
+// {{$modelName}}Filter allows you to filter on any columns by making them all pointers.
+type {{$modelName}}Filter struct {
+	{{range $column := .Table.Columns -}}
+	{{titleCase $column.Name}} *{{$column.Type}} `{{generateTags $dot.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}},omitempty" toml:"{{$column.Name}}" yaml:"{{$column.Name}},omitempty"`
+	{{end -}}
+}
+
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 // {{$modelNameCamel}}R is where relationships are stored.

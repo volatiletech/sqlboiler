@@ -1,4 +1,5 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
@@ -50,4 +51,39 @@ func {{$tableNameSingular}}ExistsP(exec boil.Executor, {{$pkArgs}}) bool {
 	}
 
 	return e
+}
+
+// IsNew() checks if record exists in db (aka if its primary key is set).
+func (o *{{$tableNameSingular}}) IsNew() bool {
+	r := reflect.ValueOf(o).Elem()
+	for i := 0; i < r.NumField(); i++ {
+		column := r.Type().Field(i).Tag.Get("boil")
+		for _, pkColumn := range {{$varNameSingular}}PrimaryKeyColumns {
+			if column == pkColumn {
+				field := r.Field(i)
+				if field.Interface() != reflect.Zero(field.Type()).Interface() {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
+// Save() inserts the record if it does not exist, or updates it if it does.
+func (o *{{$tableNameSingular}}) Save(exec boil.Executor, whitelist ...string) error {
+  if o.IsNew() {
+    return o.Insert(exec, whitelist...)
+  } else {
+    return o.Update(exec, whitelist...)
+  }
+}
+
+// SaveG() inserts the record if it does not exist, or updates it if it does.
+func (o *{{$tableNameSingular}}) SaveG(whitelist ...string) error {
+  if o.IsNew() {
+    return o.InsertG(whitelist...)
+  } else {
+    return o.UpdateG(whitelist...)
+  }
 }

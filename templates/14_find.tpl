@@ -56,21 +56,13 @@ func Find{{$tableNameSingular}}P(exec boil.Executor, {{$pkArgs}}, selectCols ...
 
 // FindOne{{$tableNameSingular}} retrieves a single record using filters.
 func FindOne{{$tableNameSingular}}(exec boil.Executor, filters {{$tableNameSingular}}Filter) (*{{$tableNameSingular}}, error) {
-	{{$varNameSingular}}Obj := &{{$tableNameSingular}}{}
+	obj := &{{$tableNameSingular}}{}
 
-	query := NewQuery(exec, qm.Select("*"), qm.From("{{.Table.Name | .SchemaTable}}"))
+	err := {{$tableNameSingular}}NewQuery(exec).
+    Where(filters).
+    Limit(1).
+    Bind(obj)
 
-	r := reflect.ValueOf(filters)
-	for i := 0; i < r.NumField(); i++ {
-		f := r.Field(i)
-		if f.Elem().IsValid() {
-			queries.AppendWhere(query, r.Type().Field(i).Tag.Get("boil")+" = ?", f.Elem().Interface())
-		}
-	}
-
-	queries.SetLimit(query, 1)
-
-	err := query.Bind({{$varNameSingular}}Obj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
@@ -78,7 +70,7 @@ func FindOne{{$tableNameSingular}}(exec boil.Executor, filters {{$tableNameSingu
 		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
 	}
 
-	return {{$varNameSingular}}Obj, nil
+	return obj, nil
 }
 
 // FindOne{{$tableNameSingular}}G retrieves a single record using filters.

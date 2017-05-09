@@ -3,14 +3,14 @@
 	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
 		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
-		{{- $varNameSingular := .ForeignTable | singular | camelCase}}
+		{{- $tableNameSingular := .ForeignTable | singular | titleCase}}
 // {{$txt.Function.Name}}G pointed to by the foreign key.
-func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod) {{$varNameSingular}}Query {
+func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod) {{$tableNameSingular}}Query {
 	return o.{{$txt.Function.Name}}(boil.GetDB(), mods...)
 }
 
 // {{$txt.Function.Name}} pointed to by the foreign key.
-func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) ({{$varNameSingular}}Query) {
+func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) ({{$tableNameSingular}}Query) {
 	queryMods := []qm.QueryMod{
 		qm.Where("{{$txt.ForeignTable.ColumnName}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
 	}

@@ -65,16 +65,16 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 }
 
 // DeleteAllP deletes all rows, and panics on error.
-func (q {{$varNameSingular}}Query) DeleteAllP() {
+func (q {{$tableNameSingular}}Query) DeleteAllP() {
 	if err := q.DeleteAll(); err != nil {
 	panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAll deletes all matching rows.
-func (q {{$varNameSingular}}Query) DeleteAll() error {
+func (q {{$tableNameSingular}}Query) DeleteAll() error {
 	if q.Query == nil {
-	return errors.New("{{.PkgName}}: no {{$varNameSingular}}Query provided for delete all")
+	return errors.New("{{.PkgName}}: no {{$tableNameSingular}}Query provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)

@@ -21,7 +21,7 @@ type (
 	{{$tableNameSingular}}Hook func(boil.Executor, *{{$tableNameSingular}}) error
 	{{- end}}
 
-	{{$varNameSingular}}Query struct {
+	{{$tableNameSingular}}Query struct {
 		*queries.Query
 	}
 )

@@ -101,14 +101,14 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 }
 
 // UpdateAllP updates all rows with matching column names, and panics on error.
-func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
+func (q {{$tableNameSingular}}Query) UpdateAllP(cols M) {
 	if err := q.UpdateAll(cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
+func (q {{$tableNameSingular}}Query) UpdateAll(cols M) error {
 	queries.SetUpdate(q.Query, cols)
 
 	_, err := q.Query.Exec()

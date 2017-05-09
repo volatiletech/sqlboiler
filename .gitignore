@@ -4,3 +4,4 @@ sqlboiler.toml
 models/
 testschema.sql
 .cover
+/.idea

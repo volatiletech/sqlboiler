@@ -179,11 +179,16 @@ func newImporter() importer {
 	}
 
 	imp.Singleton = mapImports{
-		"boil_queries": {
+		"boil_queries": imports{
+			standard: importList{
+				`"database/sql"`,
+				`"strings"`,
+			},
 			thirdParty: importList{
 				`"github.com/lbryio/sqlboiler/boil"`,
 				`"github.com/lbryio/sqlboiler/queries"`,
 				`"github.com/lbryio/sqlboiler/queries/qm"`,
+				`"github.com/pkg/errors"`,
 			},
 		},
 		"boil_types": {

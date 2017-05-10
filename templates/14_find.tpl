@@ -36,7 +36,7 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 	err := q.Bind({{$varNameSingular}}Obj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
-			return nil, sql.ErrNoRows
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
 	}
@@ -65,7 +65,7 @@ func FindOne{{$tableNameSingular}}(exec boil.Executor, filters {{$tableNameSingu
 
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
-			return nil, sql.ErrNoRows
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
 	}
@@ -81,7 +81,7 @@ func FindOne{{$tableNameSingular}}G(filters {{$tableNameSingular}}Filter) (*{{$t
 // FindOne{{$tableNameSingular}}OrInit retrieves a single record using filters, or initializes a new record if one is not found.
 func FindOne{{$tableNameSingular}}OrInit(exec boil.Executor, filters {{$tableNameSingular}}Filter) (*{{$tableNameSingular}}, error) {
 	{{$varNameSingular}}Obj, err := FindOne{{$tableNameSingular}}(exec, filters)
-	if err != nil && errors.Cause(err) != sql.ErrNoRows {
+	if err != nil {
 		return nil, err
 	}
 

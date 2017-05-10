@@ -19,7 +19,7 @@ func (q {{$tableNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 	err := q.Bind(o)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
-			return nil, sql.ErrNoRows
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "{{.PkgName}}: failed to execute a one query for {{.Table.Name}}")
 	}

@@ -6,6 +6,22 @@ type Nullable interface {
 	IsZero() bool
 }
 
+// foreignKey connects two tables. When merging records, foreign keys from secondary record must
+// be reassigned to primary record.
+type foreignKey struct {
+	foreignTable  string
+	foreignColumn string
+}
+
+// conflictingUniqueKey records a merge conflict. If two rows exist with the same value in the
+// conflicting column for two records being merged, one row must be deleted.
+type conflictingUniqueKey struct {
+	table          string
+	objectIdColumn string
+	columns        []string
+}
+
+
 // ErrSyncFail occurs during insert when the record could not be retrieved in
 // order to populate default value information. This usually happens when LastInsertId
 // fails or there was a primary key configuration that was not resolvable.

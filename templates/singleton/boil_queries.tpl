@@ -20,39 +20,97 @@ func NewQuery(exec boil.Executor, mods ...qm.QueryMod) *queries.Query {
 	return q
 }
 
-func mergeModels(tx *sql.Tx, primaryID uint64, secondaryID uint64, relatedFields map[string]string) error {
-	if len(relatedFields) < 1 {
-    return nil
-  }
+func mergeModels(tx *sql.Tx, primaryID uint64, secondaryID uint64, foreignKeys []foreignKey, conflictingKeys []conflictingUniqueKey) error {
+	if len(foreignKeys) < 1 {
+		return nil
+	}
+	var err error
 
-  for table, column := range relatedFields {
-    // TODO: use NewQuery here, not plain sql
-    query := "UPDATE " + table + " SET " + column + " = ? WHERE " + column + " = ?"
-    _, err := tx.Exec(query, primaryID, secondaryID)
-    if err != nil {
-      return errors.WithStack(err)
-    }
-  }
-  return checkMerge(tx, relatedFields)
-}
-
-func checkMerge(tx *sql.Tx, fields map[string]string) error {
-	columns := []interface{}{}
-	seenColumns := map[string]bool{}
-	placeholders := []string{}
-	for _, column := range fields {
-		if _, ok := seenColumns[column]; !ok {
-			columns = append(columns, column)
-			seenColumns[column] = true
-			placeholders = append(placeholders, "?")
-
+	for _, conflict := range conflictingKeys {
+		err = deleteConflictsBeforeMerge(tx, conflict, primaryID, secondaryID)
+		if err != nil {
+			return errors.WithStack(err)
 		}
 	}
 
-	placeholder := strings.Join(placeholders, ", ")
+	for _, fk := range foreignKeys {
+		// TODO: use NewQuery here, not plain sql
+		query := fmt.Sprintf(
+			"UPDATE %s SET %s = %s WHERE %s = %s",
+			fk.foreignTable, fk.foreignColumn, strmangle.Placeholders(dialect.IndexPlaceholders, 1, 1, 1),
+			fk.foreignColumn, strmangle.Placeholders(dialect.IndexPlaceholders, 1, 2, 1),
+		)
+		_, err = tx.Exec(query, primaryID, secondaryID)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	return checkMerge(tx, foreignKeys)
+}
 
-	q := `SELECT table_name, column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND column_name IN (` + placeholder + `)`
-	rows, err := tx.Query(q, columns...)
+func deleteConflictsBeforeMerge(tx *sql.Tx, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
+	conflictingColumns := strmangle.SetComplement(conflict.columns, []string{conflict.objectIdColumn})
+
+	if len(conflictingColumns) < 1 {
+		return nil
+	} else if len(conflictingColumns) > 1 {
+		return errors.New("this doesnt work for unique keys with more than two columns (yet)")
+	}
+
+	query := fmt.Sprintf(
+		"SELECT %s FROM %s WHERE %s IN (%s) GROUP BY %s HAVING count(distinct %s) > 1",
+		conflictingColumns[0], conflict.table, conflict.objectIdColumn,
+		strmangle.Placeholders(dialect.IndexPlaceholders, 2, 1, 1),
+		conflictingColumns[0], conflict.objectIdColumn,
+	)
+
+	rows, err := tx.Query(query, primaryID, secondaryID)
+	defer rows.Close()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	args := []interface{}{secondaryID}
+	for rows.Next() {
+		var value string
+		err = rows.Scan(&value)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		args = append(args, value)
+	}
+
+	query = fmt.Sprintf(
+		"DELETE FROM %s WHERE %s = %s AND %s IN (%s)",
+		conflict.table, conflict.objectIdColumn, strmangle.Placeholders(dialect.IndexPlaceholders, 1, 1, 1),
+		conflictingColumns[0], strmangle.Placeholders(dialect.IndexPlaceholders, len(args)-1, 2, 1),
+	)
+
+	_, err = tx.Exec(query, args...)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+func checkMerge(tx *sql.Tx, foreignKeys []foreignKey) error {
+	uniqueColumns := []interface{}{}
+	uniqueColumnNames := map[string]bool{}
+	handledTablesColumns := map[string]bool{}
+
+	for _, fk := range foreignKeys {
+		handledTablesColumns[fk.foreignTable+"."+fk.foreignColumn] = true
+		if _, ok := uniqueColumnNames[fk.foreignColumn]; !ok {
+			uniqueColumns = append(uniqueColumns, fk.foreignColumn)
+			uniqueColumnNames[fk.foreignColumn] = true
+		}
+	}
+
+	q := fmt.Sprintf(
+		`SELECT table_name, column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND column_name IN (%s)`,
+		strmangle.Placeholders(dialect.IndexPlaceholders, len(uniqueColumns), 1, 1),
+	)
+	rows, err := tx.Query(q, uniqueColumns...)
 	defer rows.Close()
 	if err != nil {
 		return errors.WithStack(err)
@@ -66,7 +124,7 @@ func checkMerge(tx *sql.Tx, fields map[string]string) error {
 			return errors.WithStack(err)
 		}
 
-		if _, exists := fields[tableName]; !exists {
+		if _, exists := handledTablesColumns[tableName+"."+columnName]; !exists {
 			return errors.New("Missing merge for " + tableName + "." + columnName)
 		}
 	}

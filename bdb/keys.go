@@ -8,6 +8,13 @@ type PrimaryKey struct {
 	Columns []string
 }
 
+// UniqueKey represents a unique key constraint in a database
+type UniqueKey struct {
+	Table   string
+	Name    string
+	Columns []string
+}
+
 // ForeignKey represents a foreign key constraint in a database
 type ForeignKey struct {
 	Table    string

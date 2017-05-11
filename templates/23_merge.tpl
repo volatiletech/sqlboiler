@@ -33,16 +33,33 @@ func Merge{{$tableNamePlural}}(exec boil.Executor, primaryID uint64, secondaryID
 		return errors.New("Secondary {{$tableNameSingular}} not found")
 	}
 
-  relatedFields := map[string]string{
+  foreignKeys := []foreignKey{
 	{{- range .Tables -}}
 	  {{- range .FKeys -}}
 	    {{- if eq $dot.Table.Name .ForeignTable }}
-		  "{{.Table }}": "{{ .Column}}",
+		  {foreignTable: "{{.Table}}", foreignColumn: "{{.Column}}"},
       {{- end -}}
     {{- end -}}
   {{- end }}
   }
-  err = mergeModels(tx, primaryID, secondaryID, relatedFields)
+
+  conflictingKeys := []conflictingUniqueKey{
+    {{- range .Tables -}}
+      {{- $table := . -}}
+      {{- range .FKeys -}}
+        {{- $fk := . -}}
+        {{- if eq $dot.Table.Name .ForeignTable -}}
+          {{- range $table.UKeys -}}
+            {{- if setInclude $fk.Column .Columns }}
+              {table: "{{$fk.Table}}", objectIdColumn: "{{$fk.Column}}", columns: []string{`{{ .Columns | join "`,`" }}`}},
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end }}
+  }
+
+  err = mergeModels(tx, primaryID, secondaryID, foreignKeys, conflictingKeys)
   if err != nil {
     tx.Rollback()
     return err

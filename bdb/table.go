@@ -11,6 +11,7 @@ type Table struct {
 	Columns    []Column
 
 	PKey  *PrimaryKey
+	UKeys []UniqueKey
 	FKeys []ForeignKey
 
 	IsJoinTable bool

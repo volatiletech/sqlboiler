@@ -182,12 +182,13 @@ func newImporter() importer {
 		"boil_queries": imports{
 			standard: importList{
 				`"database/sql"`,
-				`"strings"`,
+				`"fmt"`,
 			},
 			thirdParty: importList{
 				`"github.com/lbryio/sqlboiler/boil"`,
 				`"github.com/lbryio/sqlboiler/queries"`,
 				`"github.com/lbryio/sqlboiler/queries/qm"`,
+				`"github.com/lbryio/sqlboiler/strmangle"`,
 				`"github.com/pkg/errors"`,
 			},
 		},

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pkg/errors"
 	"github.com/lbryio/sqlboiler/bdb"
 	"github.com/lbryio/sqlboiler/queries"
 	"github.com/lbryio/sqlboiler/strmangle"
+	"github.com/pkg/errors"
 )
 
 // templateData for sqlboiler templates

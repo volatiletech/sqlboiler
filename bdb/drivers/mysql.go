@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
 	"github.com/lbryio/sqlboiler/bdb"
+	"github.com/pkg/errors"
 )
 
 // TinyintAsBool is a global that is set from main.go if a user specifies
@@ -230,6 +230,46 @@ func (m *MySQLDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey,
 	pkey.Columns = columns
 
 	return pkey, nil
+}
+
+// UniqueKeyInfo retrieves the unique keys for a given table name.
+func (m *MySQLDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, error) {
+	var ukeys []bdb.UniqueKey
+
+	query := `
+	select tc.table_name, tc.constraint_name, GROUP_CONCAT(kcu.column_name)
+	from information_schema.table_constraints tc
+	left join information_schema.key_column_usage kcu on tc.constraint_name = kcu.constraint_name and tc.table_name = kcu.table_name and tc.table_schema = kcu.table_schema
+	where tc.table_schema = ? and tc.table_name = ? and tc.constraint_type = "UNIQUE"
+	group by tc.table_name, tc.constraint_name
+	`
+
+	var rows *sql.Rows
+	var err error
+	if rows, err = m.dbConn.Query(query, schema, tableName); err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var ukey bdb.UniqueKey
+		var columns string
+
+		//ukey.Table = tableName
+		err = rows.Scan(&ukey.Table, &ukey.Name, &columns)
+		if err != nil {
+			return nil, err
+		}
+
+		ukey.Columns = strings.Split(columns, ",")
+
+		ukeys = append(ukeys, ukey)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ukeys, nil
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.

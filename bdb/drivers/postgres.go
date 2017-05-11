@@ -8,10 +8,10 @@ import (
 
 	// Side-effect import sql driver
 
-	_ "github.com/lib/pq"
-	"github.com/pkg/errors"
 	"github.com/lbryio/sqlboiler/bdb"
 	"github.com/lbryio/sqlboiler/strmangle"
+	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 // PostgresDriver holds the database connection string and a handle
@@ -264,6 +264,10 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryK
 	pkey.Columns = columns
 
 	return pkey, nil
+}
+
+func (p *PostgresDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, error) {
+	return []bdb.UniqueKey{}, errors.New("not implemented")
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.

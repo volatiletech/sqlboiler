@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	_ "github.com/denisenkom/go-mssqldb"
-	"github.com/pkg/errors"
 	"github.com/lbryio/sqlboiler/bdb"
+	"github.com/pkg/errors"
 )
 
 // MSSQLDriver holds the database connection string and a handle
@@ -239,6 +239,10 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey,
 	pkey.Columns = columns
 
 	return pkey, nil
+}
+
+func (m *MSSQLDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, error) {
+	return []bdb.UniqueKey{}, errors.New("not implemented")
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.

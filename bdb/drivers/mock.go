@@ -58,6 +58,10 @@ func (m *MockDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 	}[tableName], nil
 }
 
+func (m *MockDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, error) {
+	return []bdb.UniqueKey{}, nil
+}
+
 // ForeignKeyInfo returns a list of mock foreignkeys
 func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	return map[string][]bdb.ForeignKey{

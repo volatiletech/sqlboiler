@@ -1191,7 +1191,7 @@ exists, err := models.Pilots(db, Where("id=?", 5)).Exists()
 If your MySQL or Postgres tables use enums we will generate constants that hold their values
 that you can use in your queries. For example:
 
-```
+```sql
 CREATE TYPE workday AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
 
 CREATE TABLE event_one (

@@ -118,7 +118,7 @@ type sqliteTableInfo struct {
 	Type         string
 	NotNull      bool
 	DefaultValue *string
-	Pk           bool
+	Pk           int
 }
 
 func (m *SQLiteDriver) tableInfo(tableName string) ([]*sqliteTableInfo, error) {
@@ -230,7 +230,7 @@ func (m *SQLiteDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey
 
 	var columns []string
 	for _, column := range tinfo {
-		if column.Pk {
+		if column.Pk > 0 {
 			columns = append(columns, column.Name)
 		}
 	}

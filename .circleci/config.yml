@@ -13,7 +13,7 @@ jobs:
         environment:
           MYSQL_ROOT_PASSWORD: mysqlpassword
 
-      - image: microsoft/mssql-server-linux:ctp1-4
+      - image: microsoft/mssql-server-linux:ctp2-0
         environment:
           ACCEPT_EULA: 'Y'
           SA_PASSWORD: 'R@@tr@@t1234'

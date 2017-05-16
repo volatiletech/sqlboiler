@@ -1,5 +1,7 @@
 package boilingcore
 
+import "github.com/vattle/sqlboiler/importers"
+
 // Config for the running of the commands
 type Config struct {
 	DriverName       string
@@ -17,6 +19,8 @@ type Config struct {
 	NoAutoTimestamps bool
 	Wipe             bool
 	StructTagCasing  string
+
+	Imports importers.Collection
 
 	Postgres PostgresConfig
 	MySQL    MySQLConfig

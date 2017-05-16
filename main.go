@@ -63,7 +63,7 @@ func main() {
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
 			`Complete documentation is available at http://github.com/volatiletech/sqlboiler`,
-		Example:       `sqlboiler postgres`,
+		Example:       `sqlboiler psql`,
 		PreRunE:       preRun,
 		RunE:          run,
 		PostRunE:      postRun,
@@ -91,13 +91,6 @@ func main() {
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
-
-	viper.SetDefault("postgres.sslmode", "require")
-	viper.SetDefault("postgres.port", "5432")
-	viper.SetDefault("mysql.sslmode", "true")
-	viper.SetDefault("mysql.port", "3306")
-	viper.SetDefault("mssql.sslmode", "true")
-	viper.SetDefault("mssql.port", "1433")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.AutomaticEnv()

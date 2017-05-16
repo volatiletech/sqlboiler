@@ -23,7 +23,7 @@ type templateData struct {
 	PkgName string
 	Schema  string
 
-	// Controls which code is output (mysql vs postgres ...)
+	// Controls which code is output (mysql vs pqsl ...)
 	DriverName      string
 	UseLastInsertID bool
 

@@ -8,9 +8,33 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
-// Interface for a database driver. Functionality required to support a specific
-// database type (eg, MySQL, Postgres etc.)
+// Interface abstracts either a side-effect imported driver or a binary
+// that is called in order to produce the data required for generation.
 type Interface interface {
+	Assemble(config map[string]interface{}) (*Assembly, error)
+}
+
+// Assembly is the database's properties and the table data from within.
+type Assembly struct {
+	Tables []Tables
+	Props  Properties
+}
+
+// Properties describes the databases requirements in terms of which features
+// it supports and what kind of quoting mechanisms it uses.
+type Properties struct {
+	LQ rune
+	RQ rune
+
+	UseLastInsertID   bool
+	IndexPlaceholders bool
+	UseTopClause      bool
+}
+
+// Constructor breaks down the functionality required to implement a driver
+// such that the bdb.Tables method can be used to reduce duplication in driver
+// implementations.
+type Constructor interface {
 	TableNames(schema string, whitelist, blacklist []string) ([]string, error)
 	Columns(schema, tableName string) ([]Column, error)
 	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
@@ -18,34 +42,14 @@ type Interface interface {
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
 	TranslateColumnType(Column) Column
-
-	// UseLastInsertID should return true if the driver is capable of using
-	// the sql.Exec result's LastInsertId
-	UseLastInsertID() bool
-
-	// UseTopClause should return true if the Database is capable of using
-	// the SQL TOP clause
-	UseTopClause() bool
-
-	// Open the database connection
-	Open() error
-	// Close the database connection
-	Close()
-
-	// Dialect helpers, these provide the values that will go into
-	// a queries.Dialect, so the query builder knows how to support
-	// your database driver properly.
-	LeftQuote() byte
-	RightQuote() byte
-	IndexPlaceholders() bool
 }
 
 // Tables returns the metadata for all tables, minus the tables
 // specified in the blacklist.
-func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table, error) {
+func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
 	var err error
 
-	names, err := db.TableNames(schema, whitelist, blacklist)
+	names, err := c.TableNames(schema, whitelist, blacklist)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get table names")
 	}
@@ -58,19 +62,19 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 			Name: name,
 		}
 
-		if t.Columns, err = db.Columns(schema, name); err != nil {
+		if t.Columns, err = c.Columns(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 
 		for i, c := range t.Columns {
-			t.Columns[i] = db.TranslateColumnType(c)
+			t.Columns[i] = c.TranslateColumnType(c)
 		}
 
-		if t.PKey, err = db.PrimaryKeyInfo(schema, name); err != nil {
+		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
 		}
 
-		if t.FKeys, err = db.ForeignKeyInfo(schema, name); err != nil {
+		if t.FKeys, err = c.ForeignKeyInfo(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
 		}
 

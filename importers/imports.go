@@ -6,26 +6,75 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Collection of imports for various templating purposes
 type Collection struct {
-	Standard     Set
-	TestStandard Set
+	Standard     Set `toml:"standard"`
+	TestStandard Set `toml:"test_standard"`
 
-	Singleton     Map
-	TestSingleton Map
+	Singleton     Map `toml:"singleton"`
+	TestSingleton Map `toml:"test_singleton"`
 
-	TestMain Map
+	TestMain Map `toml:"test_main"`
 
-	BasedOnType Map
+	BasedOnType Map `toml:"based_on_type"`
 }
 
 // imports defines the optional standard imports and
 // thirdParty imports (from github for example)
 type Set struct {
-	Standard   List
-	ThirdParty List
+	Standard   List `toml:"standard"`
+	ThirdParty List `toml:"third_party"`
+}
+
+// SetFromInterface creates a set from a theoretical map[string]interface{}.
+// This is to load from a loosely defined configuration file.
+func SetFromInterface(intf interface{}) (Set, error) {
+	s := Set{}
+
+	setIntf, ok := intf.(map[string]interface{})
+	if !ok {
+		return s, errors.New("import set should be map[string]interface{}")
+	}
+
+	standardIntf, ok := setIntf["standard"]
+	if ok {
+		standardsIntf, ok := standardIntf.([]interface{})
+		if !ok {
+			return s, errors.New("import set standards must be an slice")
+		}
+
+		s.Standard = List{}
+		for i, intf := range standardsIntf {
+			str, ok := intf.(string)
+			if !ok {
+				return s, errors.Errorf("import set standard slice element %d (%+v) must be string", i, s)
+			}
+			s.Standard = append(s.Standard, str)
+		}
+	}
+
+	thirdPartyIntf, ok := setIntf["third_party"]
+	if ok {
+		thirdPartysIntf, ok := thirdPartyIntf.([]interface{})
+		if !ok {
+			return s, errors.New("import set third_party must be an slice")
+		}
+
+		s.ThirdParty = List{}
+		for i, intf := range thirdPartysIntf {
+			str, ok := intf.(string)
+			if !ok {
+				return s, errors.Errorf("import set third party slice element %d (%+v) must be string", i, intf)
+			}
+			s.ThirdParty = append(s.ThirdParty, str)
+		}
+	}
+
+	return s, nil
 }
 
 // Map of type -> import

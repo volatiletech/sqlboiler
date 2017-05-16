@@ -5,7 +5,6 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 )
 
@@ -27,7 +26,46 @@ func TestSetFromInterface(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	spew.Dump(set)
+
+	if set.Standard[0] != "hello" {
+		t.Error("set was wrong:", set.Standard[0])
+	}
+	if set.Standard[1] != "there" {
+		t.Error("set was wrong:", set.Standard[1])
+	}
+	if set.ThirdParty[0] != "there" {
+		t.Error("set was wrong:", set.ThirdParty[0])
+	}
+	if set.ThirdParty[1] != "hello" {
+		t.Error("set was wrong:", set.ThirdParty[1])
+	}
+}
+
+func TestMapFromInterface(t *testing.T) {
+	t.Parallel()
+
+	mapIntf := map[string]interface{}{
+		"test_main": map[string]interface{}{
+			"standard": []interface{}{
+				"hello",
+				"there",
+			},
+			"third_party": []interface{}{
+				"there",
+				"hello",
+			},
+		},
+	}
+
+	mp, err := MapFromInterface(mapIntf)
+	if err != nil {
+		t.Error(err)
+	}
+
+	set, ok := mp["test_main"]
+	if !ok {
+		t.Error("could not find set 'test_main'")
+	}
 
 	if set.Standard[0] != "hello" {
 		t.Error("set was wrong:", set.Standard[0])

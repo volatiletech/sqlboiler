@@ -23,7 +23,7 @@ type Collection struct {
 	BasedOnType Map `toml:"based_on_type"`
 }
 
-// imports defines the optional standard imports and
+// Set defines the optional standard imports and
 // thirdParty imports (from github for example)
 type Set struct {
 	Standard   List `toml:"standard"`
@@ -79,6 +79,28 @@ func SetFromInterface(intf interface{}) (Set, error) {
 
 // Map of type -> import
 type Map map[string]Set
+
+// MapFromInterface creates a Map from a theoretical map[string]interface{}.
+// This is to load from a loosely defined configuration file.
+func MapFromInterface(intf interface{}) (Map, error) {
+	m := Map{}
+
+	mapIntf, ok := intf.(map[string]interface{})
+	if !ok {
+		return m, errors.New("import map should be map[string]interface{}")
+	}
+
+	for k, v := range mapIntf {
+		s, err := SetFromInterface(v)
+		if err != nil {
+			return nil, err
+		}
+
+		m[k] = s
+	}
+
+	return m, nil
+}
 
 // List of imports
 type List []string

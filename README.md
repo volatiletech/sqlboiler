@@ -219,7 +219,7 @@ go get -u -t github.com/vattle/sqlboiler
 
 #### Configuration
 
-Create a configuration file. Because the project uses [viper](github.com/spf13/viper), TOML, JSON and YAML
+Create a configuration file. Because the project uses [viper](https://github.com/spf13/viper), TOML, JSON and YAML
 are all supported. Environment variables are also able to be used.
 We will assume TOML for the rest of the documentation.
 

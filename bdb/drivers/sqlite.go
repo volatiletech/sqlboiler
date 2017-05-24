@@ -53,7 +53,7 @@ func (m *SQLiteDriver) Close() {
 	m.dbConn.Close()
 }
 
-// UseLastInsertID returns false for postgres
+// UseLastInsertID returns false for sqlite
 func (m *SQLiteDriver) UseLastInsertID() bool {
 	return true
 }
@@ -63,7 +63,7 @@ func (m *SQLiteDriver) UseTopClause() bool {
 	return false
 }
 
-// TableNames connects to the postgres database and
+// TableNames connects to the sqlite database and
 // retrieves all table names from sqlite_master
 func (m *SQLiteDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var args []interface{}
@@ -193,11 +193,21 @@ func (m *SQLiteDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 		return nil, err
 	}
 
+	query := "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ? AND sql LIKE '%AUTOINCREMENT%'"
+	result, err := m.dbConn.Query(query, tableName)
+	if err != nil {
+		return nil, err
+	}
+	autoIncr := result.Next()
+	if err := result.Close(); err != nil {
+		return nil, err
+	}
+
 	for _, column := range tinfo {
 		bColumn := bdb.Column{
 			Name:       column.Name,
-			FullDBType: column.Type,
-			DBType:     column.Type,
+			FullDBType: strings.ToUpper(column.Type),
+			DBType:     strings.ToUpper(column.Type),
 			Nullable:   !column.NotNull,
 		}
 
@@ -212,6 +222,8 @@ func (m *SQLiteDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 
 		if column.DefaultValue != nil && *column.DefaultValue != "NULL" {
 			bColumn.Default = *column.DefaultValue
+		} else if autoIncr {
+			bColumn.Default = "auto_increment"
 		}
 
 		columns = append(columns, bColumn)
@@ -277,7 +289,7 @@ func (m *SQLiteDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKe
 	return fkeys, nil
 }
 
-// TranslateColumnType converts postgres database types to Go types, for example
+// TranslateColumnType converts sqlite database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 // https://sqlite.org/datatype3.html

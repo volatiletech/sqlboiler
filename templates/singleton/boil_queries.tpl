@@ -80,6 +80,11 @@ func deleteConflictsBeforeMerge(tx *sql.Tx, conflict conflictingUniqueKey, prima
 		args = append(args, value)
 	}
 
+	// if no rows found, no need to delete anything
+	if len(args) < 2 {
+		return nil
+	}
+
 	query = fmt.Sprintf(
 		"DELETE FROM %s WHERE %s = %s AND %s IN (%s)",
 		conflict.table, conflict.objectIdColumn, strmangle.Placeholders(dialect.IndexPlaceholders, 1, 1, 1),

@@ -16,7 +16,7 @@ func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}G(mods ...qm.QueryMod
 {{- if not (eq $txt.Function.Name $txt.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
 func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, mods ...qm.QueryMod) {{$tableNameSingular}}Query {
 	queryMods := []qm.QueryMod{
-		qm.Select("{{id 0 | $dot.Quotes}}.*"),
+		qm.Select("{{$schemaForeignTable}}.*"),
 	}
 
 	if len(mods) != 0 {
@@ -25,17 +25,18 @@ func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, 
 
 		{{if .ToJoinTable -}}
 	queryMods = append(queryMods,
-		qm.InnerJoin("{{.JoinTable | $dot.SchemaTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}}"),
-		qm.Where("{{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		{{$schemaJoinTable := .JoinTable | $.SchemaTable -}}
+		qm.InnerJoin("{{$schemaJoinTable}} on {{$schemaForeignTable}}.{{.ForeignColumn | $dot.Quotes}} = {{$schemaJoinTable}}.{{.JoinForeignColumn | $dot.Quotes}}"),
+		qm.Where("{{$schemaJoinTable}}.{{.JoinLocalColumn | $dot.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
 	)
 		{{else -}}
 	queryMods = append(queryMods,
-		qm.Where("{{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		qm.Where("{{$schemaForeignTable}}.{{.ForeignColumn | $dot.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
 	)
 		{{end}}
 
 	query := {{$txt.ForeignTable.NamePluralGo}}(exec, queryMods...)
-	queries.SetFrom(query.Query, "{{$schemaForeignTable}} as {{id 0 | $dot.Quotes}}")
+	queries.SetFrom(query.Query, "{{$schemaForeignTable}}")
 	return query
 }
 

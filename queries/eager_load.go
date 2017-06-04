@@ -241,6 +241,9 @@ func collectLoaded(key string, loadingFrom reflect.Value) (reflect.Value, bindKi
 	if loadedType.Elem().Kind() == reflect.Struct {
 		bkind = kindStruct
 		loadedType = reflect.SliceOf(loadedType)
+	} else {
+		// Ensure that we get rid of all the helper "XSlice" types
+		loadedType = reflect.SliceOf(loadedType.Elem())
 	}
 
 	collection := reflect.MakeSlice(loadedType, 0, 0)

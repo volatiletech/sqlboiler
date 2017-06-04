@@ -93,7 +93,7 @@ func SchemaTable(lq, rq string, driver string, schema string, table string) stri
 	return fmt.Sprintf(`%s%s%s`, lq, table, rq)
 }
 
-// IdentQuote attempts to quote simple identifiers in SQL tatements
+// IdentQuote attempts to quote simple identifiers in SQL statements
 func IdentQuote(lq byte, rq byte, s string) string {
 	if strings.ToLower(s) == "null" || s == "?" {
 		return s

@@ -112,6 +112,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		if len(conflict) == 0 {
 			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
 			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
+		} else {
+			conflict = conflictColumns
 		}
 		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
 		{{else if eq .DriverName "mysql"}}

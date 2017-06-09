@@ -150,7 +150,7 @@ jobs:
           name: Run Tests
           command: |
             cd $ROOTPATH
-            cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql
+#           cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql
             go test -v -race ./... | tee test_out.txt
 
       - run:

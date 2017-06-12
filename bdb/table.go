@@ -8,7 +8,9 @@ type Table struct {
 	// For dbs with real schemas, like Postgres.
 	// Example value: "schema_name"."table_name"
 	SchemaName string
-	Columns    []Column
+
+	Columns             []Column
+	AutoIncrementColumn string
 
 	PKey  *PrimaryKey
 	UKeys []UniqueKey

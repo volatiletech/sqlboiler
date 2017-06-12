@@ -115,7 +115,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		}
 		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
 		{{else if eq .DriverName "mysql"}}
-		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
+		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert, {{$varNameSingular}}AutoIncrementColumn)
 		cache.retQuery = fmt.Sprintf(
 			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),

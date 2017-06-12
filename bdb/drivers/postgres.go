@@ -270,6 +270,10 @@ func (p *PostgresDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKe
 	return []bdb.UniqueKey{}, errors.New("not implemented")
 }
 
+func (p *PostgresDriver) AutoincrementInfo(schema, tableName string) (string, error) {
+	return "", errors.New("not implemented")
+}
+
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	var fkeys []bdb.ForeignKey

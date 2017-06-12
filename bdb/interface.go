@@ -10,6 +10,7 @@ type Interface interface {
 	Columns(schema, tableName string) ([]Column, error)
 	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
 	UniqueKeyInfo(schema, tableName string) ([]UniqueKey, error)
+	AutoincrementInfo(schema, tableName string) (string, error)
 	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
@@ -70,6 +71,10 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 
 		if t.FKeys, err = db.ForeignKeyInfo(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
+		}
+
+		if t.AutoIncrementColumn, err = db.AutoincrementInfo(schema, name); err != nil {
+			return nil, errors.Wrapf(err, "unable to fetch table autoincrement info (%s)", name)
 		}
 
 		setIsJoinTable(&t)

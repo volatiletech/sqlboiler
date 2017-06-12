@@ -8,13 +8,13 @@ import (
 	"strings"
 
 	"github.com/kat-co/vala"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/lbryio/sqlboiler/bdb/drivers"
 	"github.com/lbryio/sqlboiler/boilingcore"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-const sqlBoilerVersion = "2.3.0"
+const sqlBoilerVersion = "2.4.0+lbry"
 
 var (
 	cmdState  *boilingcore.State

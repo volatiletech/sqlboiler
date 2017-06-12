@@ -62,6 +62,10 @@ func (m *MockDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, e
 	return []bdb.UniqueKey{}, nil
 }
 
+func (m *MockDriver) AutoincrementInfo(schema, tableName string) (string, error) {
+	return "", nil
+}
+
 // ForeignKeyInfo returns a list of mock foreignkeys
 func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	return map[string][]bdb.ForeignKey{

@@ -272,6 +272,38 @@ func (m *MySQLDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, 
 	return ukeys, nil
 }
 
+// AutoincrementInfo retrieves the autoincrement column for a given table name, if one exists.
+func (m *MySQLDriver) AutoincrementInfo(schema, tableName string) (string, error) {
+	query := `
+	select column_name
+	from information_schema.columns
+	where table_schema = ? and table_name = ? and extra like "%auto_increment%"
+	`
+
+	var rows *sql.Rows
+	var err error
+	if rows, err = m.dbConn.Query(query, schema, tableName); err != nil {
+		return "", err
+	}
+
+	for rows.Next() {
+		var column string
+
+		err = rows.Scan(&column)
+		if err != nil {
+			return "", err
+		}
+
+		return column, nil
+	}
+
+	if err = rows.Err(); err != nil {
+		return "", err
+	}
+
+	return "", nil
+}
+
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	var fkeys []bdb.ForeignKey

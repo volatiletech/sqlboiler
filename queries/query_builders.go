@@ -190,7 +190,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 // BuildUpsertQueryMySQL builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []string) string {
+func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []string, autoIncrementCol string) string {
 	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
 
 	buf := strmangle.GetBuffer()
@@ -219,6 +219,11 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 		columns,
 		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
 	)
+
+	// https://stackoverflow.com/questions/778534/mysql-on-duplicate-key-last-insert-id
+	if autoIncrementCol != "" {
+		buf.WriteString(autoIncrementCol + " = LAST_INSERT_ID(" + autoIncrementCol + "), ")
+	}
 
 	for i, v := range update {
 		if i != 0 {

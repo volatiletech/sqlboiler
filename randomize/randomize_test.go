@@ -150,6 +150,7 @@ func TestRandEnumValue(t *testing.T) {
 
 	enum1 := "enum.workday('monday','tuesday')"
 	enum2 := "enum('monday','tuesday')"
+	enum3 := "enum('monday')"
 
 	r1, err := randEnumValue(enum1)
 	if err != nil {
@@ -157,7 +158,7 @@ func TestRandEnumValue(t *testing.T) {
 	}
 
 	if r1 != "monday" && r1 != "tuesday" {
-		t.Errorf("Expected monday or tueday, got: %q", r1)
+		t.Errorf("Expected monday or tuesday, got: %q", r1)
 	}
 
 	r2, err := randEnumValue(enum2)
@@ -166,6 +167,15 @@ func TestRandEnumValue(t *testing.T) {
 	}
 
 	if r2 != "monday" && r2 != "tuesday" {
-		t.Errorf("Expected monday or tueday, got: %q", r2)
+		t.Errorf("Expected monday or tuesday, got: %q", r2)
+	}
+
+	r3, err := randEnumValue(enum3)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if r3 != "monday" {
+		t.Errorf("Expected monday got: %q", r3)
 	}
 }

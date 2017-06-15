@@ -310,7 +310,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			}
 		case "float":
 			c.Type = "null.Float32"
-		case "double", "double precision", "real":
+		case "double", "double precision", "real", "decimal":
 			c.Type = "null.Float64"
 		case "boolean", "bool":
 			c.Type = "null.Bool"

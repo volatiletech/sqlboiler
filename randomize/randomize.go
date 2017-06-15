@@ -627,6 +627,8 @@ func randEnumValue(enum string) (string, error) {
 	vals := strmangle.ParseEnumVals(enum)
 	if vals == nil || len(vals) == 0 {
 		return "", fmt.Errorf("unable to parse enum string: %s", enum)
+	} else if len(vals) == 1 {
+		return vals[0], nil
 	}
 
 	return vals[rand.Intn(len(vals)-1)], nil

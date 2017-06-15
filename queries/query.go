@@ -188,6 +188,11 @@ func SetSelect(q *Query, sel []string) {
 	q.selectCols = sel
 }
 
+// GetSelect from the query
+func GetSelect(q *Query) []string {
+	return q.selectCols
+}
+
 // SetCount on the query.
 func SetCount(q *Query) {
 	q.count = true

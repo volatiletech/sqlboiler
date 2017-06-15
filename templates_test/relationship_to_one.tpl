@@ -13,10 +13,10 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.
 	var foreign {{$txt.ForeignTable.NameGo}}
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, {{$varNameSingular}}DBTypes, {{if .Nullable}}true{{else}}false{{end}}, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, {{$foreignVarNameSingular}}DBTypes, true, {{$foreignVarNameSingular}}ColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &foreign, {{$foreignVarNameSingular}}DBTypes, {{if .ForeignColumnNullable}}true{{else}}false{{end}}, {{$foreignVarNameSingular}}ColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize {{$txt.ForeignTable.NameGo}} struct: %s", err)
 	}
 

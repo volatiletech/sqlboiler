@@ -2,6 +2,8 @@
 {{else -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $modelName := $tableNameSingular | titleCase -}}
+{{- $tableName := .Table.Name -}}
 var (
 	{{$varNameSingular}}Columns               = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
 	{{if eq .DriverName "mssql" -}}
@@ -10,6 +12,12 @@ var (
 	{{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{$varNameSingular}}ColumnsWithDefault    = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{$varNameSingular}}PrimaryKeyColumns     = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+)
+
+const (
+    {{range $column := .Table.Columns | columnNames -}}
+        {{$modelName}}{{titleCase $column}} = "{{$tableName}}.{{$column}}"
+    {{end -}}
 )
 
 type (

@@ -39,12 +39,12 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 			{{- $schemaJoinTable := .JoinTable | $dot.SchemaTable -}}
 	query := fmt.Sprintf(
 		"select {{id 0 | $dot.Quotes}}.*, {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} from {{$schemaForeignTable}} as {{id 0 | $dot.Quotes}} inner join {{$schemaJoinTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}} where {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
 	)
 		{{else -}}
 	query := fmt.Sprintf(
 		"select * from {{$schemaForeignTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
 	)
 		{{end -}}
 

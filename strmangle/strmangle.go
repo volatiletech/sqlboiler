@@ -445,8 +445,8 @@ func PrefixStringSlice(str string, strs []string) []string {
 // Placeholders generates the SQL statement placeholders for in queries.
 // For example, ($1,$2,$3),($4,$5,$6) etc.
 // It will start counting placeholders at "start".
-// If indexPlaceholders is false, it will convert to ? instead of $1 etc.
-func Placeholders(indexPlaceholders bool, count int, start int, group int) string {
+// If useIndexPlaceholders is false, it will convert to ? instead of $1 etc.
+func Placeholders(useIndexPlaceholders bool, count int, start int, group int) string {
 	buf := GetBuffer()
 	defer PutBuffer(buf)
 
@@ -465,7 +465,7 @@ func Placeholders(indexPlaceholders bool, count int, start int, group int) strin
 				buf.WriteByte(',')
 			}
 		}
-		if indexPlaceholders {
+		if useIndexPlaceholders {
 			buf.WriteString(fmt.Sprintf("$%d", start+i))
 		} else {
 			buf.WriteByte('?')

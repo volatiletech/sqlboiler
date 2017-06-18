@@ -326,7 +326,7 @@ func (s *State) initDriver(driverName string) error {
 
 	s.Dialect.LQ = s.Driver.LeftQuote()
 	s.Dialect.RQ = s.Driver.RightQuote()
-	s.Dialect.IndexPlaceholders = s.Driver.IndexPlaceholders()
+	s.Dialect.UseIndexPlaceholders = s.Driver.UseIndexPlaceholders()
 	s.Dialect.UseTopClause = s.Driver.UseTopClause()
 
 	return nil

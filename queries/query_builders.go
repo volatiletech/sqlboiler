@@ -89,7 +89,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			args = append(args, j.args...)
 		}
 		var resp string
-		if q.dialect.IndexPlaceholders {
+		if q.dialect.UseIndexPlaceholders {
 			resp, _ = convertQuestionMarks(joinBuf.String(), argsLen+1)
 		} else {
 			resp = joinBuf.String()
@@ -166,7 +166,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	setSlice := make([]string, len(cols))
 	for index, col := range cols {
-		setSlice[index] = fmt.Sprintf("%s = %s", col, strmangle.Placeholders(q.dialect.IndexPlaceholders, 1, index+1, 1))
+		setSlice[index] = fmt.Sprintf("%s = %s", col, strmangle.Placeholders(q.dialect.UseIndexPlaceholders, 1, index+1, 1))
 	}
 	fmt.Fprintf(buf, " SET %s", strings.Join(setSlice, ", "))
 
@@ -207,7 +207,7 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 			"INSERT IGNORE INTO %s (%s) VALUES (%s)",
 			tableName,
 			columns,
-			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
+			strmangle.Placeholders(dia.UseIndexPlaceholders, len(whitelist), 1, 1),
 		)
 		return buf.String()
 	}
@@ -217,7 +217,7 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 		"INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE ",
 		tableName,
 		columns,
-		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
+		strmangle.Placeholders(dia.UseIndexPlaceholders, len(whitelist), 1, 1),
 	)
 
 	for i, v := range update {
@@ -247,7 +247,7 @@ func BuildUpsertQueryPostgres(dia Dialect, tableName string, updateOnConflict bo
 	if len(whitelist) != 0 {
 		columns = fmt.Sprintf("(%s) VALUES (%s)",
 			strings.Join(whitelist, ", "),
-			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1))
+			strmangle.Placeholders(dia.UseIndexPlaceholders, len(whitelist), 1, 1))
 	}
 
 	fmt.Fprintf(
@@ -294,7 +294,7 @@ func BuildUpsertQueryMSSQL(dia Dialect, tableName string, primary, update, inser
 
 	fmt.Fprintf(buf, "MERGE INTO %s as [t]\n", tableName)
 	fmt.Fprintf(buf, "USING (SELECT %s) as [s] ([%s])\n",
-		strmangle.Placeholders(dia.IndexPlaceholders, len(primary), startIndex, 1),
+		strmangle.Placeholders(dia.UseIndexPlaceholders, len(primary), startIndex, 1),
 		strings.Join(primary, string(dia.RQ)+","+string(dia.LQ)))
 	fmt.Fprint(buf, "ON (")
 	for i, v := range primary {
@@ -315,7 +315,7 @@ func BuildUpsertQueryMSSQL(dia Dialect, tableName string, primary, update, inser
 	fmt.Fprint(buf, "WHEN NOT MATCHED THEN ")
 	fmt.Fprintf(buf, "INSERT (%s) VALUES (%s)",
 		strings.Join(insert, ", "),
-		strmangle.Placeholders(dia.IndexPlaceholders, len(insert), startIndex, 1))
+		strmangle.Placeholders(dia.UseIndexPlaceholders, len(insert), startIndex, 1))
 
 	if len(output) > 0 {
 		fmt.Fprintf(buf, "\nOUTPUT INSERTED.[%s];", strings.Join(output, "],INSERTED.["))
@@ -343,7 +343,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 			*args = append(*args, j.args...)
 		}
 		var resp string
-		if q.dialect.IndexPlaceholders {
+		if q.dialect.UseIndexPlaceholders {
 			resp, _ = convertQuestionMarks(havingBuf.String(), argsLen+1)
 		} else {
 			resp = havingBuf.String()
@@ -471,7 +471,7 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 	}
 
 	var resp string
-	if q.dialect.IndexPlaceholders {
+	if q.dialect.UseIndexPlaceholders {
 		resp, _ = convertQuestionMarks(buf.String(), startAt)
 	} else {
 		resp = buf.String()
@@ -515,7 +515,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 		// column name side, however if this case is being hit then the regexp
 		// probably needs adjustment, or the user is passing in invalid clauses.
 		if matches == nil {
-			clause, count := convertInQuestionMarks(q.dialect.IndexPlaceholders, in.clause, startAt, 1, ln)
+			clause, count := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, in.clause, startAt, 1, ln)
 			buf.WriteString(clause)
 			startAt = startAt + count
 		} else {
@@ -530,7 +530,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 
 			var leftClause string
 			var leftCount int
-			if q.dialect.IndexPlaceholders {
+			if q.dialect.UseIndexPlaceholders {
 				leftClause, leftCount = convertQuestionMarks(strings.Join(cols, ","), startAt)
 			} else {
 				// Count the number of cols that are question marks, so we know
@@ -542,7 +542,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 				}
 				leftClause = strings.Join(cols, ",")
 			}
-			rightClause, rightCount := convertInQuestionMarks(q.dialect.IndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
+			rightClause, rightCount := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
 			buf.WriteString(leftClause)
 			buf.WriteString(" IN ")
 			buf.WriteString(rightClause)
@@ -560,7 +560,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 // It uses groupAt to determine how many placeholders should be in each group,
 // for example, groupAt 2 would result in: (($1,$2),($3,$4))
 // and groupAt 1 would result in ($1,$2,$3,$4)
-func convertInQuestionMarks(indexPlaceholders bool, clause string, startAt, groupAt, total int) (string, int) {
+func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, groupAt, total int) (string, int) {
 	if startAt == 0 || len(clause) == 0 {
 		panic("Not a valid start number.")
 	}
@@ -582,7 +582,7 @@ func convertInQuestionMarks(indexPlaceholders bool, clause string, startAt, grou
 
 	paramBuf.WriteString(clause[:foundAt])
 	paramBuf.WriteByte('(')
-	paramBuf.WriteString(strmangle.Placeholders(indexPlaceholders, total, startAt, groupAt))
+	paramBuf.WriteString(strmangle.Placeholders(UseIndexPlaceholders, total, startAt, groupAt))
 	paramBuf.WriteByte(')')
 	paramBuf.WriteString(clause[foundAt+1:])
 

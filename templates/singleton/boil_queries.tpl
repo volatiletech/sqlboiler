@@ -1,7 +1,7 @@
 var dialect = queries.Dialect{
 	LQ: 0x{{printf "%x" .Dialect.LQ}},
 	RQ: 0x{{printf "%x" .Dialect.RQ}},
-	IndexPlaceholders: {{.Dialect.IndexPlaceholders}},
+	UseIndexPlaceholders: {{.Dialect.UseIndexPlaceholders}},
 	UseTopClause: {{.Dialect.UseTopClause}},
 }
 

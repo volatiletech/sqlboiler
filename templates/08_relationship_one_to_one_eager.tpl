@@ -36,7 +36,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	query := fmt.Sprintf(
 		"select * from {{.ForeignTable | $dot.SchemaTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
 	)
 
 	if boil.DebugMode {

@@ -137,7 +137,7 @@ func (m *MockDriver) LeftQuote() byte {
 	return '"'
 }
 
-// IndexPlaceholders returns true to indicate fake support of indexed placeholders
-func (m *MockDriver) IndexPlaceholders() bool {
+// UseIndexPlaceholders returns true to indicate fake support of indexed placeholders
+func (m *MockDriver) UseIndexPlaceholders() bool {
 	return false
 }

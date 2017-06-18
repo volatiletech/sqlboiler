@@ -51,7 +51,7 @@ type Dialect struct {
 	RQ byte
 	// Bool flag indicating whether indexed
 	// placeholders ($1) are used, or ? placeholders.
-	IndexPlaceholders bool
+	UseIndexPlaceholders bool
 	// Bool flag indicating whether "TOP" or "LIMIT" clause
 	// must be used for rows limitation
 	UseTopClause bool

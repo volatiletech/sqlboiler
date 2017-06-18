@@ -620,19 +620,19 @@ func TestRemoveDuplicates(t *testing.T) {
 		return nil
 	}
 
-	if len(removeDuplicates([]string{})) != 0 {
+	if len(RemoveDuplicates([]string{})) != 0 {
 		t.Error("It should have returned an empty slice")
 	}
 
 	oneItem := []string{"patrick"}
-	slice := removeDuplicates(oneItem)
+	slice := RemoveDuplicates(oneItem)
 	if ln := len(slice); ln != 1 {
 		t.Error("Length was wrong:", ln)
 	} else if oneItem[0] != slice[0] {
 		t.Errorf("Slices differ: %#v %#v", oneItem, slice)
 	}
 
-	slice = removeDuplicates([]string{"hello", "patrick", "hello"})
+	slice = RemoveDuplicates([]string{"hello", "patrick", "hello"})
 	if ln := len(slice); ln != 2 {
 		t.Error("Length was wrong:", ln)
 	}
@@ -640,7 +640,7 @@ func TestRemoveDuplicates(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice = removeDuplicates([]string{"five", "patrick", "hello", "hello", "patrick", "hello", "hello"})
+	slice = RemoveDuplicates([]string{"five", "patrick", "hello", "hello", "patrick", "hello", "hello"})
 	if ln := len(slice); ln != 3 {
 		t.Error("Length was wrong:", ln)
 	}

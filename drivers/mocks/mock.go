@@ -1,4 +1,4 @@
-package drivers
+package mocks
 
 import (
 	"github.com/volatiletech/sqlboiler/drivers"
@@ -77,8 +77,51 @@ func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreign
 
 // TranslateColumnType converts a column to its "null." form if it is nullable
 func (m *MockDriver) TranslateColumnType(c drivers.Column) drivers.Column {
-	p := &PostgresDriver{}
-	return p.TranslateColumnType(c)
+	if c.Nullable {
+		switch c.DBType {
+		case "bigint", "bigserial":
+			c.Type = "null.Int64"
+		case "integer", "serial":
+			c.Type = "null.Int"
+		case "smallint", "smallserial":
+			c.Type = "null.Int16"
+		case "decimal", "numeric", "double precision":
+			c.Type = "null.Float64"
+		case `"char"`:
+			c.Type = "null.Byte"
+		case "bytea":
+			c.Type = "null.Bytes"
+		case "boolean":
+			c.Type = "null.Bool"
+		case "date", "time", "timestamp without time zone", "timestamp with time zone":
+			c.Type = "null.Time"
+		default:
+			c.Type = "null.String"
+		}
+	} else {
+		switch c.DBType {
+		case "bigint", "bigserial":
+			c.Type = "int64"
+		case "integer", "serial":
+			c.Type = "int"
+		case "smallint", "smallserial":
+			c.Type = "int16"
+		case "decimal", "numeric", "double precision":
+			c.Type = "float64"
+		case `"char"`:
+			c.Type = "types.Byte"
+		case "bytea":
+			c.Type = "[]byte"
+		case "boolean":
+			c.Type = "bool"
+		case "date", "time", "timestamp without time zone", "timestamp with time zone":
+			c.Type = "time.Time"
+		default:
+			c.Type = "string"
+		}
+	}
+
+	return c
 }
 
 // PrimaryKeyInfo returns mock primary key info for the passed in table name

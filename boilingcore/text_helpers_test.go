@@ -6,12 +6,13 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/drivers/mocks"
 )
 
 func TestTxtsFromOne(t *testing.T) {
 	t.Parallel()
 
-	tables, err := drivers.Tables(&drivers.MockDriver{}, "public", nil, nil)
+	tables, err := drivers.Tables(&mocks.MockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +71,7 @@ func TestTxtsFromOne(t *testing.T) {
 func TestTxtsFromOneToOne(t *testing.T) {
 	t.Parallel()
 
-	tables, err := drivers.Tables(&drivers.MockDriver{}, "public", nil, nil)
+	tables, err := drivers.Tables(&mocks.MockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +116,7 @@ func TestTxtsFromOneToOne(t *testing.T) {
 func TestTxtsFromMany(t *testing.T) {
 	t.Parallel()
 
-	tables, err := drivers.Tables(&drivers.MockDriver{}, "public", nil, nil)
+	tables, err := drivers.Tables(&mocks.MockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

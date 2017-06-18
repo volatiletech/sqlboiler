@@ -30,6 +30,39 @@ type Set struct {
 	ThirdParty List `toml:"third_party"`
 }
 
+// Format the set into Go syntax (compatible with go imports)
+func (s Set) Format() []byte {
+	stdlen, thirdlen := len(s.Standard), len(s.ThirdParty)
+	if stdlen+thirdlen < 1 {
+		return []byte{}
+	}
+
+	if stdlen+thirdlen == 1 {
+		var imp string
+		if stdlen == 1 {
+			imp = s.Standard[0]
+		} else {
+			imp = s.ThirdParty[0]
+		}
+		return []byte(fmt.Sprintf("import %s", imp))
+	}
+
+	buf := &bytes.Buffer{}
+	buf.WriteString("import (")
+	for _, std := range s.Standard {
+		fmt.Fprintf(buf, "\n\t%s", std)
+	}
+	if stdlen != 0 && thirdlen != 0 {
+		buf.WriteString("\n")
+	}
+	for _, third := range s.ThirdParty {
+		fmt.Fprintf(buf, "\n\t%s", third)
+	}
+	buf.WriteString("\n)\n")
+
+	return buf.Bytes()
+}
+
 // SetFromInterface creates a set from a theoretical map[string]interface{}.
 // This is to load from a loosely defined configuration file.
 func SetFromInterface(intf interface{}) (Set, error) {
@@ -105,14 +138,17 @@ func MapFromInterface(intf interface{}) (Map, error) {
 // List of imports
 type List []string
 
+// Len implements sort.Interface.Len
 func (l List) Len() int {
 	return len(l)
 }
 
+// Swap implements sort.Interface.Swap
 func (l List) Swap(i, j int) {
 	l[i], l[j] = l[j], l[i]
 }
 
+// Less implements sort.Interface.Less
 func (l List) Less(i, j int) bool {
 	res := strings.Compare(strings.TrimLeft(l[i], "_ "), strings.TrimLeft(l[j], "_ "))
 	if res <= 0 {
@@ -392,38 +428,6 @@ func combineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
 	sort.Sort(tmpImp.ThirdParty)
 
 	return tmpImp
-}
-
-func buildImportString(imps Set) []byte {
-	stdlen, thirdlen := len(imps.Standard), len(imps.ThirdParty)
-	if stdlen+thirdlen < 1 {
-		return []byte{}
-	}
-
-	if stdlen+thirdlen == 1 {
-		var imp string
-		if stdlen == 1 {
-			imp = imps.Standard[0]
-		} else {
-			imp = imps.ThirdParty[0]
-		}
-		return []byte(fmt.Sprintf("import %s", imp))
-	}
-
-	buf := &bytes.Buffer{}
-	buf.WriteString("import (")
-	for _, std := range imps.Standard {
-		fmt.Fprintf(buf, "\n\t%s", std)
-	}
-	if stdlen != 0 && thirdlen != 0 {
-		buf.WriteString("\n")
-	}
-	for _, third := range imps.ThirdParty {
-		fmt.Fprintf(buf, "\n\t%s", third)
-	}
-	buf.WriteString("\n)\n")
-
-	return buf.Bytes()
 }
 
 func combineStringSlices(a, b []string) []string {

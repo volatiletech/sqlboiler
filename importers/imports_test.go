@@ -3,6 +3,7 @@ package importers
 import (
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -284,5 +285,29 @@ func TestCombineStringSlices(t *testing.T) {
 		t.Error("Len was wrong:", ln)
 	} else if slice[0] != a[0] || slice[1] != a[1] || slice[2] != b[0] || slice[3] != b[1] {
 		t.Errorf("Slice mismatch: %#v + %#v != #%v", a, b, slice)
+	}
+}
+
+var testImportStringExpect = `import (
+	"fmt"
+
+	"github.com/pkg/errors"
+)`
+
+func TestSetFormat(t *testing.T) {
+	t.Parallel()
+
+	s := Set{
+		Standard: List{
+			`"fmt"`,
+		},
+		ThirdParty: List{
+			`"github.com/pkg/errors"`,
+		},
+	}
+
+	got := strings.TrimSpace(string(s.Format()))
+	if got != testImportStringExpect {
+		t.Error("want:\n", testImportStringExpect, "\ngot:\n", got)
 	}
 }

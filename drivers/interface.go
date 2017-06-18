@@ -26,9 +26,9 @@ type Properties struct {
 	LQ rune
 	RQ rune
 
-	UseLastInsertID   bool
-	IndexPlaceholders bool
-	UseTopClause      bool
+	UseLastInsertID      bool
+	UseIndexPlaceholders bool
+	UseTopClause         bool
 }
 
 // Constructor breaks down the functionality required to implement a driver

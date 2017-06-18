@@ -1,4 +1,4 @@
-package bdb
+package drivers
 
 // ToOneRelationship describes a relationship between two tables where the local
 // table has no id, and the foregin table has an id that matches a column in the

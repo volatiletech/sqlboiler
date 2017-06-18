@@ -1,5 +1,5 @@
-// Package bdb supplies the sql(b)oiler (d)ata(b)ase abstractions.
-package bdb
+// Package drivers supplies the sql(b)oiler (d)ata(b)ase abstractions.
+package drivers
 
 import (
 	"sort"

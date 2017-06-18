@@ -1,4 +1,4 @@
-package bdb
+package drivers
 
 import (
 	"testing"

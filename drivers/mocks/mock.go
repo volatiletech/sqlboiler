@@ -1,7 +1,7 @@
 package drivers
 
 import (
-	"github.com/volatiletech/sqlboiler/bdb"
+	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -18,8 +18,8 @@ func (m *MockDriver) TableNames(schema string, whitelist, blacklist []string) ([
 }
 
 // Columns returns a list of mock columns
-func (m *MockDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
-	return map[string][]bdb.Column{
+func (m *MockDriver) Columns(schema, tableName string) ([]drivers.Column, error) {
+	return map[string][]drivers.Column{
 		"pilots": {
 			{Name: "id", Type: "int", DBType: "integer"},
 			{Name: "name", Type: "string", DBType: "character"},
@@ -59,8 +59,8 @@ func (m *MockDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
-	return map[string][]bdb.ForeignKey{
+func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
+	return map[string][]drivers.ForeignKey{
 		"jets": {
 			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},
 			{Table: "jets", Name: "jets_airport_id_fk", Column: "airport_id", ForeignTable: "airports", ForeignColumn: "id"},
@@ -76,14 +76,14 @@ func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey,
 }
 
 // TranslateColumnType converts a column to its "null." form if it is nullable
-func (m *MockDriver) TranslateColumnType(c bdb.Column) bdb.Column {
+func (m *MockDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 	p := &PostgresDriver{}
 	return p.TranslateColumnType(c)
 }
 
 // PrimaryKeyInfo returns mock primary key info for the passed in table name
-func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey, error) {
-	return map[string]*bdb.PrimaryKey{
+func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.PrimaryKey, error) {
+	return map[string]*drivers.PrimaryKey{
 		"pilots": {
 			Name:    "pilot_id_pkey",
 			Columns: []string{"id"},

@@ -16,23 +16,23 @@ type Interface interface {
 
 // Assembly is the database's properties and the table data from within.
 type Assembly struct {
-	Tables []Tables
-	Props  Properties
+	Tables  []Table
+	Dialect Dialect
 }
 
-// Properties describes the databases requirements in terms of which features
-// it supports and what kind of quoting mechanisms it uses.
-type Properties struct {
+// Dialect describes the databases requirements in terms of which features
+// it speaks and what kind of quoting mechanisms it uses.
+type Dialect struct {
 	LQ rune
 	RQ rune
 
-	UseLastInsertID      bool
 	UseIndexPlaceholders bool
+	UseLastInsertID      bool
 	UseTopClause         bool
 }
 
 // Constructor breaks down the functionality required to implement a driver
-// such that the bdb.Tables method can be used to reduce duplication in driver
+// such that the drivers.Tables method can be used to reduce duplication in driver
 // implementations.
 type Constructor interface {
 	TableNames(schema string, whitelist, blacklist []string) ([]string, error)
@@ -66,8 +66,8 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 
-		for i, c := range t.Columns {
-			t.Columns[i] = c.TranslateColumnType(c)
+		for i, col := range t.Columns {
+			t.Columns[i] = c.TranslateColumnType(col)
 		}
 
 		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {

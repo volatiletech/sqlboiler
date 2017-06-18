@@ -94,7 +94,7 @@ func SchemaTable(lq, rq string, driver string, schema string, table string) stri
 }
 
 // IdentQuote attempts to quote simple identifiers in SQL statements
-func IdentQuote(lq byte, rq byte, s string) string {
+func IdentQuote(lq rune, rq rune, s string) string {
 	if strings.ToLower(s) == "null" || s == "?" {
 		return s
 	}
@@ -112,21 +112,21 @@ func IdentQuote(lq byte, rq byte, s string) string {
 			buf.WriteByte('.')
 		}
 
-		if split[0] == lq || split[len(split)-1] == rq || split == "*" {
+		if rune(split[0]) == lq || rune(split[len(split)-1]) == rq || split == "*" {
 			buf.WriteString(split)
 			continue
 		}
 
-		buf.WriteByte(lq)
+		buf.WriteRune(lq)
 		buf.WriteString(split)
-		buf.WriteByte(rq)
+		buf.WriteRune(rq)
 	}
 
 	return buf.String()
 }
 
 // IdentQuoteSlice applies IdentQuote to a slice.
-func IdentQuoteSlice(lq byte, rq byte, s []string) []string {
+func IdentQuoteSlice(lq rune, rq rune, s []string) []string {
 	if len(s) == 0 {
 		return s
 	}
@@ -167,7 +167,7 @@ func Identifier(in int) string {
 
 // QuoteCharacter returns a string that allows the quote character
 // to be embedded into a Go string that uses double quotes:
-func QuoteCharacter(q byte) string {
+func QuoteCharacter(q rune) string {
 	if q == '"' {
 		return `\"`
 	}
@@ -691,4 +691,27 @@ func ReplaceReservedWords(word string) string {
 		return word + "_"
 	}
 	return word
+}
+
+// RemoveDuplicates from a string slice
+func RemoveDuplicates(dedup []string) []string {
+	if len(dedup) <= 1 {
+		return dedup
+	}
+
+	for i := 0; i < len(dedup)-1; i++ {
+		for j := i + 1; j < len(dedup); j++ {
+			if dedup[i] != dedup[j] {
+				continue
+			}
+
+			if j != len(dedup)-1 {
+				dedup[j] = dedup[len(dedup)-1]
+				j--
+			}
+			dedup = dedup[:len(dedup)-1]
+		}
+	}
+
+	return dedup
 }

@@ -3,6 +3,8 @@ package strmangle
 import (
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func TestIdentQuote(t *testing.T) {
@@ -600,5 +602,49 @@ func TestReplaceReservedWords(t *testing.T) {
 		} else if !test.Replace && strings.HasSuffix(got, "_") {
 			t.Errorf("%i) want normal (%s), got: %s", i, test.Word, got)
 		}
+	}
+}
+
+func TestRemoveDuplicates(t *testing.T) {
+	t.Parallel()
+
+	hasDups := func(possible []string) error {
+		for i := 0; i < len(possible)-1; i++ {
+			for j := i + 1; j < len(possible); j++ {
+				if possible[i] == possible[j] {
+					return errors.Errorf("found duplicate: %s [%d] [%d]", possible[i], i, j)
+				}
+			}
+		}
+
+		return nil
+	}
+
+	if len(removeDuplicates([]string{})) != 0 {
+		t.Error("It should have returned an empty slice")
+	}
+
+	oneItem := []string{"patrick"}
+	slice := removeDuplicates(oneItem)
+	if ln := len(slice); ln != 1 {
+		t.Error("Length was wrong:", ln)
+	} else if oneItem[0] != slice[0] {
+		t.Errorf("Slices differ: %#v %#v", oneItem, slice)
+	}
+
+	slice = removeDuplicates([]string{"hello", "patrick", "hello"})
+	if ln := len(slice); ln != 2 {
+		t.Error("Length was wrong:", ln)
+	}
+	if err := hasDups(slice); err != nil {
+		t.Error(err)
+	}
+
+	slice = removeDuplicates([]string{"five", "patrick", "hello", "hello", "patrick", "hello", "hello"})
+	if ln := len(slice); ln != 3 {
+		t.Error("Length was wrong:", ln)
+	}
+	if err := hasDups(slice); err != nil {
+		t.Error(err)
 	}
 }

@@ -5,19 +5,18 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/volatiletech/sqlboiler/bdb"
-	"github.com/volatiletech/sqlboiler/bdb/drivers"
+	"github.com/volatiletech/sqlboiler/drivers"
 )
 
 func TestTxtsFromOne(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(&drivers.MockDriver{}, "public", nil, nil)
+	tables, err := drivers.Tables(&drivers.MockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	jets := bdb.GetTable(tables, "jets")
+	jets := drivers.GetTable(tables, "jets")
 	texts := txtsFromFKey(tables, jets, jets.FKeys[0])
 	expect := TxtToOne{}
 
@@ -71,16 +70,16 @@ func TestTxtsFromOne(t *testing.T) {
 func TestTxtsFromOneToOne(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(&drivers.MockDriver{}, "public", nil, nil)
+	tables, err := drivers.Tables(&drivers.MockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pilots := bdb.GetTable(tables, "pilots")
+	pilots := drivers.GetTable(tables, "pilots")
 	texts := txtsFromOneToOne(tables, pilots, pilots.ToOneRelationships[0])
 	expect := TxtToOne{}
 
-	expect.ForeignKey = bdb.ForeignKey{
+	expect.ForeignKey = drivers.ForeignKey{
 		Name: "none",
 
 		Table:    "jets",
@@ -116,12 +115,12 @@ func TestTxtsFromOneToOne(t *testing.T) {
 func TestTxtsFromMany(t *testing.T) {
 	t.Parallel()
 
-	tables, err := bdb.Tables(&drivers.MockDriver{}, "public", nil, nil)
+	tables, err := drivers.Tables(&drivers.MockDriver{}, "public", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pilots := bdb.GetTable(tables, "pilots")
+	pilots := drivers.GetTable(tables, "pilots")
 	texts := txtsFromToMany(tables, pilots, pilots.ToManyRelationships[0])
 	expect := TxtToMany{}
 	expect.LocalTable.NameGo = "Pilot"
@@ -195,7 +194,7 @@ func TestTxtNameToOne(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		fk := bdb.ForeignKey{
+		fk := drivers.ForeignKey{
 			Table: test.Table, Column: test.Column, Unique: test.Unique,
 			ForeignTable: test.ForeignTable, ForeignColumn: test.ForeignColumn, ForeignColumnUnique: test.ForeignColumnUnique,
 		}
@@ -244,7 +243,7 @@ func TestTxtNameToMany(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		fk := bdb.ToManyRelationship{
+		fk := drivers.ToManyRelationship{
 			Table: test.Table, Column: test.Column,
 			ForeignTable: test.ForeignTable, ForeignColumn: test.ForeignColumn,
 			ToJoinTable:     test.ToJoinTable,

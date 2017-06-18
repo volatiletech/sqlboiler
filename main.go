@@ -10,7 +10,6 @@ import (
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/bdb/drivers"
 	"github.com/volatiletech/sqlboiler/boilingcore"
 )
 
@@ -225,7 +224,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 
 		// Set MySQL TinyintAsBool global var. This flag only applies to MySQL.
-		drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
+		// TODO: Fix TinyIntAsBool flag
+		//drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
 
 		// MySQL doesn't have schemas, just databases
 		cmdConfig.Schema = cmdConfig.MySQL.DBName

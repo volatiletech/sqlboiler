@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -190,7 +191,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 }
 
 // BuildUpsertQueryMySQL builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []string) string {
+func BuildUpsertQueryMySQL(dia drivers.Dialect, tableName string, update, whitelist []string) string {
 	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
 
 	buf := strmangle.GetBuffer()
@@ -235,7 +236,7 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 }
 
 // BuildUpsertQueryPostgres builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryPostgres(dia Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
+func BuildUpsertQueryPostgres(dia drivers.Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
 	conflict = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, conflict)
 	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
 	ret = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, ret)
@@ -284,7 +285,7 @@ func BuildUpsertQueryPostgres(dia Dialect, tableName string, updateOnConflict bo
 }
 
 // BuildUpsertQueryMSSQL builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryMSSQL(dia Dialect, tableName string, primary, update, insert []string, output []string) string {
+func BuildUpsertQueryMSSQL(dia drivers.Dialect, tableName string, primary, update, insert []string, output []string) string {
 	insert = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, insert)
 
 	buf := strmangle.GetBuffer()

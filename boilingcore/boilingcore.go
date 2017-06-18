@@ -13,9 +13,7 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/bdb"
-	"github.com/volatiletech/sqlboiler/bdb/drivers"
-	"github.com/volatiletech/sqlboiler/queries"
+	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -33,9 +31,9 @@ const (
 type State struct {
 	Config *Config
 
-	Driver  bdb.Interface
-	Tables  []bdb.Table
-	Dialect queries.Dialect
+	Driver  drivers.Interface
+	Tables  []drivers.Table
+	Dialect drivers.Dialect
 
 	Templates              *templateList
 	TestTemplates          *templateList
@@ -43,8 +41,6 @@ type State struct {
 	SingletonTestTemplates *templateList
 
 	TestMainTemplate *template.Template
-
-	Importer importer
 }
 
 // New creates a new state based off of the config
@@ -91,8 +87,6 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to initialize struct tags")
 	}
 
-	s.Importer = newImporter()
-
 	return s, nil
 }
 
@@ -103,7 +97,6 @@ func (s *State) Run(includeTests bool) error {
 		Tables:           s.Tables,
 		Schema:           s.Config.Schema,
 		DriverName:       s.Config.DriverName,
-		UseLastInsertID:  s.Driver.UseLastInsertID(),
 		PkgName:          s.Config.PkgName,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
@@ -139,7 +132,6 @@ func (s *State) Run(includeTests bool) error {
 			Table:            table,
 			Schema:           s.Config.Schema,
 			DriverName:       s.Config.DriverName,
-			UseLastInsertID:  s.Driver.UseLastInsertID(),
 			PkgName:          s.Config.PkgName,
 			NoHooks:          s.Config.NoHooks,
 			NoAutoTimestamps: s.Config.NoAutoTimestamps,
@@ -288,46 +280,8 @@ func getBasePath(baseDirConfig string) (string, error) {
 // driver flag value. If an invalid flag string is provided an error is returned.
 func (s *State) initDriver(driverName string) error {
 	// Create a driver based off driver flag
-	switch driverName {
-	case "postgres":
-		s.Driver = drivers.NewPostgresDriver(
-			s.Config.Postgres.User,
-			s.Config.Postgres.Pass,
-			s.Config.Postgres.DBName,
-			s.Config.Postgres.Host,
-			s.Config.Postgres.Port,
-			s.Config.Postgres.SSLMode,
-		)
-	case "mysql":
-		s.Driver = drivers.NewMySQLDriver(
-			s.Config.MySQL.User,
-			s.Config.MySQL.Pass,
-			s.Config.MySQL.DBName,
-			s.Config.MySQL.Host,
-			s.Config.MySQL.Port,
-			s.Config.MySQL.SSLMode,
-		)
-	case "mssql":
-		s.Driver = drivers.NewMSSQLDriver(
-			s.Config.MSSQL.User,
-			s.Config.MSSQL.Pass,
-			s.Config.MSSQL.DBName,
-			s.Config.MSSQL.Host,
-			s.Config.MSSQL.Port,
-			s.Config.MSSQL.SSLMode,
-		)
-	case "mock":
-		s.Driver = &drivers.MockDriver{}
-	}
 
-	if s.Driver == nil {
-		return errors.New("An invalid driver name was provided")
-	}
-
-	s.Dialect.LQ = s.Driver.LeftQuote()
-	s.Dialect.RQ = s.Driver.RightQuote()
-	s.Dialect.UseIndexPlaceholders = s.Driver.UseIndexPlaceholders()
-	s.Dialect.UseTopClause = s.Driver.UseTopClause()
+	// TODO(aarondl): Something useful, execute some binaries or something
 
 	return nil
 }
@@ -335,7 +289,7 @@ func (s *State) initDriver(driverName string) error {
 // initTables retrieves all "public" schema table names from the database.
 func (s *State) initTables(schema string, whitelist, blacklist []string) error {
 	var err error
-	s.Tables, err = bdb.Tables(s.Driver, schema, whitelist, blacklist)
+	s.Tables, err = drivers.Tables(s.Driver, schema, whitelist, blacklist)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}
@@ -357,7 +311,7 @@ var rgxValidTag = regexp.MustCompile(`[a-zA-Z_\.]+`)
 // initTags removes duplicate tags and validates the format
 // of all user tags are simple strings without quotes: [a-zA-Z_\.]+
 func (s *State) initTags(tags []string) error {
-	s.Config.Tags = removeDuplicates(s.Config.Tags)
+	s.Config.Tags = strmangle.RemoveDuplicates(s.Config.Tags)
 	for _, v := range s.Config.Tags {
 		if !rgxValidTag.MatchString(v) {
 			return errors.New("Invalid tag format %q supplied, only specify name, eg: xml")
@@ -379,7 +333,7 @@ func (s *State) initOutFolder() error {
 }
 
 // checkPKeys ensures every table has a primary key column
-func checkPKeys(tables []bdb.Table) error {
+func checkPKeys(tables []drivers.Table) error {
 	var missingPkey []string
 	for _, t := range tables {
 		if t.PKey == nil {

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/volatiletech/sqlboiler/bdb"
+	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // TxtToOne contains text that will be used by templates for a one-to-many or
 // a one-to-one relationship.
 type TxtToOne struct {
-	ForeignKey bdb.ForeignKey
+	ForeignKey drivers.ForeignKey
 
 	LocalTable struct {
 		NameGo       string
@@ -36,7 +36,7 @@ type TxtToOne struct {
 	}
 }
 
-func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtToOne {
+func txtsFromFKey(tables []drivers.Table, table drivers.Table, fkey drivers.ForeignKey) TxtToOne {
 	r := TxtToOne{}
 
 	r.ForeignKey = fkey
@@ -58,7 +58,7 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 		r.Function.LocalAssignment = strmangle.TitleCase(fkey.Column)
 	}
 
-	foreignTable := bdb.GetTable(tables, fkey.ForeignTable)
+	foreignTable := drivers.GetTable(tables, fkey.ForeignTable)
 	foreignColumn := foreignTable.GetColumn(fkey.ForeignColumn)
 
 	if fkey.ForeignColumnNullable {
@@ -72,8 +72,8 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 	return r
 }
 
-func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRelationship) TxtToOne {
-	fkey := bdb.ForeignKey{
+func txtsFromOneToOne(tables []drivers.Table, table drivers.Table, oneToOne drivers.ToOneRelationship) TxtToOne {
+	fkey := drivers.ForeignKey{
 		Table:    oneToOne.Table,
 		Name:     "none",
 		Column:   oneToOne.Column,
@@ -95,7 +95,7 @@ func txtsFromOneToOne(tables []bdb.Table, table bdb.Table, oneToOne bdb.ToOneRel
 	rel.ForeignKey.Nullable, rel.ForeignKey.ForeignColumnNullable = rel.ForeignKey.ForeignColumnNullable, rel.ForeignKey.Nullable
 	rel.ForeignKey.Unique, rel.ForeignKey.ForeignColumnUnique = rel.ForeignKey.ForeignColumnUnique, rel.ForeignKey.Unique
 	rel.Function.UsesBytes = col.Type == "[]byte"
-	rel.Function.ForeignName, rel.Function.Name = txtNameToOne(bdb.ForeignKey{
+	rel.Function.ForeignName, rel.Function.Name = txtNameToOne(drivers.ForeignKey{
 		Table:         oneToOne.ForeignTable,
 		Column:        oneToOne.ForeignColumn,
 		Unique:        true,
@@ -133,7 +133,7 @@ type TxtToMany struct {
 
 // txtsFromToMany creates a struct that does a lot of the text
 // transformation in advance for a given relationship.
-func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelationship) TxtToMany {
+func txtsFromToMany(tables []drivers.Table, table drivers.Table, rel drivers.ToManyRelationship) TxtToMany {
 	r := TxtToMany{}
 	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
@@ -155,7 +155,7 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 	}
 
 	if rel.ForeignColumnNullable {
-		foreignTable := bdb.GetTable(tables, rel.ForeignTable)
+		foreignTable := drivers.GetTable(tables, rel.ForeignTable)
 		foreignColumn := foreignTable.GetColumn(rel.ForeignColumn)
 		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.ForeignColumn), strings.TrimPrefix(foreignColumn.Type, "null."))
 	} else {
@@ -195,7 +195,7 @@ func txtsFromToMany(tables []bdb.Table, table bdb.Table, rel bdb.ToManyRelations
 //
 // fk == table = industry.Industry | industry.Industry
 // fk != table = industry.ParentIndustry | industry.Industry
-func txtNameToOne(fk bdb.ForeignKey) (localFn, foreignFn string) {
+func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 	localFn = strmangle.Singular(trimSuffixes(fk.Column))
 	fkeyIsTableName := localFn != strmangle.Singular(fk.ForeignTable)
 	localFn = strmangle.TitleCase(localFn)
@@ -233,7 +233,7 @@ func txtNameToOne(fk bdb.ForeignKey) (localFn, foreignFn string) {
 //
 // fk == table = industry.Industries
 // fk != table = industry.MappedIndustryIndustry
-func txtNameToMany(toMany bdb.ToManyRelationship) (localFn, foreignFn string) {
+func txtNameToMany(toMany drivers.ToManyRelationship) (localFn, foreignFn string) {
 	if toMany.ToJoinTable {
 		localFkey := strmangle.Singular(trimSuffixes(toMany.JoinLocalColumn))
 		foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))

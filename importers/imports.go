@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // Collection of imports for various templating purposes
@@ -264,7 +265,7 @@ func NewDefaultImports() Collection {
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
+				`"github.com/volatiletech/sqlboiler/drivers"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
 				`_ "github.com/lib/pq"`,
 			},
@@ -283,7 +284,7 @@ func NewDefaultImports() Collection {
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
+				`"github.com/volatiletech/sqlboiler/drivers"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
 				`_ "github.com/go-sql-driver/mysql"`,
 			},
@@ -300,7 +301,7 @@ func NewDefaultImports() Collection {
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
+				`"github.com/volatiletech/sqlboiler/drivers"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},
@@ -394,8 +395,8 @@ func NewDefaultImports() Collection {
 func combineImports(a, b Set) Set {
 	var c Set
 
-	c.Standard = removeDuplicates(combineStringSlices(a.Standard, b.Standard))
-	c.ThirdParty = removeDuplicates(combineStringSlices(a.ThirdParty, b.ThirdParty))
+	c.Standard = strmangle.RemoveDuplicates(combineStringSlices(a.Standard, b.Standard))
+	c.ThirdParty = strmangle.RemoveDuplicates(combineStringSlices(a.ThirdParty, b.ThirdParty))
 
 	sort.Sort(c.Standard)
 	sort.Sort(c.ThirdParty)
@@ -403,7 +404,7 @@ func combineImports(a, b Set) Set {
 	return c
 }
 
-func combineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
+func CombineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
 	tmpImp := Set{
 		Standard:   make(List, len(a.Standard)),
 		ThirdParty: make(List, len(a.ThirdParty)),
@@ -421,8 +422,8 @@ func combineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
 		}
 	}
 
-	tmpImp.Standard = removeDuplicates(tmpImp.Standard)
-	tmpImp.ThirdParty = removeDuplicates(tmpImp.ThirdParty)
+	tmpImp.Standard = strmangle.RemoveDuplicates(tmpImp.Standard)
+	tmpImp.ThirdParty = strmangle.RemoveDuplicates(tmpImp.ThirdParty)
 
 	sort.Sort(tmpImp.Standard)
 	sort.Sort(tmpImp.ThirdParty)
@@ -440,26 +441,4 @@ func combineStringSlices(a, b []string) []string {
 	}
 
 	return c
-}
-
-func removeDuplicates(dedup []string) []string {
-	if len(dedup) <= 1 {
-		return dedup
-	}
-
-	for i := 0; i < len(dedup)-1; i++ {
-		for j := i + 1; j < len(dedup); j++ {
-			if dedup[i] != dedup[j] {
-				continue
-			}
-
-			if j != len(dedup)-1 {
-				dedup[j] = dedup[len(dedup)-1]
-				j--
-			}
-			dedup = dedup[:len(dedup)-1]
-		}
-	}
-
-	return dedup
 }

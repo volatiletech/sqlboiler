@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/drivers"
 )
 
 // joinKind is the type of join
@@ -21,7 +22,7 @@ const (
 // Query holds the state for the built up query
 type Query struct {
 	executor   boil.Executor
-	dialect    *Dialect
+	dialect    *drivers.Dialect
 	rawSQL     rawSQL
 	load       []string
 	delete     bool
@@ -38,23 +39,6 @@ type Query struct {
 	limit      int
 	offset     int
 	forlock    string
-}
-
-// Dialect holds values that direct the query builder
-// how to build compatible queries for each database.
-// Each database driver needs to implement functions
-// that provide these values.
-type Dialect struct {
-	// The left quote character for SQL identifiers
-	LQ byte
-	// The right quote character for SQL identifiers
-	RQ byte
-	// Bool flag indicating whether indexed
-	// placeholders ($1) are used, or ? placeholders.
-	UseIndexPlaceholders bool
-	// Bool flag indicating whether "TOP" or "LIMIT" clause
-	// must be used for rows limitation
-	UseTopClause bool
 }
 
 type where struct {
@@ -164,7 +148,7 @@ func GetExecutor(q *Query) boil.Executor {
 }
 
 // SetDialect on the query.
-func SetDialect(q *Query, dialect *Dialect) {
+func SetDialect(q *Query, dialect *drivers.Dialect) {
 	q.dialect = dialect
 }
 

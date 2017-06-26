@@ -17,6 +17,16 @@ type {{$modelName}} struct {
 	{{end -}}
 }
 
+var {{$modelName}}Columns = struct {
+	{{range $column := .Table.Columns -}}
+	{{titleCase $column.Name}} string
+	{{end -}}
+}{
+	{{range $column := .Table.Columns -}}
+	{{titleCase $column.Name}}: "{{$column.Name}}",
+	{{end -}}
+}
+
 // {{$modelName}}Filter allows you to filter on any columns by making them all pointers.
 type {{$modelName}}Filter struct {
 	{{range $column := .Table.Columns -}}

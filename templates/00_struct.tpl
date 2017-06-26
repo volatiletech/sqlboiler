@@ -17,6 +17,16 @@ type {{$modelName}} struct {
 	{{end -}}
 }
 
+var {{$modelName}}Columns = struct {
+	{{range $column := .Table.Columns -}}
+	{{titleCase $column.Name}} string
+	{{end -}}
+}{
+	{{range $column := .Table.Columns -}}
+	{{titleCase $column.Name}}: "{{$column.Name}}",
+	{{end -}}
+}
+
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 // {{$modelNameCamel}}R is where relationships are stored.

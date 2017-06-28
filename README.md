@@ -1,4 +1,4 @@
-![sqlboiler logo](http://i.imgur.com/V7LWJAx.png)
+![sqlboiler logo](http://i.imgur.com/ilkv0r9.png)
 
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/vattle/sqlboiler/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/vattle/sqlboiler?status.svg)](https://godoc.org/github.com/vattle/sqlboiler)

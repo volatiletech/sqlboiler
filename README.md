@@ -76,6 +76,7 @@ Table of Contents
       * [Reload](#reload)
       * [Exists](#exists)
       * [Enums](#enums)
+      * [Constants](#constants)
     * [FAQ](#faq)
         * [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
         * [Missing imports for generated package](#missing-imports-for-generated-package)
@@ -1222,6 +1223,41 @@ the value randomizer in the test suite does not know how to generate valid enum 
 still be able to use your generated library, and it will still work as expected, but the only way
 to get the tests to pass in this event is to either use a parsable enum value or use a regular column
 instead of an enum.
+
+### Constants
+
+The models package will also contain some structs that contain all of the table and column
+names harvested from the database at generation time.
+
+For table names they're generated under `models.TableNames`:
+
+```go
+// Generated code from models package
+var TableNames = struct {
+	Messages  string
+	Purchases string
+}{
+	Messages:  "messages",
+	Purchases: "purchases",
+}
+
+// Usage example:
+fmt.Println(models.TableNames.Messages)
+```
+
+```go
+// Generated code from models package
+var MessageColumns = struct {
+	ID         string
+	PurchaseID string
+}{
+	ID:         "id",
+	PurchaseID: "purchase_id",
+}
+
+// Usage example:
+fmt.Println(models.MessageColumns.ID)
+```
 
 ## FAQ
 

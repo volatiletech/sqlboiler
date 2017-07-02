@@ -957,15 +957,16 @@ it with the `AddModelHook` method. Here is an example of a before insert hook:
 
 ```go
 // Define my hook function
-func myHook(exec boil.Executor, p *Pilot) {
+func myHook(exec boil.Executor, p *Pilot) error {
   // Do stuff
+  return nil
 }
 
 // Register my before insert hook for pilots
 models.AddPilotHook(boil.BeforeInsertHook, myHook)
 ```
 
-Your `ModelHook` will always be defined as `func(boil.Executor, *Model)`
+Your `ModelHook` will always be defined as `func(boil.Executor, *Model) error`
 
 ### Transactions
 

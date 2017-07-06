@@ -72,7 +72,7 @@ func Merge{{$tableNamePlural}}(exec boil.Executor, primaryID uint64, secondaryID
 		pf := pr.Elem().Field(i)
 		sf := sr.Elem().Field(i)
 		if sf.IsValid() {
-			if nullable, ok := sf.Interface().(Nullable); ok && !nullable.IsZero() && pf.Interface().(Nullable).IsZero() {
+			if nullable, ok := sf.Interface().(null.Nullable); ok && !nullable.IsNull() && pf.Interface().(null.Nullable).IsNull() {
 				pf.Set(sf)
 			}
 		}

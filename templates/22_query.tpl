@@ -16,7 +16,7 @@ func (q *{{$tableNameSingular}}Query) Where(filters {{$tableNameSingular}}Filter
 	for i := 0; i < r.NumField(); i++ {
 		f := r.Field(i)
 		if f.Elem().IsValid() {
-			if nullable, ok := f.Elem().Interface().(Nullable); ok && nullable.IsZero() {
+			if nullable, ok := f.Elem().Interface().(null.Nullable); ok && nullable.IsNull() {
 				queries.AppendWhere(q.Query, r.Type().Field(i).Tag.Get("boil")+" IS NULL")
 			} else {
 				queries.AppendWhere(q.Query, r.Type().Field(i).Tag.Get("boil")+" = ?", f.Elem().Interface())

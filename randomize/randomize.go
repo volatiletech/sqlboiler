@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	null "gopkg.in/nullbio/null.v6"
+	null "github.com/lbryio/null.go"
 
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"

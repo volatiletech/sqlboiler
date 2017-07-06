@@ -66,8 +66,11 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 			values := []interface{}{o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", rel."}}{{"}"}}
 
 			if boil.DebugMode {
-				fmt.Fprintln(boil.DebugWriter, updateQuery)
-				fmt.Fprintln(boil.DebugWriter, values)
+        qStr, err := interpolateParams(updateQuery, values...)
+        if err != nil {
+          return err
+        }
+        fmt.Fprintln(boil.DebugWriter, qStr)
 			}
 
 			if _, err = exec.Exec(updateQuery, values...); err != nil {
@@ -87,8 +90,11 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 		values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$txt.ForeignTable.ColumnNameGo}}}
 
 		if boil.DebugMode {
-			fmt.Fprintln(boil.DebugWriter, query)
-			fmt.Fprintln(boil.DebugWriter, values)
+      qStr, err := interpolateParams(query, values...)
+      if err != nil {
+        return err
+      }
+      fmt.Fprintln(boil.DebugWriter, qStr)
 		}
 
 		_, err = exec.Exec(query, values...)
@@ -184,8 +190,11 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}
 	{{end -}}
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, values)
+    qStr, err := interpolateParams(query, values...)
+    if err != nil {
+      return err
+    }
+    fmt.Fprintln(boil.DebugWriter, qStr)
 	}
 
 	_, err := exec.Exec(query, values...)
@@ -260,8 +269,11 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, values)
+    qStr, err := interpolateParams(query, values...)
+    if err != nil {
+      return err
+    }
+    fmt.Fprintln(boil.DebugWriter, qStr)
 	}
 
 	_, err = exec.Exec(query, values...)

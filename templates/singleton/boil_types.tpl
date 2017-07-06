@@ -1,11 +1,6 @@
 // M type is for providing columns and column values to UpdateAll.
 type M map[string]interface{}
 
-// Nullable means the value may represent an sql NULL. It is implemented by null.* types.
-type Nullable interface {
-	IsZero() bool
-}
-
 // foreignKey connects two tables. When merging records, foreign keys from secondary record must
 // be reassigned to primary record.
 type foreignKey struct {

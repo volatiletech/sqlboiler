@@ -14,8 +14,11 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
 	{{- end}}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
+	  qStr, err := interpolateParams(sql, {{$pkNames | join ", "}})
+	  if err != nil {
+	    return false, err
+	  }
+    fmt.Fprintln(boil.DebugWriter, qStr)
 	}
 
 	row := exec.QueryRow(sql, {{$pkNames | join ", "}})

@@ -170,11 +170,12 @@ func newImporter() importer {
 			`"time"`,
 		},
 		thirdParty: importList{
-			`"github.com/pkg/errors"`,
+			`"github.com/lbryio/null.go"`,
 			`"github.com/lbryio/sqlboiler/boil"`,
 			`"github.com/lbryio/sqlboiler/queries"`,
 			`"github.com/lbryio/sqlboiler/queries/qm"`,
 			`"github.com/lbryio/sqlboiler/strmangle"`,
+			`"github.com/pkg/errors"`,
 		},
 	}
 
@@ -183,6 +184,10 @@ func newImporter() importer {
 			standard: importList{
 				`"database/sql"`,
 				`"fmt"`,
+				`"reflect"`,
+				`"strconv"`,
+				`"strings"`,
+				`"time"`,
 			},
 			thirdParty: importList{
 				`"github.com/lbryio/sqlboiler/boil"`,
@@ -190,6 +195,7 @@ func newImporter() importer {
 				`"github.com/lbryio/sqlboiler/queries/qm"`,
 				`"github.com/lbryio/sqlboiler/strmangle"`,
 				`"github.com/pkg/errors"`,
+				`"github.com/lbryio/null.go"`,
 			},
 		},
 		"boil_types": {
@@ -315,55 +321,55 @@ func newImporter() importer {
 	// TranslateColumnType to see the type assignments.
 	imp.BasedOnType = mapImports{
 		"null.Float32": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Float64": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Int": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Int8": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Int16": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Int32": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Int64": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Uint": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Uint8": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Uint16": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Uint32": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Uint64": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.String": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Bool": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Time": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.JSON": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"null.Bytes": {
-			thirdParty: importList{`"gopkg.in/nullbio/null.v6"`},
+			thirdParty: importList{`"github.com/lbryio/null.go"`},
 		},
 		"time.Time": {
 			standard: importList{`"time"`},

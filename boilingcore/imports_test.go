@@ -246,7 +246,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 		thirdParty: importList{
 			`"github.com/lbryio/sqlboiler/boil"`,
-			`"gopkg.in/nullbio/null.v6"`,
+			`"github.com/lbryio/null.go"`,
 		},
 	}
 
@@ -281,7 +281,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 		thirdParty: importList{
 			`"github.com/lbryio/sqlboiler/boil"`,
-			`"gopkg.in/nullbio/null.v6"`,
+			`"github.com/lbryio/null.go"`,
 		},
 	}
 
@@ -297,7 +297,7 @@ func TestCombineImports(t *testing.T) {
 
 	a := imports{
 		standard:   importList{"fmt"},
-		thirdParty: importList{"github.com/lbryio/sqlboiler", "gopkg.in/nullbio/null.v6"},
+		thirdParty: importList{"github.com/lbryio/sqlboiler", "github.com/lbryio/null.go"},
 	}
 	b := imports{
 		standard:   importList{"os"},
@@ -309,8 +309,8 @@ func TestCombineImports(t *testing.T) {
 	if c.standard[0] != "fmt" && c.standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.standard)
 	}
-	if c.thirdParty[0] != "github.com/lbryio/sqlboiler" && c.thirdParty[1] != "gopkg.in/nullbio/null.v6" {
-		t.Errorf("Wanted: github.com/lbryio/sqlboiler, gopkg.in/nullbio/null.v6 got: %#v", c.thirdParty)
+	if c.thirdParty[0] != "github.com/lbryio/sqlboiler" && c.thirdParty[1] != "github.com/lbryio/null.go" {
+		t.Errorf("Wanted: github.com/lbryio/sqlboiler, github.com/lbryio/null.go got: %#v", c.thirdParty)
 	}
 }
 

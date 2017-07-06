@@ -147,8 +147,11 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, vals)
+	  qStr, err := interpolateParams(cache.query, vals...)
+	  if err != nil {
+	    return err
+	  }
+    fmt.Fprintln(boil.DebugWriter, qStr)
 	}
 
 	{{if .UseLastInsertID -}}
@@ -193,8 +196,11 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, identifierCols...)
+	  qStr, err := interpolateParams(cache.retQuery, identifierCols...)
+	  if err != nil {
+	    return err
+	  }
+    fmt.Fprintln(boil.DebugWriter, qStr)
 	}
 
 	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(returns...)

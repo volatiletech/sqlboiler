@@ -1027,10 +1027,10 @@ Find is used to find a single row by primary key:
 
 ```go
 // Retrieve pilot with all columns filled
-pilot, err := models.PilotFind(db, 1)
+pilot, err := models.FindPilot(db, 1)
 
 // Retrieve a subset of column values
-jet, err := models.JetFind(db, 1, "name", "color")
+jet, err := models.FindJet(db, 1, "name", "color")
 ```
 
 ### Insert

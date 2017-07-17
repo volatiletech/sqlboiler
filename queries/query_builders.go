@@ -231,6 +231,13 @@ func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []st
 		buf.WriteByte(')')
 	}
 
+	quoted := strmangle.IdentQuote(dia.LQ, dia.RQ, "id")
+	buf.WriteByte(',')
+	buf.WriteString(quoted)
+	buf.WriteString(" = LAST_INSERT_ID(")
+	buf.WriteString(quoted)
+	buf.WriteByte(')')
+
 	return buf.String()
 }
 

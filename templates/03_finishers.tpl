@@ -105,6 +105,7 @@ func (q {{$tableNameSingular}}Query) Exists() (bool, error) {
 	var count int64
 
 	queries.SetCount(q.Query)
+	queries.SetSelect(q.Query, []string{})
 	queries.SetLimit(q.Query, 1)
 
 	err := q.Query.QueryRow().Scan(&count)

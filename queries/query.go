@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/vattle/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // joinKind is the type of join

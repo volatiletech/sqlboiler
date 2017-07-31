@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	null "gopkg.in/nullbio/null.v6"
+	null "gopkg.in/volatiletech/null.v6"
 )
 
 func TestRandomizeStruct(t *testing.T) {

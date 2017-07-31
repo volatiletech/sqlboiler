@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vattle/sqlboiler/bdb"
-	"github.com/vattle/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/bdb"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // TxtToOne contains text that will be used by templates for a one-to-many or

@@ -267,7 +267,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryK
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
-func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
+func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]bdb.ForeignKey, error) {
 	var fkeys []bdb.ForeignKey
 
 	query := `
@@ -283,11 +283,24 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.Foreign
 		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid
 		inner join pg_attribute pgasrc on pgc.oid = pgasrc.attrelid and pgasrc.attnum = ANY(pgcon.conkey)
 		inner join pg_attribute pgadst on pgcon.confrelid = pgadst.attrelid and pgadst.attnum = ANY(pgcon.confkey)
-	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'`
+	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'
+	`
+	args := []interface{}{tableName, schema}
+	if len(whitelist) > 0 {
+		query += fmt.Sprintf(" and dstlookupname.relname in (%s);", strings.Repeat(",?", len(whitelist))[1:])
+		for _, w := range whitelist {
+			args = append(args, w)
+		}
+	} else if len(blacklist) > 0 {
+		query += fmt.Sprintf(" and dstlookupname.relname not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
+		for _, b := range blacklist {
+			args = append(args, b)
+		}
+	}
 
 	var rows *sql.Rows
 	var err error
-	if rows, err = p.dbConn.Query(query, tableName, schema); err != nil {
+	if rows, err = p.dbConn.Query(query, args...); err != nil {
 		return nil, err
 	}
 

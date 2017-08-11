@@ -65,7 +65,7 @@ func (m testMockDriver) Columns(schema, tableName string) ([]Column, error) {
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m testMockDriver) ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error) {
+func (m testMockDriver) ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]ForeignKey, error) {
 	return map[string][]ForeignKey{
 		"jets": {
 			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},

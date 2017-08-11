@@ -233,7 +233,7 @@ func (m *MySQLDriver) PrimaryKeyInfo(schema, tableName string) (*bdb.PrimaryKey,
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
-func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
+func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]bdb.ForeignKey, error) {
 	var fkeys []bdb.ForeignKey
 
 	query := `
@@ -241,10 +241,22 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey
 	from information_schema.key_column_usage
 	where table_schema = ? and referenced_table_schema = ? and table_name = ?
 	`
+	args := []interface{}{schema, schema, tableName}
+	if len(whitelist) > 0 {
+		query += fmt.Sprintf(" and referenced_table_name in (%s);", strings.Repeat(",?", len(whitelist))[1:])
+		for _, w := range whitelist {
+			args = append(args, w)
+		}
+	} else if len(blacklist) > 0 {
+		query += fmt.Sprintf(" and referenced_table_name not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
+		for _, b := range blacklist {
+			args = append(args, b)
+		}
+	}
 
 	var rows *sql.Rows
 	var err error
-	if rows, err = m.dbConn.Query(query, schema, schema, tableName); err != nil {
+	if rows, err = m.dbConn.Query(query, args...); err != nil {
 		return nil, err
 	}
 

@@ -13,7 +13,7 @@ type Interface interface {
 	TableNames(schema string, whitelist, blacklist []string) ([]string, error)
 	Columns(schema, tableName string) ([]Column, error)
 	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
-	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
+	ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]ForeignKey, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
 	TranslateColumnType(Column) Column
@@ -69,7 +69,7 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
 		}
 
-		if t.FKeys, err = db.ForeignKeyInfo(schema, name); err != nil {
+		if t.FKeys, err = db.ForeignKeyInfo(schema, name, whitelist, blacklist); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
 		}
 

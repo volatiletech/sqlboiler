@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // Interface for a database driver. Functionality required to support a specific
@@ -13,7 +14,7 @@ type Interface interface {
 	TableNames(schema string, whitelist, blacklist []string) ([]string, error)
 	Columns(schema, tableName string) ([]Column, error)
 	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
-	ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]ForeignKey, error)
+	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
 	TranslateColumnType(Column) Column
@@ -69,9 +70,11 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
 		}
 
-		if t.FKeys, err = db.ForeignKeyInfo(schema, name, whitelist, blacklist); err != nil {
+		if t.FKeys, err = db.ForeignKeyInfo(schema, name); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
 		}
+
+		filterForeignKeys(&t, whitelist, blacklist)
 
 		setIsJoinTable(&t)
 
@@ -89,6 +92,18 @@ func Tables(db Interface, schema string, whitelist, blacklist []string) ([]Table
 	}
 
 	return tables, nil
+}
+
+// filterForeignKeys filter FK whose ForeignTable is not in whitelist or in blacklist
+func filterForeignKeys(t *Table, whitelist, blacklist []string) {
+	var fkeys []ForeignKey
+	for _, fkey := range t.FKeys {
+		if (len(whitelist) == 0 || strmangle.SetInclude(fkey.ForeignTable, whitelist)) &&
+		(len(blacklist) == 0 || !strmangle.SetInclude(fkey.ForeignTable, blacklist)) {
+			fkeys = append(fkeys, fkey)
+		}
+	}
+	t.FKeys = fkeys
 }
 
 // setIsJoinTable if there are:

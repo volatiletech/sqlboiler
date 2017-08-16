@@ -65,7 +65,7 @@ func (m testMockDriver) Columns(schema, tableName string) ([]Column, error) {
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m testMockDriver) ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]ForeignKey, error) {
+func (m testMockDriver) ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error) {
 	return map[string][]ForeignKey{
 		"jets": {
 			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},
@@ -162,6 +162,64 @@ func TestTables(t *testing.T) {
 	}
 	if len(hangars.FKeys) != 1 || hangars.FKeys[0].ForeignTable != "hangars" {
 		t.Error("want one hangar foreign key to itself")
+	}
+}
+
+func TestFilterForeignKeys(t *testing.T) {
+	t.Parallel()
+
+	tables := []Table{
+		{
+			Name: "one",
+			Columns: []Column{
+				{Name: "id"},
+				{Name: "two_id"},
+				{Name: "three_id"},
+				{Name: "four_id"},
+			},
+			FKeys: []ForeignKey{
+				{Column: "two_id", ForeignTable: "two", ForeignColumn: "id"},
+				{Column: "three_id", ForeignTable: "three", ForeignColumn: "id"},
+				{Column: "four_id", ForeignTable: "four", ForeignColumn: "id"},
+			},
+		},
+		{
+			Name: "two",
+			Columns: []Column{
+				{Name: "id"},
+			},
+		},
+		{
+			Name: "three",
+			Columns: []Column{
+				{Name: "id"},
+			},
+		},
+		{
+			Name: "four",
+			Columns: []Column{
+				{Name: "id"},
+			},
+		},
+	}
+
+	tests := []struct {
+		Whitelist	[]string
+		Blacklist	[]string
+		ExpectFkNum	int
+	}{
+		{[]string{}, []string{}, 3},
+		{[]string{"one", "two", "three"}, []string{}, 2},
+		{[]string{}, []string{"three", "four"}, 1},
+		{[]string{"one", "two"}, []string{"two"}, 0},
+	}
+
+	for i, test := range tests {
+		table := tables[0]
+		filterForeignKeys(&table, test.Whitelist, test.Blacklist)
+		if fkNum := len(table.FKeys); fkNum != test.ExpectFkNum {
+			t.Errorf("%d) want: %d, got: %d\nTest: %#v", i, test.ExpectFkNum, fkNum, test)
+		}
 	}
 }
 

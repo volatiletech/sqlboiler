@@ -59,7 +59,7 @@ func (m *MockDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 }
 
 // ForeignKeyInfo returns a list of mock foreignkeys
-func (m *MockDriver) ForeignKeyInfo(schema, tableName string, whitelist, blacklist []string) ([]bdb.ForeignKey, error) {
+func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.ForeignKey, error) {
 	return map[string][]bdb.ForeignKey{
 		"jets": {
 			{Table: "jets", Name: "jets_pilot_id_fk", Column: "pilot_id", ForeignTable: "pilots", ForeignColumn: "id", ForeignColumnUnique: true},

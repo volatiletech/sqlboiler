@@ -1,1 +1,1 @@
-UPDATE thing happy, "fun", "stuff" SET ("col2", "fun"."col3", "col1") = ($1,$2,$3) WHERE (aa=$4 or bb=$5 or cc=$6) AND (dd=$7 or ee=$8 or ff=$9 and gg=$10) LIMIT 5;
+UPDATE thing happy, "fun", "stuff" SET "col2" = $1, "fun"."col3" = $2, "col1" = $3 WHERE (aa=$4 or bb=$5 or cc=$6) AND (dd=$7 or ee=$8 or ff=$9 and gg=$10) LIMIT 5;

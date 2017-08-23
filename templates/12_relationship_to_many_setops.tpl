@@ -66,7 +66,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 			values := []interface{}{o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", rel."}}{{"}"}}
 
 			if boil.DebugMode {
-        qStr, err := interpolateParams(updateQuery, values...)
+        qStr, err := InterpolateParams(updateQuery, values...)
         if err != nil {
           return err
         }
@@ -90,7 +90,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 		values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$txt.ForeignTable.ColumnNameGo}}}
 
 		if boil.DebugMode {
-      qStr, err := interpolateParams(query, values...)
+      qStr, err := InterpolateParams(query, values...)
       if err != nil {
         return err
       }
@@ -190,7 +190,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}
 	{{end -}}
 	if boil.DebugMode {
-    qStr, err := interpolateParams(query, values...)
+    qStr, err := InterpolateParams(query, values...)
     if err != nil {
       return err
     }
@@ -269,7 +269,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 	}
 
 	if boil.DebugMode {
-    qStr, err := interpolateParams(query, values...)
+    qStr, err := InterpolateParams(query, values...)
     if err != nil {
       return err
     }

@@ -14,7 +14,7 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
 	{{- end}}
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(sql, {{$pkNames | join ", "}})
+	  qStr, err := InterpolateParams(sql, {{$pkNames | join ", "}})
 	  if err != nil {
 	    return false, err
 	  }

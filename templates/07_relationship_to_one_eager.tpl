@@ -40,7 +40,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	)
 
 	if boil.DebugMode {
-    qStr, err := interpolateParams(query, args...)
+    qStr, err := InterpolateParams(query, args...)
     if err != nil {
       return err
     }

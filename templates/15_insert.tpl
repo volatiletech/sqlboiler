@@ -98,7 +98,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(cache.query, vals...)
+	  qStr, err := InterpolateParams(cache.query, vals...)
 	  if err != nil {
 	    return err
 	  }
@@ -147,7 +147,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	}
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(cache.retQuery, identifierCols...)
+	  qStr, err := InterpolateParams(cache.retQuery, identifierCols...)
 	  if err != nil {
 	    return err
 	  }

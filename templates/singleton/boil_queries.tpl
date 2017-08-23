@@ -138,7 +138,7 @@ func checkMerge(tx *sql.Tx, foreignKeys []foreignKey) error {
 }
 
 // duplicated in queries/query.go
-func interpolateParams(query string, args ...interface{}) (string, error) {
+func InterpolateParams(query string, args ...interface{}) (string, error) {
 	for i := 0; i < len(args); i++ {
 		field := reflect.ValueOf(args[i])
 

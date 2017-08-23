@@ -46,7 +46,7 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 	sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(sql, args...)
+	  qStr, err := InterpolateParams(sql, args...)
 	  if err != nil {
 	    return err
 	  }
@@ -142,7 +142,7 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(sql, args...)
+	  qStr, err := InterpolateParams(sql, args...)
 	  if err != nil {
 	    return err
 	  }

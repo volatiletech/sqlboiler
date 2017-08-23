@@ -53,7 +53,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	values := []interface{}{related.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$dot.Table.PKey.Columns | stringMap $dot.StringFuncs.titleCase | join ", o."}}{{"}"}}
 
 	if boil.DebugMode {
-    qStr, err := interpolateParams(updateQuery, values...)
+    qStr, err := InterpolateParams(updateQuery, values...)
     if err != nil {
       return err
     }

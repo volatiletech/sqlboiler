@@ -147,7 +147,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	}
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(cache.query, vals...)
+	  qStr, err := InterpolateParams(cache.query, vals...)
 	  if err != nil {
 	    return err
 	  }
@@ -196,7 +196,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	}
 
 	if boil.DebugMode {
-	  qStr, err := interpolateParams(cache.retQuery, identifierCols...)
+	  qStr, err := InterpolateParams(cache.retQuery, identifierCols...)
 	  if err != nil {
 	    return err
 	  }

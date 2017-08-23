@@ -19,7 +19,7 @@ type Transactor interface {
 
 // Beginner begins transactions.
 type Beginner interface {
-	Begin() (*sql.Tx, error)
+	Begin() (Transactor, error)
 }
 
 // Begin a transaction

@@ -3,6 +3,7 @@ package drivers
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -261,6 +262,7 @@ func (m *MySQLDriver) UniqueKeyInfo(schema, tableName string) ([]bdb.UniqueKey, 
 		}
 
 		ukey.Columns = strings.Split(columns, ",")
+		sort.Strings(ukey.Columns)
 
 		ukeys = append(ukeys, ukey)
 	}

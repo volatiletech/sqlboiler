@@ -19,6 +19,11 @@ type Transactor interface {
 
 // Beginner begins transactions.
 type Beginner interface {
+	Begin() (Transactor, error)
+}
+
+// SQLBeginner begins transactions (non-interface return type)
+type SQLBeginner interface {
 	Begin() (*sql.Tx, error)
 }
 
@@ -26,7 +31,11 @@ type Beginner interface {
 func Begin() (Transactor, error) {
 	creator, ok := currentDB.(Beginner)
 	if !ok {
-		panic("database does not support transactions")
+		creator2, ok2 := currentDB.(SQLBeginner)
+		if !ok2 {
+			panic("database does not support transactions")
+		}
+		return creator2.Begin()
 	}
 
 	return creator.Begin()

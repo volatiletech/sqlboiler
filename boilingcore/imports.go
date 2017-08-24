@@ -182,7 +182,6 @@ func newImporter() importer {
 	imp.Singleton = mapImports{
 		"boil_queries": imports{
 			standard: importList{
-				`"database/sql"`,
 				`"fmt"`,
 				`"reflect"`,
 				`"strconv"`,

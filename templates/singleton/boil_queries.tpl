@@ -20,7 +20,7 @@ func NewQuery(exec boil.Executor, mods ...qm.QueryMod) *queries.Query {
 	return q
 }
 
-func mergeModels(tx *sql.Tx, primaryID uint64, secondaryID uint64, foreignKeys []foreignKey, conflictingKeys []conflictingUniqueKey) error {
+func mergeModels(tx boil.Executor, primaryID uint64, secondaryID uint64, foreignKeys []foreignKey, conflictingKeys []conflictingUniqueKey) error {
 	if len(foreignKeys) < 1 {
 		return nil
 	}
@@ -48,7 +48,7 @@ func mergeModels(tx *sql.Tx, primaryID uint64, secondaryID uint64, foreignKeys [
 	return checkMerge(tx, foreignKeys)
 }
 
-func deleteConflictsBeforeMerge(tx *sql.Tx, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
+func deleteConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
 	conflictingColumns := strmangle.SetComplement(conflict.columns, []string{conflict.objectIdColumn})
 
 	if len(conflictingColumns) < 1 {
@@ -98,7 +98,7 @@ func deleteConflictsBeforeMerge(tx *sql.Tx, conflict conflictingUniqueKey, prima
 	return nil
 }
 
-func checkMerge(tx *sql.Tx, foreignKeys []foreignKey) error {
+func checkMerge(tx boil.Executor, foreignKeys []foreignKey) error {
 	uniqueColumns := []interface{}{}
 	uniqueColumnNames := map[string]bool{}
 	handledTablesColumns := map[string]bool{}

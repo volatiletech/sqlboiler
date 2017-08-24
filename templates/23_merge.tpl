@@ -69,12 +69,7 @@ func Merge{{$tableNamePlural}}(exec boil.Executor, primaryID uint64, secondaryID
     {{- end }}
   }
 
-  sqlTx, ok := tx.(*sql.Tx)
-  if !ok {
-    return errors.New("tx must be an sql.Tx")
-  }
-
-  err = mergeModels(sqlTx, primaryID, secondaryID, foreignKeys, conflictingKeys)
+  err = mergeModels(tx, primaryID, secondaryID, foreignKeys, conflictingKeys)
   if err != nil {
     return err
   }

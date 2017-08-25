@@ -16,6 +16,7 @@ type Config struct {
 	NoHooks          bool
 	NoAutoTimestamps bool
 	Wipe             bool
+	StructTagCasing  string
 
 	Postgres PostgresConfig
 	MySQL    MySQLConfig

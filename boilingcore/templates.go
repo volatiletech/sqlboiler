@@ -34,6 +34,9 @@ type templateData struct {
 	// Tags control which
 	Tags []string
 
+	// Generate struct tags as camelCase or snake_case
+	StructTagCasing string
+
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
 

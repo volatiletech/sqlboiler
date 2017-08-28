@@ -87,6 +87,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("tinyint-as-bool", "", false, "Map MySQL tinyint(1) in Go to bool instead of int8")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
+	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel or snake (default snake)")
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
@@ -141,6 +142,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoHooks:          viper.GetBool("no-hooks"),
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 		Wipe:             viper.GetBool("wipe"),
+		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200

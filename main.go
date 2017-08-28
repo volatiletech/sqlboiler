@@ -14,7 +14,7 @@ import (
 	"github.com/volatiletech/sqlboiler/boilingcore"
 )
 
-const sqlBoilerVersion = "2.5.1"
+const sqlBoilerVersion = "2.6.0"
 
 var (
 	cmdState  *boilingcore.State

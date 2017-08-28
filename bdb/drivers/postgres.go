@@ -283,7 +283,8 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]bdb.Foreign
 		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid
 		inner join pg_attribute pgasrc on pgc.oid = pgasrc.attrelid and pgasrc.attnum = ANY(pgcon.conkey)
 		inner join pg_attribute pgadst on pgcon.confrelid = pgadst.attrelid and pgadst.attnum = ANY(pgcon.confkey)
-	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'`
+	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'
+	`
 
 	var rows *sql.Rows
 	var err error

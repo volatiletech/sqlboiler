@@ -164,11 +164,11 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		cols[i] = strmangle.IdentQuote(q.dialect.LQ, q.dialect.RQ, cols[i])
 	}
 
-	buf.WriteString(fmt.Sprintf(
-		" SET (%s) = (%s)",
-		strings.Join(cols, ", "),
-		strmangle.Placeholders(q.dialect.IndexPlaceholders, len(cols), 1, 1)),
-	)
+	setSlice := make([]string, len(cols))
+	for index, col := range cols {
+		setSlice[index] = fmt.Sprintf("%s = %s", col, strmangle.Placeholders(q.dialect.IndexPlaceholders, 1, index+1, 1))
+	}
+	fmt.Fprintf(buf, " SET %s", strings.Join(setSlice, ", "))
 
 	where, whereArgs := whereClause(q, len(args)+1)
 	if len(whereArgs) != 0 {

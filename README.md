@@ -756,7 +756,7 @@ type PilotAndJet struct {
 
 var paj PilotAndJet
 // Use a raw query
-err := queries.Raw(`
+err := queries.Raw(db, `
   select pilots.id as "pilots.id", pilots.name as "pilots.name",
   jets.id as "jets.id", jets.pilot_id as "jets.pilot_id",
   jets.age as "jets.age", jets.name as "jets.name", jets.color as "jets.color"
@@ -784,7 +784,7 @@ var info JetInfo
 err := models.NewQuery(db, Select("sum(age) as age_sum", "count(*) as juicy_count", From("jets"))).Bind(&info)
 
 // Use a raw query
-err := queries.Raw(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
+err := queries.Raw(db, `select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
 ```
 
 We support the following struct tag modes for `Bind()` control:

@@ -6,7 +6,7 @@
 // Panics on error.
 func (o *{{$tableNameSingular}}) DeleteP(exec boil.Executor) {
 	if err := o.Delete(exec); err != nil {
-	  panic(boil.WrapErr(err))
+	panic(boil.WrapErr(err))
 	}
 }
 
@@ -46,11 +46,8 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 	sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
 
 	if boil.DebugMode {
-	  qStr, err := InterpolateParams(sql, args...)
-	  if err != nil {
-	    return err
-	  }
-    fmt.Fprintln(boil.DebugWriter, qStr)
+	fmt.Fprintln(boil.DebugWriter, sql)
+	fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
 	_, err := exec.Exec(sql, args...)
@@ -142,11 +139,8 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
-	  qStr, err := InterpolateParams(sql, args...)
-	  if err != nil {
-	    return err
-	  }
-    fmt.Fprintln(boil.DebugWriter, qStr)
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
 	}
 
 	_, err := exec.Exec(sql, args...)

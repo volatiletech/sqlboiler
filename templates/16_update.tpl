@@ -78,11 +78,8 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
 	if boil.DebugMode {
-	  qStr, err := InterpolateParams(cache.query, values...)
-	  if err != nil {
-	    return err
-	  }
-    fmt.Fprintln(boil.DebugWriter, qStr)
+		fmt.Fprintln(boil.DebugWriter, cache.query)
+		fmt.Fprintln(boil.DebugWriter, values)
 	}
 
 	_, err = exec.Exec(cache.query, values...)
@@ -173,11 +170,8 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}len(colNames)+1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(o)))
 
 	if boil.DebugMode {
-	  qStr, err := InterpolateParams(sql, args...)
-	  if err != nil {
-	    return err
-	  }
-    fmt.Fprintln(boil.DebugWriter, qStr)
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
 	_, err := exec.Exec(sql, args...)

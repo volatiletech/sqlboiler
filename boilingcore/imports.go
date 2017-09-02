@@ -183,10 +183,6 @@ func newImporter() importer {
 		"boil_queries": imports{
 			standard: importList{
 				`"fmt"`,
-				`"reflect"`,
-				`"strconv"`,
-				`"strings"`,
-				`"time"`,
 			},
 			thirdParty: importList{
 				`"github.com/lbryio/sqlboiler/boil"`,
@@ -194,7 +190,6 @@ func newImporter() importer {
 				`"github.com/lbryio/sqlboiler/queries/qm"`,
 				`"github.com/lbryio/sqlboiler/strmangle"`,
 				`"github.com/pkg/errors"`,
-				`"github.com/lbryio/null.go"`,
 			},
 		},
 		"boil_types": {

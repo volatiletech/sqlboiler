@@ -59,11 +59,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 		values := []interface{}{o.{{$txt.LocalTable.ColumnNameGo}}, related.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", related."}}{{"}"}}
 
 		if boil.DebugMode {
-      qStr, err := InterpolateParams(updateQuery, values...)
-      if err != nil {
-        return err
-      }
-      fmt.Fprintln(boil.DebugWriter, qStr)
+			fmt.Fprintln(boil.DebugWriter, updateQuery)
+			fmt.Fprintln(boil.DebugWriter, values)
 		}
 
 		if _, err = exec.Exec(updateQuery, values...); err != nil {

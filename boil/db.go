@@ -22,11 +22,19 @@ type Beginner interface {
 	Begin() (Transactor, error)
 }
 
+type SQLBeginner interface {
+	Begin() (*sql.Tx, error)
+}
+
 // Begin a transaction
 func Begin() (Transactor, error) {
 	creator, ok := currentDB.(Beginner)
 	if !ok {
-		panic("database does not support transactions")
+		creator2, ok2 := currentDB.(SQLBeginner)
+		if !ok2 {
+			panic("database does not support transactions")
+		}
+		return creator2.Begin()
 	}
 
 	return creator.Begin()

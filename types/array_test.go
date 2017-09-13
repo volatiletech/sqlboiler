@@ -20,6 +20,7 @@
 package types
 
 import (
+	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"math/rand"
@@ -88,6 +89,10 @@ func TestParseArrayError(t *testing.T) {
 		{`{,}`, "unexpected ',' at offset 1"},
 		{`{,x}`, "unexpected ',' at offset 1"},
 		{`{x,}`, "unexpected '}' at offset 3"},
+		{`{x,{`, "unexpected '{' at offset 3"},
+		{`{x},`, "unexpected ',' at offset 3"},
+		{`{x}}`, "unexpected '}' at offset 3"},
+		{`{{x}`, "expected '}' at offset 4"},
 		{`{""x}`, "unexpected 'x' at offset 3"},
 		{`{{a},{b,c}}`, "multidimensional arrays must have elements with matching dimensions"},
 	} {
@@ -124,6 +129,19 @@ func TestArrayScanner(t *testing.T) {
 	if _, ok := s.(*StringArray); !ok {
 		t.Errorf("Expected *StringArray, got %T", s)
 	}
+
+	for _, tt := range []interface{}{
+		&[]sql.Scanner{},
+		&[][]bool{},
+		&[][]float64{},
+		&[][]int64{},
+		&[][]string{},
+	} {
+		s = Array(tt)
+		if _, ok := s.(GenericArray); !ok {
+			t.Errorf("Expected GenericArray for %T, got %T", tt, s)
+		}
+	}
 }
 
 func TestArrayValuer(t *testing.T) {
@@ -148,6 +166,20 @@ func TestArrayValuer(t *testing.T) {
 	if _, ok := v.(*StringArray); !ok {
 		t.Errorf("Expected *StringArray, got %T", v)
 	}
+
+	for _, tt := range []interface{}{
+		nil,
+		[]driver.Value{},
+		[][]bool{},
+		[][]float64{},
+		[][]int64{},
+		[][]string{},
+	} {
+		v = Array(tt)
+		if _, ok := v.(GenericArray); !ok {
+			t.Errorf("Expected GenericArray for %T, got %T", tt, v)
+		}
+	}
 }
 
 func TestBoolArrayScanUnsupported(t *testing.T) {
@@ -159,6 +191,30 @@ func TestBoolArrayScanUnsupported(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "int to BoolArray") {
 		t.Errorf("Expected type to be mentioned when scanning, got %q", err)
+	}
+}
+
+func TestBoolArrayScanEmpty(t *testing.T) {
+	var arr BoolArray
+	err := arr.Scan(`{}`)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr == nil || len(arr) != 0 {
+		t.Errorf("Expected empty, got %#v", arr)
+	}
+}
+
+func TestBoolArrayScanNil(t *testing.T) {
+	arr := BoolArray{true, true, true}
+	err := arr.Scan(nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr != nil {
+		t.Errorf("Expected nil, got %+v", arr)
 	}
 }
 
@@ -288,6 +344,30 @@ func TestBytesArrayScanUnsupported(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "int to BytesArray") {
 		t.Errorf("Expected type to be mentioned when scanning, got %q", err)
+	}
+}
+
+func TestBytesArrayScanEmpty(t *testing.T) {
+	var arr BytesArray
+	err := arr.Scan(`{}`)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr == nil || len(arr) != 0 {
+		t.Errorf("Expected empty, got %#v", arr)
+	}
+}
+
+func TestBytesArrayScanNil(t *testing.T) {
+	arr := BytesArray{{2}, {6}, {0, 0}}
+	err := arr.Scan(nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr != nil {
+		t.Errorf("Expected nil, got %+v", arr)
 	}
 }
 
@@ -421,6 +501,30 @@ func TestFloat64ArrayScanUnsupported(t *testing.T) {
 	}
 }
 
+func TestFloat64ArrayScanEmpty(t *testing.T) {
+	var arr Float64Array
+	err := arr.Scan(`{}`)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr == nil || len(arr) != 0 {
+		t.Errorf("Expected empty, got %#v", arr)
+	}
+}
+
+func TestFloat64ArrayScanNil(t *testing.T) {
+	arr := Float64Array{5, 5, 5}
+	err := arr.Scan(nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr != nil {
+		t.Errorf("Expected nil, got %+v", arr)
+	}
+}
+
 var Float64ArrayStringTests = []struct {
 	str string
 	arr Float64Array
@@ -548,6 +652,30 @@ func TestInt64ArrayScanUnsupported(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "bool to Int64Array") {
 		t.Errorf("Expected type to be mentioned when scanning, got %q", err)
+	}
+}
+
+func TestInt64ArrayScanEmpty(t *testing.T) {
+	var arr Int64Array
+	err := arr.Scan(`{}`)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr == nil || len(arr) != 0 {
+		t.Errorf("Expected empty, got %#v", arr)
+	}
+}
+
+func TestInt64ArrayScanNil(t *testing.T) {
+	arr := Int64Array{5, 5, 5}
+	err := arr.Scan(nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr != nil {
+		t.Errorf("Expected nil, got %+v", arr)
 	}
 }
 
@@ -680,6 +808,30 @@ func TestStringArrayScanUnsupported(t *testing.T) {
 	}
 }
 
+func TestStringArrayScanEmpty(t *testing.T) {
+	var arr StringArray
+	err := arr.Scan(`{}`)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr == nil || len(arr) != 0 {
+		t.Errorf("Expected empty, got %#v", arr)
+	}
+}
+
+func TestStringArrayScanNil(t *testing.T) {
+	arr := StringArray{"x", "x", "x"}
+	err := arr.Scan(nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if arr != nil {
+		t.Errorf("Expected nil, got %+v", arr)
+	}
+}
+
 var StringArrayStringTests = []struct {
 	str string
 	arr StringArray
@@ -793,6 +945,343 @@ func BenchmarkStringArrayValue(b *testing.B) {
 		x[i] = strings.Repeat(`abc"def\ghi`, 5)
 	}
 	a := StringArray(x)
+
+	for i := 0; i < b.N; i++ {
+		a.Value()
+	}
+}
+
+func TestGenericArrayScanUnsupported(t *testing.T) {
+	var s string
+	var ss []string
+	var nsa [1]sql.NullString
+
+	for _, tt := range []struct {
+		src, dest interface{}
+		err       string
+	}{
+		{nil, nil, "destination <nil> is not a pointer to array or slice"},
+		{nil, true, "destination bool is not a pointer to array or slice"},
+		{nil, &s, "destination *string is not a pointer to array or slice"},
+		{nil, ss, "destination []string is not a pointer to array or slice"},
+		{nil, &nsa, "<nil> to [1]sql.NullString"},
+		{true, &ss, "bool to []string"},
+		{`{{x}}`, &ss, "multidimensional ARRAY[1][1] is not implemented"},
+		{`{{x},{x}}`, &ss, "multidimensional ARRAY[2][1] is not implemented"},
+		{`{x}`, &ss, "scanning to string is not implemented"},
+	} {
+		err := GenericArray{tt.dest}.Scan(tt.src)
+
+		if err == nil {
+			t.Fatalf("Expected error for [%#v %#v]", tt.src, tt.dest)
+		}
+		if !strings.Contains(err.Error(), tt.err) {
+			t.Errorf("Expected error to contain %q for [%#v %#v], got %q", tt.err, tt.src, tt.dest, err)
+		}
+	}
+}
+
+func TestGenericArrayScanScannerArrayBytes(t *testing.T) {
+	src, expected, nsa := []byte(`{NULL,abc,"\""}`),
+		[3]sql.NullString{{}, {String: `abc`, Valid: true}, {String: `"`, Valid: true}},
+		[3]sql.NullString{{String: ``, Valid: true}, {}, {}}
+
+	if err := (GenericArray{&nsa}).Scan(src); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(nsa, expected) {
+		t.Errorf("Expected %v, got %v", expected, nsa)
+	}
+}
+
+func TestGenericArrayScanScannerArrayString(t *testing.T) {
+	src, expected, nsa := `{NULL,"\"",xyz}`,
+		[3]sql.NullString{{}, {String: `"`, Valid: true}, {String: `xyz`, Valid: true}},
+		[3]sql.NullString{{String: ``, Valid: true}, {}, {}}
+
+	if err := (GenericArray{&nsa}).Scan(src); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(nsa, expected) {
+		t.Errorf("Expected %v, got %v", expected, nsa)
+	}
+}
+
+func TestGenericArrayScanScannerSliceEmpty(t *testing.T) {
+	var nss []sql.NullString
+
+	if err := (GenericArray{&nss}).Scan(`{}`); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if nss == nil || len(nss) != 0 {
+		t.Errorf("Expected empty, got %#v", nss)
+	}
+}
+
+func TestGenericArrayScanScannerSliceNil(t *testing.T) {
+	nss := []sql.NullString{{String: ``, Valid: true}, {}}
+
+	if err := (GenericArray{&nss}).Scan(nil); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if nss != nil {
+		t.Errorf("Expected nil, got %+v", nss)
+	}
+}
+
+func TestGenericArrayScanScannerSliceBytes(t *testing.T) {
+	src, expected, nss := []byte(`{NULL,abc,"\""}`),
+		[]sql.NullString{{}, {String: `abc`, Valid: true}, {String: `"`, Valid: true}},
+		[]sql.NullString{{String: ``, Valid: true}, {}, {}, {}, {}}
+
+	if err := (GenericArray{&nss}).Scan(src); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(nss, expected) {
+		t.Errorf("Expected %v, got %v", expected, nss)
+	}
+}
+
+func BenchmarkGenericArrayScanScannerSliceBytes(b *testing.B) {
+	var a GenericArray
+	var x interface{} = []byte(`{a,b,c,d,e,f,g,h,i,j}`)
+	var y interface{} = []byte(`{"\a","\b","\c","\d","\e","\f","\g","\h","\i","\j"}`)
+
+	for i := 0; i < b.N; i++ {
+		a = GenericArray{new([]sql.NullString)}
+		a.Scan(x)
+		a = GenericArray{new([]sql.NullString)}
+		a.Scan(y)
+	}
+}
+
+func TestGenericArrayScanScannerSliceString(t *testing.T) {
+	src, expected, nss := `{NULL,"\"",xyz}`,
+		[]sql.NullString{{}, {String: `"`, Valid: true}, {String: `xyz`, Valid: true}},
+		[]sql.NullString{{String: ``, Valid: true}, {}, {}}
+
+	if err := (GenericArray{&nss}).Scan(src); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(nss, expected) {
+		t.Errorf("Expected %v, got %v", expected, nss)
+	}
+}
+
+type TildeNullInt64 struct{ sql.NullInt64 }
+
+func (TildeNullInt64) ArrayDelimiter() string { return "~" }
+
+func TestGenericArrayScanDelimiter(t *testing.T) {
+	src, expected, tnis := `{12~NULL~76}`,
+		[]TildeNullInt64{{sql.NullInt64{Int64: 12, Valid: true}}, {}, {sql.NullInt64{Int64: 76, Valid: true}}},
+		[]TildeNullInt64{{sql.NullInt64{Int64: 0, Valid: true}}, {}}
+
+	if err := (GenericArray{&tnis}).Scan(src); err != nil {
+		t.Fatalf("Expected no error for %#v, got %v", src, err)
+	}
+	if !reflect.DeepEqual(tnis, expected) {
+		t.Errorf("Expected %v for %#v, got %v", expected, src, tnis)
+	}
+}
+
+func TestGenericArrayScanErrors(t *testing.T) {
+	var sa [1]string
+	var nis []sql.NullInt64
+	var pss *[]string
+
+	for _, tt := range []struct {
+		src, dest interface{}
+		err       string
+	}{
+		{nil, pss, "destination *[]string is nil"},
+		{`{`, &sa, "unable to parse"},
+		{`{}`, &sa, "cannot convert ARRAY[0] to [1]string"},
+		{`{x,x}`, &sa, "cannot convert ARRAY[2] to [1]string"},
+		{`{x}`, &nis, `parsing array element index 0: converting`},
+	} {
+		err := GenericArray{tt.dest}.Scan(tt.src)
+
+		if err == nil {
+			t.Fatalf("Expected error for [%#v %#v]", tt.src, tt.dest)
+		}
+		if !strings.Contains(err.Error(), tt.err) {
+			t.Errorf("Expected error to contain %q for [%#v %#v], got %q", tt.err, tt.src, tt.dest, err)
+		}
+	}
+}
+
+func TestGenericArrayValueUnsupported(t *testing.T) {
+	_, err := GenericArray{true}.Value()
+
+	if err == nil {
+		t.Fatal("Expected error for bool")
+	}
+	if !strings.Contains(err.Error(), "bool to array") {
+		t.Errorf("Expected type to be mentioned, got %q", err)
+	}
+}
+
+type ByteArrayValuer [1]byte
+type ByteSliceValuer []byte
+type FuncArrayValuer struct {
+	delimiter func() string
+	value     func() (driver.Value, error)
+}
+
+func (a ByteArrayValuer) Value() (driver.Value, error) { return a[:], nil }
+func (b ByteSliceValuer) Value() (driver.Value, error) { return []byte(b), nil }
+func (f FuncArrayValuer) ArrayDelimiter() string       { return f.delimiter() }
+func (f FuncArrayValuer) Value() (driver.Value, error) { return f.value() }
+
+func TestGenericArrayValue(t *testing.T) {
+	result, err := GenericArray{nil}.Value()
+
+	if err != nil {
+		t.Fatalf("Expected no error for nil, got %v", err)
+	}
+	if result != nil {
+		t.Errorf("Expected nil, got %q", result)
+	}
+
+	for _, tt := range []interface{}{
+		[]bool(nil),
+		[][]int(nil),
+		[]*int(nil),
+		[]sql.NullString(nil),
+	} {
+		result, err := GenericArray{tt}.Value()
+
+		if err != nil {
+			t.Fatalf("Expected no error for %#v, got %v", tt, err)
+		}
+		if result != nil {
+			t.Errorf("Expected nil for %#v, got %q", tt, result)
+		}
+	}
+
+	Tilde := func(v driver.Value) FuncArrayValuer {
+		return FuncArrayValuer{
+			func() string { return "~" },
+			func() (driver.Value, error) { return v, nil }}
+	}
+
+	for _, tt := range []struct {
+		result string
+		input  interface{}
+	}{
+		{`{}`, []bool{}},
+		{`{true}`, []bool{true}},
+		{`{true,false}`, []bool{true, false}},
+		{`{true,false}`, [2]bool{true, false}},
+
+		{`{}`, [][]int{{}}},
+		{`{}`, [][]int{{}, {}}},
+		{`{{1}}`, [][]int{{1}}},
+		{`{{1},{2}}`, [][]int{{1}, {2}}},
+		{`{{1,2},{3,4}}`, [][]int{{1, 2}, {3, 4}}},
+		{`{{1,2},{3,4}}`, [2][2]int{{1, 2}, {3, 4}}},
+
+		{`{"a","\\b","c\"","d,e"}`, []string{`a`, `\b`, `c"`, `d,e`}},
+		{`{"a","\\b","c\"","d,e"}`, [][]byte{{'a'}, {'\\', 'b'}, {'c', '"'}, {'d', ',', 'e'}}},
+
+		{`{NULL}`, []*int{nil}},
+		{`{0,NULL}`, []*int{new(int), nil}},
+
+		{`{NULL}`, []sql.NullString{{}}},
+		{`{"\"",NULL}`, []sql.NullString{{String: `"`, Valid: true}, {}}},
+
+		{`{"a","b"}`, []ByteArrayValuer{{'a'}, {'b'}}},
+		{`{{"a","b"},{"c","d"}}`, [][]ByteArrayValuer{{{'a'}, {'b'}}, {{'c'}, {'d'}}}},
+
+		{`{"e","f"}`, []ByteSliceValuer{{'e'}, {'f'}}},
+		{`{{"e","f"},{"g","h"}}`, [][]ByteSliceValuer{{{'e'}, {'f'}}, {{'g'}, {'h'}}}},
+
+		{`{1~2}`, []FuncArrayValuer{Tilde(int64(1)), Tilde(int64(2))}},
+		{`{{1~2}~{3~4}}`, [][]FuncArrayValuer{{Tilde(int64(1)), Tilde(int64(2))}, {Tilde(int64(3)), Tilde(int64(4))}}},
+	} {
+		result, err := GenericArray{tt.input}.Value()
+
+		if err != nil {
+			t.Fatalf("Expected no error for %q, got %v", tt.input, err)
+		}
+		if !reflect.DeepEqual(result, tt.result) {
+			t.Errorf("Expected %q for %q, got %q", tt.result, tt.input, result)
+		}
+	}
+}
+
+func TestGenericArrayValueErrors(t *testing.T) {
+	var v []interface{}
+
+	v = []interface{}{func() {}}
+	if _, err := (GenericArray{v}).Value(); err == nil {
+		t.Errorf("Expected error for %q, got nil", v)
+	}
+
+	v = []interface{}{nil, func() {}}
+	if _, err := (GenericArray{v}).Value(); err == nil {
+		t.Errorf("Expected error for %q, got nil", v)
+	}
+}
+
+func BenchmarkGenericArrayValueBools(b *testing.B) {
+	rand.Seed(1)
+	x := make([]bool, 10)
+	for i := 0; i < len(x); i++ {
+		x[i] = rand.Intn(2) == 0
+	}
+	a := GenericArray{x}
+
+	for i := 0; i < b.N; i++ {
+		a.Value()
+	}
+}
+
+func BenchmarkGenericArrayValueFloat64s(b *testing.B) {
+	rand.Seed(1)
+	x := make([]float64, 10)
+	for i := 0; i < len(x); i++ {
+		x[i] = rand.NormFloat64()
+	}
+	a := GenericArray{x}
+
+	for i := 0; i < b.N; i++ {
+		a.Value()
+	}
+}
+
+func BenchmarkGenericArrayValueInt64s(b *testing.B) {
+	rand.Seed(1)
+	x := make([]int64, 10)
+	for i := 0; i < len(x); i++ {
+		x[i] = rand.Int63()
+	}
+	a := GenericArray{x}
+
+	for i := 0; i < b.N; i++ {
+		a.Value()
+	}
+}
+
+func BenchmarkGenericArrayValueByteSlices(b *testing.B) {
+	x := make([][]byte, 10)
+	for i := 0; i < len(x); i++ {
+		x[i] = bytes.Repeat([]byte(`abc"def\ghi`), 5)
+	}
+	a := GenericArray{x}
+
+	for i := 0; i < b.N; i++ {
+		a.Value()
+	}
+}
+
+func BenchmarkGenericArrayValueStrings(b *testing.B) {
+	x := make([]string, 10)
+	for i := 0; i < len(x); i++ {
+		x[i] = strings.Repeat(`abc"def\ghi`, 5)
+	}
+	a := GenericArray{x}
 
 	for i := 0; i < b.N; i++ {
 		a.Value()

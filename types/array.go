@@ -24,88 +24,65 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/lib/pq/oid"
 )
 
-var typeByteSlice = reflect.TypeOf([]byte{})
-var typeDriverValuer = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
-var typeSQLScanner = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
+type parameterStatus struct {
+	// server version in the same format as server_version_num, or 0 if
+	// unavailable
+	serverVersion int
 
-func encode(x interface{}) []byte {
+	// the current location based on the TimeZone value of the session, if
+	// available
+	currentLocation *time.Location
+}
+
+func errorf(s string, args ...interface{}) {
+	panic(fmt.Errorf("pq: %s", fmt.Sprintf(s, args...)))
+}
+
+func encode(parameterStatus *parameterStatus, x interface{}, pgtypOid oid.Oid) []byte {
 	switch v := x.(type) {
 	case int64:
 		return strconv.AppendInt(nil, v, 10)
 	case float64:
 		return strconv.AppendFloat(nil, v, 'f', -1, 64)
 	case []byte:
-		return encodeBytes(v)
+		if pgtypOid == oid.T_bytea {
+			return encodeBytea(parameterStatus.serverVersion, v)
+		}
+
+		return v
 	case string:
+		if pgtypOid == oid.T_bytea {
+			return encodeBytea(parameterStatus.serverVersion, []byte(v))
+		}
+
 		return []byte(v)
 	case bool:
 		return strconv.AppendBool(nil, v)
 	case time.Time:
-		return formatTimestamp(v)
+		return formatTs(v)
 
 	default:
-		panic(fmt.Errorf("encode: unknown type for %T", v))
-	}
-}
-
-// FormatTimestamp formats t into Postgres' text format for timestamps.
-func formatTimestamp(t time.Time) []byte {
-	// Need to send dates before 0001 A.D. with " BC" suffix, instead of the
-	// minus sign preferred by Go.
-	// Beware, "0000" in ISO is "1 BC", "-0001" is "2 BC" and so on
-	bc := false
-	if t.Year() <= 0 {
-		// flip year sign, and add 1, e.g: "0" will be "1", and "-10" will be "11"
-		t = t.AddDate((-t.Year())*2+1, 0, 0)
-		bc = true
-	}
-	b := []byte(t.Format(time.RFC3339Nano))
-
-	_, offset := t.Zone()
-	offset = offset % 60
-	if offset != 0 {
-		// RFC3339Nano already printed the minus sign
-		if offset < 0 {
-			offset = -offset
-		}
-
-		b = append(b, ':')
-		if offset < 10 {
-			b = append(b, '0')
-		}
-		b = strconv.AppendInt(b, int64(offset), 10)
+		errorf("encode: unknown type for %T", v)
 	}
 
-	if bc {
-		b = append(b, " BC"...)
-	}
-	return b
-}
-
-func encodeBytes(v []byte) (result []byte) {
-	for _, b := range v {
-		if b == '\\' {
-			result = append(result, '\\', '\\')
-		} else if b < 0x20 || b > 0x7e {
-			result = append(result, []byte(fmt.Sprintf("\\%03o", b))...)
-		} else {
-			result = append(result, b)
-		}
-	}
-
-	return result
+	panic("not reached")
 }
 
 // Parse a bytea value received from the server.  Both "hex" and the legacy
 // "escape" format are supported.
-func parseBytes(s []byte) (result []byte, err error) {
+func parseBytea(s []byte) (result []byte, err error) {
 	if len(s) >= 2 && bytes.Equal(s[:2], []byte("\\x")) {
 		// bytea_output = hex
 		s = s[2:] // trim off leading "\\x"
@@ -115,6 +92,7 @@ func parseBytes(s []byte) (result []byte, err error) {
 			return nil, err
 		}
 	} else {
+		// bytea_output = escape
 		for len(s) > 0 {
 			if s[0] == '\\' {
 				// escaped '\\'
@@ -151,6 +129,323 @@ func parseBytes(s []byte) (result []byte, err error) {
 	return result, nil
 }
 
+func encodeBytea(serverVersion int, v []byte) (result []byte) {
+	if serverVersion >= 90000 {
+		// Use the hex format if we know that the server supports it
+		result = make([]byte, 2+hex.EncodedLen(len(v)))
+		result[0] = '\\'
+		result[1] = 'x'
+		hex.Encode(result[2:], v)
+	} else {
+		// .. or resort to "escape"
+		for _, b := range v {
+			if b == '\\' {
+				result = append(result, '\\', '\\')
+			} else if b < 0x20 || b > 0x7e {
+				result = append(result, []byte(fmt.Sprintf("\\%03o", b))...)
+			} else {
+				result = append(result, b)
+			}
+		}
+	}
+
+	return result
+}
+
+var errInvalidTimestamp = errors.New("invalid timestamp")
+
+type timestampParser struct {
+	err error
+}
+
+func (p *timestampParser) expect(str string, char byte, pos int) {
+	if p.err != nil {
+		return
+	}
+	if pos+1 > len(str) {
+		p.err = errInvalidTimestamp
+		return
+	}
+	if c := str[pos]; c != char && p.err == nil {
+		p.err = fmt.Errorf("expected '%v' at position %v; got '%v'", char, pos, c)
+	}
+}
+
+func (p *timestampParser) mustAtoi(str string, begin int, end int) int {
+	if p.err != nil {
+		return 0
+	}
+	if begin < 0 || end < 0 || begin > end || end > len(str) {
+		p.err = errInvalidTimestamp
+		return 0
+	}
+	result, err := strconv.Atoi(str[begin:end])
+	if err != nil {
+		if p.err == nil {
+			p.err = fmt.Errorf("expected number; got '%v'", str)
+		}
+		return 0
+	}
+	return result
+}
+
+// The location cache caches the time zones typically used by the client.
+type locationCache struct {
+	cache map[int]*time.Location
+	lock  sync.Mutex
+}
+
+// All connections share the same list of timezones. Benchmarking shows that
+// about 5% speed could be gained by putting the cache in the connection and
+// losing the mutex, at the cost of a small amount of memory and a somewhat
+// significant increase in code complexity.
+var globalLocationCache = newLocationCache()
+
+func newLocationCache() *locationCache {
+	return &locationCache{cache: make(map[int]*time.Location)}
+}
+
+// Returns the cached timezone for the specified offset, creating and caching
+// it if necessary.
+func (c *locationCache) getLocation(offset int) *time.Location {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	location, ok := c.cache[offset]
+	if !ok {
+		location = time.FixedZone("", offset)
+		c.cache[offset] = location
+	}
+
+	return location
+}
+
+var infinityTsEnabled = false
+var infinityTsNegative time.Time
+var infinityTsPositive time.Time
+
+const (
+	infinityTsEnabledAlready        = "pq: infinity timestamp enabled already"
+	infinityTsNegativeMustBeSmaller = "pq: infinity timestamp: negative value must be smaller (before) than positive"
+)
+
+// EnableInfinityTs controls the handling of Postgres' "-infinity" and
+// "infinity" "timestamp"s.
+//
+// If EnableInfinityTs is not called, "-infinity" and "infinity" will return
+// []byte("-infinity") and []byte("infinity") respectively, and potentially
+// cause error "sql: Scan error on column index 0: unsupported driver -> Scan
+// pair: []uint8 -> *time.Time", when scanning into a time.Time value.
+//
+// Once EnableInfinityTs has been called, all connections created using this
+// driver will decode Postgres' "-infinity" and "infinity" for "timestamp",
+// "timestamp with time zone" and "date" types to the predefined minimum and
+// maximum times, respectively.  When encoding time.Time values, any time which
+// equals or precedes the predefined minimum time will be encoded to
+// "-infinity".  Any values at or past the maximum time will similarly be
+// encoded to "infinity".
+//
+// If EnableInfinityTs is called with negative >= positive, it will panic.
+// Calling EnableInfinityTs after a connection has been established results in
+// undefined behavior.  If EnableInfinityTs is called more than once, it will
+// panic.
+func EnableInfinityTs(negative time.Time, positive time.Time) {
+	if infinityTsEnabled {
+		panic(infinityTsEnabledAlready)
+	}
+	if !negative.Before(positive) {
+		panic(infinityTsNegativeMustBeSmaller)
+	}
+	infinityTsEnabled = true
+	infinityTsNegative = negative
+	infinityTsPositive = positive
+}
+
+/*
+ * Testing might want to toggle infinityTsEnabled
+ */
+func disableInfinityTs() {
+	infinityTsEnabled = false
+}
+
+// This is a time function specific to the Postgres default DateStyle
+// setting ("ISO, MDY"), the only one we currently support. This
+// accounts for the discrepancies between the parsing available with
+// time.Parse and the Postgres date formatting quirks.
+func parseTs(currentLocation *time.Location, str string) interface{} {
+	switch str {
+	case "-infinity":
+		if infinityTsEnabled {
+			return infinityTsNegative
+		}
+		return []byte(str)
+	case "infinity":
+		if infinityTsEnabled {
+			return infinityTsPositive
+		}
+		return []byte(str)
+	}
+	t, err := ParseTimestamp(currentLocation, str)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
+// ParseTimestamp parses Postgres' text format. It returns a time.Time in
+// currentLocation iff that time's offset agrees with the offset sent from the
+// Postgres server. Otherwise, ParseTimestamp returns a time.Time with the
+// fixed offset offset provided by the Postgres server.
+func ParseTimestamp(currentLocation *time.Location, str string) (time.Time, error) {
+	p := timestampParser{}
+
+	monSep := strings.IndexRune(str, '-')
+	// this is Gregorian year, not ISO Year
+	// In Gregorian system, the year 1 BC is followed by AD 1
+	year := p.mustAtoi(str, 0, monSep)
+	daySep := monSep + 3
+	month := p.mustAtoi(str, monSep+1, daySep)
+	p.expect(str, '-', daySep)
+	timeSep := daySep + 3
+	day := p.mustAtoi(str, daySep+1, timeSep)
+
+	var hour, minute, second int
+	if len(str) > monSep+len("01-01")+1 {
+		p.expect(str, ' ', timeSep)
+		minSep := timeSep + 3
+		p.expect(str, ':', minSep)
+		hour = p.mustAtoi(str, timeSep+1, minSep)
+		secSep := minSep + 3
+		p.expect(str, ':', secSep)
+		minute = p.mustAtoi(str, minSep+1, secSep)
+		secEnd := secSep + 3
+		second = p.mustAtoi(str, secSep+1, secEnd)
+	}
+	remainderIdx := monSep + len("01-01 00:00:00") + 1
+	// Three optional (but ordered) sections follow: the
+	// fractional seconds, the time zone offset, and the BC
+	// designation. We set them up here and adjust the other
+	// offsets if the preceding sections exist.
+
+	nanoSec := 0
+	tzOff := 0
+
+	if remainderIdx < len(str) && str[remainderIdx] == '.' {
+		fracStart := remainderIdx + 1
+		fracOff := strings.IndexAny(str[fracStart:], "-+ ")
+		if fracOff < 0 {
+			fracOff = len(str) - fracStart
+		}
+		fracSec := p.mustAtoi(str, fracStart, fracStart+fracOff)
+		nanoSec = fracSec * (1000000000 / int(math.Pow(10, float64(fracOff))))
+
+		remainderIdx += fracOff + 1
+	}
+	if tzStart := remainderIdx; tzStart < len(str) && (str[tzStart] == '-' || str[tzStart] == '+') {
+		// time zone separator is always '-' or '+' (UTC is +00)
+		var tzSign int
+		switch c := str[tzStart]; c {
+		case '-':
+			tzSign = -1
+		case '+':
+			tzSign = +1
+		default:
+			return time.Time{}, fmt.Errorf("expected '-' or '+' at position %v; got %v", tzStart, c)
+		}
+		tzHours := p.mustAtoi(str, tzStart+1, tzStart+3)
+		remainderIdx += 3
+		var tzMin, tzSec int
+		if remainderIdx < len(str) && str[remainderIdx] == ':' {
+			tzMin = p.mustAtoi(str, remainderIdx+1, remainderIdx+3)
+			remainderIdx += 3
+		}
+		if remainderIdx < len(str) && str[remainderIdx] == ':' {
+			tzSec = p.mustAtoi(str, remainderIdx+1, remainderIdx+3)
+			remainderIdx += 3
+		}
+		tzOff = tzSign * ((tzHours * 60 * 60) + (tzMin * 60) + tzSec)
+	}
+	var isoYear int
+	if remainderIdx+3 <= len(str) && str[remainderIdx:remainderIdx+3] == " BC" {
+		isoYear = 1 - year
+		remainderIdx += 3
+	} else {
+		isoYear = year
+	}
+	if remainderIdx < len(str) {
+		return time.Time{}, fmt.Errorf("expected end of input, got %v", str[remainderIdx:])
+	}
+	t := time.Date(isoYear, time.Month(month), day,
+		hour, minute, second, nanoSec,
+		globalLocationCache.getLocation(tzOff))
+
+	if currentLocation != nil {
+		// Set the location of the returned Time based on the session's
+		// TimeZone value, but only if the local time zone database agrees with
+		// the remote database on the offset.
+		lt := t.In(currentLocation)
+		_, newOff := lt.Zone()
+		if newOff == tzOff {
+			t = lt
+		}
+	}
+
+	return t, p.err
+}
+
+// formatTs formats t into a format postgres understands.
+func formatTs(t time.Time) []byte {
+	if infinityTsEnabled {
+		// t <= -infinity : ! (t > -infinity)
+		if !t.After(infinityTsNegative) {
+			return []byte("-infinity")
+		}
+		// t >= infinity : ! (!t < infinity)
+		if !t.Before(infinityTsPositive) {
+			return []byte("infinity")
+		}
+	}
+	return FormatTimestamp(t)
+}
+
+// FormatTimestamp formats t into Postgres' text format for timestamps.
+func FormatTimestamp(t time.Time) []byte {
+	// Need to send dates before 0001 A.D. with " BC" suffix, instead of the
+	// minus sign preferred by Go.
+	// Beware, "0000" in ISO is "1 BC", "-0001" is "2 BC" and so on
+	bc := false
+	if t.Year() <= 0 {
+		// flip year sign, and add 1, e.g: "0" will be "1", and "-10" will be "11"
+		t = t.AddDate((-t.Year())*2+1, 0, 0)
+		bc = true
+	}
+	b := []byte(t.Format("2006-01-02 15:04:05.999999999Z07:00"))
+
+	_, offset := t.Zone()
+	offset = offset % 60
+	if offset != 0 {
+		// RFC3339Nano already printed the minus sign
+		if offset < 0 {
+			offset = -offset
+		}
+
+		b = append(b, ':')
+		if offset < 10 {
+			b = append(b, '0')
+		}
+		b = strconv.AppendInt(b, int64(offset), 10)
+	}
+
+	if bc {
+		b = append(b, " BC"...)
+	}
+	return b
+}
+
+var typeByteSlice = reflect.TypeOf([]byte{})
+var typeDriverValuer = reflect.TypeOf((*driver.Valuer)(nil)).Elem()
+var typeSQLScanner = reflect.TypeOf((*sql.Scanner)(nil)).Elem()
+
 // Array returns the optimal driver.Valuer and sql.Scanner for an array or
 // slice of any dimension.
 //
@@ -184,10 +479,9 @@ func Array(a interface{}) interface {
 		return (*Int64Array)(a)
 	case *[]string:
 		return (*StringArray)(a)
-
-	default:
-		panic(fmt.Sprintf("boil: invalid type received %T", a))
 	}
+
+	return GenericArray{a}
 }
 
 // ArrayDelimiter may be optionally implemented by driver.Valuer or sql.Scanner
@@ -207,6 +501,9 @@ func (a *BoolArray) Scan(src interface{}) error {
 		return a.scanBytes(src)
 	case string:
 		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
 	}
 
 	return fmt.Errorf("boil: cannot convert %T to BoolArray", src)
@@ -217,7 +514,7 @@ func (a *BoolArray) scanBytes(src []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(elems) == 0 {
+	if *a != nil && len(elems) == 0 {
 		*a = (*a)[:0]
 	} else {
 		b := make(BoolArray, len(elems))
@@ -278,6 +575,9 @@ func (a *BytesArray) Scan(src interface{}) error {
 		return a.scanBytes(src)
 	case string:
 		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
 	}
 
 	return fmt.Errorf("boil: cannot convert %T to BytesArray", src)
@@ -288,12 +588,12 @@ func (a *BytesArray) scanBytes(src []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(elems) == 0 {
+	if *a != nil && len(elems) == 0 {
 		*a = (*a)[:0]
 	} else {
 		b := make(BytesArray, len(elems))
 		for i, v := range elems {
-			b[i], err = parseBytes(v)
+			b[i], err = parseBytea(v)
 			if err != nil {
 				return fmt.Errorf("could not parse bytea array index %d: %s", i, err.Error())
 			}
@@ -347,6 +647,9 @@ func (a *Float64Array) Scan(src interface{}) error {
 		return a.scanBytes(src)
 	case string:
 		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
 	}
 
 	return fmt.Errorf("boil: cannot convert %T to Float64Array", src)
@@ -357,7 +660,7 @@ func (a *Float64Array) scanBytes(src []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(elems) == 0 {
+	if *a != nil && len(elems) == 0 {
 		*a = (*a)[:0]
 	} else {
 		b := make(Float64Array, len(elems))
@@ -395,6 +698,162 @@ func (a Float64Array) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
+// GenericArray implements the driver.Valuer and sql.Scanner interfaces for
+// an array or slice of any dimension.
+type GenericArray struct{ A interface{} }
+
+func (GenericArray) evaluateDestination(rt reflect.Type) (reflect.Type, func([]byte, reflect.Value) error, string) {
+	var assign func([]byte, reflect.Value) error
+	var del = ","
+
+	// TODO calculate the assign function for other types
+	// TODO repeat this section on the element type of arrays or slices (multidimensional)
+	{
+		if reflect.PtrTo(rt).Implements(typeSQLScanner) {
+			// dest is always addressable because it is an element of a slice.
+			assign = func(src []byte, dest reflect.Value) (err error) {
+				ss := dest.Addr().Interface().(sql.Scanner)
+				if src == nil {
+					err = ss.Scan(nil)
+				} else {
+					err = ss.Scan(src)
+				}
+				return
+			}
+			goto FoundType
+		}
+
+		assign = func([]byte, reflect.Value) error {
+			return fmt.Errorf("boil: scanning to %s is not implemented; only sql.Scanner", rt)
+		}
+	}
+
+FoundType:
+
+	if ad, ok := reflect.Zero(rt).Interface().(ArrayDelimiter); ok {
+		del = ad.ArrayDelimiter()
+	}
+
+	return rt, assign, del
+}
+
+// Scan implements the sql.Scanner interface.
+func (a GenericArray) Scan(src interface{}) error {
+	dpv := reflect.ValueOf(a.A)
+	switch {
+	case dpv.Kind() != reflect.Ptr:
+		return fmt.Errorf("boil: destination %T is not a pointer to array or slice", a.A)
+	case dpv.IsNil():
+		return fmt.Errorf("boil: destination %T is nil", a.A)
+	}
+
+	dv := dpv.Elem()
+	switch dv.Kind() {
+	case reflect.Slice:
+	case reflect.Array:
+	default:
+		return fmt.Errorf("boil: destination %T is not a pointer to array or slice", a.A)
+	}
+
+	switch src := src.(type) {
+	case []byte:
+		return a.scanBytes(src, dv)
+	case string:
+		return a.scanBytes([]byte(src), dv)
+	case nil:
+		if dv.Kind() == reflect.Slice {
+			dv.Set(reflect.Zero(dv.Type()))
+			return nil
+		}
+	}
+
+	return fmt.Errorf("boil: cannot convert %T to %s", src, dv.Type())
+}
+
+func (a GenericArray) scanBytes(src []byte, dv reflect.Value) error {
+	dtype, assign, del := a.evaluateDestination(dv.Type().Elem())
+	dims, elems, err := parseArray(src, []byte(del))
+	if err != nil {
+		return err
+	}
+
+	// TODO allow multidimensional
+
+	if len(dims) > 1 {
+		return fmt.Errorf("boil: scanning from multidimensional ARRAY%s is not implemented",
+			strings.Replace(fmt.Sprint(dims), " ", "][", -1))
+	}
+
+	// Treat a zero-dimensional array like an array with a single dimension of zero.
+	if len(dims) == 0 {
+		dims = append(dims, 0)
+	}
+
+	for i, rt := 0, dv.Type(); i < len(dims); i, rt = i+1, rt.Elem() {
+		switch rt.Kind() {
+		case reflect.Slice:
+		case reflect.Array:
+			if rt.Len() != dims[i] {
+				return fmt.Errorf("boil: cannot convert ARRAY%s to %s",
+					strings.Replace(fmt.Sprint(dims), " ", "][", -1), dv.Type())
+			}
+		default:
+			// TODO handle multidimensional
+		}
+	}
+
+	values := reflect.MakeSlice(reflect.SliceOf(dtype), len(elems), len(elems))
+	for i, e := range elems {
+		if err := assign(e, values.Index(i)); err != nil {
+			return fmt.Errorf("boil: parsing array element index %d: %v", i, err)
+		}
+	}
+
+	// TODO handle multidimensional
+
+	switch dv.Kind() {
+	case reflect.Slice:
+		dv.Set(values.Slice(0, dims[0]))
+	case reflect.Array:
+		for i := 0; i < dims[0]; i++ {
+			dv.Index(i).Set(values.Index(i))
+		}
+	}
+
+	return nil
+}
+
+// Value implements the driver.Valuer interface.
+func (a GenericArray) Value() (driver.Value, error) {
+	if a.A == nil {
+		return nil, nil
+	}
+
+	rv := reflect.ValueOf(a.A)
+
+	switch rv.Kind() {
+	case reflect.Slice:
+		if rv.IsNil() {
+			return nil, nil
+		}
+	case reflect.Array:
+	default:
+		return nil, fmt.Errorf("boil: Unable to convert %T to array", a.A)
+	}
+
+	if n := rv.Len(); n > 0 {
+		// There will be at least two curly brackets, N bytes of values,
+		// and N-1 bytes of delimiters.
+		b := make([]byte, 0, 1+2*n)
+
+		b, _, err := appendArray(b, rv, n)
+		return string(b), err
+	}
+
+	return "{}", nil
+}
+
+// Int64Array represents a one-dimensional array of the PostgreSQL integer types.
 type Int64Array []int64
 
 // Scan implements the sql.Scanner interface.
@@ -404,6 +863,9 @@ func (a *Int64Array) Scan(src interface{}) error {
 		return a.scanBytes(src)
 	case string:
 		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
 	}
 
 	return fmt.Errorf("boil: cannot convert %T to Int64Array", src)
@@ -414,7 +876,7 @@ func (a *Int64Array) scanBytes(src []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(elems) == 0 {
+	if *a != nil && len(elems) == 0 {
 		*a = (*a)[:0]
 	} else {
 		b := make(Int64Array, len(elems))
@@ -462,6 +924,9 @@ func (a *StringArray) Scan(src interface{}) error {
 		return a.scanBytes(src)
 	case string:
 		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
 	}
 
 	return fmt.Errorf("boil: cannot convert %T to StringArray", src)
@@ -472,7 +937,7 @@ func (a *StringArray) scanBytes(src []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(elems) == 0 {
+	if *a != nil && len(elems) == 0 {
 		*a = (*a)[:0]
 	} else {
 		b := make(StringArray, len(elems))
@@ -596,7 +1061,7 @@ func appendArrayQuotedBytes(b, v []byte) []byte {
 }
 
 func appendValue(b []byte, v driver.Value) ([]byte, error) {
-	return append(b, encode(v)...), nil
+	return append(b, encode(nil, v, 0)...), nil
 }
 
 // parseArray extracts the dimensions and elements of an array represented in
@@ -631,6 +1096,9 @@ Element:
 	for i < len(src) {
 		switch src[i] {
 		case '{':
+			if depth == len(dims) {
+				break Element
+			}
 			depth++
 			dims[depth-1] = 0
 			i++
@@ -672,11 +1140,11 @@ Element:
 	}
 
 	for i < len(src) {
-		if bytes.HasPrefix(src[i:], del) {
+		if bytes.HasPrefix(src[i:], del) && depth > 0 {
 			dims[depth-1]++
 			i += len(del)
 			goto Element
-		} else if src[i] == '}' {
+		} else if src[i] == '}' && depth > 0 {
 			dims[depth-1]++
 			depth--
 			i++

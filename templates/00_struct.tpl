@@ -19,11 +19,11 @@ type {{$modelName}} struct {
 
 var {{$modelName}}Columns = struct {
 	{{range $column := .Table.Columns -}}
-	{{titleCase $column.Name}} string
+	{{titleCase $column.Name}} Column
 	{{end -}}
 }{
 	{{range $column := .Table.Columns -}}
-	{{titleCase $column.Name}}: "{{$column.Name}}",
+	{{titleCase $column.Name}}: Column{Name:"{{$column.Name}}", DBType:"{{$column.DBType}}"},
 	{{end -}}
 }
 

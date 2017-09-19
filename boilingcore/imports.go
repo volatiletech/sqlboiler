@@ -171,6 +171,7 @@ func newImporter() importer {
 		},
 		thirdParty: importList{
 			`"github.com/pkg/errors"`,
+			`"github.com/volatiletech/sqlboiler/bdb"`,
 			`"github.com/volatiletech/sqlboiler/boil"`,
 			`"github.com/volatiletech/sqlboiler/queries"`,
 			`"github.com/volatiletech/sqlboiler/queries/qm"`,

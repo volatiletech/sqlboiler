@@ -6,12 +6,6 @@ type M map[string]interface{}
 // fails or there was a primary key configuration that was not resolvable.
 var ErrSyncFail = errors.New("{{.PkgName}}: failed to synchronize data after insert")
 
-// Column type is for providing column name and dbtype to table columns struct
-type Column struct {
-	Name string
-	DBType string
-}
-
 type insertCache struct {
 	query        string
 	retQuery     string

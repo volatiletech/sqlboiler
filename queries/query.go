@@ -243,6 +243,11 @@ func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
 }
 
+// AppendLeftOuterJoin on the query.
+func AppendLeftOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterLeft, args: args})
+}
+
 // AppendHaving on the query.
 func AppendHaving(q *Query, clause string, args ...interface{}) {
 	q.having = append(q.having, having{clause: clause, args: args})

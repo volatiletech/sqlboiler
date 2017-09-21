@@ -82,11 +82,15 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		argsLen := len(args)
 		joinBuf := strmangle.GetBuffer()
 		for _, j := range q.joins {
-			if j.kind != JoinInner {
-				panic("only inner joins are supported")
+			if j.kind == JoinInner {
+				fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
+				args = append(args, j.args...)
+			} else if j.kind == JoinOuterLeft {
+				fmt.Fprintf(joinBuf, " LEFT OUTER JOIN %s", j.clause)
+				args = append(args, j.args...)
+			} else {
+				panic("only inner joins and left outer joins are supported")
 			}
-			fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
-			args = append(args, j.args...)
 		}
 		var resp string
 		if q.dialect.IndexPlaceholders {

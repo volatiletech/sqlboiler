@@ -37,6 +37,13 @@ func InnerJoin(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+// InnerJoin on another table
+func LeftOuterJoin(clause string, args ...interface{}) QueryMod {
+	return func(q *queries.Query) {
+		queries.AppendLeftOuterJoin(q, clause, args...)
+	}
+}
+
 // Select specific columns opposed to all columns
 func Select(columns ...string) QueryMod {
 	return func(q *queries.Query) {

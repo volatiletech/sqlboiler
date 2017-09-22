@@ -153,6 +153,11 @@ func (q *Query) QueryP() *sql.Rows {
 	return rows
 }
 
+// QueryString builds the query string and returns the string and slice of input values
+func (q *Query) QueryString() (string, []interface{}) {
+	return buildQuery(q)
+}
+
 // SetExecutor on the query.
 func SetExecutor(q *Query, exec boil.Executor) {
 	q.executor = exec

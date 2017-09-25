@@ -279,7 +279,7 @@ ColLoop:
 				continue ColLoop
 			}
 		}
-		//if the col doesn't exist in model, its will be inserted as an interface default address.
+		// if c doesn't exist in the model, the pointer will be the zero value in the ptrs array and it's value will be thrown away
 		continue
 	}
 
@@ -292,7 +292,6 @@ func PtrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	ptrs := make([]interface{}, len(mapping))
 	for i, m := range mapping {
 		ptrs[i] = ptrFromMapping(val, m, true)
-
 	}
 	return ptrs
 }
@@ -310,22 +309,17 @@ func ValuesFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 // ptrFromMapping expects to be passed an addressable struct that it's looking
 // for things on.
 func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) interface{} {
-
-	if mapping == uint64(0) {
+	if mapping == 0 {
 		var ignored interface{}
 		return &ignored
 	}
-
 	for i := 0; i < 8; i++ {
 		v := (mapping >> uint(i*8)) & sentinel
-
 		if v == sentinel {
 			if addressOf && val.Kind() != reflect.Ptr {
-
 				return val.Addr().Interface()
 			} else if !addressOf && val.Kind() == reflect.Ptr {
 				return reflect.Indirect(val).Interface()
-
 			}
 			return val.Interface()
 		}

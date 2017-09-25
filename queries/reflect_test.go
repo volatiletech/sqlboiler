@@ -248,19 +248,19 @@ func TestPtrFromMapping(t *testing.T) {
 		},
 	}
 
-	v := ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(0), true)
+	v := reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(0), true))
 	if got := *v.Interface().(*int); got != 5 {
 		t.Error("flat int was wrong:", got)
 	}
-	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(1), true)
+	v = reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(1), true))
 	if got := *v.Interface().(*int); got != 0 {
 		t.Error("flat pointer was wrong:", got)
 	}
-	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 0), true)
+	v = reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 0), true))
 	if got := *v.Interface().(*int); got != 6 {
 		t.Error("nested int was wrong:", got)
 	}
-	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 1), true)
+	v = reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 1), true))
 	if got := *v.Interface().(*int); got != 0 {
 		t.Error("nested pointer was wrong:", got)
 	}
@@ -319,7 +319,7 @@ func TestPtrsFromMapping(t *testing.T) {
 		},
 	}
 
-	mapping := []uint64{testMakeMapping(0), testMakeMapping(1), testMakeMapping(2, 0), testMakeMapping(2, 1)}
+	mapping := []uint64{testMakeMapping(0), testMakeMapping(1), testMakeMapping(2, 0), testMakeMapping(2, 1), 0}
 	v := PtrsFromMapping(reflect.Indirect(reflect.ValueOf(val)), mapping)
 
 	if got := *v[0].(*int); got != 5 {
@@ -334,6 +334,10 @@ func TestPtrsFromMapping(t *testing.T) {
 	if got := *v[3].(*int); got != 0 {
 		t.Error("nested pointer was wrong:", got)
 	}
+	if got := *v[4].(*interface{}); got != nil {
+		t.Error("nil pointer was not be ignored:", got)
+	}
+
 }
 
 func TestGetBoilTag(t *testing.T) {

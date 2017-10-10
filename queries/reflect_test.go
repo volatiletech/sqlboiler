@@ -248,19 +248,19 @@ func TestPtrFromMapping(t *testing.T) {
 		},
 	}
 
-	v := reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(0), true))
+	v := ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(0), true)
 	if got := *v.Interface().(*int); got != 5 {
 		t.Error("flat int was wrong:", got)
 	}
-	v = reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(1), true))
+	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(1), true)
 	if got := *v.Interface().(*int); got != 0 {
 		t.Error("flat pointer was wrong:", got)
 	}
-	v = reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 0), true))
+	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 0), true)
 	if got := *v.Interface().(*int); got != 6 {
 		t.Error("nested int was wrong:", got)
 	}
-	v = reflect.ValueOf(ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 1), true))
+	v = ptrFromMapping(reflect.Indirect(reflect.ValueOf(val)), testMakeMapping(2, 1), true)
 	if got := *v.Interface().(*int); got != 0 {
 		t.Error("nested pointer was wrong:", got)
 	}

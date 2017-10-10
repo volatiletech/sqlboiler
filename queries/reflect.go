@@ -291,7 +291,7 @@ ColLoop:
 func PtrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	ptrs := make([]interface{}, len(mapping))
 	for i, m := range mapping {
-		ptrs[i] = ptrFromMapping(val, m, true)
+		ptrs[i] = ptrFromMapping(val, m, true).Interface()
 	}
 	return ptrs
 }
@@ -301,27 +301,27 @@ func PtrsFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 func ValuesFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 	ptrs := make([]interface{}, len(mapping))
 	for i, m := range mapping {
-		ptrs[i] = ptrFromMapping(val, m, false)
+		ptrs[i] = ptrFromMapping(val, m, false).Interface()
 	}
 	return ptrs
 }
 
 // ptrFromMapping expects to be passed an addressable struct that it's looking
 // for things on.
-func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) interface{} {
+func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.Value {
 	if mapping == 0 {
 		var ignored interface{}
-		return &ignored
+		return reflect.ValueOf(&ignored)
 	}
 	for i := 0; i < 8; i++ {
 		v := (mapping >> uint(i*8)) & sentinel
 		if v == sentinel {
 			if addressOf && val.Kind() != reflect.Ptr {
-				return val.Addr().Interface()
+				return val.Addr()
 			} else if !addressOf && val.Kind() == reflect.Ptr {
-				return reflect.Indirect(val).Interface()
+				return reflect.Indirect(val)
 			}
-			return val.Interface()
+			return val
 		}
 
 		val = val.Field(int(v))

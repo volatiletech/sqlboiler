@@ -1,6 +1,6 @@
 package strmangle
 
-import "github.com/nullbio/inflect"
+import "github.com/volatiletech/inflect"
 
 var boilRuleset *inflect.Ruleset
 
@@ -193,6 +193,7 @@ func newBoilRuleset() *inflect.Ruleset {
 	rs.AddSingularExact("is", "is", true)
 	rs.AddSingularExact("us", "us", true)
 	rs.AddSingularExact("as", "as", true)
+	rs.AddSingularExact("areas", "area", true)
 	rs.AddPluralExact("a", "a", true)
 	rs.AddPluralExact("i", "i", true)
 	rs.AddPluralExact("is", "is", true)

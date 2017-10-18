@@ -13,10 +13,10 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/vattle/sqlboiler/bdb"
-	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/vattle/sqlboiler/queries"
-	"github.com/vattle/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/bdb"
+	"github.com/volatiletech/sqlboiler/bdb/drivers"
+	"github.com/volatiletech/sqlboiler/queries"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 const (
@@ -107,6 +107,7 @@ func (s *State) Run(includeTests bool) error {
 		PkgName:          s.Config.PkgName,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
+		StructTagCasing:  s.Config.StructTagCasing,
 		Dialect:          s.Dialect,
 		LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
 		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
@@ -142,6 +143,7 @@ func (s *State) Run(includeTests bool) error {
 			PkgName:          s.Config.PkgName,
 			NoHooks:          s.Config.NoHooks,
 			NoAutoTimestamps: s.Config.NoAutoTimestamps,
+			StructTagCasing:  s.Config.StructTagCasing,
 			Tags:             s.Config.Tags,
 			Dialect:          s.Dialect,
 			LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
@@ -267,7 +269,7 @@ func (s *State) processReplacements() error {
 	return nil
 }
 
-var basePackage = "github.com/vattle/sqlboiler"
+var basePackage = "github.com/volatiletech/sqlboiler"
 
 func getBasePath(baseDirConfig string) (string, error) {
 	if len(baseDirConfig) > 0 {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/vattle/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 // joinKind is the type of join
@@ -186,6 +186,11 @@ func AppendLoad(q *Query, relationships ...string) {
 // SetSelect on the query.
 func SetSelect(q *Query, sel []string) {
 	q.selectCols = sel
+}
+
+// GetSelect from the query
+func GetSelect(q *Query) []string {
+	return q.selectCols
 }
 
 // SetCount on the query.

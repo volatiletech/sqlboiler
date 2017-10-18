@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
-	"github.com/vattle/sqlboiler/bdb"
+	"github.com/volatiletech/sqlboiler/bdb"
 )
 
 // TinyintAsBool is a global that is set from main.go if a user specifies
@@ -306,7 +306,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			if unsigned {
 				c.Type = "null.Uint64"
 			} else {
-				c.Type = "null.Uint64"
+				c.Type = "null.Int64"
 			}
 		case "float":
 			c.Type = "null.Float32"

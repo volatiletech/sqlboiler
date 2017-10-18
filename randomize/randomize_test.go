@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	null "gopkg.in/nullbio/null.v6"
+	null "gopkg.in/volatiletech/null.v6"
 )
 
 func TestRandomizeStruct(t *testing.T) {
@@ -148,11 +148,13 @@ func TestRandomizeField(t *testing.T) {
 func TestRandEnumValue(t *testing.T) {
 	t.Parallel()
 
+	s := NewSeed()
+
 	enum1 := "enum.workday('monday','tuesday')"
 	enum2 := "enum('monday','tuesday')"
 	enum3 := "enum('monday')"
 
-	r1, err := randEnumValue(enum1)
+	r1, err := randEnumValue(s, enum1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -161,7 +163,7 @@ func TestRandEnumValue(t *testing.T) {
 		t.Errorf("Expected monday or tuesday, got: %q", r1)
 	}
 
-	r2, err := randEnumValue(enum2)
+	r2, err := randEnumValue(s, enum2)
 	if err != nil {
 		t.Error(err)
 	}
@@ -170,7 +172,7 @@ func TestRandEnumValue(t *testing.T) {
 		t.Errorf("Expected monday or tuesday, got: %q", r2)
 	}
 
-	r3, err := randEnumValue(enum3)
+	r3, err := randEnumValue(s, enum3)
 	if err != nil {
 		t.Error(err)
 	}

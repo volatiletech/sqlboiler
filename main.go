@@ -10,11 +10,11 @@ import (
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/vattle/sqlboiler/bdb/drivers"
-	"github.com/vattle/sqlboiler/boilingcore"
+	"github.com/volatiletech/sqlboiler/bdb/drivers"
+	"github.com/volatiletech/sqlboiler/boilingcore"
 )
 
-const sqlBoilerVersion = "2.4.0"
+const sqlBoilerVersion = "2.6.0"
 
 var (
 	cmdState  *boilingcore.State
@@ -62,7 +62,7 @@ func main() {
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
-			`Complete documentation is available at http://github.com/vattle/sqlboiler`,
+			`Complete documentation is available at http://github.com/volatiletech/sqlboiler`,
 		Example:       `sqlboiler postgres`,
 		PreRunE:       preRun,
 		RunE:          run,
@@ -87,6 +87,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("tinyint-as-bool", "", false, "Map MySQL tinyint(1) in Go to bool instead of int8")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
+	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel or snake (default snake)")
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
@@ -141,6 +142,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoHooks:          viper.GetBool("no-hooks"),
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 		Wipe:             viper.GetBool("wipe"),
+		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake
 	}
 
 	// BUG: https://github.com/spf13/viper/issues/200

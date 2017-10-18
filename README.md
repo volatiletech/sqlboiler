@@ -1,12 +1,12 @@
-![sqlboiler logo](http://i.imgur.com/NJtCT7y.png)
+![sqlboiler logo](http://i.imgur.com/ilkv0r9.png)
 
-[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/vattle/sqlboiler/blob/master/LICENSE)
-[![GoDoc](https://godoc.org/github.com/vattle/sqlboiler?status.svg)](https://godoc.org/github.com/vattle/sqlboiler)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/volatiletech/sqlboiler/blob/master/LICENSE)
+[![GoDoc](https://godoc.org/github.com/volatiletech/sqlboiler?status.svg)](https://godoc.org/github.com/volatiletech/sqlboiler)
 [![Mail](https://img.shields.io/badge/mail%20list-sqlboiler-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler)
 [![Mail-Annc](https://img.shields.io/badge/mail%20list-sqlboiler--announce-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler-announce)
 [![Slack](https://img.shields.io/badge/slack-%23general-lightgrey.svg)](https://sqlboiler.from-the.cloud)
-[![CircleCI](https://circleci.com/gh/vattle/sqlboiler.svg?style=shield)](https://circleci.com/gh/vattle/sqlboiler)
-[![Go Report Card](https://goreportcard.com/badge/vattle/sqlboiler)](http://goreportcard.com/report/vattle/sqlboiler)
+[![CircleCI](https://circleci.com/gh/volatiletech/sqlboiler.svg?style=shield)](https://circleci.com/gh/volatiletech/sqlboiler)
+[![Go Report Card](https://goreportcard.com/badge/volatiletech/sqlboiler)](http://goreportcard.com/report/volatiletech/sqlboiler)
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
@@ -76,6 +76,7 @@ Table of Contents
       * [Reload](#reload)
       * [Exists](#exists)
       * [Enums](#enums)
+      * [Constants](#constants)
     * [FAQ](#faq)
         * [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
         * [Missing imports for generated package](#missing-imports-for-generated-package)
@@ -122,7 +123,7 @@ For a comprehensive list of available operations and examples please see [Featur
 ```go
 import (
   // Import this so we don't have to use qm.Limit etc.
-  . "github.com/vattle/sqlboiler/queries/qm"
+  . "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 // Open handle to database like normal
@@ -214,7 +215,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 #### Download
 
 ```shell
-go get -u -t github.com/vattle/sqlboiler
+go get -u -t github.com/volatiletech/sqlboiler
 ```
 
 #### Configuration
@@ -295,7 +296,7 @@ generate models for, we can invoke the sqlboiler command line utility.
 
 ```text
 SQL Boiler generates a Go ORM from template files, tailored to your database schema.
-Complete documentation is available at http://github.com/vattle/sqlboiler
+Complete documentation is available at http://github.com/volatiletech/sqlboiler
 
 Usage:
   sqlboiler [flags] <driver>
@@ -625,7 +626,7 @@ when performing query building. Here is a list of all of your generated query mo
 
 ```go
 // Dot import so we can access query mods directly instead of prefixing with "qm."
-import . "github.com/vattle/sqlboiler/queries/qm"
+import . "github.com/volatiletech/sqlboiler/queries/qm"
 
 // Use a raw query against a generated struct (Pilot in this example)
 // If this query mod exists in your call, it will override the others.
@@ -736,7 +737,7 @@ in combination with your own custom, non-generated model.
 
 ### Binding
 
-For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/vattle/sqlboiler/queries#Bind).
+For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/volatiletech/sqlboiler/queries#Bind).
 
 The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
@@ -755,7 +756,7 @@ type PilotAndJet struct {
 
 var paj PilotAndJet
 // Use a raw query
-err := queries.Raw(`
+err := queries.Raw(db, `
   select pilots.id as "pilots.id", pilots.name as "pilots.name",
   jets.id as "jets.id", jets.pilot_id as "jets.pilot_id",
   jets.age as "jets.age", jets.name as "jets.name", jets.color as "jets.color"
@@ -783,7 +784,7 @@ var info JetInfo
 err := models.NewQuery(db, Select("sum(age) as age_sum", "count(*) as juicy_count", From("jets"))).Bind(&info)
 
 // Use a raw query
-err := queries.Raw(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
+err := queries.Raw(db, `select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
 ```
 
 We support the following struct tag modes for `Bind()` control:
@@ -956,15 +957,16 @@ it with the `AddModelHook` method. Here is an example of a before insert hook:
 
 ```go
 // Define my hook function
-func myHook(exec boil.Executor, p *Pilot) {
+func myHook(exec boil.Executor, p *Pilot) error {
   // Do stuff
+  return nil
 }
 
 // Register my before insert hook for pilots
 models.AddPilotHook(boil.BeforeInsertHook, myHook)
 ```
 
-Your `ModelHook` will always be defined as `func(boil.Executor, *Model)`
+Your `ModelHook` will always be defined as `func(boil.Executor, *Model) error`
 
 ### Transactions
 
@@ -989,7 +991,7 @@ tx.Rollback()
 ```
 
 It's also worth noting that there's a way to take advantage of `boil.SetDB()`
-by using the [boil.Begin()](https://godoc.org/github.com/vattle/sqlboiler/boil#Begin) function.
+by using the [boil.Begin()](https://godoc.org/github.com/volatiletech/sqlboiler/boil#Begin) function.
 This opens a transaction using the globally stored database.
 
 ### Debug Logging
@@ -1025,10 +1027,10 @@ Find is used to find a single row by primary key:
 
 ```go
 // Retrieve pilot with all columns filled
-pilot, err := models.PilotFind(db, 1)
+pilot, err := models.FindPilot(db, 1)
 
 // Retrieve a subset of column values
-jet, err := models.JetFind(db, 1, "name", "color")
+jet, err := models.FindJet(db, 1, "name", "color")
 ```
 
 ### Insert
@@ -1223,6 +1225,41 @@ still be able to use your generated library, and it will still work as expected,
 to get the tests to pass in this event is to either use a parsable enum value or use a regular column
 instead of an enum.
 
+### Constants
+
+The models package will also contain some structs that contain all of the table and column
+names harvested from the database at generation time.
+
+For table names they're generated under `models.TableNames`:
+
+```go
+// Generated code from models package
+var TableNames = struct {
+	Messages  string
+	Purchases string
+}{
+	Messages:  "messages",
+	Purchases: "purchases",
+}
+
+// Usage example:
+fmt.Println(models.TableNames.Messages)
+```
+
+```go
+// Generated code from models package
+var MessageColumns = struct {
+	ID         string
+	PurchaseID string
+}{
+	ID:         "id",
+	PurchaseID: "purchase_id",
+}
+
+// Usage example:
+fmt.Println(models.MessageColumns.ID)
+```
+
 ## FAQ
 
 #### Won't compiling models for a huge database be very slow?
@@ -1261,12 +1298,12 @@ You *must* use a DSN flag in MySQL connections, see: [Requirements](#requirement
 
 #### Where is the homepage?
 
-The homepage for the [SQLBoiler](https://github.com/vattle/sqlboiler) [Golang ORM](https://github.com/vattle/sqlboiler)
-generator is located at: https://github.com/vattle/sqlboiler
+The homepage for the [SQLBoiler](https://github.com/volatiletech/sqlboiler) [Golang ORM](https://github.com/volatiletech/sqlboiler)
+generator is located at: https://github.com/volatiletech/sqlboiler
 
 ## Benchmarks
 
-If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/vattle/boilbench) repo.
+If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/volatiletech/boilbench) repo.
 
 ```bash
 go test -bench . -benchmem

@@ -9,9 +9,9 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/vattle/sqlboiler/bdb"
-	"github.com/vattle/sqlboiler/queries"
-	"github.com/vattle/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/bdb"
+	"github.com/volatiletech/sqlboiler/queries"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // templateData for sqlboiler templates
@@ -33,6 +33,9 @@ type templateData struct {
 
 	// Tags control which
 	Tags []string
+
+	// Generate struct tags as camelCase or snake_case
+	StructTagCasing string
 
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string

@@ -643,7 +643,7 @@ And("age=?", 24)
 Or("height=?", 183)
 
 // WHERE IN clause building
-WhereIn("name, age in ?", "John" 24, "Tim", 33) // Generates: WHERE ("name","age") IN (($1,$2),($3,$4))
+WhereIn("name, age in ?", "John", 24, "Tim", 33) // Generates: WHERE ("name","age") IN (($1,$2),($3,$4))
 AndIn("weight in ?", 84)
 OrIn("height in ?", 183, 177, 204)
 

@@ -337,7 +337,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 		fmt.Fprintf(havingBuf, " HAVING ")
 		for i, j := range q.having {
 			if i > 0 {
-				fmt.Fprintf(havingBuf, ", ")
+				fmt.Fprintf(havingBuf, " AND ")
 			}
 			fmt.Fprintf(havingBuf, j.clause)
 			*args = append(*args, j.args...)

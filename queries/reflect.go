@@ -279,8 +279,8 @@ ColLoop:
 				continue ColLoop
 			}
 		}
-
-		return nil, errors.Errorf("could not find struct field name in mapping: %s", name)
+		// if c doesn't exist in the model, the pointer will be the zero value in the ptrs array and it's value will be thrown away
+		continue
 	}
 
 	return ptrs, nil
@@ -309,6 +309,10 @@ func ValuesFromMapping(val reflect.Value, mapping []uint64) []interface{} {
 // ptrFromMapping expects to be passed an addressable struct that it's looking
 // for things on.
 func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.Value {
+	if mapping == 0 {
+		var ignored interface{}
+		return reflect.ValueOf(&ignored)
+	}
 	for i := 0; i < 8; i++ {
 		v := (mapping >> uint(i*8)) & sentinel
 

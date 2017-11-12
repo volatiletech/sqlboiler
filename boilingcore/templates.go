@@ -27,7 +27,7 @@ type templateData struct {
 	Dialect    drivers.Dialect
 
 	// LQ and RQ contain a quoted quote that allows us to write
-	// the templates easier.
+	// the templates more easily.
 	LQ string
 	RQ string
 

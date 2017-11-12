@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -72,11 +73,8 @@ func main() {
 
 	// Set up the cobra root command flags
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
-	rootCmd.PersistentFlags().StringP("schema", "s", "", "schema name for drivers that support it (default psql: public, mssql: dbo)")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")
-	rootCmd.PersistentFlags().StringSliceP("blacklist", "b", nil, "Do not include these tables in your generated package")
-	rootCmd.PersistentFlags().StringSliceP("whitelist", "w", nil, "Only include these tables in your generated package")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
@@ -92,6 +90,7 @@ func main() {
 	rootCmd.PersistentFlags().MarkHidden("replace")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	if err := rootCmd.Execute(); err != nil {
@@ -126,7 +125,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	cmdConfig = &boilingcore.Config{
 		DriverName:       driverName,
 		OutFolder:        viper.GetString("output"),
-		Schema:           viper.GetString("schema"),
 		PkgName:          viper.GetString("pkgname"),
 		BaseDir:          viper.GetString("basedir"),
 		Debug:            viper.GetBool("debug"),
@@ -135,166 +133,131 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 		Wipe:             viper.GetBool("wipe"),
 		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake
+		Tags:             viper.GetStringSlice("tag"),
+		Replacements:     viper.GetStringSlice("replace"),
 	}
 
-	// BUG: https://github.com/spf13/viper/issues/200
-	// Look up the value of blacklist, whitelist & tags directly from PFlags in Cobra if we
-	// detect a malformed value coming out of viper.
-	// Once the bug is fixed we'll be able to move this into the init above
-	cmdConfig.BlacklistTables = viper.GetStringSlice("blacklist")
-	if len(cmdConfig.BlacklistTables) == 1 && strings.ContainsRune(cmdConfig.BlacklistTables[0], ',') {
-		cmdConfig.BlacklistTables, err = cmd.PersistentFlags().GetStringSlice("blacklist")
-		if err != nil {
-			return err
-		}
+	// Begin configuring the driver
+	cmdConfig.DriverConfig = map[string]interface{}{
+		"whitelist": viper.GetStringSlice(driverName + ".whitelist"),
+		"blacklist": viper.GetStringSlice(driverName + ".blacklist"),
 	}
 
-	cmdConfig.WhitelistTables = viper.GetStringSlice("whitelist")
-	if len(cmdConfig.WhitelistTables) == 1 && strings.ContainsRune(cmdConfig.WhitelistTables[0], ',') {
-		cmdConfig.WhitelistTables, err = cmd.PersistentFlags().GetStringSlice("whitelist")
-		if err != nil {
-			return err
-		}
+	var validationRules []vala.Checker
+	required := []string{"user", "host", "port", "dbname", "sslmode"}
+
+	switch driverName {
+	case "psql":
+		viper.SetDefault("psql.schema", "public")
+		viper.SetDefault("psql.port", 5432)
+		viper.SetDefault("psql.sslmode", "require")
+		required = append(required, "schema")
+	case "mysql":
+		viper.SetDefault("mysql.sslmode", "true")
+		viper.SetDefault("mysql.port", 3306)
+	case "mssql":
+		viper.SetDefault("mssql.schema", "dbo")
+		viper.SetDefault("mssql.sslmode", "true")
+		viper.SetDefault("mssql.port", 1433)
+		required = append(required, "schema")
 	}
 
-	cmdConfig.Tags = viper.GetStringSlice("tag")
-	if len(cmdConfig.Tags) == 1 && strings.ContainsRune(cmdConfig.Tags[0], ',') {
-		cmdConfig.Tags, err = cmd.PersistentFlags().GetStringSlice("tag")
-		if err != nil {
-			return err
-		}
-	}
-
-	cmdConfig.Replacements = viper.GetStringSlice("replace")
-	if len(cmdConfig.Replacements) == 1 && strings.ContainsRune(cmdConfig.Replacements[0], ',') {
-		cmdConfig.Replacements, err = cmd.PersistentFlags().GetStringSlice("replace")
-		if err != nil {
-			return err
-		}
-	}
-
-	if driverName == "postgres" {
-		cmdConfig.Postgres = boilingcore.PostgresConfig{
-			User:    viper.GetString("postgres.user"),
-			Pass:    viper.GetString("postgres.pass"),
-			Host:    viper.GetString("postgres.host"),
-			Port:    viper.GetInt("postgres.port"),
-			DBName:  viper.GetString("postgres.dbname"),
-			SSLMode: viper.GetString("postgres.sslmode"),
-		}
-
-		// BUG: https://github.com/spf13/viper/issues/71
-		// Despite setting defaults, nested values don't get defaults
-		// Set them manually
-		if cmdConfig.Postgres.SSLMode == "" {
-			cmdConfig.Postgres.SSLMode = "require"
-			viper.Set("postgres.sslmode", cmdConfig.Postgres.SSLMode)
-		}
-
-		if cmdConfig.Postgres.Port == 0 {
-			cmdConfig.Postgres.Port = 5432
-			viper.Set("postgres.port", cmdConfig.Postgres.Port)
-		}
-
-		if len(cmdConfig.Schema) == 0 {
-			cmdConfig.Schema = "public"
-		}
-
-		err = vala.BeginValidation().Validate(
-			vala.StringNotEmpty(cmdConfig.Postgres.User, "postgres.user"),
-			vala.StringNotEmpty(cmdConfig.Postgres.Host, "postgres.host"),
-			vala.Not(vala.Equals(cmdConfig.Postgres.Port, 0, "postgres.port")),
-			vala.StringNotEmpty(cmdConfig.Postgres.DBName, "postgres.dbname"),
-			vala.StringNotEmpty(cmdConfig.Postgres.SSLMode, "postgres.sslmode"),
-		).Check()
-
-		if err != nil {
-			return commandFailure(err.Error())
+	if validationRules == nil {
+		for _, r := range required {
+			key := fmt.Sprintf("%s.%s", driverName, r)
+			switch r {
+			case "port":
+				validationRules = append(validationRules, vala.Not(vala.Equals(viper.GetInt(key), 0, key)))
+			default:
+				validationRules = append(validationRules, vala.StringNotEmpty(viper.GetString(key), key))
+			}
 		}
 	}
 
-	if driverName == "mysql" {
-		cmdConfig.MySQL = boilingcore.MySQLConfig{
-			User:    viper.GetString("mysql.user"),
-			Pass:    viper.GetString("mysql.pass"),
-			Host:    viper.GetString("mysql.host"),
-			Port:    viper.GetInt("mysql.port"),
-			DBName:  viper.GetString("mysql.dbname"),
-			SSLMode: viper.GetString("mysql.sslmode"),
-		}
-
-		// Set MySQL TinyintAsBool global var. This flag only applies to MySQL.
-		// TODO: Fix TinyIntAsBool flag
-		//drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
-
-		// MySQL doesn't have schemas, just databases
-		cmdConfig.Schema = cmdConfig.MySQL.DBName
-
-		// BUG: https://github.com/spf13/viper/issues/71
-		// Despite setting defaults, nested values don't get defaults
-		// Set them manually
-		if cmdConfig.MySQL.SSLMode == "" {
-			cmdConfig.MySQL.SSLMode = "true"
-			viper.Set("mysql.sslmode", cmdConfig.MySQL.SSLMode)
-		}
-
-		if cmdConfig.MySQL.Port == 0 {
-			cmdConfig.MySQL.Port = 3306
-			viper.Set("mysql.port", cmdConfig.MySQL.Port)
-		}
-
-		err = vala.BeginValidation().Validate(
-			vala.StringNotEmpty(cmdConfig.MySQL.User, "mysql.user"),
-			vala.StringNotEmpty(cmdConfig.MySQL.Host, "mysql.host"),
-			vala.Not(vala.Equals(cmdConfig.MySQL.Port, 0, "mysql.port")),
-			vala.StringNotEmpty(cmdConfig.MySQL.DBName, "mysql.dbname"),
-			vala.StringNotEmpty(cmdConfig.MySQL.SSLMode, "mysql.sslmode"),
-		).Check()
-
-		if err != nil {
-			return commandFailure(err.Error())
-		}
+	if err := vala.BeginValidation().Validate(validationRules...).Check(); err != nil {
+		return commandFailure(err.Error())
 	}
 
-	if driverName == "mssql" {
-		cmdConfig.MSSQL = boilingcore.MSSQLConfig{
-			User:    viper.GetString("mssql.user"),
-			Pass:    viper.GetString("mssql.pass"),
-			Host:    viper.GetString("mssql.host"),
-			Port:    viper.GetInt("mssql.port"),
-			DBName:  viper.GetString("mssql.dbname"),
-			SSLMode: viper.GetString("mssql.sslmode"),
-		}
-
-		// BUG: https://github.com/spf13/viper/issues/71
-		// Despite setting defaults, nested values don't get defaults
-		// Set them manually
-		if cmdConfig.MSSQL.SSLMode == "" {
-			cmdConfig.MSSQL.SSLMode = "true"
-			viper.Set("mssql.sslmode", cmdConfig.MSSQL.SSLMode)
-		}
-
-		if cmdConfig.MSSQL.Port == 0 {
-			cmdConfig.MSSQL.Port = 1433
-			viper.Set("mssql.port", cmdConfig.MSSQL.Port)
-		}
-
-		if len(cmdConfig.Schema) == 0 {
-			cmdConfig.Schema = "dbo"
-		}
-
-		err = vala.BeginValidation().Validate(
-			vala.StringNotEmpty(cmdConfig.MSSQL.User, "mssql.user"),
-			vala.StringNotEmpty(cmdConfig.MSSQL.Host, "mssql.host"),
-			vala.Not(vala.Equals(cmdConfig.MSSQL.Port, 0, "mssql.port")),
-			vala.StringNotEmpty(cmdConfig.MSSQL.DBName, "mssql.dbname"),
-			vala.StringNotEmpty(cmdConfig.MSSQL.SSLMode, "mssql.sslmode"),
-		).Check()
-
-		if err != nil {
-			return commandFailure(err.Error())
-		}
+	keys := allKeys(driverName)
+	for _, key := range keys {
+		prefixedKey := fmt.Sprintf("%s.%s", driverName, key)
+		cmdConfig.DriverConfig[key] = viper.GetString(prefixedKey)
 	}
+
+	spew.Dump(cmdConfig.DriverConfig)
+
+	// schema := viper.GetString("psql.schema")
+	// user := viper.GetString("psql.user")
+	// pass := viper.GetString("psql.pass")
+	// host := viper.GetString("psql.host")
+	// port := viper.GetInt("psql.port")
+	// dbname := viper.GetString("psql.dbname")
+	// sslMode := viper.GetString("psql.sslmode")
+
+	// err = vala.BeginValidation().Validate(
+	// ).Check()
+
+	// if err != nil {
+	// 	return commandFailure(err.Error())
+	// }
+
+	// cmdConfig.MySQL = boilingcore.MySQLConfig{
+	// 	User:    viper.GetString("mysql.user"),
+	// 	Pass:    viper.GetString("mysql.pass"),
+	// 	Host:    viper.GetString("mysql.host"),
+	// 	Port:    viper.GetInt("mysql.port"),
+	// 	DBName:  viper.GetString("mysql.dbname"),
+	// 	SSLMode: viper.GetString("mysql.sslmode"),
+	// }
+
+	// // Set MySQL TinyintAsBool global var. This flag only applies to MySQL.
+	// // TODO: Fix TinyIntAsBool flag
+	// //drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
+
+	// // MySQL doesn't have schemas, just databases
+	// cmdConfig.Schema = cmdConfig.MySQL.DBName
+
+	// // BUG: https://github.com/spf13/viper/issues/71
+	// // Despite setting defaults, nested values don't get defaults
+	// // Set them manually
+
+	// err = vala.BeginValidation().Validate(
+	// 	vala.StringNotEmpty(cmdConfig.MySQL.User, "mysql.user"),
+	// 	vala.StringNotEmpty(cmdConfig.MySQL.Host, "mysql.host"),
+	// 	vala.Not(vala.Equals(cmdConfig.MySQL.Port, 0, "mysql.port")),
+	// 	vala.StringNotEmpty(cmdConfig.MySQL.DBName, "mysql.dbname"),
+	// 	vala.StringNotEmpty(cmdConfig.MySQL.SSLMode, "mysql.sslmode"),
+	// ).Check()
+
+	// if err != nil {
+	// 	return commandFailure(err.Error())
+	// }
+
+	// if driverName == "mssql" {
+	// 	cmdConfig.MSSQL = boilingcore.MSSQLConfig{
+	// 		User:    viper.GetString("mssql.user"),
+	// 		Pass:    viper.GetString("mssql.pass"),
+	// 		Host:    viper.GetString("mssql.host"),
+	// 		Port:    viper.GetInt("mssql.port"),
+	// 		DBName:  viper.GetString("mssql.dbname"),
+	// 		SSLMode: viper.GetString("mssql.sslmode"),
+	// 	}
+
+	// 	// BUG: https://github.com/spf13/viper/issues/71
+	// 	// Despite setting defaults, nested values don't get defaults
+	// 	// Set them manually
+
+	// 	err = vala.BeginValidation().Validate(
+	// 		vala.StringNotEmpty(cmdConfig.MSSQL.User, "mssql.user"),
+	// 		vala.StringNotEmpty(cmdConfig.MSSQL.Host, "mssql.host"),
+	// 		vala.Not(vala.Equals(cmdConfig.MSSQL.Port, 0, "mssql.port")),
+	// 		vala.StringNotEmpty(cmdConfig.MSSQL.DBName, "mssql.dbname"),
+	// 		vala.StringNotEmpty(cmdConfig.MSSQL.SSLMode, "mssql.sslmode"),
+	// 	).Check()
+
+	// 	if err != nil {
+	// 		return commandFailure(err.Error())
+	// 	}
 
 	cmdState, err = boilingcore.New(cmdConfig)
 	return err
@@ -306,4 +269,31 @@ func run(cmd *cobra.Command, args []string) error {
 
 func postRun(cmd *cobra.Command, args []string) error {
 	return cmdState.Cleanup()
+}
+
+func allKeys(prefix string) []string {
+	keys := make(map[string]bool)
+
+	prefix = prefix + "."
+
+	for _, e := range os.Environ() {
+		splits := strings.SplitN(e, "=", 2)
+		key := strings.Replace(strings.ToLower(splits[0]), "_", ".", -1)
+
+		if strings.HasPrefix(key, prefix) {
+			keys[strings.Replace(key, prefix, "", -1)] = true
+		}
+	}
+
+	for _, key := range viper.AllKeys() {
+		if strings.HasPrefix(key, prefix) {
+			keys[strings.Replace(key, prefix, "", -1)] = true
+		}
+	}
+
+	keySlice := make([]string, 0, len(keys))
+	for k := range keys {
+		keySlice = append(keySlice, k)
+	}
+	return keySlice
 }

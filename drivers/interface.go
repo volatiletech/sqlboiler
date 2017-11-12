@@ -9,6 +9,20 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
+// These constants are used in the config map passed into the driver
+const (
+	ConfigBlacklist = "blacklist"
+	ConfigWhitelist = "whitelist"
+	ConfigSchema    = "schema"
+
+	ConfigUser    = "user"
+	ConfigPass    = "pass"
+	ConfigHost    = "host"
+	ConfigPort    = "port"
+	ConfigDBName  = "dbname"
+	ConfigSSLMode = "ssl_mode"
+)
+
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface interface {

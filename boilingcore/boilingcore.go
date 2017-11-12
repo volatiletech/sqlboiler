@@ -49,17 +49,19 @@ func New(config *Config) (*State, error) {
 		Config: config,
 	}
 
-	err := s.initDriver(config.DriverName)
-	if err != nil {
-		return nil, err
+	// Pull one value out to the top level
+	schemaIntf, ok := s.Config.DriverConfig[drivers.ConfigSchema]
+	if !ok {
+		return nil, errors.New("schema was not defined in the driver config")
+	} else if schema, ok := schemaIntf.(string); !ok {
+		return nil, errors.New("schema in the config was not a string")
+	} else {
+		s.Config.Schema = schema
 	}
 
-	// Connect to the driver database
-	if err = s.Driver.Open(); err != nil {
-		return nil, errors.Wrap(err, "unable to connect to the database")
-	}
+	s.Driver = drivers.GetDriver(config.DriverName)
 
-	err = s.initTables(config.Schema, config.WhitelistTables, config.BlacklistTables)
+	err := s.initTables(config.DriverConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -162,7 +164,7 @@ func (s *State) Run(includeTests bool) error {
 
 // Cleanup closes any resources that must be closed
 func (s *State) Cleanup() error {
-	s.Driver.Close()
+	// Nothing here atm, used to close the driver
 	return nil
 }
 
@@ -276,31 +278,23 @@ func getBasePath(baseDirConfig string) (string, error) {
 	return os.Getwd()
 }
 
-// initDriver attempts to set the state Interface based off the passed in
-// driver flag value. If an invalid flag string is provided an error is returned.
-func (s *State) initDriver(driverName string) error {
-	// Create a driver based off driver flag
-
-	// TODO(aarondl): Something useful, execute some binaries or something
-
-	return nil
-}
-
-// initTables retrieves all "public" schema table names from the database.
-func (s *State) initTables(schema string, whitelist, blacklist []string) error {
-	var err error
-	s.Tables, err = drivers.Tables(s.Driver, schema, whitelist, blacklist)
+// initTables retrieves all table names from the database.
+func (s *State) initTables(config map[string]interface{}) error {
+	dbInfo, err := s.Driver.Assemble(config)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}
 
-	if len(s.Tables) == 0 {
+	if len(dbInfo.Tables) == 0 {
 		return errors.New("no tables found in database")
 	}
 
-	if err := checkPKeys(s.Tables); err != nil {
+	if err := checkPKeys(dbInfo.Tables); err != nil {
 		return err
 	}
+
+	s.Tables = dbInfo.Tables
+	s.Dialect = dbInfo.Dialect
 
 	return nil
 }

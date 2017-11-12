@@ -11,6 +11,9 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+
+	"github.com/volatiletech/sqlboiler/drivers"
+	_ "github.com/volatiletech/sqlboiler/drivers/mocks"
 )
 
 var state *State
@@ -37,10 +40,13 @@ func TestNew(t *testing.T) {
 	}()
 
 	config := &Config{
-		DriverName:      "mock",
-		PkgName:         "models",
-		OutFolder:       out,
-		BlacklistTables: []string{"hangars"},
+		DriverName: "mock",
+		PkgName:    "models",
+		OutFolder:  out,
+		DriverConfig: map[string]interface{}{
+			drivers.ConfigSchema:    "schema",
+			drivers.ConfigBlacklist: []string{"hangars"},
+		},
 	}
 
 	state, err = New(config)

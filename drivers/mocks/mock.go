@@ -5,8 +5,46 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
+func init() {
+	drivers.RegisterFromInit("mock", &MockDriver{})
+}
+
 // MockDriver is a mock implementation of the bdb driver Interface
 type MockDriver struct{}
+
+// Assemble the DBInfo
+func (m *MockDriver) Assemble(config map[string]interface{}) (*drivers.DBInfo, error) {
+	var d drivers.DBInfo
+
+	d.Dialect = drivers.Dialect{
+		LQ: '"',
+		RQ: '"',
+
+		UseIndexPlaceholders: true,
+		UseLastInsertID:      false,
+		UseTopClause:         false,
+	}
+
+	schema := config[drivers.ConfigSchema].(string)
+	var whitelist, blacklist []string
+
+	whitelistIntf, ok := config[drivers.ConfigWhitelist]
+	if ok {
+		whitelist = whitelistIntf.([]string)
+	}
+	blacklistIntf, ok := config[drivers.ConfigBlacklist]
+	if ok {
+		blacklist = blacklistIntf.([]string)
+	}
+
+	var err error
+	d.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)
+	if err != nil {
+		return nil, err
+	}
+
+	return &d, nil
+}
 
 // TableNames returns a list of mock table names
 func (m *MockDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {

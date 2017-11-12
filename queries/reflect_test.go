@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vattle/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/drivers"
 
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )

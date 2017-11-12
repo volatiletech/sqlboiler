@@ -1,6 +1,6 @@
 package boilingcore
 
-import "github.com/vattle/sqlboiler/importers"
+import "github.com/volatiletech/sqlboiler/importers"
 
 // Config for the running of the commands
 type Config struct {

@@ -1,45 +1,45 @@
 package drivers
 
 // ToOneRelationship describes a relationship between two tables where the local
-// table has no id, and the foregin table has an id that matches a column in the
-// local table, that column is also unique which changes the dynamic into a
+// table has no id, and the foreign table has an id that matches a column in the
+// local table, that column can also be unique which changes the dynamic into a
 // one-to-one style, not a to-many.
 type ToOneRelationship struct {
-	Table    string
-	Column   string
-	Nullable bool
-	Unique   bool
+	Table    string `json:"table"`
+	Column   string `json:"column"`
+	Nullable bool   `json:"nullable"`
+	Unique   bool   `json:"unique"`
 
-	ForeignTable          string
-	ForeignColumn         string
-	ForeignColumnNullable bool
-	ForeignColumnUnique   bool
+	ForeignTable          string `json:"foreign_table"`
+	ForeignColumn         string `json:"foreign_column"`
+	ForeignColumnNullable bool   `json:"foreign_column_nullable"`
+	ForeignColumnUnique   bool   `json:"foreign_column_unique"`
 }
 
 // ToManyRelationship describes a relationship between two tables where the
 // local table has no id, and the foreign table has an id that matches a column
 // in the local table.
 type ToManyRelationship struct {
-	Table    string
-	Column   string
-	Nullable bool
-	Unique   bool
+	Table    string `json:"table"`
+	Column   string `json:"column"`
+	Nullable bool   `json:"nullable"`
+	Unique   bool   `json:"unique"`
 
-	ForeignTable          string
-	ForeignColumn         string
-	ForeignColumnNullable bool
-	ForeignColumnUnique   bool
+	ForeignTable          string `json:"foreign_table"`
+	ForeignColumn         string `json:"foreign_column"`
+	ForeignColumnNullable bool   `json:"foreign_column_nullable"`
+	ForeignColumnUnique   bool   `json:"foreign_column_unique"`
 
-	ToJoinTable bool
-	JoinTable   string
+	ToJoinTable bool   `json:"to_join_table"`
+	JoinTable   string `json:"join_table"`
 
-	JoinLocalColumn         string
-	JoinLocalColumnNullable bool
-	JoinLocalColumnUnique   bool
+	JoinLocalColumn         string `json:"join_local_column"`
+	JoinLocalColumnNullable bool   `json:"join_local_column_nullable"`
+	JoinLocalColumnUnique   bool   `json:"join_local_column_unique"`
 
-	JoinForeignColumn         string
-	JoinForeignColumnNullable bool
-	JoinForeignColumnUnique   bool
+	JoinForeignColumn         string `json:"join_foreign_column"`
+	JoinForeignColumnNullable bool   `json:"join_foreign_column_nullable"`
+	JoinForeignColumnUnique   bool   `json:"join_foreign_column_unique"`
 }
 
 // ToOneRelationships relationship lookups

@@ -1,4 +1,5 @@
-// Package drivers supplies the sql(b)oiler (d)ata(b)ase abstractions.
+// Package drivers talks to various database backends and retrieves table,
+// column, type, and foreign key information
 package drivers
 
 import (
@@ -11,24 +12,24 @@ import (
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface interface {
-	Assemble(config map[string]interface{}) (*Assembly, error)
+	Assemble(config map[string]interface{}) (*DBInfo, error)
 }
 
-// Assembly is the database's properties and the table data from within.
-type Assembly struct {
-	Tables  []Table
-	Dialect Dialect
+// DBInfo is the database's table data and dialect.
+type DBInfo struct {
+	Tables  []Table `json:"tables"`
+	Dialect Dialect `json:"dialect"`
 }
 
 // Dialect describes the databases requirements in terms of which features
 // it speaks and what kind of quoting mechanisms it uses.
 type Dialect struct {
-	LQ rune
-	RQ rune
+	LQ string `json:"lq"`
+	RQ string `json:"rq"`
 
-	UseIndexPlaceholders bool
-	UseLastInsertID      bool
-	UseTopClause         bool
+	UseIndexPlaceholders bool `json:"use_index_placeholders"`
+	UseLastInsertID      bool `json:"use_last_insert_id"`
+	UseTopClause         bool `json:"use_top_clause"`
 }
 
 // Constructor breaks down the functionality required to implement a driver
@@ -103,7 +104,7 @@ func filterForeignKeys(t *Table, whitelist, blacklist []string) {
 	var fkeys []ForeignKey
 	for _, fkey := range t.FKeys {
 		if (len(whitelist) == 0 || strmangle.SetInclude(fkey.ForeignTable, whitelist)) &&
-		(len(blacklist) == 0 || !strmangle.SetInclude(fkey.ForeignTable, blacklist)) {
+			(len(blacklist) == 0 || !strmangle.SetInclude(fkey.ForeignTable, blacklist)) {
 			fkeys = append(fkeys, fkey)
 		}
 	}

@@ -4,19 +4,19 @@ import "fmt"
 
 // Table metadata from the database schema.
 type Table struct {
-	Name string
+	Name string `json:"name"`
 	// For dbs with real schemas, like Postgres.
 	// Example value: "schema_name"."table_name"
-	SchemaName string
-	Columns    []Column
+	SchemaName string   `json:"schema_name"`
+	Columns    []Column `json:"columns"`
 
-	PKey  *PrimaryKey
-	FKeys []ForeignKey
+	PKey  *PrimaryKey  `json:"p_key"`
+	FKeys []ForeignKey `json:"f_keys"`
 
-	IsJoinTable bool
+	IsJoinTable bool `json:"is_join_table"`
 
-	ToOneRelationships  []ToOneRelationship
-	ToManyRelationships []ToManyRelationship
+	ToOneRelationships  []ToOneRelationship  `json:"to_one_relationships"`
+	ToManyRelationships []ToManyRelationship `json:"to_many_relationships"`
 }
 
 // GetTable by name. Panics if not found (for use in templates mostly).

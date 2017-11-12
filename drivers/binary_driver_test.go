@@ -144,8 +144,8 @@ var testBinaryJSON = `
 		}
 	],
 	"dialect": {
-		"lq": "\"",
-		"rq": "]",
+		"lq": 91,
+		"rq": 93,
 
 		"use_index_placeholders": false,
 		"use_last_insert_id": true,

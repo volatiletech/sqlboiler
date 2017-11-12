@@ -24,8 +24,8 @@ type DBInfo struct {
 // Dialect describes the databases requirements in terms of which features
 // it speaks and what kind of quoting mechanisms it uses.
 type Dialect struct {
-	LQ string `json:"lq"`
-	RQ string `json:"rq"`
+	LQ rune `json:"lq"`
+	RQ rune `json:"rq"`
 
 	UseIndexPlaceholders bool `json:"use_index_placeholders"`
 	UseLastInsertID      bool `json:"use_last_insert_id"`

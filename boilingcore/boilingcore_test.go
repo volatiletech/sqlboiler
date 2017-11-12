@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/volatiletech/sqlboiler/importers"
+
 	"github.com/volatiletech/sqlboiler/drivers"
 	_ "github.com/volatiletech/sqlboiler/drivers/mocks"
 )
@@ -47,6 +49,7 @@ func TestNew(t *testing.T) {
 			drivers.ConfigSchema:    "schema",
 			drivers.ConfigBlacklist: []string{"hangars"},
 		},
+		Imports: importers.NewDefaultImports(),
 	}
 
 	state, err = New(config)

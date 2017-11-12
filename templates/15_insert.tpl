@@ -78,7 +78,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		var queryOutput, queryReturning string
 
 		if len(cache.retMapping) != 0 {
-			{{if .UseLastInsertID -}}
+			{{if .Dialect.UseLastInsertID -}}
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
 			{{else -}}
 				{{if ne .DriverName "mssql" -}}
@@ -102,7 +102,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
-	{{if .UseLastInsertID -}}
+	{{if .Dialect.UseLastInsertID -}}
 	{{- $canLastInsertID := .Table.CanLastInsertID -}}
 	{{if $canLastInsertID -}}
 	result, err := exec.Exec(cache.query, vals...)
@@ -164,7 +164,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	}
 	{{end}}
 
-{{if .UseLastInsertID -}}
+{{if .Dialect.UseLastInsertID -}}
 CacheNoHooks:
 {{- end}}
 	if !cached {

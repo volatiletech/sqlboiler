@@ -146,7 +146,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/sqlboiler/boil"`,
-			`"gopkg.in/nullbio/null.v6"`,
+			`"gopkg.in/volatiletech/null.v6"`,
 		},
 	}
 
@@ -173,7 +173,7 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/sqlboiler/boil"`,
-			`"gopkg.in/nullbio/null.v6"`,
+			`"gopkg.in/volatiletech/null.v6"`,
 		},
 	}
 

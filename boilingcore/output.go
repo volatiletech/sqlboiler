@@ -108,7 +108,7 @@ func executeTemplates(e executeTemplateData) error {
 	if e.combineImportsOnType {
 		colTypes := make([]string, len(e.data.Table.Columns))
 		for i, ct := range e.data.Table.Columns {
-			colTypes[i] = ct.Name
+			colTypes[i] = ct.Type
 		}
 
 		imps = importers.CombineTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)

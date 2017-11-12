@@ -186,6 +186,7 @@ func NewDefaultImports() Collection {
 		"boil_queries": {
 			ThirdParty: List{
 				`"github.com/volatiletech/sqlboiler/boil"`,
+				`"github.com/volatiletech/sqlboiler/drivers"`,
 				`"github.com/volatiletech/sqlboiler/queries"`,
 				`"github.com/volatiletech/sqlboiler/queries/qm"`,
 			},
@@ -313,55 +314,55 @@ func NewDefaultImports() Collection {
 	// TranslateColumnType to see the type assignments.
 	col.BasedOnType = Map{
 		"null.Float32": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Float64": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Int": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Int8": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Int16": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Int32": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Int64": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Uint": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Uint8": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Uint16": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Uint32": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Uint64": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.String": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Bool": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Time": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.JSON": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"null.Bytes": {
-			ThirdParty: List{`"gopkg.in/nullbio/null.v6"`},
+			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
 		},
 		"time.Time": {
 			Standard: List{`"time"`},

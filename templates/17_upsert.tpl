@@ -151,7 +151,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
-	{{if .UseLastInsertID -}}
+	{{if .Dialect.UseLastInsertID -}}
 	{{- $canLastInsertID := .Table.CanLastInsertID -}}
 	{{if $canLastInsertID -}}
 	result, err := exec.Exec(cache.query, vals...)
@@ -215,7 +215,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	}
 	{{- end}}
 
-{{if .UseLastInsertID -}}
+{{if .Dialect.UseLastInsertID -}}
 CacheNoHooks:
 {{end -}}
 	if !cached {

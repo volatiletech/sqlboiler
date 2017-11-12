@@ -18,6 +18,15 @@ func RegisterFromInit(name string, driver Interface) {
 	register(name, driver)
 }
 
+// GetDriver retrieves the driver by name
+func GetDriver(name string) Interface {
+	if d, ok := registeredDrivers[name]; ok {
+		return d
+	}
+
+	panic(fmt.Sprintf("drivers: sqlboiler driver %s has not been registered", name))
+}
+
 func register(name string, driver Interface) {
 	if _, ok := registeredDrivers[name]; ok {
 		panic(fmt.Sprintf("drivers: sqlboiler driver %s already loaded", name))

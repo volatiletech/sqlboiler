@@ -32,6 +32,40 @@ func TestBinaryRegistration(t *testing.T) {
 	}
 }
 
+func TestGetDriver(t *testing.T) {
+	didYouPanic := false
+
+	RegisterBinary("mock4", "/bin/true")
+
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didYouPanic = true
+			}
+		}()
+
+		_ = GetDriver("mock4")
+	}()
+
+	if didYouPanic {
+		t.Error("expected not to panic when fetching a driver that's known")
+	}
+
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				didYouPanic = true
+			}
+		}()
+
+		_ = GetDriver("notpresentdriver")
+	}()
+
+	if !didYouPanic {
+		t.Error("expected to recover from a panic")
+	}
+}
+
 func TestReregister(t *testing.T) {
 	didYouPanic := false
 

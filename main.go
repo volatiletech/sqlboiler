@@ -167,6 +167,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		viper.SetDefault("psql.sslmode", "require")
 		required = append(required, "schema")
 	case "mysql":
+		viper.Set("mysql.schema", viper.GetString("mysql.dbname"))
 		viper.SetDefault("mysql.sslmode", "true")
 		viper.SetDefault("mysql.port", 3306)
 	case "mssql":

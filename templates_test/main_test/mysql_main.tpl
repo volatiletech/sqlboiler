@@ -171,10 +171,34 @@ func (m *mysqlTester) conn() (*sql.DB, error) {
 	}
 
 	var err error
-	m.dbConn, err = sql.Open("mysql", drivers.MySQLBuildQueryString(m.user, m.pass, m.testDBName, m.host, m.port, m.sslmode))
+	m.dbConn, err = sql.Open("mysql", mySQLBuildQueryString(m.user, m.pass, m.testDBName, m.host, m.port, m.sslmode))
 	if err != nil {
 	return nil, err
 	}
 
 	return m.dbConn, nil
+}
+
+
+func mySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
+	var config mysql.Config
+
+	config.User = user
+	if len(pass) != 0 {
+		config.Passwd = pass
+	}
+	config.DBName = dbname
+	config.Net = "tcp"
+	config.Addr = host
+	if port == 0 {
+		port = 3306
+	}
+	config.Addr += ":" + strconv.Itoa(port)
+	config.TLSConfig = sslmode
+
+	// MySQL is a bad, and by default reads date/datetime into a []byte
+	// instead of a time.Time. Tell it to stop being a bad.
+	config.ParseTime = true
+
+	return config.FormatDSN()
 }

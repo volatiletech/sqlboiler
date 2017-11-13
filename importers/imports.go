@@ -280,14 +280,14 @@ func NewDefaultImports() Collection {
 				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
+				`"strconv"`,
 				`"strings"`,
 			},
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
-				`_ "github.com/go-sql-driver/mysql"`,
+				`"github.com/go-sql-driver/mysql"`,
 			},
 		},
 		"mssql": {

@@ -195,86 +195,52 @@ func preRun(cmd *cobra.Command, args []string) error {
 	keys := allKeys(driverName)
 	for _, key := range keys {
 		prefixedKey := fmt.Sprintf("%s.%s", driverName, key)
-		cmdConfig.DriverConfig[key] = viper.GetString(prefixedKey)
+		cmdConfig.DriverConfig[key] = viper.Get(prefixedKey)
 	}
 
-	spew.Dump(cmdConfig.DriverConfig)
-
-	// schema := viper.GetString("psql.schema")
-	// user := viper.GetString("psql.user")
-	// pass := viper.GetString("psql.pass")
-	// host := viper.GetString("psql.host")
-	// port := viper.GetInt("psql.port")
-	// dbname := viper.GetString("psql.dbname")
-	// sslMode := viper.GetString("psql.sslmode")
-
-	// err = vala.BeginValidation().Validate(
-	// ).Check()
-
-	// if err != nil {
-	// 	return commandFailure(err.Error())
-	// }
-
-	// cmdConfig.MySQL = boilingcore.MySQLConfig{
-	// 	User:    viper.GetString("mysql.user"),
-	// 	Pass:    viper.GetString("mysql.pass"),
-	// 	Host:    viper.GetString("mysql.host"),
-	// 	Port:    viper.GetInt("mysql.port"),
-	// 	DBName:  viper.GetString("mysql.dbname"),
-	// 	SSLMode: viper.GetString("mysql.sslmode"),
-	// }
-
-	// // Set MySQL TinyintAsBool global var. This flag only applies to MySQL.
-	// // TODO: Fix TinyIntAsBool flag
-	// //drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
-
-	// // MySQL doesn't have schemas, just databases
-	// cmdConfig.Schema = cmdConfig.MySQL.DBName
-
-	// // BUG: https://github.com/spf13/viper/issues/71
-	// // Despite setting defaults, nested values don't get defaults
-	// // Set them manually
-
-	// err = vala.BeginValidation().Validate(
-	// 	vala.StringNotEmpty(cmdConfig.MySQL.User, "mysql.user"),
-	// 	vala.StringNotEmpty(cmdConfig.MySQL.Host, "mysql.host"),
-	// 	vala.Not(vala.Equals(cmdConfig.MySQL.Port, 0, "mysql.port")),
-	// 	vala.StringNotEmpty(cmdConfig.MySQL.DBName, "mysql.dbname"),
-	// 	vala.StringNotEmpty(cmdConfig.MySQL.SSLMode, "mysql.sslmode"),
-	// ).Check()
-
-	// if err != nil {
-	// 	return commandFailure(err.Error())
-	// }
-
-	// if driverName == "mssql" {
-	// 	cmdConfig.MSSQL = boilingcore.MSSQLConfig{
-	// 		User:    viper.GetString("mssql.user"),
-	// 		Pass:    viper.GetString("mssql.pass"),
-	// 		Host:    viper.GetString("mssql.host"),
-	// 		Port:    viper.GetInt("mssql.port"),
-	// 		DBName:  viper.GetString("mssql.dbname"),
-	// 		SSLMode: viper.GetString("mssql.sslmode"),
-	// 	}
-
-	// 	// BUG: https://github.com/spf13/viper/issues/71
-	// 	// Despite setting defaults, nested values don't get defaults
-	// 	// Set them manually
-
-	// 	err = vala.BeginValidation().Validate(
-	// 		vala.StringNotEmpty(cmdConfig.MSSQL.User, "mssql.user"),
-	// 		vala.StringNotEmpty(cmdConfig.MSSQL.Host, "mssql.host"),
-	// 		vala.Not(vala.Equals(cmdConfig.MSSQL.Port, 0, "mssql.port")),
-	// 		vala.StringNotEmpty(cmdConfig.MSSQL.DBName, "mssql.dbname"),
-	// 		vala.StringNotEmpty(cmdConfig.MSSQL.SSLMode, "mssql.sslmode"),
-	// 	).Check()
-
-	// 	if err != nil {
-	// 		return commandFailure(err.Error())
-	// 	}
+	cmdConfig.Imports = configureImports()
 
 	cmdState, err = boilingcore.New(cmdConfig)
 	return err
+}
+
+func configureImports() importers.Collection {
+	imports := importers.NewDefaultImports()
+
+	mustMap := func(m importers.Map, err error) importers.Map {
+		if err != nil {
+			panic("failed to change viper interface into importers.Map: " + err.Error())
+		}
+
+		return m
+	}
+
+	if viper.IsSet("imports.all.standard") {
+		imports.All.Standard = viper.GetStringSlice("imports.all.standard")
+	}
+	if viper.IsSet("imports.all.third_party") {
+		imports.All.ThirdParty = viper.GetStringSlice("imports.all.third_party")
+	}
+	if viper.IsSet("imports.test.standard") {
+		imports.Test.Standard = viper.GetStringSlice("imports.test.standard")
+	}
+	if viper.IsSet("imports.test.third_party") {
+		imports.Test.ThirdParty = viper.GetStringSlice("imports.test.third_party")
+	}
+	if viper.IsSet("imports.singleton") {
+		imports.Singleton = mustMap(importers.MapFromInterface(viper.Get("imports.singleton")))
+	}
+	if viper.IsSet("imports.test_singleton") {
+		imports.TestSingleton = mustMap(importers.MapFromInterface(viper.Get("imports.test_singleton")))
+	}
+	if viper.IsSet("imports.test_main") {
+		imports.TestSingleton = mustMap(importers.MapFromInterface(viper.Get("imports.test_main")))
+	}
+	if viper.IsSet("imports.based_on_type") {
+		imports.TestSingleton = mustMap(importers.MapFromInterface(viper.Get("imports.based_on_type")))
+	}
+
+	return imports
 }
 
 func run(cmd *cobra.Command, args []string) error {

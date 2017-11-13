@@ -20,13 +20,13 @@ const (
 	ConfigHost    = "host"
 	ConfigPort    = "port"
 	ConfigDBName  = "dbname"
-	ConfigSSLMode = "ssl_mode"
+	ConfigSSLMode = "sslmode"
 )
 
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface interface {
-	Assemble(config map[string]interface{}) (*DBInfo, error)
+	Assemble(config Config) (*DBInfo, error)
 }
 
 // DBInfo is the database's table data and dialect.

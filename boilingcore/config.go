@@ -1,11 +1,14 @@
 package boilingcore
 
-import "github.com/volatiletech/sqlboiler/importers"
+import (
+	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/importers"
+)
 
 // Config for the running of the commands
 type Config struct {
 	DriverName   string
-	DriverConfig map[string]interface{}
+	DriverConfig drivers.Config
 
 	Schema           string
 	PkgName          string

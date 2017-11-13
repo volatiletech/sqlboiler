@@ -4,7 +4,7 @@ import "testing"
 
 type testRegistrationDriver struct{}
 
-func (t testRegistrationDriver) Assemble(config map[string]interface{}) (*DBInfo, error) {
+func (t testRegistrationDriver) Assemble(config Config) (*DBInfo, error) {
 	return &DBInfo{
 		Tables:  nil,
 		Dialect: Dialect{},

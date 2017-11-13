@@ -13,8 +13,8 @@ import (
 
 // Collection of imports for various templating purposes
 type Collection struct {
-	Standard     Set `toml:"standard"`
-	TestStandard Set `toml:"test_standard"`
+	All  Set `toml:"all"`
+	Test Set `toml:"test"`
 
 	Singleton     Map `toml:"singleton"`
 	TestSingleton Map `toml:"test_singleton"`
@@ -163,7 +163,7 @@ func (l List) Less(i, j int) bool {
 func NewDefaultImports() Collection {
 	var col Collection
 
-	col.Standard = Set{
+	col.All = Set{
 		Standard: List{
 			`"bytes"`,
 			`"database/sql"`,
@@ -199,7 +199,7 @@ func NewDefaultImports() Collection {
 		},
 	}
 
-	col.TestStandard = Set{
+	col.Test = Set{
 		Standard: List{
 			`"bytes"`,
 			`"reflect"`,
@@ -221,6 +221,7 @@ func NewDefaultImports() Collection {
 				`"math/rand"`,
 				`"os"`,
 				`"path/filepath"`,
+				`"strings"`,
 				`"testing"`,
 				`"time"`,
 			},
@@ -252,7 +253,7 @@ func NewDefaultImports() Collection {
 	}
 
 	col.TestMain = Map{
-		"postgres": {
+		"psql": {
 			Standard: List{
 				`"bytes"`,
 				`"database/sql"`,
@@ -266,7 +267,6 @@ func NewDefaultImports() Collection {
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
 				`_ "github.com/lib/pq"`,
 			},

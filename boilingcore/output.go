@@ -38,7 +38,7 @@ func generateOutput(state *State, data *templateData) error {
 		state:                state,
 		data:                 data,
 		templates:            state.Templates,
-		importSet:            state.Config.Imports.Standard,
+		importSet:            state.Config.Imports.All,
 		combineImportsOnType: true,
 		fileSuffix:           ".go",
 	})
@@ -50,7 +50,7 @@ func generateTestOutput(state *State, data *templateData) error {
 		state:                state,
 		data:                 data,
 		templates:            state.TestTemplates,
-		importSet:            state.Config.Imports.TestStandard,
+		importSet:            state.Config.Imports.Test,
 		combineImportsOnType: false,
 		fileSuffix:           "_test.go",
 	})
@@ -186,11 +186,7 @@ func generateTestMainOutput(state *State, data *templateData) error {
 		return err
 	}
 
-	if err := writeFile(state.Config.OutFolder, "main_test.go", out); err != nil {
-		return err
-	}
-
-	return nil
+	return writeFile(state.Config.OutFolder, "main_test.go", out)
 }
 
 // writeFileDisclaimer writes the disclaimer at the top with a trailing

@@ -84,7 +84,6 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
-	rootCmd.PersistentFlags().BoolP("tinyint-as-bool", "", false, "Map MySQL tinyint(1) in Go to bool instead of int8")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel or snake (default snake)")
 
@@ -151,7 +150,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Replacements:     viper.GetStringSlice("replace"),
 	}
 
-	// Begin configuring the driver
+	// Configure the driver
 	cmdConfig.DriverConfig = map[string]interface{}{
 		"whitelist": viper.GetStringSlice(driverName + ".whitelist"),
 		"blacklist": viper.GetStringSlice(driverName + ".blacklist"),
@@ -160,6 +159,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	var validationRules []vala.Checker
 	required := []string{"user", "host", "port", "dbname", "sslmode"}
 
+	//TODO(aarondl): Move these defaults into the drivers themselves, why are they here again? :D
 	switch driverName {
 	case "psql":
 		viper.SetDefault("psql.schema", "public")

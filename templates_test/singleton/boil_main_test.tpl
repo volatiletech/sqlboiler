@@ -26,7 +26,6 @@ func TestMain(m *testing.M) {
 		os.Exit(-2)
 	}
 
-	setConfigDefaults()
 	if err := validateConfig("{{.DriverName}}"); err != nil {
 		fmt.Println("failed to validate config", err)
 		os.Exit(-3)
@@ -83,43 +82,31 @@ func initViper() error {
 		viper.AddConfigPath(p)
 	}
 
+	viper.SetDefault("psql.schema", "public")
+	viper.SetDefault("psql.port", 5432)
+	viper.SetDefault("psql.sslmode", "require")
+	viper.SetDefault("mysql.sslmode", "true")
+	viper.SetDefault("mysql.port", 3306)
+	viper.SetDefault("mssql.schema", "dbo")
+	viper.SetDefault("mssql.sslmode", "true")
+	viper.SetDefault("mssql.port", 1433)
+
 	// Ignore errors here, fall back to defaults and validation to provide errs
 	_ = viper.ReadInConfig()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	return nil
 }
 
-// setConfigDefaults is only necessary because of bugs in viper, noted in main
-func setConfigDefaults() {
-	if viper.GetString("postgres.sslmode") == "" {
-		viper.Set("postgres.sslmode", "require")
-	}
-	if viper.GetInt("postgres.port") == 0 {
-		viper.Set("postgres.port", 5432)
-	}
-	if viper.GetString("mysql.sslmode") == "" {
-		viper.Set("mysql.sslmode", "true")
-	}
-	if viper.GetInt("mysql.port") == 0 {
-		viper.Set("mysql.port", 3306)
-	}
-	if viper.GetString("mssql.sslmode") == "" {
-		viper.Set("mssql.sslmode", "true")
-	}
-	if viper.GetInt("mssql.port") == 0 {
-		viper.Set("mssql.port", 1433)
-	}
-}
-
 func validateConfig(driverName string) error {
-	if driverName == "postgres" {
+	if driverName == "psql" {
 		return vala.BeginValidation().Validate(
-			vala.StringNotEmpty(viper.GetString("postgres.user"), "postgres.user"),
-			vala.StringNotEmpty(viper.GetString("postgres.host"), "postgres.host"),
-			vala.Not(vala.Equals(viper.GetInt("postgres.port"), 0, "postgres.port")),
-			vala.StringNotEmpty(viper.GetString("postgres.dbname"), "postgres.dbname"),
-			vala.StringNotEmpty(viper.GetString("postgres.sslmode"), "postgres.sslmode"),
+			vala.StringNotEmpty(viper.GetString("psql.user"), "psql.user"),
+			vala.StringNotEmpty(viper.GetString("psql.host"), "psql.host"),
+			vala.Not(vala.Equals(viper.GetInt("psql.port"), 0, "psql.port")),
+			vala.StringNotEmpty(viper.GetString("psql.dbname"), "psql.dbname"),
+			vala.StringNotEmpty(viper.GetString("psql.sslmode"), "psql.sslmode"),
 		).Check()
 	}
 

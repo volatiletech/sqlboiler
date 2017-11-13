@@ -31,7 +31,9 @@ func (f *fKeyDestroyer) Read(b []byte) (int, error) {
 			return 0, err
 		}
 
-		f.buf = bytes.NewBuffer(f.rgx.ReplaceAll(all, []byte{}))
+		all = bytes.Replace(all, []byte{'\r', '\n'}, []byte{'\n'}, -1)
+		all = f.rgx.ReplaceAll(all, []byte{})
+		f.buf = bytes.NewBuffer(all)
 	}
 
 	return f.buf.Read(b)

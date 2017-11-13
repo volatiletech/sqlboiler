@@ -23,12 +23,12 @@ func init() {
 func (p *pgTester) setup() error {
   var err error
 
-  p.dbName = viper.GetString("postgres.dbname")
-  p.host = viper.GetString("postgres.host")
-  p.user = viper.GetString("postgres.user")
-  p.pass = viper.GetString("postgres.pass")
-  p.port = viper.GetInt("postgres.port")
-  p.sslmode = viper.GetString("postgres.sslmode")
+  p.dbName = viper.GetString("psql.dbname")
+  p.host = viper.GetString("psql.host")
+  p.user = viper.GetString("psql.user")
+  p.pass = viper.GetString("psql.pass")
+  p.port = viper.GetInt("psql.port")
+  p.sslmode = viper.GetString("psql.sslmode")
   // Create a randomized db name.
   p.testDBName = randomize.StableDBName(p.dbName)
 
@@ -162,7 +162,7 @@ func (p *pgTester) conn() (*sql.DB, error) {
   }
 
   var err error
-  p.dbConn, err = sql.Open("postgres", drivers.PostgresBuildQueryString(p.user, p.pass, p.testDBName, p.host, p.port, p.sslmode))
+  p.dbConn, err = sql.Open("postgres", psqlBuildQueryString(p.user, p.pass, p.testDBName, p.host, p.port, p.sslmode))
   if err != nil {
     return nil, err
   }
@@ -170,3 +170,26 @@ func (p *pgTester) conn() (*sql.DB, error) {
   return p.dbConn, nil
 }
 
+func psqlBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
+	parts := []string{}
+	if len(user) != 0 {
+		parts = append(parts, fmt.Sprintf("user=%s", user))
+	}
+	if len(pass) != 0 {
+		parts = append(parts, fmt.Sprintf("password=%s", pass))
+	}
+	if len(dbname) != 0 {
+		parts = append(parts, fmt.Sprintf("dbname=%s", dbname))
+	}
+	if len(host) != 0 {
+		parts = append(parts, fmt.Sprintf("host=%s", host))
+	}
+	if port != 0 {
+		parts = append(parts, fmt.Sprintf("port=%d", port))
+	}
+	if len(sslmode) != 0 {
+		parts = append(parts, fmt.Sprintf("sslmode=%s", sslmode))
+	}
+
+	return strings.Join(parts, " ")
+}

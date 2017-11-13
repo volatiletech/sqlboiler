@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kat-co/vala"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/volatiletech/sqlboiler/boilingcore"
+	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/importers"
 )
 
 const sqlBoilerVersion = "2.6.0"
@@ -121,6 +123,18 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	driverName := args[0]
+	driverPath := args[0]
+	if strings.ContainsRune(driverName, os.PathSeparator) {
+		driverName = strings.Replace(filepath.Base(driverName), "sqlboiler-", "", 1)
+	} else {
+		driverPath = "sqlboiler-" + driverPath
+	}
+
+	driverPath, err = filepath.Abs(driverPath)
+	if err != nil {
+		return errors.Wrap(err, "could not find absolute path to driver")
+	}
+	drivers.RegisterBinary(driverName, driverPath)
 
 	cmdConfig = &boilingcore.Config{
 		DriverName:       driverName,

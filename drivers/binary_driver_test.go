@@ -1,6 +1,7 @@
 package drivers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,8 +12,12 @@ import (
 )
 
 var testBinaryDriver = fmt.Sprintf("#!/bin/sh\ncat <<EOF%s\nEOF\n", testBinaryJSON)
+var testWarningBinaryDriver = `#!/bin/sh
+echo "warning binary" 1>&2
+echo "{}"
+`
 var testBadBinaryDriver = `#!/bin/sh
-echo "bad binary"
+echo "bad binary" 1>&2
 exit 1
 `
 
@@ -51,6 +56,32 @@ func TestBinaryDriver(t *testing.T) {
 	}
 }
 
+func TestBinaryWarningDriver(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("cannot run binary test on windows (needs bin/sh)")
+	}
+
+	bin, err := ioutil.TempFile("", "test_binary_driver")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Fprint(bin, testWarningBinaryDriver)
+	if err := bin.Chmod(0774); err != nil {
+		t.Fatal(err)
+	}
+	if err := bin.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	stderr := &bytes.Buffer{}
+	_, err = assemble(bin.Name(), nil, stderr)
+	if err != nil {
+		t.Error(err)
+	} else if !strings.Contains(stderr.String(), "warning binary") {
+		t.Error("it should have written to stderr")
+	}
+}
+
 func TestBinaryBadDriver(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("cannot run binary test on windows (needs bin/sh)")
@@ -68,11 +99,14 @@ func TestBinaryBadDriver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = binaryDriver(bin.Name()).Assemble(nil)
+	stderr := &bytes.Buffer{}
+	_, err = assemble(bin.Name(), nil, stderr)
 	if err == nil {
 		t.Error("it should have failed when the program exited 1")
-	} else if !strings.Contains(err.Error(), "bad binary") {
-		t.Error("it should have reported the stdout generated from the program")
+	} else if !strings.Contains(stderr.String(), "bad binary") {
+		t.Error("it should have written to stderr")
+	} else if !strings.Contains(err.Error(), "non-zero") {
+		t.Error("it should have reported non-zero exit")
 	}
 }
 

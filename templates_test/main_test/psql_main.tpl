@@ -162,34 +162,10 @@ func (p *pgTester) conn() (*sql.DB, error) {
   }
 
   var err error
-  p.dbConn, err = sql.Open("postgres", psqlBuildQueryString(p.user, p.pass, p.testDBName, p.host, p.port, p.sslmode))
+  p.dbConn, err = sql.Open("postgres", driver.PSQLBuildQueryString(p.user, p.pass, p.testDBName, p.host, p.port, p.sslmode))
   if err != nil {
     return nil, err
   }
 
   return p.dbConn, nil
-}
-
-func psqlBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
-	parts := []string{}
-	if len(user) != 0 {
-		parts = append(parts, fmt.Sprintf("user=%s", user))
-	}
-	if len(pass) != 0 {
-		parts = append(parts, fmt.Sprintf("password=%s", pass))
-	}
-	if len(dbname) != 0 {
-		parts = append(parts, fmt.Sprintf("dbname=%s", dbname))
-	}
-	if len(host) != 0 {
-		parts = append(parts, fmt.Sprintf("host=%s", host))
-	}
-	if port != 0 {
-		parts = append(parts, fmt.Sprintf("port=%d", port))
-	}
-	if len(sslmode) != 0 {
-		parts = append(parts, fmt.Sprintf("sslmode=%s", sslmode))
-	}
-
-	return strings.Join(parts, " ")
 }

@@ -267,6 +267,7 @@ func NewDefaultImports() Collection {
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
+				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql/driver"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
 				`_ "github.com/lib/pq"`,
 			},
@@ -280,14 +281,14 @@ func NewDefaultImports() Collection {
 				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
-				`"strconv"`,
 				`"strings"`,
 			},
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
+				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
-				`"github.com/go-sql-driver/mysql"`,
+				`_ "github.com/go-sql-driver/mysql"`,
 			},
 		},
 		"mssql": {
@@ -302,7 +303,7 @@ func NewDefaultImports() Collection {
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers"`,
+				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql/driver"`,
 				`"github.com/volatiletech/sqlboiler/randomize"`,
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},

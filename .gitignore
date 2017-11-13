@@ -1,4 +1,7 @@
 /sqlboiler
+/sqlboiler-psql
+/sqlboiler-mysql
+/sqlboiler-mssql
 /cmd/sqlboiler/sqlboiler
 sqlboiler.toml
 models/

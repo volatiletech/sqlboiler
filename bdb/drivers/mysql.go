@@ -314,7 +314,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Float64"
 		case "boolean", "bool":
 			c.Type = "null.Bool"
-		case "date", "datetime", "timestamp", "time":
+		case "date", "datetime", "timestamp":
 			c.Type = "null.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "null.Bytes"
@@ -364,7 +364,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "float64"
 		case "boolean", "bool":
 			c.Type = "bool"
-		case "date", "datetime", "timestamp", "time":
+		case "date", "datetime", "timestamp":
 			c.Type = "time.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "[]byte"

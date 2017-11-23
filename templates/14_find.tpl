@@ -33,6 +33,12 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
 	q := queries.Raw(exec, query, {{$pkNames | join ", "}})
 
+	{{if not .NoHooks -}}
+	if err := ({{$varNameSingular}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
+		return nil, err
+	}
+	{{- end}}
+
 	err := q.Bind({{$varNameSingular}}Obj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {

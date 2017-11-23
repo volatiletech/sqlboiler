@@ -19,6 +19,9 @@ type (
 	{{if not .NoHooks -}}
 	// {{$tableNameSingular}}Hook is the signature for custom {{$tableNameSingular}} hook methods
 	{{$tableNameSingular}}Hook func(boil.Executor, *{{$tableNameSingular}}) error
+
+	// {{$tableNameSingular}}QueryHook is the signature for custom {{$varNameSingular}}Query hook methods
+	{{$tableNameSingular}}QueryHook func(boil.Executor, *queries.Query) error
 	{{- end}}
 
 	{{$varNameSingular}}Query struct {

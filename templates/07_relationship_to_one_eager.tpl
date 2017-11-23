@@ -43,7 +43,14 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
 	}
 
-	results, err := e.Query(query, args...)
+	q := queries.Raw(e, query, args...)
+	{{if not $dot.NoHooks -}}
+	if err := ({{$varNameSingular}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
+		return err
+	}
+	{{- end}}
+
+	results, err := q.Query()
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{$txt.ForeignTable.NameGo}}")
 	}

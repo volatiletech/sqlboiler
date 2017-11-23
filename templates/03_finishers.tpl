@@ -14,6 +14,12 @@ func (q {{$varNameSingular}}Query) OneP() (*{{$tableNameSingular}}) {
 func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 	o := &{{$tableNameSingular}}{}
 
+	{{if not .NoHooks -}}
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
+		return nil, err
+	}
+	{{- end}}
+
 	queries.SetLimit(q.Query, 1)
 
 	err := q.Bind(o)
@@ -47,6 +53,12 @@ func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
 func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
 	var o []*{{$tableNameSingular}}
 
+	{{if not .NoHooks -}}
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
+		return nil, err
+	}
+	{{- end}}
+
 	err := q.Bind(&o)
 	if err != nil {
 		return nil, errors.Wrap(err, "{{.PkgName}}: failed to assign all query results to {{$tableNameSingular}} slice")
@@ -79,6 +91,12 @@ func (q {{$varNameSingular}}Query) CountP() int64 {
 func (q {{$varNameSingular}}Query) Count() (int64, error) {
 	var count int64
 
+	{{if not .NoHooks -}}
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
+		return 0, err
+	}
+	{{- end}}
+
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
@@ -103,6 +121,12 @@ func (q {{$varNameSingular}}Query) ExistsP() bool {
 // Exists checks if the row exists in the table.
 func (q {{$varNameSingular}}Query) Exists() (bool, error) {
 	var count int64
+
+	{{if not .NoHooks -}}
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
+		return false, err
+	}
+	{{- end}}
 
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)

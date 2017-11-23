@@ -84,6 +84,12 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 
 	q := queries.Raw(exec, sql, args...)
 
+	{{if not .NoHooks -}}
+	if err := ({{$varNameSingular}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
+		return err
+	}
+	{{- end}}
+
 	err := q.Bind(&{{$varNamePlural}})
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice")

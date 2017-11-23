@@ -109,6 +109,12 @@ func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
 
 // UpdateAll updates all rows with the specified column values.
 func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
+	{{if not .NoHooks -}}
+	if err := q.doUpdateHooks(queries.GetExecutor(q.Query)); nil != err {
+		return err
+	}
+	{{end -}}
+
 	queries.SetUpdate(q.Query, cols)
 
 	_, err := q.Query.Exec()

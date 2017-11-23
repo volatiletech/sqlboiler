@@ -19,6 +19,7 @@ type TxtToOne struct {
 	}
 
 	ForeignTable struct {
+		Name        string
 		NameGo       string
 		NamePluralGo string
 		ColumnNameGo string
@@ -44,6 +45,7 @@ func txtsFromFKey(tables []bdb.Table, table bdb.Table, fkey bdb.ForeignKey) TxtT
 	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
 	r.LocalTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.Column))
 
+	r.ForeignTable.Name = strmangle.CamelCase(strmangle.Singular(fkey.ForeignTable))
 	r.ForeignTable.NameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignTable))
 	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(fkey.ForeignTable))
 	r.ForeignTable.ColumnName = fkey.ForeignColumn

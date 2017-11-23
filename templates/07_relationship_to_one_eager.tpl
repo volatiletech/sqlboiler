@@ -45,7 +45,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	q := queries.Raw(e, query, args...)
 	{{if not $dot.NoHooks -}}
-	if err := ({{$varNameSingular}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
+	if err := ({{$txt.ForeignTable.Name}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
 		return err
 	}
 	{{- end}}

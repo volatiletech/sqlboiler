@@ -41,10 +41,6 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		),
 	)
 
-	if boil.DebugMode {
-		// fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
-	}
-
 	{{if not $dot.NoHooks -}}
 	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
 		return err

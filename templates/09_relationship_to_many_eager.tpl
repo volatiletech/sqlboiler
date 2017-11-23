@@ -37,29 +37,31 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 		{{if .ToJoinTable -}}
 			{{- $schemaJoinTable := .JoinTable | $dot.SchemaTable -}}
-	query := fmt.Sprintf(
-		"select {{id 0 | $dot.Quotes}}.*, {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} from {{$schemaForeignTable}} as {{id 0 | $dot.Quotes}} inner join {{$schemaJoinTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}} where {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	q := {{$txt.ForeignTable.NamePluralGo}}(e,
+		qm.Select("{{id 0 | $dot.Quotes}}.*", "{{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}}"),
+		qm.From("{{$schemaForeignTable}} as {{id 0 | $dot.Quotes}}"),
+		qm.InnerJoin("{{$schemaJoinTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}}"),
+		qm.WhereIn(
+			"{{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} in ?",
+			args...,
+		),
 	)
 		{{else -}}
-	query := fmt.Sprintf(
-		"select * from {{$schemaForeignTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	q := {{$txt.ForeignTable.NamePluralGo}}(e,
+		qm.WhereIn(
+			"{{.ForeignColumn | $dot.Quotes}} in ?",
+			args...,
+		),
 	)
 		{{end -}}
 
-	if boil.DebugMode {
-		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
-	}
-
-	q := queries.Raw(e, query, args...)
 	{{if not $dot.NoHooks -}}
-	if err := ({{$txt.ForeignTable.Name}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
 		return err
 	}
 	{{- end}}
 
-	results, err := q.Query()
+	results, err := q.Query.Query()
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
 	}

@@ -1,5 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $varNamePlural := .Table.Name | plural | camelCase -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 // ReloadGP refetches the object from the database and panics on error.
@@ -79,14 +80,15 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 		args = append(args, pkeyArgs...)
 	}
 
-	// TODO: Create this via query builder to be changable by hooks
-	sql := "SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(*o))
-
-	q := queries.Raw(exec, sql, args...)
+	q := {{$tableNamePlural}}(exec,
+		qm.Where(
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.IndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(*o)),
+			args...,
+		),
+	)
 
 	{{if not .NoHooks -}}
-	if err := ({{$varNameSingular}}Query{q}).doSelectHooks(queries.GetExecutor(q)); nil != err {
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
 		return err
 	}
 	{{- end}}

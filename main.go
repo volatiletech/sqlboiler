@@ -17,13 +17,43 @@ import (
 const sqlBoilerVersion = "2.6.0"
 
 var (
+	cfgFile   string
 	cmdState  *boilingcore.State
 	cmdConfig *boilingcore.Config
 )
 
-func main() {
-	var err error
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		var err error
+		viper.SetConfigName("sqlboiler")
 
+		configHome := os.Getenv("XDG_CONFIG_HOME")
+		homePath := os.Getenv("HOME")
+		wd, err := os.Getwd()
+		if err != nil {
+			wd = "./"
+		}
+
+		configPaths := []string{wd}
+		if len(configHome) > 0 {
+			configPaths = append(configPaths, filepath.Join(configHome, "sqlboiler"))
+		} else {
+			configPaths = append(configPaths, filepath.Join(homePath, ".config/sqlboiler"))
+		}
+
+		for _, p := range configPaths {
+			viper.AddConfigPath(p)
+		}
+
+	}
+	// Ignore errors here, fallback to other validation methods.
+	// Users can use environment variables if a config is not found.
+	_ = viper.ReadInConfig()
+}
+
+func main() {
 	// Too much happens between here and cobra's argument handling, for
 	// something so simple just do it immediately.
 	for _, arg := range os.Args {
@@ -32,30 +62,6 @@ func main() {
 			return
 		}
 	}
-
-	viper.SetConfigName("sqlboiler")
-
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	homePath := os.Getenv("HOME")
-	wd, err := os.Getwd()
-	if err != nil {
-		wd = "./"
-	}
-
-	configPaths := []string{wd}
-	if len(configHome) > 0 {
-		configPaths = append(configPaths, filepath.Join(configHome, "sqlboiler"))
-	} else {
-		configPaths = append(configPaths, filepath.Join(homePath, ".config/sqlboiler"))
-	}
-
-	for _, p := range configPaths {
-		viper.AddConfigPath(p)
-	}
-
-	// Ignore errors here, fallback to other validation methods.
-	// Users can use environment variables if a config is not found.
-	_ = viper.ReadInConfig()
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
@@ -71,7 +77,10 @@ func main() {
 		SilenceUsage:  true,
 	}
 
+	cobra.OnInitialize(initConfig)
+
 	// Set up the cobra root command flags
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("schema", "s", "", "schema name for drivers that support it (default psql: public, mssql: dbo)")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")

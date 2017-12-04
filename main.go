@@ -34,6 +34,8 @@ func main() {
 	}
 
 	viper.SetConfigName("sqlboiler")
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 
 	configHome := os.Getenv("XDG_CONFIG_HOME")
 	homePath := os.Getenv("HOME")

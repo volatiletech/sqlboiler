@@ -216,6 +216,7 @@ func newImporter() importer {
 				`"math/rand"`,
 				`"os"`,
 				`"path/filepath"`,
+				`"strings"`,
 				`"testing"`,
 				`"time"`,
 			},

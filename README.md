@@ -1095,7 +1095,7 @@ pilots, _ := models.Pilots(db).All()
 err := pilots.UpdateAll(db, models.M{"name": "Smith"})
 
 // Update all pilots in the database to to have the name "Smith"
-err := models.Pilots(db).UpdateAll(models.M{"name", "Smith"})
+err := models.Pilots(db).UpdateAll(models.M{"name": "Smith"})
 ```
 
 ### Delete

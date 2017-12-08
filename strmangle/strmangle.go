@@ -17,7 +17,7 @@ var (
 	idAlphabet    = []byte("abcdefghijklmnopqrstuvwxyz")
 	smartQuoteRgx = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
 
-	rgxEnum            = regexp.MustCompile(`^enum(\.[a-z_]+)?\((,?'[^']+')+\)$`)
+	rgxEnum            = regexp.MustCompile(`^enum(\.[a-z0-9_]+)?\((,?'[^']+')+\)$`)
 	rgxEnumIsOK        = regexp.MustCompile(`^(?i)[a-z][a-z0-9_]*$`)
 	rgxEnumShouldTitle = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 )

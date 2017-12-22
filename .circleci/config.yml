@@ -18,6 +18,9 @@ jobs:
 #         ACCEPT_EULA: 'Y'
 #         SA_PASSWORD: 'R@@tr@@t1234'
 
+      - image: cockroachdb/cockroach:v1.1.3
+        command: [start, --insecure]
+
     environment:
       GOPATH: /go
       ROOTPATH: /go/src/github.com/volatiletech/sqlboiler
@@ -72,6 +75,25 @@ jobs:
               sleep 1
             done
 
+      - run:
+          name: Wait for CockroachDB
+          command: >
+            for i in `seq 30`; do
+              echo "Waiting for cockroachdb"
+              set +o errexit
+              cockroach sql --insecure -e 'SHOW DATABASES;' > /dev/null
+              status=$?
+              set -o errexit
+              if [ $status -eq 0 ]; then
+                break
+              fi
+              if [ $i -eq 30 ]; then
+                echo "Failed to wait for cockroach"
+                exit 1
+              fi
+              sleep 1
+            done
+
 #     - run:
 #         name: Wait for MSSQL
 #         command: >
@@ -108,6 +130,13 @@ jobs:
           command: |
             mysql --host localhost --execute 'create database sqlboiler;'
             mysql --host localhost --database sqlboiler < $ROOTPATH/testdata/mysql_test_schema.sql
+
+      - run:
+          name: Create Cockroach DB
+          command: |
+            cockroach sql --insecure -e 'create database sqlboiler'
+            cockroach sql --insecure --database=sqlboiler < $ROOTPATH/testdata/cockroach_test_schema.sql
+
 #     - run:
 #         name: Create MSSQL DB
 #         command: |
@@ -122,23 +151,38 @@ jobs:
 
       - run:
           name: 'Configure SQLBoiler: PSQL'
-          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
+          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
       - run:
           name: 'Configure SQLBoiler: MySQL'
           command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\npass="mysqlpassword"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml
-#     - run:
-#         name: 'Configure SQLBoiler: MSSQL'
-#         command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npass="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
 
       - run:
           name: 'Generate: PSQL'
           command: cd $ROOTPATH; ./sqlboiler -o postgres postgres
+
       - run:
           name: 'Generate: MySQL'
           command: cd $ROOTPATH; ./sqlboiler -o mysql mysql
+
+#     - run:
+#         name: 'Configure SQLBoiler: MSSQL'
+#         command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npass="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
+
 #     - run:
 #         name: 'Generate: MSSQL'
 #         command: cd $ROOTPATH; ./sqlboiler -o mssql mssql
+
+      # Cockroach driver needs schema to be defined with same name as the database
+      - run:
+          command: echo -e 'schema="sqlboiler"' > $ROOTPATH/sqlboiler.toml
+
+      - run:
+          name: 'Configure SQLBoiler: Cockroach'
+          command: echo -e '[cockroach]\nhost="localhost"\nport=26257\nuser="root"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
+
+      - run:
+          name: 'Generate: Cockroach'
+          command: cd $ROOTPATH; ./sqlboiler -o cockroach cockroach
 
       - run:
           name: Download generated and test deps

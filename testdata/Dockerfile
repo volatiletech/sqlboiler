@@ -4,6 +4,8 @@ FROM ubuntu:16.04
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/opt/mssql-tools/bin
 ENV GODIST go1.8.linux-amd64.tar.gz
 
+RUN apt-get clean && apt-get update && apt-get install -y locales
+
 # Set up locales for sqlcmd (otherwise it breaks)
 RUN locale-gen en_US.UTF-8 \
     && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale \
@@ -25,6 +27,10 @@ RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/msprod.list \
     && apt-get update \
     && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-9.6 mysql-client-5.7 mssql-tools unixodbc-dev
+
+# Install cockroachdb
+RUN curl https://binaries.cockroachdb.com/cockroach-v1.1.3.linux-amd64.tgz | tar xvz \
+    && cp -i cockroach-v1.1.3.linux-amd64/cockroach /usr/local/bin
 
 # Install Go
 RUN curl -o $GODIST https://storage.googleapis.com/golang/$GODIST \

@@ -316,6 +316,15 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.MSSQL.Port,
 			s.Config.MSSQL.SSLMode,
 		)
+	case "cockroach":
+		s.Driver = drivers.NewCockroachDriver(
+			s.Config.Cockroach.User,
+			s.Config.Cockroach.Pass,
+			s.Config.Cockroach.DBName,
+			s.Config.Cockroach.Host,
+			s.Config.Cockroach.Port,
+			s.Config.Cockroach.SSLMode,
+		)
 	case "mock":
 		s.Driver = &drivers.MockDriver{}
 	}

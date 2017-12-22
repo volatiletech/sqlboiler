@@ -21,6 +21,7 @@ type Config struct {
 	Postgres PostgresConfig
 	MySQL    MySQLConfig
 	MSSQL    MSSQLConfig
+	Cockroach CockroachConfig
 }
 
 // PostgresConfig configures a postgres database
@@ -45,6 +46,16 @@ type MySQLConfig struct {
 
 // MSSQLConfig configures a mysql database
 type MSSQLConfig struct {
+	User    string
+	Pass    string
+	Host    string
+	Port    int
+	DBName  string
+	SSLMode string
+}
+
+// CockroachConfig configures a postgres database
+type CockroachConfig struct {
 	User    string
 	Pass    string
 	Host    string

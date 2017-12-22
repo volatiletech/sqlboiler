@@ -302,6 +302,24 @@ func newImporter() importer {
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},
 		},
+		"cockroach": {
+			standard: importList{
+				`"bytes"`,
+				`"database/sql"`,
+				`"fmt"`,
+				`"io"`,
+				`"os"`,
+				`"os/exec"`,
+				`"strings"`,
+			},
+			thirdParty: importList{
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
+				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`_ "github.com/lib/pq"`,
+			},
+		},
 	}
 
 	// basedOnType imports are only included in the template output if the

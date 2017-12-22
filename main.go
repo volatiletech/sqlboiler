@@ -303,6 +303,46 @@ func preRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if driverName == "cockroach" {
+		cmdConfig.Cockroach = boilingcore.CockroachConfig{
+			User:    viper.GetString("cockroach.user"),
+			Pass:    viper.GetString("cockroach.pass"),
+			Host:    viper.GetString("cockroach.host"),
+			Port:    viper.GetInt("cockroach.port"),
+			DBName:  viper.GetString("cockroach.dbname"),
+			SSLMode: viper.GetString("cockroach.sslmode"),
+		}
+
+		// BUG: https://github.com/spf13/viper/issues/71
+		// Despite setting defaults, nested values don't get defaults
+		// Set them manually
+		if cmdConfig.Cockroach.SSLMode == "" {
+			cmdConfig.Cockroach.SSLMode = "require"
+			viper.Set("cockroach.sslmode", cmdConfig.Postgres.SSLMode)
+		}
+
+		if cmdConfig.Cockroach.Port == 0 {
+			cmdConfig.Cockroach.Port = 26257
+			viper.Set("cockroach.port", cmdConfig.Postgres.Port)
+		}
+
+		if len(cmdConfig.Schema) == 0 {
+			cmdConfig.Schema = "public"
+		}
+
+		err = vala.BeginValidation().Validate(
+			vala.StringNotEmpty(cmdConfig.Cockroach.User, "cockroach.user"),
+			vala.StringNotEmpty(cmdConfig.Cockroach.Host, "cockroach.host"),
+			vala.Not(vala.Equals(cmdConfig.Cockroach.Port, 0, "cockroach.port")),
+			vala.StringNotEmpty(cmdConfig.Cockroach.DBName, "cockroach.dbname"),
+			vala.StringNotEmpty(cmdConfig.Cockroach.SSLMode, "cockroach.sslmode"),
+		).Check()
+
+		if err != nil {
+			return commandFailure(err.Error())
+		}
+	}
+
 	cmdState, err = boilingcore.New(cmdConfig)
 	return err
 }

@@ -125,6 +125,7 @@ jobs:
           command: |
             createdb --host localhost --username postgres --owner postgres sqlboiler
             psql --host localhost --username postgres --dbname sqlboiler < $ROOTPATH/testdata/postgres_test_schema.sql
+
       - run:
           name: Create MySQL DB
           command: |
@@ -151,7 +152,8 @@ jobs:
 
       - run:
           name: 'Configure SQLBoiler: PSQL'
-          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
+          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
+
       - run:
           name: 'Configure SQLBoiler: MySQL'
           command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\npass="mysqlpassword"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml

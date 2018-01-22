@@ -153,6 +153,11 @@ func (q *Query) QueryP() *sql.Rows {
 	return rows
 }
 
+// QueryString builds the query string and returns the string and slice of input values
+func (q *Query) QueryString() (string, []interface{}) {
+	return buildQuery(q)
+}
+
 // SetExecutor on the query.
 func SetExecutor(q *Query, exec boil.Executor) {
 	q.executor = exec
@@ -241,6 +246,11 @@ func SetFrom(q *Query, from ...string) {
 // AppendInnerJoin on the query.
 func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
+}
+
+// AppendLeftOuterJoin on the query.
+func AppendLeftOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterLeft, args: args})
 }
 
 // AppendHaving on the query.

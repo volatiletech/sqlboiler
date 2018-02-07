@@ -143,5 +143,5 @@ func validateConfig(driverName string) error {
 		).Check()
 	}
 
-	return errors.New("not a valid driver name")
+	return errors.Err("not a valid driver name")
 }

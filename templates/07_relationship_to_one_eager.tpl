@@ -45,20 +45,20 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load {{$txt.ForeignTable.NameGo}}")
+		return errors.Prefix("failed to eager load {{$txt.ForeignTable.NameGo}}", err)
 	}
 	defer results.Close()
 
 	var resultSlice []*{{$txt.ForeignTable.NameGo}}
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice {{$txt.ForeignTable.NameGo}}")
+		return errors.Prefix("failed to bind eager loaded slice {{$txt.ForeignTable.NameGo}}", err)
 	}
 
 	{{if not $dot.NoHooks -}}
 	if len({{$varNameSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
-				return err
+				return errors.Err(err)
 			}
 		}
 	}

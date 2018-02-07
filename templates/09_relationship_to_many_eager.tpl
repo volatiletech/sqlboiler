@@ -54,7 +54,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
+		return errors.Prefix("failed to eager load {{.ForeignTable}}", err)
 	}
 	defer results.Close()
 
@@ -70,7 +70,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $dot.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
 		if err = results.Err(); err != nil {
-			return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
+			return errors.Prefix("failed to plebian-bind eager loaded slice {{.ForeignTable}}", err)
 		}
 
 		resultSlice = append(resultSlice, one)
@@ -78,11 +78,11 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
+		return errors.Prefix("failed to plebian-bind eager loaded slice {{.ForeignTable}}", err)
 	}
 	{{else -}}
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
+		return errors.Prefix("failed to bind eager loaded slice {{.ForeignTable}}", err)
 	}
 	{{end}}
 
@@ -90,7 +90,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	if len({{.ForeignTable | singular | camelCase}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {
-				return err
+				return errors.Err(err)
 			}
 		}
 	}

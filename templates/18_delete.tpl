@@ -6,7 +6,7 @@
 // Panics on error.
 func (o *{{$tableNameSingular}}) DeleteP(exec boil.Executor) {
 	if err := o.Delete(exec); err != nil {
-	panic(boil.WrapErr(err))
+	panic(errors.Err(err))
 	}
 }
 
@@ -14,7 +14,7 @@ func (o *{{$tableNameSingular}}) DeleteP(exec boil.Executor) {
 // DeleteG will match against the primary key column to find the record to delete.
 func (o *{{$tableNameSingular}}) DeleteG() error {
 	if o == nil {
-	  return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
+	  return errors.Err("{{.PkgName}}: no {{$tableNameSingular}} provided for deletion")
 	}
 
 	return o.Delete(boil.GetDB())
@@ -25,7 +25,7 @@ func (o *{{$tableNameSingular}}) DeleteG() error {
 // Panics on error.
 func (o *{{$tableNameSingular}}) DeleteGP() {
 	if err := o.DeleteG(); err != nil {
-	  panic(boil.WrapErr(err))
+	  panic(errors.Err(err))
 	}
 }
 
@@ -33,12 +33,12 @@ func (o *{{$tableNameSingular}}) DeleteGP() {
 // Delete will match against the primary key column to find the record to delete.
 func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 	if o == nil {
-	  return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for delete")
+	  return errors.Err("{{.PkgName}}: no {{$tableNameSingular}} provided for delete")
 	}
 
 	{{if not .NoHooks -}}
 	if err := o.doBeforeDeleteHooks(exec); err != nil {
-	  return err
+	  return errors.Err(err)
 	}
 	{{- end}}
 
@@ -52,12 +52,12 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-  	return errors.Wrap(err, "{{.PkgName}}: unable to delete from {{.Table.Name}}")
+  	return errors.Prefix("{{.PkgName}}: unable to delete from {{.Table.Name}}", err)
 	}
 
 	{{if not .NoHooks -}}
 	if err := o.doAfterDeleteHooks(exec); err != nil {
-	  return err
+	  return errors.Err(err)
 	}
 	{{- end}}
 
@@ -67,21 +67,21 @@ func (o *{{$tableNameSingular}}) Delete(exec boil.Executor) error {
 // DeleteAllP deletes all rows, and panics on error.
 func (q {{$tableNameSingular}}Query) DeleteAllP() {
 	if err := q.DeleteAll(); err != nil {
-	  panic(boil.WrapErr(err))
+	  panic(errors.Err(err))
 	}
 }
 
 // DeleteAll deletes all matching rows.
 func (q {{$tableNameSingular}}Query) DeleteAll() error {
 	if q.Query == nil {
-	  return errors.New("{{.PkgName}}: no {{$tableNameSingular}}Query provided for delete all")
+	  return errors.Err("{{.PkgName}}: no {{$tableNameSingular}}Query provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
 	_, err := q.Query.Exec()
 	if err != nil {
-	  return errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{.Table.Name}}")
+	  return errors.Prefix("{{.PkgName}}: unable to delete all from {{.Table.Name}}", err)
 	}
 
 	return nil
@@ -90,14 +90,14 @@ func (q {{$tableNameSingular}}Query) DeleteAll() error {
 // DeleteAllGP deletes all rows in the slice, and panics on error.
 func (o {{$tableNameSingular}}Slice) DeleteAllGP() {
 	if err := o.DeleteAllG(); err != nil {
-	  panic(boil.WrapErr(err))
+	  panic(errors.Err(err))
 	}
 }
 
 // DeleteAllG deletes all rows in the slice.
 func (o {{$tableNameSingular}}Slice) DeleteAllG() error {
 	if o == nil {
-	  return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
+	  return errors.Err("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
 	}
 	return o.DeleteAll(boil.GetDB())
 }
@@ -105,14 +105,14 @@ func (o {{$tableNameSingular}}Slice) DeleteAllG() error {
 // DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
 func (o {{$tableNameSingular}}Slice) DeleteAllP(exec boil.Executor) {
 	if err := o.DeleteAll(exec); err != nil {
-	  panic(boil.WrapErr(err))
+	  panic(errors.Err(err))
 	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
 func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 	if o == nil {
-		return errors.New("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
+		return errors.Err("{{.PkgName}}: no {{$tableNameSingular}} slice provided for delete all")
 	}
 
 	if len(o) == 0 {
@@ -123,7 +123,7 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 	if len({{$varNameSingular}}BeforeDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doBeforeDeleteHooks(exec); err != nil {
-				return err
+				return errors.Err(err)
 			}
 		}
 	}
@@ -145,14 +145,14 @@ func (o {{$tableNameSingular}}Slice) DeleteAll(exec boil.Executor) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice")
+		return errors.Prefix("{{.PkgName}}: unable to delete all from {{$varNameSingular}} slice", err)
 	}
 
 	{{if not .NoHooks -}}
 	if len({{$varNameSingular}}AfterDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterDeleteHooks(exec); err != nil {
-				return err
+				return errors.Err(err)
 			}
 		}
 	}

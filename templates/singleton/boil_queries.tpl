@@ -29,7 +29,7 @@ func mergeModels(tx boil.Executor, primaryID uint64, secondaryID uint64, foreign
 	for _, conflict := range conflictingKeys {
 		err = deleteConflictsBeforeMerge(tx, conflict, primaryID, secondaryID)
 		if err != nil {
-			return errors.WithStack(err)
+			return err
 		}
 	}
 
@@ -42,7 +42,7 @@ func mergeModels(tx boil.Executor, primaryID uint64, secondaryID uint64, foreign
 		)
 		_, err = tx.Exec(query, primaryID, secondaryID)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Err(err)
 		}
 	}
 	return checkMerge(tx, foreignKeys)
@@ -54,7 +54,7 @@ func deleteConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey,
 	if len(conflictingColumns) < 1 {
 		return nil
 	} else if len(conflictingColumns) > 1 {
-		return errors.New("this doesnt work for unique keys with more than two columns (yet)")
+		return errors.Err("this doesnt work for unique keys with more than two columns (yet)")
 	}
 
 	query := fmt.Sprintf(
@@ -67,7 +67,7 @@ func deleteConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey,
 	rows, err := tx.Query(query, primaryID, secondaryID)
 	defer rows.Close()
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Err(err)
 	}
 
 	args := []interface{}{secondaryID}
@@ -75,7 +75,7 @@ func deleteConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey,
 		var value string
 		err = rows.Scan(&value)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Err(err)
 		}
 		args = append(args, value)
 	}
@@ -93,7 +93,7 @@ func deleteConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey,
 
 	_, err = tx.Exec(query, args...)
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Err(err)
 	}
 	return nil
 }
@@ -118,7 +118,7 @@ func checkMerge(tx boil.Executor, foreignKeys []foreignKey) error {
 	rows, err := tx.Query(q, uniqueColumns...)
 	defer rows.Close()
 	if err != nil {
-		return errors.WithStack(err)
+		return errors.Err(err)
 	}
 
 	for rows.Next() {
@@ -126,11 +126,11 @@ func checkMerge(tx boil.Executor, foreignKeys []foreignKey) error {
 		var columnName string
 		err = rows.Scan(&tableName, &columnName)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Err(err)
 		}
 
 		if _, exists := handledTablesColumns[tableName+"."+columnName]; !exists {
-			return errors.New("Missing merge for " + tableName + "." + columnName)
+			return errors.Err("missing merge for " + tableName + "." + columnName)
 		}
 	}
 

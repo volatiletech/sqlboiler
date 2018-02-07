@@ -7,9 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/pkg/errors"
-	"github.com/lbryio/sqlboiler/boil"
 	"github.com/lbryio/sqlboiler/strmangle"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -41,7 +41,7 @@ const (
 // It panics on error. See boil.Bind() documentation.
 func (q *Query) BindP(obj interface{}) {
 	if err := q.Bind(obj); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.WithStack(err))
 	}
 }
 

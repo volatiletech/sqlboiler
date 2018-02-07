@@ -16,7 +16,7 @@ var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
 func (o *{{$tableNameSingular}}) doBeforeInsertHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}BeforeInsertHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -27,7 +27,7 @@ func (o *{{$tableNameSingular}}) doBeforeInsertHooks(exec boil.Executor) (err er
 func (o *{{$tableNameSingular}}) doBeforeUpdateHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}BeforeUpdateHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -38,7 +38,7 @@ func (o *{{$tableNameSingular}}) doBeforeUpdateHooks(exec boil.Executor) (err er
 func (o *{{$tableNameSingular}}) doBeforeDeleteHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}BeforeDeleteHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -49,7 +49,7 @@ func (o *{{$tableNameSingular}}) doBeforeDeleteHooks(exec boil.Executor) (err er
 func (o *{{$tableNameSingular}}) doBeforeUpsertHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}BeforeUpsertHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -60,7 +60,7 @@ func (o *{{$tableNameSingular}}) doBeforeUpsertHooks(exec boil.Executor) (err er
 func (o *{{$tableNameSingular}}) doAfterInsertHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}AfterInsertHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -71,7 +71,7 @@ func (o *{{$tableNameSingular}}) doAfterInsertHooks(exec boil.Executor) (err err
 func (o *{{$tableNameSingular}}) doAfterSelectHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}AfterSelectHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -82,7 +82,7 @@ func (o *{{$tableNameSingular}}) doAfterSelectHooks(exec boil.Executor) (err err
 func (o *{{$tableNameSingular}}) doAfterUpdateHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}AfterUpdateHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -93,7 +93,7 @@ func (o *{{$tableNameSingular}}) doAfterUpdateHooks(exec boil.Executor) (err err
 func (o *{{$tableNameSingular}}) doAfterDeleteHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}AfterDeleteHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -104,7 +104,7 @@ func (o *{{$tableNameSingular}}) doAfterDeleteHooks(exec boil.Executor) (err err
 func (o *{{$tableNameSingular}}) doAfterUpsertHooks(exec boil.Executor) (err error) {
 	for _, hook := range {{$varNameSingular}}AfterUpsertHooks {
 		if err := hook(exec, o); err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 

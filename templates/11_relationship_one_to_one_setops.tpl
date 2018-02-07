@@ -21,7 +21,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}G(insert bool, rel
 // Panics on error.
 func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}P(exec boil.Executor, insert bool, related *{{$txt.ForeignTable.NameGo}}) {
 	if err := o.Set{{$txt.Function.Name}}(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -31,7 +31,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}P(exec boil.Execut
 // Uses the global database handle and panics on error.
 func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}GP(insert bool, related *{{$txt.ForeignTable.NameGo}}) {
 	if err := o.Set{{$txt.Function.Name}}(boil.GetDB(), insert, related); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -48,7 +48,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 		{{- end}}
 
 		if err = related.Insert(exec); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
+			return errors.Prefix("failed to insert into foreign table", err)
 		}
 	} else {
 		updateQuery := fmt.Sprintf(
@@ -64,7 +64,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 		}
 
 		if _, err = exec.Exec(updateQuery, values...); err != nil {
-			return errors.Wrap(err, "failed to update foreign table")
+			return errors.Prefix("failed to update foreign table", err)
 		}
 
 		related.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
@@ -107,7 +107,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}G(related *{{$t
 // Panics on error.
 func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}P(exec boil.Executor, related *{{$txt.ForeignTable.NameGo}}) {
 	if err := o.Remove{{$txt.Function.Name}}(exec, related); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -117,7 +117,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}P(exec boil.Exe
 // Uses the global database handle and panics on error.
 func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}GP(related *{{$txt.ForeignTable.NameGo}}) {
 	if err := o.Remove{{$txt.Function.Name}}(boil.GetDB(), related); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -130,7 +130,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 	related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = false
 	if err = related.Update(exec, "{{.ForeignColumn}}"); err != nil {
 		related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
-		return errors.Wrap(err, "failed to update local table")
+		return errors.Prefix("failed to update local table", err)
 	}
 
 	o.R.{{$txt.Function.Name}} = nil

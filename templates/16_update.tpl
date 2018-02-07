@@ -12,7 +12,7 @@ func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) error {
 // Panics on error. See Update for whitelist behavior description.
 func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {
 	if err := o.Update(boil.GetDB(), whitelist...); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -21,7 +21,7 @@ func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {
 func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... string) {
 	err := o.Update(exec, whitelist...)
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -38,7 +38,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	var err error
 	{{if not .NoHooks -}}
 	if err = o.doBeforeUpdateHooks(exec); err != nil {
-		return err
+		return errors.Err(err)
 	}
 	{{end -}}
 
@@ -62,7 +62,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		}
 		{{end -}}
 		if len(wl) == 0 {
-			return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
+			return errors.Err("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
 		}
 
 		cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
@@ -71,7 +71,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		)
 		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
 		if err != nil {
-			return err
+			return errors.Err(err)
 		}
 	}
 
@@ -84,7 +84,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
 	_, err = exec.Exec(cache.query, values...)
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
+		return errors.Prefix("{{.PkgName}}: unable to update {{.Table.Name}} row", err)
 	}
 
 	if !cached {
@@ -103,7 +103,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 // UpdateAllP updates all rows with matching column names, and panics on error.
 func (q {{$tableNameSingular}}Query) UpdateAllP(cols M) {
 	if err := q.UpdateAll(cols); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -113,7 +113,7 @@ func (q {{$tableNameSingular}}Query) UpdateAll(cols M) error {
 
 	_, err := q.Query.Exec()
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to update all for {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to update all for {{.Table.Name}}", err)
 	}
 
 	return nil
@@ -127,14 +127,14 @@ func (o {{$tableNameSingular}}Slice) UpdateAllG(cols M) error {
 // UpdateAllGP updates all rows with the specified column values, and panics on error.
 func (o {{$tableNameSingular}}Slice) UpdateAllGP(cols M) {
 	if err := o.UpdateAll(boil.GetDB(), cols); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
 // UpdateAllP updates all rows with the specified column values, and panics on error.
 func (o {{$tableNameSingular}}Slice) UpdateAllP(exec boil.Executor, cols M) {
 	if err := o.UpdateAll(exec, cols); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -146,7 +146,7 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 	}
 
 	if len(cols) == 0 {
-		return errors.New("{{.PkgName}}: update all requires at least one column argument")
+		return errors.Err("{{.PkgName}}: update all requires at least one column argument")
 	}
 
 	colNames := make([]string, len(cols))
@@ -176,7 +176,7 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")
+		return errors.Prefix("{{.PkgName}}: unable to update all in {{$varNameSingular}} slice", err)
 	}
 
 	return nil

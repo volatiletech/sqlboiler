@@ -5,21 +5,21 @@
 // ReloadGP refetches the object from the database and panics on error.
 func (o *{{$tableNameSingular}}) ReloadGP() {
 	if err := o.ReloadG(); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
 // ReloadP refetches the object from the database with an executor. Panics on error.
 func (o *{{$tableNameSingular}}) ReloadP(exec boil.Executor) {
 	if err := o.Reload(exec); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
 // ReloadG refetches the object from the database using the primary keys.
 func (o *{{$tableNameSingular}}) ReloadG() error {
 	if o == nil {
-		return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for reload")
+		return errors.Err("{{.PkgName}}: no {{$tableNameSingular}} provided for reload")
 	}
 
 	return o.Reload(boil.GetDB())
@@ -30,7 +30,7 @@ func (o *{{$tableNameSingular}}) ReloadG() error {
 func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
 	ret, err := Find{{$tableNameSingular}}(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
 	if err != nil {
-		return err
+		return errors.Err(err)
 	}
 
 	*o = *ret
@@ -42,7 +42,7 @@ func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
 // Panics on error.
 func (o *{{$tableNameSingular}}Slice) ReloadAllGP() {
 	if err := o.ReloadAllG(); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -51,7 +51,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllGP() {
 // Panics on error.
 func (o *{{$tableNameSingular}}Slice) ReloadAllP(exec boil.Executor) {
 	if err := o.ReloadAll(exec); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -59,7 +59,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllP(exec boil.Executor) {
 // and overwrites the original object slice with the newly updated slice.
 func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
 	if o == nil {
-		return errors.New("{{.PkgName}}: empty {{$tableNameSingular}}Slice provided for reload all")
+		return errors.Err("{{.PkgName}}: empty {{$tableNameSingular}}Slice provided for reload all")
 	}
 
 	return o.ReloadAll(boil.GetDB())
@@ -86,7 +86,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 
 	err := q.Bind(&{{$varNamePlural}})
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice")
+		return errors.Prefix("{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice", err)
 	}
 
 	*o = {{$varNamePlural}}

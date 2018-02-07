@@ -22,7 +22,7 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "{{.PkgName}}: unable to check if {{.Table.Name}} exists")
+		return false, errors.Prefix("{{.PkgName}}: unable to check if {{.Table.Name}} exists", err)
 	}
 
 	return exists, nil
@@ -37,7 +37,7 @@ func {{$tableNameSingular}}ExistsG({{$pkArgs}}) (bool, error) {
 func {{$tableNameSingular}}ExistsGP({{$pkArgs}}) bool {
 	e, err := {{$tableNameSingular}}Exists(boil.GetDB(), {{$pkNames | join ", "}})
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 
 	return e
@@ -47,7 +47,7 @@ func {{$tableNameSingular}}ExistsGP({{$pkArgs}}) bool {
 func {{$tableNameSingular}}ExistsP(exec boil.Executor, {{$pkArgs}}) bool {
 	e, err := {{$tableNameSingular}}Exists(exec, {{$pkNames | join ", "}})
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 
 	return e

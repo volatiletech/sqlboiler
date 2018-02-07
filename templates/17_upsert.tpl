@@ -9,7 +9,7 @@ func (o *{{$tableNameSingular}}) UpsertG({{if eq .DriverName "postgres"}}updateO
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
 func (o *{{$tableNameSingular}}) UpsertGP({{if eq .DriverName "postgres"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
 	if err := o.Upsert(boil.GetDB(), {{if eq .DriverName "postgres"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -17,21 +17,21 @@ func (o *{{$tableNameSingular}}) UpsertGP({{if eq .DriverName "postgres"}}update
 // UpsertP panics on error.
 func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, {{if eq .DriverName "postgres"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
 	if err := o.Upsert(exec, {{if eq .DriverName "postgres"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName "postgres"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string, whitelist ...string) error {
 	if o == nil {
-		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
+		return errors.Err("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
 
 	{{- template "timestamp_upsert_helper" . }}
 
 	{{if not .NoHooks -}}
 	if err := o.doBeforeUpsertHooks(exec); err != nil {
-		return err
+		return errors.Err(err)
 	}
 	{{- end}}
 
@@ -87,7 +87,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 			}
 		}
 		if len(insert) == 0 {
-			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build insert column list")
+			return errors.Err("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build insert column list")
 		}
 
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)
@@ -104,7 +104,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		{{end -}}
 
 		if len(update) == 0 {
-			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
+			return errors.Err("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
 		{{if eq .DriverName "postgres"}}
@@ -129,12 +129,12 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 
 		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, {{if eq .DriverName "mssql"}}whitelist{{else}}insert{{end}})
 		if err != nil {
-			return err
+			return errors.Err(err)
 		}
 		if len(ret) != 0 {
 			cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, ret)
 			if err != nil {
-				return err
+				return errors.Err(err)
 			}
 		}
 	}
@@ -159,7 +159,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	_, err = exec.Exec(cache.query, vals...)
 	{{- end}}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to upsert for {{.Table.Name}}", err)
 	}
 
 	{{if $canLastInsertID -}}
@@ -174,7 +174,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	{{if $canLastInsertID -}}
 	lastID, err = result.LastInsertId()
 	if err != nil {
-		return ErrSyncFail
+		return errors.Err(ErrSyncFail)
 	}
 
 	{{$colName := index .Table.PKey.Columns 0 -}}
@@ -199,7 +199,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 
 	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(returns...)
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to populate default values for {{.Table.Name}}", err)
 	}
 	{{- else}}
 	if len(cache.retMapping) != 0 {
@@ -211,7 +211,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to upsert {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to upsert {{.Table.Name}}", err)
 	}
 	{{- end}}
 

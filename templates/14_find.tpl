@@ -12,7 +12,7 @@ func Find{{$tableNameSingular}}G({{$pkArgs}}, selectCols ...string) (*{{$tableNa
 func Find{{$tableNameSingular}}GP({{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
 	retobj, err := Find{{$tableNameSingular}}(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 
 	return retobj
@@ -35,10 +35,10 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 
 	err := q.Bind({{$varNameSingular}}Obj)
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
+		return nil, errors.Prefix("{{.PkgName}}: unable to select from {{.Table.Name}}", err)
 	}
 
 	return {{$varNameSingular}}Obj, nil
@@ -48,7 +48,7 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 func Find{{$tableNameSingular}}P(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
 	retobj, err := Find{{$tableNameSingular}}(exec, {{$pkNames | join ", "}}, selectCols...)
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 
 	return retobj
@@ -64,10 +64,10 @@ func FindOne{{$tableNameSingular}}(exec boil.Executor, filters {{$tableNameSingu
     Bind(obj)
 
 	if err != nil {
-		if errors.Cause(err) == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
+		return nil, errors.Prefix("{{.PkgName}}: unable to select from {{.Table.Name}}", err)
 	}
 
 	return obj, nil

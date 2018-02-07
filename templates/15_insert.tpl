@@ -10,7 +10,7 @@ func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
 // behavior description.
 func (o *{{$tableNameSingular}}) InsertGP(whitelist ... string) {
 	if err := o.Insert(boil.GetDB(), whitelist...); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -18,7 +18,7 @@ func (o *{{$tableNameSingular}}) InsertGP(whitelist ... string) {
 // for whitelist behavior description.
 func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... string) {
 	if err := o.Insert(exec, whitelist...); err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 }
 
@@ -29,7 +29,7 @@ func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... strin
 // - All columns with a default, but non-zero are included (i.e. health = 75)
 func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string) error {
 	if o == nil {
-		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
+		return errors.Err("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
 	}
 
 	var err error
@@ -37,7 +37,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 	{{if not .NoHooks -}}
 	if err := o.doBeforeInsertHooks(exec); err != nil {
-		return err
+		return errors.Err(err)
 	}
 	{{- end}}
 
@@ -59,11 +59,11 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)
 		if err != nil {
-			return err
+			return errors.Err(err)
 		}
 		cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, returnColumns)
 		if err != nil {
-			return err
+			return errors.Err(err)
 		}
 		if len(wl) != 0 {
 			cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) %%sVALUES (%s)%%s", strings.Join(wl, "{{.RQ}},{{.LQ}}"), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
@@ -110,7 +110,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	_, err = exec.Exec(cache.query, vals...)
 	{{- end}}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to insert into {{.Table.Name}}", err)
 	}
 	
 	{{if $canLastInsertID -}}
@@ -125,7 +125,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	{{if $canLastInsertID -}}
 	lastID, err = result.LastInsertId()
 	if err != nil {
-		return ErrSyncFail
+		return errors.Err(ErrSyncFail)
 	}
 
 	{{$colName := index .Table.PKey.Columns 0 -}}
@@ -150,7 +150,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 
 	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to populate default values for {{.Table.Name}}", err)
 	}
 	{{else}}
 	if len(cache.retMapping) != 0 {
@@ -160,7 +160,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
+		return errors.Prefix("{{.PkgName}}: unable to insert into {{.Table.Name}}", err)
 	}
 	{{end}}
 

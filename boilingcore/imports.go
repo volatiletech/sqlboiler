@@ -170,12 +170,12 @@ func newImporter() importer {
 			`"time"`,
 		},
 		thirdParty: importList{
+			`"github.com/lbryio/errors.go"`,
 			`"github.com/lbryio/null.go"`,
 			`"github.com/lbryio/sqlboiler/boil"`,
 			`"github.com/lbryio/sqlboiler/queries"`,
 			`"github.com/lbryio/sqlboiler/queries/qm"`,
 			`"github.com/lbryio/sqlboiler/strmangle"`,
-			`"github.com/pkg/errors"`,
 		},
 	}
 
@@ -185,16 +185,16 @@ func newImporter() importer {
 				`"fmt"`,
 			},
 			thirdParty: importList{
+				`"github.com/lbryio/errors.go"`,
 				`"github.com/lbryio/sqlboiler/boil"`,
 				`"github.com/lbryio/sqlboiler/queries"`,
 				`"github.com/lbryio/sqlboiler/queries/qm"`,
 				`"github.com/lbryio/sqlboiler/strmangle"`,
-				`"github.com/pkg/errors"`,
 			},
 		},
 		"boil_types": {
 			thirdParty: importList{
-				`"github.com/pkg/errors"`,
+				`"github.com/lbryio/errors.go"`,
 				`"github.com/lbryio/sqlboiler/strmangle"`,
 			},
 		},
@@ -227,9 +227,9 @@ func newImporter() importer {
 			},
 			thirdParty: importList{
 				`"github.com/kat-co/vala"`,
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
+				`"github.com/lbryio/errors.go"`,
 				`"github.com/lbryio/sqlboiler/boil"`,
+				`"github.com/spf13/viper"`,
 			},
 		},
 		"boil_queries_test": {
@@ -265,11 +265,11 @@ func newImporter() importer {
 				`"strings"`,
 			},
 			thirdParty: importList{
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
+				`"github.com/lbryio/errors.go"`,
 				`"github.com/lbryio/sqlboiler/bdb/drivers"`,
 				`"github.com/lbryio/sqlboiler/randomize"`,
 				`_ "github.com/lib/pq"`,
+				`"github.com/spf13/viper"`,
 			},
 		},
 		"mysql": {
@@ -284,11 +284,11 @@ func newImporter() importer {
 				`"strings"`,
 			},
 			thirdParty: importList{
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
+				`_ "github.com/go-sql-driver/mysql"`,
+				`"github.com/lbryio/errors.go"`,
 				`"github.com/lbryio/sqlboiler/bdb/drivers"`,
 				`"github.com/lbryio/sqlboiler/randomize"`,
-				`_ "github.com/go-sql-driver/mysql"`,
+				`"github.com/spf13/viper"`,
 			},
 		},
 		"mssql": {
@@ -301,11 +301,11 @@ func newImporter() importer {
 				`"strings"`,
 			},
 			thirdParty: importList{
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
+				`_ "github.com/denisenkom/go-mssqldb"`,
+				`"github.com/lbryio/errors.go"`,
 				`"github.com/lbryio/sqlboiler/bdb/drivers"`,
 				`"github.com/lbryio/sqlboiler/randomize"`,
-				`_ "github.com/denisenkom/go-mssqldb"`,
+				`"github.com/spf13/viper"`,
 			},
 		},
 	}

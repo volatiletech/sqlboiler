@@ -25,17 +25,17 @@ func (m *mssqlTester) setup() error {
 	m.testDBName = randomize.StableDBName(m.dbName)
 
 	if err = m.dropTestDB(); err != nil {
-		return err
+		return errors.Err(err)
 	}
 	if err = m.createTestDB(); err != nil {
-		return err
+		return errors.Err(err)
 	}
 
 	createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
 	f, err := os.Open("tables_schema.sql")
 	if err != nil {
-		return errors.Wrap(err, "failed to open tables_schema.sql file")
+		return errors.Prefix("failed to open tables_schema.sql file", err)
 	}
 
 	defer f.Close()
@@ -43,12 +43,12 @@ func (m *mssqlTester) setup() error {
 	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
 
 	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start sqlcmd command")
+		return errors.Prefix("failed to start sqlcmd command", err)
 	}
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
-		return errors.Wrap(err, "failed to wait for sqlcmd command")
+		return errors.Prefix("failed to wait for sqlcmd command", err)
 	}
 
 	return nil
@@ -92,7 +92,7 @@ func (m *mssqlTester) teardown() error {
 	}
 
 	if err := m.dropTestDB(); err != nil {
-		return err
+		return errors.Err(err)
 	}
 
 	return nil
@@ -110,7 +110,7 @@ func (m *mssqlTester) runCmd(stdin, command string, args ...string) error {
 		fmt.Println("failed running:", command, args)
 		fmt.Println(stdout.String())
 		fmt.Println(stderr.String())
-		return err
+		return errors.Err(err)
 	}
 
 	return nil

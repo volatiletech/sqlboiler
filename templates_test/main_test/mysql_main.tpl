@@ -30,14 +30,14 @@ func (m *mysqlTester) setup() error {
 	m.testDBName = randomize.StableDBName(m.dbName)
 
 	if err = m.makeOptionFile(); err != nil {
-		return errors.Wrap(err, "couldn't make option file")
+		return errors.Prefix("couldn't make option file", err)
 	}
 
 	if err = m.dropTestDB(); err != nil {
-		return err
+		return errors.Err(err)
 	}
 	if err = m.createTestDB(); err != nil {
-		return err
+		return errors.Err(err)
 	}
 
 	dumpCmd := exec.Command("mysqldump", m.defaultsFile(), "--no-data", m.dbName)
@@ -48,22 +48,22 @@ func (m *mysqlTester) setup() error {
 	createCmd.Stdin = newFKeyDestroyer(rgxMySQLkey, r)
 
 	if err = dumpCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start mysqldump command")
+		return errors.Prefix("failed to start mysqldump command", err)
 	}
 	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start mysql command")
+		return errors.Prefix("failed to start mysql command", err)
 	}
 
 	if err = dumpCmd.Wait(); err != nil {
 		fmt.Println(err)
-		return errors.Wrap(err, "failed to wait for mysqldump command")
+		return errors.Prefix("failed to wait for mysqldump command", err)
 	}
 
 	w.Close() // After dumpCmd is done, close the write end of the pipe
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
-		return errors.Wrap(err, "failed to wait for mysql command")
+		return errors.Prefix("failed to wait for mysql command", err)
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func (m *mysqlTester) defaultsFile() string {
 func (m *mysqlTester) makeOptionFile() error {
 	tmp, err := ioutil.TempFile("", "optionfile")
 	if err != nil {
-		return errors.Wrap(err, "failed to create option file")
+		return errors.Prefix("failed to create option file", err)
 	}
 
 	isTCP := false
@@ -95,7 +95,7 @@ func (m *mysqlTester) makeOptionFile() error {
 	if os.IsNotExist(err) {
 		isTCP = true
 	} else if err != nil {
-		return errors.Wrap(err, "could not stat m.host")
+		return errors.Prefix("could not stat m.host", err)
 	}
 
 	fmt.Fprintln(tmp, "[client]")
@@ -139,7 +139,7 @@ func (m *mysqlTester) teardown() error {
 	}
 
 	if err := m.dropTestDB(); err != nil {
-		return err
+		return errors.Err(err)
 	}
 
 	return os.Remove(m.optionFile)
@@ -159,7 +159,7 @@ func (m *mysqlTester) runCmd(stdin, command string, args ...string) error {
 	fmt.Println("failed running:", command, args)
 	fmt.Println(stdout.String())
 	fmt.Println(stderr.String())
-	return err
+	return errors.Err(err)
 	}
 
 	return nil

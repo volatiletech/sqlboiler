@@ -33,14 +33,14 @@ func (p *pgTester) setup() error {
   p.testDBName = randomize.StableDBName(p.dbName)
 
   if err = p.makePGPassFile(); err != nil {
-    return err
+    return errors.Err(err)
   }
 
   if err = p.dropTestDB(); err != nil {
-    return err
+    return errors.Err(err)
   }
   if err = p.createTestDB(); err != nil {
-    return err
+    return errors.Err(err)
   }
 
   dumpCmd := exec.Command("pg_dump", "--schema-only", p.dbName)
@@ -53,22 +53,22 @@ func (p *pgTester) setup() error {
   createCmd.Stdin = newFKeyDestroyer(rgxPGFkey, r)
 
   if err = dumpCmd.Start(); err != nil {
-    return errors.Wrap(err, "failed to start pg_dump command")
+    return errors.Prefix("failed to start pg_dump command", err)
   }
   if err = createCmd.Start(); err != nil {
-    return errors.Wrap(err, "failed to start psql command")
+    return errors.Prefix("failed to start psql command", err)
   }
 
   if err = dumpCmd.Wait(); err != nil {
     fmt.Println(err)
-    return errors.Wrap(err, "failed to wait for pg_dump command")
+    return errors.Prefix("failed to wait for pg_dump command", err)
   }
 
   w.Close() // After dumpCmd is done, close the write end of the pipe
 
   if err = createCmd.Wait(); err != nil {
     fmt.Println(err)
-    return errors.Wrap(err, "failed to wait for psql command")
+    return errors.Prefix("failed to wait for psql command", err)
   }
 
   return nil
@@ -90,7 +90,7 @@ func (p *pgTester) runCmd(stdin, command string, args ...string) error {
     fmt.Println("failed running:", command, args)
     fmt.Println(stdout.String())
     fmt.Println(stderr.String())
-    return err
+    return errors.Err(err)
   }
 
   return nil
@@ -108,7 +108,7 @@ func (p *pgTester) pgEnv() []string {
 func (p *pgTester) makePGPassFile() error {
   tmp, err := ioutil.TempFile("", "pgpass")
   if err != nil {
-    return errors.Wrap(err, "failed to create option file")
+    return errors.Prefix("failed to create option file", err)
   }
 
   fmt.Fprintf(tmp, "%s:%d:postgres:%s", p.host, p.port, p.user)
@@ -145,12 +145,12 @@ func (p *pgTester) dropTestDB() error {
 func (p *pgTester) teardown() error {
   var err error
   if err = p.dbConn.Close(); err != nil {
-    return err
+    return errors.Err(err)
   }
   p.dbConn = nil
 
   if err = p.dropTestDB(); err != nil {
-    return err
+    return errors.Err(err)
   }
 
   return os.Remove(p.pgPassFile)

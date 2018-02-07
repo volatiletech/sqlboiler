@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/lbryio/errors.go"
 	"github.com/lbryio/sqlboiler/boil"
 )
 
@@ -136,7 +137,7 @@ func (q *Query) Query() (*sql.Rows, error) {
 func (q *Query) ExecP() sql.Result {
 	res, err := q.Exec()
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 
 	return res
@@ -147,7 +148,7 @@ func (q *Query) ExecP() sql.Result {
 func (q *Query) QueryP() *sql.Rows {
 	rows, err := q.Query()
 	if err != nil {
-		panic(boil.WrapErr(err))
+		panic(errors.Err(err))
 	}
 
 	return rows

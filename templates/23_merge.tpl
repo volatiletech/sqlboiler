@@ -9,12 +9,12 @@ func Merge{{$tableNamePlural}}(exec boil.Executor, primaryID uint64, secondaryID
 	if !ok {
 		txdb, ok := exec.(boil.Beginner)
 		if !ok {
-			return errors.New("database does not support transactions")
+			return errors.Err("database does not support transactions")
 		}
 
 		tx, err = txdb.Begin()
 		if err != nil {
-			return err
+			return errors.Err(err)
 		}
 
 		defer func() {
@@ -31,16 +31,16 @@ func Merge{{$tableNamePlural}}(exec boil.Executor, primaryID uint64, secondaryID
 
   primary, err := Find{{$tableNameSingular}}(tx, primaryID)
   if err != nil {
-    return err
+    return errors.Err(err)
   } else if primary == nil {
-		return errors.New("Primary {{$tableNameSingular}} not found")
+		return errors.Err("primary {{$tableNameSingular}} not found")
 	}
 
   secondary, err := Find{{$tableNameSingular}}(tx, secondaryID)
   if err != nil {
-    return err
+    return errors.Err(err)
   } else if secondary == nil {
-		return errors.New("Secondary {{$tableNameSingular}} not found")
+		return errors.Err("secondary {{$tableNameSingular}} not found")
 	}
 
   foreignKeys := []foreignKey{
@@ -89,12 +89,12 @@ func Merge{{$tableNamePlural}}(exec boil.Executor, primaryID uint64, secondaryID
 
 	err = primary.Update(tx)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	err = secondary.Delete(tx)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
   return nil

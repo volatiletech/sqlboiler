@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	null "github.com/lbryio/null.go"
+	null "github.com/lbryio/lbry.go/null"
 )
 
 func TestRandomizeStruct(t *testing.T) {

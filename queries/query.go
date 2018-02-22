@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/lbryio/errors.go"
+	"github.com/lbryio/lbry.go/errors"
 	"github.com/lbryio/sqlboiler/boil"
 )
 

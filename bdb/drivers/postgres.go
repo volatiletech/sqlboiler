@@ -338,7 +338,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.JSON"
 		case "boolean":
 			c.Type = "null.Bool"
-		case "date", "time", "timestamp without time zone", "timestamp with time zone":
+		case "date", "time", "timestamp without time zone", "timestamp with time zone", "time without time zone", "time with time zone":
 			c.Type = "null.Time"
 		case "ARRAY":
 			if c.ArrType == nil {
@@ -380,7 +380,7 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "bool"
-		case "date", "time", "timestamp without time zone", "timestamp with time zone":
+		case "date", "time", "timestamp without time zone", "timestamp with time zone", "time without time zone", "time with time zone":
 			c.Type = "time.Time"
 		case "ARRAY":
 			c.Type = getArrayType(c)

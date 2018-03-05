@@ -276,7 +276,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					if err != nil {
 						return err
 					}
-					field.Set(reflect.ValueOf(value))
+					field.Set(reflect.ValueOf(value.String()))
 					return nil
 				}
 				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||

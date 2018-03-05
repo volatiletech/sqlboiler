@@ -195,7 +195,11 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					return nil
 				}
 				if fieldType == "uuid" {
-					value = null.NewString(uuid.NewV4().String(), true)
+					randomUuid, err := uuid.NewV4()
+					if err != nil {
+						return err
+					}
+					value = null.NewString(randomUuid.String(), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -268,7 +272,10 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					return nil
 				}
 				if fieldType == "uuid" {
-					value = uuid.NewV4().String()
+					value, err := uuid.NewV4()
+					if err != nil {
+						return err
+					}
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -390,7 +397,11 @@ func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} 
 			return types.StringArray{value, value}
 		}
 		if fieldType == "uuid" {
-			value := uuid.NewV4().String()
+			randomUuid, err := uuid.NewV4()
+			if err != nil {
+				return err
+			}
+			value := randomUuid.String()
 			return types.StringArray{value, value}
 		}
 		if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||

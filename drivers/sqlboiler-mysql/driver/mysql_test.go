@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"testing"
@@ -21,7 +22,11 @@ import (
 )
 
 var (
-	flagGolden = flag.Bool("test.golden", false, "Overwrite the golden file with the current execution results")
+	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
+	flagHostname        = flag.String("hostname", "", "Connect to the server on the given host")
+	flagUsername        = flag.String("username", "", "Username to use when connecting to server")
+	flagPassword        = flag.String("password", "", "Password to use when connecting to server")
+	flagDatabase        = flag.String("database", "", "The database to use")
 )
 
 func TestDriver(t *testing.T) {
@@ -31,7 +36,7 @@ func TestDriver(t *testing.T) {
 	}
 
 	out := &bytes.Buffer{}
-	createDB := exec.Command("mysql", "-u", "sqlboiler_driver_user", "-psqlboiler", "sqlboiler_driver_test")
+	createDB := exec.Command("mysql", "-h", *flagHostname, "-u", *flagUsername, fmt.Sprintf("-p%s", *flagPassword), *flagDatabase)
 	createDB.Stdout = out
 	createDB.Stderr = out
 	createDB.Stdin = bytes.NewReader(b)
@@ -43,13 +48,13 @@ func TestDriver(t *testing.T) {
 	t.Logf("mysql output:\n%s\n", out.Bytes())
 
 	config := drivers.Config{
-		"user":    "sqlboiler_driver_user",
-		"pass":    "sqlboiler",
-		"dbname":  "sqlboiler_driver_test",
-		"host":    "localhost",
+		"user":    *flagUsername,
+		"pass":    *flagPassword,
+		"dbname":  *flagDatabase,
+		"host":    *flagHostname,
 		"port":    3306,
 		"sslmode": "false",
-		"schema":  "sqlboiler_driver_test",
+		"schema":  *flagDatabase,
 	}
 
 	p := &MySQLDriver{}
@@ -63,7 +68,7 @@ func TestDriver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if *flagGolden {
+	if *flagOverwriteGolden {
 		if err = ioutil.WriteFile("mysql.golden.json", got, 0664); err != nil {
 			t.Fatal(err)
 		}

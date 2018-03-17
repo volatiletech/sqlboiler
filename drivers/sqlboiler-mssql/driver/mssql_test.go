@@ -35,14 +35,18 @@ import (
 )
 
 var (
-	flagGolden = flag.Bool("test.golden", false, "Overwrite the golden file with the current execution results")
+	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
+	flagHostname        = flag.String("hostname", "", "Connect to the server on the given host")
+	flagUsername        = flag.String("username", "", "Username to use when connecting to server")
+	flagPassword        = flag.String("password", "", "Password to use when connecting to server")
+	flagDatabase        = flag.String("database", "", "The database to use")
 
 	rgxKeyIDs = regexp.MustCompile(`__[A-F0-9]+$`)
 )
 
 func TestDriver(t *testing.T) {
 	out := &bytes.Buffer{}
-	createDB := exec.Command("sqlcmd", "-S", "localhost", "-U", "sqlboiler_driver_user", "-P", "Sqlboiler@1234", "-d", "sqlboiler_driver_test", "-b", "-i", "testdatabase.sql")
+	createDB := exec.Command("sqlcmd", "-S", *flagHostname, "-U", *flagUsername, "-P", *flagPassword, "-d", *flagDatabase, "-b", "-i", "testdatabase.sql")
 	createDB.Stdout = out
 	createDB.Stderr = out
 
@@ -53,10 +57,10 @@ func TestDriver(t *testing.T) {
 	t.Logf("mssql output:\n%s\n", out.Bytes())
 
 	config := drivers.Config{
-		"user":    "sqlboiler_driver_user",
-		"pass":    "Sqlboiler@1234",
-		"dbname":  "sqlboiler_driver_test",
-		"host":    "localhost",
+		"user":    *flagUsername,
+		"pass":    *flagPassword,
+		"dbname":  *flagDatabase,
+		"host":    *flagHostname,
 		"port":    1433,
 		"sslmode": "disable",
 		"schema":  "dbo",
@@ -80,7 +84,7 @@ func TestDriver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if *flagGolden {
+	if *flagOverwriteGolden {
 		if err = ioutil.WriteFile("mssql.golden.json", got, 0664); err != nil {
 			t.Fatal(err)
 		}

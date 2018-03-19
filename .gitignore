@@ -7,3 +7,4 @@ sqlboiler.toml
 models/
 testschema.sql
 .cover
+testdata/env.mk

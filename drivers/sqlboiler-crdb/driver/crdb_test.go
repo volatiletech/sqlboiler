@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -28,8 +27,8 @@ var (
 func TestDriver(t *testing.T) {
 	hostname := "localhost"
 	database := os.Getenv("DRIVER_DB")
-	username := os.Getenv("DRIVER_USER")
-	password := os.Getenv("DRIVER_PASS")
+	username := "root" //os.Getenv("DRIVER_USER")
+	password := ""     //os.Getenv("DRIVER_PASS")
 
 	b, err := ioutil.ReadFile("testdatabase.sql")
 	if err != nil {
@@ -37,29 +36,29 @@ func TestDriver(t *testing.T) {
 	}
 
 	out := &bytes.Buffer{}
-	createDB := exec.Command("psql", "-h", hostname, "-U", username, database)
-	createDB.Env = append([]string{fmt.Sprintf("PGPASSWORD=\"%s\"", password)}, os.Environ()...)
+	url := CockroachDBBuildQueryString(username, password, database, hostname, 26257, "disable")
+	createDB := exec.Command("cockroach", "sql", "--insecure", "--url", url)
 	createDB.Stdout = out
 	createDB.Stderr = out
 	createDB.Stdin = bytes.NewReader(b)
 
 	if err := createDB.Run(); err != nil {
-		t.Logf("psql output:\n%s\n", out.Bytes())
+		t.Logf("cockroach output:\n%s\n", out.Bytes())
 		t.Fatal(err)
 	}
-	t.Logf("psql output:\n%s\n", out.Bytes())
+	t.Logf("cockroach output:\n%s\n", out.Bytes())
 
 	config := drivers.Config{
 		"user":    username,
 		"pass":    password,
 		"dbname":  database,
 		"host":    hostname,
-		"port":    5432,
+		"port":    26257,
 		"sslmode": "disable",
 		"schema":  "public",
 	}
 
-	p := &PostgresDriver{}
+	p := &CockroachDBDriver{}
 	info, err := p.Assemble(config)
 	if err != nil {
 		t.Fatal(err)
@@ -71,14 +70,14 @@ func TestDriver(t *testing.T) {
 	}
 
 	if *flagOverwriteGolden {
-		if err = ioutil.WriteFile("psql.golden.json", got, 0664); err != nil {
+		if err = ioutil.WriteFile("crdb.golden.json", got, 0664); err != nil {
 			t.Fatal(err)
 		}
 		t.Log("wrote:", string(got))
 		return
 	}
 
-	want, err := ioutil.ReadFile("psql.golden.json")
+	want, err := ioutil.ReadFile("crdb.golden.json")
 	if err != nil {
 		t.Fatal(err)
 	}

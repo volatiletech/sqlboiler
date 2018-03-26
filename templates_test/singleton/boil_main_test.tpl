@@ -90,6 +90,9 @@ func initViper() error {
 	viper.SetDefault("mssql.schema", "dbo")
 	viper.SetDefault("mssql.sslmode", "true")
 	viper.SetDefault("mssql.port", 1433)
+	viper.SetDefault("crdb.schema", "public")
+	viper.SetDefault("crdb.port", 26257)
+	viper.SetDefault("crdb.sslmode", "require")
 
 	// Ignore errors here, fall back to defaults and validation to provide errs
 	_ = viper.ReadInConfig()
@@ -128,6 +131,16 @@ func validateConfig(driverName string) error {
 			vala.StringNotEmpty(viper.GetString("mssql.dbname"), "mssql.dbname"),
 			vala.StringNotEmpty(viper.GetString("mssql.sslmode"), "mssql.sslmode"),
 		).Check()
+	}
+
+	if driverName == "crdb" {
+        return vala.BeginValidation().Validate(
+            vala.StringNotEmpty(viper.GetString("crdb.user"), "crdb.user"),
+            vala.StringNotEmpty(viper.GetString("crdb.host"), "crdb.host"),
+            vala.Not(vala.Equals(viper.GetInt("crdb.port"), 0, "crdb.port")),
+            vala.StringNotEmpty(viper.GetString("crdb.dbname"), "crdb.dbname"),
+            vala.StringNotEmpty(viper.GetString("crdb.sslmode"), "crdb.sslmode"),
+        ).Check()
 	}
 
 	return errors.New("not a valid driver name")

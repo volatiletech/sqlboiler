@@ -2,27 +2,27 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG({{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) error {
-	return o.Upsert(boil.GetDB(), {{if eq .DriverName "psql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...)
+func (o *{{$tableNameSingular}}) UpsertG({{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) error {
+	return o.Upsert(boil.GetDB(), {{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...)
 }
 
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP({{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
-	if err := o.Upsert(boil.GetDB(), {{if eq .DriverName "psql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertGP({{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
+	if err := o.Upsert(boil.GetDB(), {{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, {{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
-	if err := o.Upsert(exec, {{if eq .DriverName "psql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, {{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
+	if err := o.Upsert(exec, {{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string, whitelist ...string) error {
+func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string, whitelist ...string) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -39,7 +39,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
-	{{if eq .DriverName "psql"}}
+	{{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}
 	if updateOnConflict {
 		buf.WriteByte('t')
 	} else {
@@ -107,13 +107,17 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
-		{{if eq .DriverName "psql"}}
+		{{if (or (eq .DriverName "psql") (eq .DriverName "crdb"))}}
 		conflict := conflictColumns
 		if len(conflict) == 0 {
 			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
 			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
 		}
+		{{if eq .DriverName "psql"}}
 		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
+		{{else if eq .DriverName "crdb"}}
+		cache.query = queries.BuildUpsertQueryCockroachDB(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
+		{{- end}}
 		{{else if eq .DriverName "mysql"}}
 		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
 		cache.retQuery = fmt.Sprintf(

@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /root
     docker:
-      - image: aarondl0/sqlboiler-test:v3
+      - image: quay.io/glerchundi/sqlboiler:v3
 
       - image: postgres:9.6
         environment:
@@ -17,6 +17,9 @@ jobs:
         environment:
           ACCEPT_EULA: 'Y'
           SA_PASSWORD: 'Sqlboiler@1234'
+
+      - image: cockroachdb/cockroach-unstable:v2.0-beta.20180319
+        command: [start, --insecure]
 
     environment:
       GOPATH: /go
@@ -80,6 +83,16 @@ jobs:
             exit $c
 
       - run:
+          name: Wait for CockroachDB
+          command: >
+            c=0;
+            for i in `seq 30`; do
+              echo "Waiting for crdb"
+              cockroach sql --insecure -e "select * from information_schema.tables;" > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
+            done;
+            exit $c
+
+      - run:
           name: 'Download dependencies (core, driver, test, generated)'
           command: |
             cd $ROOTPATH; go get -v -t ./...
@@ -88,7 +101,7 @@ jobs:
           name: 'Build SQLBoiler core and drivers'
           command: |
             cd $ROOTPATH; make build
-            cd $ROOTPATH; make build-{psql,mysql,mssql}
+            cd $ROOTPATH; make build-{psql,mysql,mssql,crdb}
 
       - run:
           name: 'Prepare for tests'
@@ -100,7 +113,7 @@ jobs:
           command: |
             cd $ROOTPATH
             make test | tee $HOME/test_results/results.txt
-            for engine in psql mysql mssql; do
+            for engine in psql mysql mssql crdb; do
               make test-user-${engine}
               make test-db-${engine}
               make test-generate-${engine}
@@ -114,7 +127,7 @@ jobs:
           name: 'Tests: Drivers'
           command: |
             cd $ROOTPATH
-            for engine in psql mysql mssql; do
+            for engine in psql mysql mssql crdb; do
               make driver-db-${engine}
               make driver-user-${engine}
               make driver-test-${engine} | tee $HOME/test_results/results.driver-${engine}.txt

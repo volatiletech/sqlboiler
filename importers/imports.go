@@ -308,6 +308,24 @@ func NewDefaultImports() Collection {
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},
 		},
+		"crdb": {
+			Standard: List{
+				`"bytes"`,
+				`"database/sql"`,
+				`"fmt"`,
+				`"io"`,
+				`"os"`,
+				`"os/exec"`,
+				`"strings"`,
+			},
+			ThirdParty: List{
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-crdb/driver"`,
+				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`_ "github.com/lib/pq"`,
+			},
+		},
 	}
 
 	// basedOnType imports are only included in the template output if the

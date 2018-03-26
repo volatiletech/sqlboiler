@@ -24,7 +24,9 @@ RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/msprod.list \
     && apt-get update \
-    && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-9.6 mysql-client-5.7 mssql-tools unixodbc-dev
+    && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-9.6 mysql-client-5.7 mssql-tools unixodbc-dev \
+    && curl https://binaries.cockroachdb.com/cockroach-v2.0-beta.20180319.linux-amd64.tgz | tar xvz \
+    && cp -i cockroach-v2.0-beta.20180319.linux-amd64/cockroach /usr/local/bin
 
 # Install Go + Go based tooling
 ENV GOLANG_VERSION 1.10

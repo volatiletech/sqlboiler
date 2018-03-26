@@ -327,6 +327,58 @@ func BuildUpsertQueryMSSQL(dia drivers.Dialect, tableName string, primary, updat
 	return buf.String()
 }
 
+// BuildUpsertQueryCockroachDB builds a SQL statement string using the upsertData provided.
+func BuildUpsertQueryCockroachDB(dia drivers.Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
+	conflict = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, conflict)
+	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
+	ret = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, ret)
+
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
+
+	columns := "DEFAULT VALUES"
+	if len(whitelist) != 0 {
+		columns = fmt.Sprintf("(%s) VALUES (%s)",
+			strings.Join(whitelist, ", "),
+			strmangle.Placeholders(dia.UseIndexPlaceholders, len(whitelist), 1, 1))
+	}
+
+	fmt.Fprintf(
+		buf,
+		"INSERT INTO %s %s ON CONFLICT ",
+		tableName,
+		columns,
+	)
+
+	// cockroach expects the conflict even thougt we are not updating
+	buf.WriteByte('(')
+	buf.WriteString(strings.Join(conflict, ", "))
+	buf.WriteString(") ")
+
+	if !updateOnConflict || len(update) == 0 {
+		buf.WriteString("DO NOTHING")
+	} else {
+		buf.WriteString("DO UPDATE SET ")
+
+		for i, v := range update {
+			if i != 0 {
+				buf.WriteByte(',')
+			}
+			quoted := strmangle.IdentQuote(dia.LQ, dia.RQ, v)
+			buf.WriteString(quoted)
+			buf.WriteString(" = EXCLUDED.")
+			buf.WriteString(quoted)
+		}
+	}
+
+	if len(ret) != 0 {
+		buf.WriteString(" RETURNING ")
+		buf.WriteString(strings.Join(ret, ", "))
+	}
+
+	return buf.String()
+}
+
 func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if len(q.groupBy) != 0 {
 		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))

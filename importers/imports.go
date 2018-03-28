@@ -389,6 +389,48 @@ func NewDefaultImports() Collection {
 		"types.Hstore": {
 			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
+		"pgeo.Point": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.Line": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.Lseg": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.Box": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.Path": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.Polygon": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.Circle": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullPoint": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullLine": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullLseg": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullBox": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullPath": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullPolygon": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"pgeo.NullCircle": {
+			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
 	}
 
 	return col

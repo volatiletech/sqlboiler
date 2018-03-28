@@ -362,8 +362,22 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.JSON"
 		case "boolean":
 			c.Type = "null.Bool"
-		case "date", "time", "timestamp without time zone", "timestamp with time zone":
+		case "date", "time", "timestamp without time zone", "timestamp with time zone", "time without time zone", "time with time zone":
 			c.Type = "null.Time"
+		case "point":
+			c.Type = "pgeo.NullPoint"
+		case "line":
+			c.Type = "pgeo.NullLine"
+		case "lseg":
+			c.Type = "pgeo.NullLseg"
+		case "box":
+			c.Type = "pgeo.NullBox"
+		case "path":
+			c.Type = "pgeo.NullPath"
+		case "polygon":
+			c.Type = "pgeo.NullPolygon"
+		case "circle":
+			c.Type = "pgeo.NullCircle"
 		case "ARRAY":
 			if c.ArrType == nil {
 				panic("unable to get postgres ARRAY underlying type")
@@ -407,8 +421,22 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "bool"
-		case "date", "time", "timestamp without time zone", "timestamp with time zone":
+		case "date", "time", "timestamp without time zone", "timestamp with time zone", "time without time zone", "time with time zone":
 			c.Type = "time.Time"
+		case "point":
+			c.Type = "pgeo.Point"
+		case "line":
+			c.Type = "pgeo.Line"
+		case "lseg":
+			c.Type = "pgeo.Lseg"
+		case "box":
+			c.Type = "pgeo.Box"
+		case "path":
+			c.Type = "pgeo.Path"
+		case "polygon":
+			c.Type = "pgeo.Polygon"
+		case "circle":
+			c.Type = "pgeo.Circle"
 		case "ARRAY":
 			c.Type = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct

@@ -37,7 +37,7 @@ func TestDriver(t *testing.T) {
 
 	out := &bytes.Buffer{}
 	url := CockroachDBBuildQueryString(username, password, database, hostname, 26257, "disable")
-	createDB := exec.Command("cockroach", "sql", "--insecure", "--url", url)
+	createDB := exec.Command("cockroach", "sql", "--url", url)
 	createDB.Stdout = out
 	createDB.Stderr = out
 	createDB.Stdin = bytes.NewReader(b)

@@ -154,7 +154,7 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ? and (? or c.extra != 'VIRTUAL GENERATED');
+	where table_name = ? and table_schema = ? and (c.extra != 'VIRTUAL GENERATED' or not ?);
 	`, tableName, schema, IgnoreVirtualColumns)
 
 	if err != nil {

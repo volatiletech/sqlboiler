@@ -17,6 +17,12 @@ import (
 // then tinyint(1) will be mapped in your generated structs to bool opposed to int8.
 var TinyintAsBool bool
 
+// IgnoreVirtualColumns is a global that is set from main.go if a user specifies
+// this flag when generating. This flag only applies to MySQL so we're using a global
+// instead, to avoid breaking the interface. If IgnoreVirtualColumns is true then
+// virtual columns present in the schema will be ignored during the code generation
+var IgnoreVirtualColumns bool
+
 // MySQLDriver holds the database connection string and a handle
 // to the database connection.
 type MySQLDriver struct {
@@ -148,8 +154,8 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]bdb.Column, error) {
 				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ?;
-	`, tableName, schema)
+	where table_name = ? and table_schema = ? and (? or c.extra != 'VIRTUAL GENERATED');
+	`, tableName, schema, IgnoreVirtualColumns)
 
 	if err != nil {
 		return nil, err

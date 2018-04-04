@@ -86,6 +86,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("tinyint-as-bool", "", false, "Map MySQL tinyint(1) in Go to bool instead of int8")
+	rootCmd.PersistentFlags().BoolP("ignore-virtual-columns", "", false, "Ignore generating models and boilerplate code for MySQL virtual columns")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel or snake (default snake)")
 
@@ -233,6 +234,9 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 		// Set MySQL TinyintAsBool global var. This flag only applies to MySQL.
 		drivers.TinyintAsBool = viper.GetBool("tinyint-as-bool")
+
+		// Set MySQL IgnoreVirtualColumns global var. This flag only applies to MySQL.
+		drivers.IgnoreVirtualColumns = viper.GetBool("ignore-virtual-columns")
 
 		// MySQL doesn't have schemas, just databases
 		cmdConfig.Schema = cmdConfig.MySQL.DBName

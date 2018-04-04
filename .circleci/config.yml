@@ -18,7 +18,7 @@ jobs:
           ACCEPT_EULA: 'Y'
           SA_PASSWORD: 'Sqlboiler@1234'
 
-      - image: cockroachdb/cockroach-unstable:v2.0-rc.1
+      - image: cockroachdb/cockroach:v2.0.0
         command: [start, --insecure]
 
     environment:

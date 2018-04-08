@@ -167,7 +167,7 @@ func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.V
 		if val.Len() == 0 {
 			return nil
 		}
-		val = val.Index(0)
+		val = firstNonNilValue(val)
 		if val.IsNil() {
 			return nil
 		}
@@ -188,6 +188,21 @@ func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.V
 
 	l.setLoaded(depth)
 	return nil
+}
+
+// firstNonNilValue returns the first non nil value of input. If all are nil, return the value with index 0.
+func firstNonNilValue(val reflect.Value) reflect.Value {
+	length := val.Len()
+	if length == 0 {
+		// return val itself if val.Len() = 0
+		return val
+	}
+	for i := 0; i < length; i++ {
+		if !val.Index(i).IsNil() {
+			return val.Index(i)
+		}
+	}
+	return val.Index(0)
 }
 
 // loadRelationshipsRecurse is a helper function for taking a reflect.Value and

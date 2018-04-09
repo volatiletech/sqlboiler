@@ -20,7 +20,7 @@ jobs:
 
     environment:
       GOPATH: /go
-      ROOTPATH: /go/src/github.com/volatiletech/sqlboiler
+      ROOTPATH: /go/src/github.com/ann-kilzer/sqlboiler
 
     steps:
       - run:
@@ -93,10 +93,10 @@ jobs:
 
       - run:
           name: Make GOPATH
-          command: mkdir -p /go/src/github.com/volatiletech/sqlboiler
+          command: mkdir -p /go/src/github.com/ann-kilzer/sqlboiler
 
       - checkout:
-          path: /go/src/github.com/volatiletech/sqlboiler
+          path: /go/src/github.com/ann-kilzer/sqlboiler
 
       - run:
           name: Create PSQL DB
@@ -118,7 +118,7 @@ jobs:
           name: Build SQLBoiler
           command: |
             cd $ROOTPATH; go get -v -t
-            cd $ROOTPATH; go build -v github.com/volatiletech/sqlboiler
+            cd $ROOTPATH; go build -v github.com/ann-kilzer/sqlboiler
 
       - run:
           name: 'Configure SQLBoiler: PSQL'

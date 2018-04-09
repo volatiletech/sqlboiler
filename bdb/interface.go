@@ -4,8 +4,8 @@ package bdb
 import (
 	"sort"
 
+	"github.com/ann-kilzer/sqlboiler/strmangle"
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // Interface for a database driver. Functionality required to support a specific
@@ -99,7 +99,7 @@ func filterForeignKeys(t *Table, whitelist, blacklist []string) {
 	var fkeys []ForeignKey
 	for _, fkey := range t.FKeys {
 		if (len(whitelist) == 0 || strmangle.SetInclude(fkey.ForeignTable, whitelist)) &&
-		(len(blacklist) == 0 || !strmangle.SetInclude(fkey.ForeignTable, blacklist)) {
+			(len(blacklist) == 0 || !strmangle.SetInclude(fkey.ForeignTable, blacklist)) {
 			fkeys = append(fkeys, fkey)
 		}
 	}

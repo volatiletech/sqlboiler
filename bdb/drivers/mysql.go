@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ann-kilzer/sqlboiler/bdb"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/bdb"
 )
 
 // TinyintAsBool is a global that is set from main.go if a user specifies

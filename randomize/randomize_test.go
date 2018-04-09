@@ -44,7 +44,6 @@ func TestRandomizeStruct(t *testing.T) {
 		"Interval":     "interval",
 		"Ignore":       "integer",
 		"NullInt":      "integer",
-		"NullFloat64":  "numeric",
 		"NullBool":     "boolean",
 		"NullString":   "character",
 		"NullTime":     "time",
@@ -93,7 +92,7 @@ func TestRandomizeField(t *testing.T) {
 	s := NewSeed()
 	inputs := []RandomizeTest{
 		{In: &null.Bool{}, Out: null.Bool{}, Typs: []string{"boolean"}},
-		{In: &null.String{}, Out: null.String{}, Typs: []string{"character", "uuid", "interval"}},
+		{In: &null.String{}, Out: null.String{}, Typs: []string{"character", "uuid", "interval", "numeric"}},
 		{In: &null.Time{}, Out: null.Time{}, Typs: []string{"time"}},
 		{In: &null.Float32{}, Out: null.Float32{}, Typs: []string{"real"}},
 		{In: &null.Float64{}, Out: null.Float64{}, Typs: []string{"decimal"}},
@@ -109,7 +108,6 @@ func TestRandomizeField(t *testing.T) {
 		{In: &null.Uint64{}, Out: null.Uint64{}, Typs: []string{"integer"}},
 
 		{In: new(float32), Out: float32(0), Typs: []string{"real"}},
-		{In: new(float64), Out: float64(0), Typs: []string{"numeric"}},
 		{In: new(int), Out: int(0), Typs: []string{"integer"}},
 		{In: new(int8), Out: int8(0), Typs: []string{"integer"}},
 		{In: new(int16), Out: int16(0), Typs: []string{"smallserial"}},

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/volatiletech/sqlboiler/bdb"
+	"github.com/ann-kilzer/sqlboiler/bdb"
 )
 
 // imports defines the optional standard imports and
@@ -171,25 +171,25 @@ func newImporter() importer {
 		},
 		thirdParty: importList{
 			`"github.com/pkg/errors"`,
-			`"github.com/volatiletech/sqlboiler/boil"`,
-			`"github.com/volatiletech/sqlboiler/queries"`,
-			`"github.com/volatiletech/sqlboiler/queries/qm"`,
-			`"github.com/volatiletech/sqlboiler/strmangle"`,
+			`"github.com/ann-kilzer/sqlboiler/boil"`,
+			`"github.com/ann-kilzer/sqlboiler/queries"`,
+			`"github.com/ann-kilzer/sqlboiler/queries/qm"`,
+			`"github.com/ann-kilzer/sqlboiler/strmangle"`,
 		},
 	}
 
 	imp.Singleton = mapImports{
 		"boil_queries": {
 			thirdParty: importList{
-				`"github.com/volatiletech/sqlboiler/boil"`,
-				`"github.com/volatiletech/sqlboiler/queries"`,
-				`"github.com/volatiletech/sqlboiler/queries/qm"`,
+				`"github.com/ann-kilzer/sqlboiler/boil"`,
+				`"github.com/ann-kilzer/sqlboiler/queries"`,
+				`"github.com/ann-kilzer/sqlboiler/queries/qm"`,
 			},
 		},
 		"boil_types": {
 			thirdParty: importList{
 				`"github.com/pkg/errors"`,
-				`"github.com/volatiletech/sqlboiler/strmangle"`,
+				`"github.com/ann-kilzer/sqlboiler/strmangle"`,
 			},
 		},
 	}
@@ -201,9 +201,9 @@ func newImporter() importer {
 			`"testing"`,
 		},
 		thirdParty: importList{
-			`"github.com/volatiletech/sqlboiler/boil"`,
-			`"github.com/volatiletech/sqlboiler/randomize"`,
-			`"github.com/volatiletech/sqlboiler/strmangle"`,
+			`"github.com/ann-kilzer/sqlboiler/boil"`,
+			`"github.com/ann-kilzer/sqlboiler/randomize"`,
+			`"github.com/ann-kilzer/sqlboiler/strmangle"`,
 		},
 	}
 
@@ -223,7 +223,7 @@ func newImporter() importer {
 				`"github.com/kat-co/vala"`,
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/boil"`,
+				`"github.com/ann-kilzer/sqlboiler/boil"`,
 			},
 		},
 		"boil_queries_test": {
@@ -236,7 +236,7 @@ func newImporter() importer {
 				`"regexp"`,
 			},
 			thirdParty: importList{
-				`"github.com/volatiletech/sqlboiler/boil"`,
+				`"github.com/ann-kilzer/sqlboiler/boil"`,
 			},
 		},
 		"boil_suites_test": {
@@ -261,8 +261,8 @@ func newImporter() importer {
 			thirdParty: importList{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`"github.com/ann-kilzer/sqlboiler/bdb/drivers"`,
+				`"github.com/ann-kilzer/sqlboiler/randomize"`,
 				`_ "github.com/lib/pq"`,
 			},
 		},
@@ -280,8 +280,8 @@ func newImporter() importer {
 			thirdParty: importList{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`"github.com/ann-kilzer/sqlboiler/bdb/drivers"`,
+				`"github.com/ann-kilzer/sqlboiler/randomize"`,
 				`_ "github.com/go-sql-driver/mysql"`,
 			},
 		},
@@ -297,8 +297,8 @@ func newImporter() importer {
 			thirdParty: importList{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/bdb/drivers"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`"github.com/ann-kilzer/sqlboiler/bdb/drivers"`,
+				`"github.com/ann-kilzer/sqlboiler/randomize"`,
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},
 		},
@@ -363,25 +363,25 @@ func newImporter() importer {
 			standard: importList{`"time"`},
 		},
 		"types.JSON": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 		"types.BytesArray": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 		"types.Int64Array": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 		"types.Float64Array": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 		"types.BoolArray": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 		"types.StringArray": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 		"types.Hstore": {
-			thirdParty: importList{`"github.com/volatiletech/sqlboiler/types"`},
+			thirdParty: importList{`"github.com/ann-kilzer/sqlboiler/types"`},
 		},
 	}
 

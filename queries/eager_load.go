@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ann-kilzer/sqlboiler/boil"
+	"github.com/ann-kilzer/sqlboiler/strmangle"
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 type loadRelationshipState struct {

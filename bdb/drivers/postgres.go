@@ -324,11 +324,11 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Int"
 		case "smallint", "smallserial":
 			c.Type = "null.Int16"
-		case "decimal", "numeric", "double precision":
+		case "decimal", "double precision":
 			c.Type = "null.Float64"
 		case "real":
 			c.Type = "null.Float32"
-		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "numeric", "text", "uuid", "xml":
 			c.Type = "null.String"
 		case `"char"`:
 			c.Type = "null.Byte"
@@ -366,11 +366,11 @@ func (p *PostgresDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "int"
 		case "smallint", "smallserial":
 			c.Type = "int16"
-		case "decimal", "numeric", "double precision":
+		case "decimal", "double precision":
 			c.Type = "float64"
 		case "real":
 			c.Type = "float32"
-		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "numeric", "text", "uuid", "xml":
 			c.Type = "string"
 		case `"char"`:
 			c.Type = "types.Byte"
@@ -413,7 +413,7 @@ func getArrayType(c bdb.Column) string {
 		return "types.StringArray"
 	case "boolean":
 		return "types.BoolArray"
-	case "decimal", "numeric", "double precision", "real":
+	case "decimal", "double precision", "real":
 		return "types.Float64Array"
 	default:
 		return "types.StringArray"

@@ -19,22 +19,22 @@ import (
 const sqlBoilerVersion = "2.6.0"
 
 var (
-	cmdState  *boilingcore.State
-	cmdConfig *boilingcore.Config
+	flagConfigFile string
+	cmdState       *boilingcore.State
+	cmdConfig      *boilingcore.Config
 )
 
-func main() {
-	var err error
-
-	// Too much happens between here and cobra's argument handling, for
-	// something so simple just do it immediately.
-	for _, arg := range os.Args {
-		if arg == "--version" {
-			fmt.Println("SQLBoiler v" + sqlBoilerVersion)
-			return
+func initConfig() {
+	if len(flagConfigFile) == 0 {
+		viper.SetConfigFile(flagConfigFile)
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println("Can't read config:", err)
+			os.Exit(1)
 		}
+		return
 	}
 
+	var err error
 	viper.SetConfigName("sqlboiler")
 
 	configHome := os.Getenv("XDG_CONFIG_HOME")
@@ -58,6 +58,17 @@ func main() {
 	// Ignore errors here, fallback to other validation methods.
 	// Users can use environment variables if a config is not found.
 	_ = viper.ReadInConfig()
+}
+
+func main() {
+	// Too much happens between here and cobra's argument handling, for
+	// something so simple just do it immediately.
+	for _, arg := range os.Args {
+		if arg == "--version" {
+			fmt.Println("SQLBoiler v" + sqlBoilerVersion)
+			return
+		}
+	}
 
 	// Set up the cobra root command
 	var rootCmd = &cobra.Command{
@@ -73,7 +84,10 @@ func main() {
 		SilenceUsage:  true,
 	}
 
+	cobra.OnInitialize(initConfig)
+
 	// Set up the cobra root command flags
+	rootCmd.PersistentFlags().StringVar(&flagConfigFile, "config", "Supply the name of the config file to override the default lookup", "config file")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")

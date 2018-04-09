@@ -16,10 +16,10 @@ import (
 
 	null "gopkg.in/volatiletech/null.v6"
 
+	"github.com/ann-kilzer/sqlboiler/strmangle"
+	"github.com/ann-kilzer/sqlboiler/types"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
-	"github.com/volatiletech/sqlboiler/strmangle"
-	"github.com/volatiletech/sqlboiler/types"
 )
 
 var (

@@ -3,7 +3,7 @@ package bdb
 import (
 	"strings"
 
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/ann-kilzer/sqlboiler/strmangle"
 )
 
 // Column holds information about a database column.

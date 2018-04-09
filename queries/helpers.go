@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/ann-kilzer/sqlboiler/strmangle"
 )
 
 // NonZeroDefaultSet returns the fields included in the

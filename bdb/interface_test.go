@@ -3,7 +3,7 @@ package bdb
 import (
 	"testing"
 
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/ann-kilzer/sqlboiler/strmangle"
 )
 
 type testMockDriver struct{}
@@ -204,9 +204,9 @@ func TestFilterForeignKeys(t *testing.T) {
 	}
 
 	tests := []struct {
-		Whitelist	[]string
-		Blacklist	[]string
-		ExpectFkNum	int
+		Whitelist   []string
+		Blacklist   []string
+		ExpectFkNum int
 	}{
 		{[]string{}, []string{}, 3},
 		{[]string{"one", "two", "three"}, []string{}, 2},

@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ann-kilzer/sqlboiler/bdb/drivers"
+	"github.com/ann-kilzer/sqlboiler/boilingcore"
 	"github.com/kat-co/vala"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/bdb/drivers"
-	"github.com/volatiletech/sqlboiler/boilingcore"
 )
 
 const sqlBoilerVersion = "2.6.0"
@@ -62,7 +62,7 @@ func main() {
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
-			`Complete documentation is available at http://github.com/volatiletech/sqlboiler`,
+			`Complete documentation is available at http://github.com/ann-kilzer/sqlboiler`,
 		Example:       `sqlboiler postgres`,
 		PreRunE:       preRun,
 		RunE:          run,

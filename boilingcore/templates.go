@@ -9,9 +9,9 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/bdb"
-	"github.com/volatiletech/sqlboiler/queries"
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/ann-kilzer/sqlboiler/bdb"
+	"github.com/ann-kilzer/sqlboiler/queries"
+	"github.com/ann-kilzer/sqlboiler/strmangle"
 )
 
 // templateData for sqlboiler templates

@@ -3,10 +3,18 @@
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/ann-kilzer/sqlboiler/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/ann-kilzer/sqlboiler?status.svg)](https://godoc.org/github.com/ann-kilzer/sqlboiler)
 [![Mail](https://img.shields.io/badge/mail%20list-sqlboiler-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler)
-[![Mail-Annc](https://img.shields.io/badge/mail%20list-sqlboiler--announce-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler-announce)
-[![Slack](https://img.shields.io/badge/slack-%23general-lightgrey.svg)](https://sqlboiler.from-the.cloud)
-[![CircleCI](https://circleci.com/gh/ann-kilzer/sqlboiler.svg?style=shield)](https://circleci.com/gh/ann-kilzer/sqlboiler)
-[![Go Report Card](https://goreportcard.com/badge/ann-kilzer/sqlboiler)](http://goreportcard.com/report/ann-kilzer/sqlboiler)
+
+
+## 🍴🍴🍴 Fork Notes 🍴🍴🍴
+
+This is a fork of the sqlboiler project with one key difference: Postgres numeric types are converted to strings
+instead of Float64. Be sure to reinstall this sqlboiler before running the command locally with your own project like so:
+
+```sh
+go install
+```
+
+## Overview
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 

@@ -16,7 +16,7 @@ import (
 	"github.com/volatiletech/sqlboiler/importers"
 )
 
-const sqlBoilerVersion = "2.6.0"
+const sqlBoilerVersion = "3.0.0-pre"
 
 var (
 	flagConfigFile string
@@ -87,7 +87,7 @@ func main() {
 	cobra.OnInitialize(initConfig)
 
 	// Set up the cobra root command flags
-	rootCmd.PersistentFlags().StringVar(&flagConfigFile, "config", "Supply the name of the config file to override the default lookup", "config file")
+	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")

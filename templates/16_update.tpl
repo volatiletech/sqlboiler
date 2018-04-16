@@ -56,11 +56,9 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		{{if eq .DriverName "mssql"}}
 		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
 		{{end}}
-		{{if not .NoAutoTimestamps}}
 		if len(whitelist) == 0 {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
+			wl = strmangle.SetComplement(wl, []string{"created_at","updated_at"})
 		}
-		{{end -}}
 		if len(wl) == 0 {
 			return errors.Err("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
 		}

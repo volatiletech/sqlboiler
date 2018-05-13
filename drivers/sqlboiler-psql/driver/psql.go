@@ -372,10 +372,13 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
 			c.DBType = c.DBType + *c.ArrType
 		case "USER-DEFINED":
-			if c.UDTName == "hstore" {
+			switch c.UDTName {
+			case "hstore":
 				c.Type = "types.HStore"
 				c.DBType = "hstore"
-			} else {
+			case "citext":
+				c.Type = "null.String"
+			default:
 				c.Type = "string"
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
@@ -411,10 +414,13 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
 			c.DBType = c.DBType + *c.ArrType
 		case "USER-DEFINED":
-			if c.UDTName == "hstore" {
+			switch c.UDTName {
+			case "hstore":
 				c.Type = "types.HStore"
 				c.DBType = "hstore"
-			} else {
+			case "citext":
+				c.Type = "string"
+			default:
 				c.Type = "string"
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}

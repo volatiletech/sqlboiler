@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
 CREATE TYPE workday AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
 CREATE TYPE faceyface AS ENUM('angry', 'hungry', 'bitter');
 
@@ -179,7 +181,9 @@ CREATE TABLE magic (
   iii txid_snapshot NULL,
   jjj txid_snapshot NOT NULL,
   kkk xml NULL,
-  lll xml NOT NULL
+  lll xml NOT NULL,
+  mmm citext NULL,
+  nnn citext NOT NULL
 );
 
 create table owner (

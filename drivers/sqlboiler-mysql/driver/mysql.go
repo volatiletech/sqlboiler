@@ -174,7 +174,7 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]drivers.Column, error
 				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ?;
+	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%';
 	`, tableName, schema)
 
 	if err != nil {

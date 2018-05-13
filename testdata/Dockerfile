@@ -19,12 +19,16 @@ RUN locale-gen en_US.UTF-8 \
 # Install database clients
 # MySQL 8.0 is still in development, so we're using 5.7 which is already
 # available in Ubuntu 16.04
+ENV COCKROACHDB_VERSION v2.0.0
 RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' > /etc/apt/sources.list.d/psql.list \
     && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
     && curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list > /etc/apt/sources.list.d/msprod.list \
     && apt-get update \
-    && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-9.6 mysql-client-5.7 mssql-tools unixodbc-dev
+    && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-9.6 mysql-client-5.7 mssql-tools unixodbc-dev \
+    && curl https://binaries.cockroachdb.com/${COCKROACHDB_VERSION}.linux-amd64.tgz | tar  xvz \
+    && cp -i cockroach-${COCKROACHDB_VERSION}.linux-amd64/cockroach /usr/local/bin \
+    && rm -fr cockroach-${COCKROACHDB_VERSION}.linux-amd64
 
 # Install Go + Go based tooling
 ENV GOLANG_VERSION 1.10

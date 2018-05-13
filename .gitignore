@@ -1,9 +1,8 @@
 /sqlboiler
-/sqlboiler-psql
-/sqlboiler-mysql
-/sqlboiler-mssql
+/sqlboiler-*
 /cmd/sqlboiler/sqlboiler
 sqlboiler.toml
 models/
 testschema.sql
 .cover
+testdata/env.mk

@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"flag"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"regexp"
 	"testing"
@@ -36,17 +37,17 @@ import (
 
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
-	flagHostname        = flag.String("hostname", "", "Connect to the server on the given host")
-	flagUsername        = flag.String("username", "", "Username to use when connecting to server")
-	flagPassword        = flag.String("password", "", "Password to use when connecting to server")
-	flagDatabase        = flag.String("database", "", "The database to use")
-
-	rgxKeyIDs = regexp.MustCompile(`__[A-F0-9]+$`)
+	rgxKeyIDs           = regexp.MustCompile(`__[A-F0-9]+$`)
 )
 
 func TestDriver(t *testing.T) {
+	hostname := "localhost"
+	database := os.Getenv("DRIVER_DB")
+	username := os.Getenv("DRIVER_USER")
+	password := os.Getenv("DRIVER_PASS")
+
 	out := &bytes.Buffer{}
-	createDB := exec.Command("sqlcmd", "-S", *flagHostname, "-U", *flagUsername, "-P", *flagPassword, "-d", *flagDatabase, "-b", "-i", "testdatabase.sql")
+	createDB := exec.Command("sqlcmd", "-S", hostname, "-U", username, "-P", password, "-d", database, "-b", "-i", "testdatabase.sql")
 	createDB.Stdout = out
 	createDB.Stderr = out
 
@@ -57,10 +58,10 @@ func TestDriver(t *testing.T) {
 	t.Logf("mssql output:\n%s\n", out.Bytes())
 
 	config := drivers.Config{
-		"user":    *flagUsername,
-		"pass":    *flagPassword,
-		"dbname":  *flagDatabase,
-		"host":    *flagHostname,
+		"user":    username,
+		"pass":    password,
+		"dbname":  database,
+		"host":    hostname,
 		"port":    1433,
 		"sslmode": "disable",
 		"schema":  "dbo",

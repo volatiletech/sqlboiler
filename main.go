@@ -189,6 +189,11 @@ func preRun(cmd *cobra.Command, args []string) error {
 		viper.SetDefault("mssql.sslmode", "true")
 		viper.SetDefault("mssql.port", 1433)
 		required = append(required, "schema")
+	case "crdb":
+		viper.SetDefault("crdb.schema", "public")
+		viper.SetDefault("crdb.port", 26257)
+		viper.SetDefault("crdb.sslmode", "require")
+		required = append(required, "schema")
 	}
 
 	if validationRules == nil {

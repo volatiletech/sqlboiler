@@ -2,19 +2,19 @@
 FROM ubuntu:16.04
 
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/opt/mssql-tools/bin
-ENV GODIST go1.8.linux-amd64.tar.gz
-
-# Set up locales for sqlcmd (otherwise it breaks)
-RUN locale-gen en_US.UTF-8 \
-    && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale \
-    && echo "LANG=en_US.UTF-8" >> /etc/default/locale
+ENV GODIST go1.10.2.linux-amd64.tar.gz
 
 # Install bootstrap-y tools
 RUN apt-get update \
     && apt-get install -y apt-transport-https software-properties-common python3-software-properties \
     && apt-add-repository ppa:git-core/ppa \
     && apt-get update \
-    && apt-get install -y curl git
+    && apt-get install -y curl git locales
+
+# Set up locales for sqlcmd (otherwise it breaks)
+RUN locale-gen en_US.UTF-8 \
+    && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale \
+    && echo "LANG=en_US.UTF-8" >> /etc/default/locale
 
 # Install database clients
 # MySQL 8.0 is still in development, so we're using 5.7 which is already

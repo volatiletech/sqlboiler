@@ -4,6 +4,8 @@ FROM ubuntu:16.04
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/opt/mssql-tools/bin
 ENV GODIST go1.8.linux-amd64.tar.gz
 
+RUN apt-get update \
+    && apt-get -y install locales
 # Set up locales for sqlcmd (otherwise it breaks)
 RUN locale-gen en_US.UTF-8 \
     && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale \

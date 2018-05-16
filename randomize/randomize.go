@@ -20,6 +20,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/volatiletech/sqlboiler/strmangle"
 	"github.com/volatiletech/sqlboiler/types"
+	"github.com/volatiletech/sqlboiler/types/pgeo"
 )
 
 var (
@@ -49,6 +50,20 @@ var (
 	typeFloat64Array = reflect.TypeOf(types.Float64Array{})
 	typeStringArray  = reflect.TypeOf(types.StringArray{})
 	typeHStore       = reflect.TypeOf(types.HStore{})
+	typePoint        = reflect.TypeOf(pgeo.Point{})
+	typeLine         = reflect.TypeOf(pgeo.Line{})
+	typeLseg         = reflect.TypeOf(pgeo.Lseg{})
+	typeBox          = reflect.TypeOf(pgeo.Box{})
+	typePath         = reflect.TypeOf(pgeo.Path{})
+	typePolygon      = reflect.TypeOf(pgeo.Polygon{})
+	typeCircle       = reflect.TypeOf(pgeo.Circle{})
+	typeNullPoint    = reflect.TypeOf(pgeo.NullPoint{})
+	typeNullLine     = reflect.TypeOf(pgeo.NullLine{})
+	typeNullLseg     = reflect.TypeOf(pgeo.NullLseg{})
+	typeNullBox      = reflect.TypeOf(pgeo.NullBox{})
+	typeNullPath     = reflect.TypeOf(pgeo.NullPath{})
+	typeNullPolygon  = reflect.TypeOf(pgeo.NullPolygon{})
+	typeNullCircle   = reflect.TypeOf(pgeo.NullCircle{})
 	rgxValidTime     = regexp.MustCompile(`[2-9]+`)
 
 	validatedTypes = []string{
@@ -261,6 +276,62 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				field.Set(reflect.ValueOf(value))
 				return nil
+			case typePoint:
+				value = pgeo.NewRandPoint()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeLine:
+				value = pgeo.NewRandLine()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeBox:
+				value = pgeo.NewRandBox()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typePolygon:
+				value = pgeo.NewRandPolygon()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeLseg:
+				value = pgeo.NewRandLseg()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeCircle:
+				value = pgeo.NewRandCircle()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typePath:
+				value = pgeo.NewRandPath()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullPoint:
+				value = pgeo.NewNullPoint(pgeo.NewRandPoint(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullLine:
+				value = pgeo.NewNullLine(pgeo.NewRandLine(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullBox:
+				value = pgeo.NewNullBox(pgeo.NewRandBox(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullPolygon:
+				value = pgeo.NewNullPolygon(pgeo.NewRandPolygon(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullLseg:
+				value = pgeo.NewNullLseg(pgeo.NewRandLseg(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullCircle:
+				value = pgeo.NewNullCircle(pgeo.NewRandCircle(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullPath:
+				value = pgeo.NewNullPath(pgeo.NewRandPath(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
 			}
 
 		} else {
@@ -337,6 +408,62 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				value := types.HStore{}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
 				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typePoint:
+				value = pgeo.NewRandPoint()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeLine:
+				value = pgeo.NewRandLine()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeBox:
+				value = pgeo.NewRandBox()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typePolygon:
+				value = pgeo.NewRandPolygon()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeLseg:
+				value = pgeo.NewRandLseg()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeCircle:
+				value = pgeo.NewRandCircle()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typePath:
+				value = pgeo.NewRandPath()
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullPoint:
+				value = pgeo.NewNullPoint(pgeo.NewRandPoint(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullLine:
+				value = pgeo.NewNullLine(pgeo.NewRandLine(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullBox:
+				value = pgeo.NewNullBox(pgeo.NewRandBox(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullPolygon:
+				value = pgeo.NewNullPolygon(pgeo.NewRandPolygon(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullLseg:
+				value = pgeo.NewNullLseg(pgeo.NewRandLseg(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullCircle:
+				value = pgeo.NewNullCircle(pgeo.NewRandCircle(), true)
+				field.Set(reflect.ValueOf(value))
+				return nil
+			case typeNullPath:
+				value = pgeo.NewNullPath(pgeo.NewRandPath(), true)
 				field.Set(reflect.ValueOf(value))
 				return nil
 			}

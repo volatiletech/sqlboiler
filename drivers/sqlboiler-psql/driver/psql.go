@@ -73,7 +73,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 
-	useSchema := schema == "public"
+	useSchema := schema != "public"
 
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.conn, err = sql.Open("postgres", p.connStr)

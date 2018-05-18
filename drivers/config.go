@@ -3,7 +3,11 @@
 
 package drivers
 
-import "github.com/pkg/errors"
+import (
+	"os"
+
+	"github.com/pkg/errors"
+)
 
 // Config is a map with helper functions
 type Config map[string]interface{}
@@ -135,4 +139,14 @@ func (c Config) StringSlice(key string) ([]string, bool) {
 	}
 
 	return slice, true
+}
+
+// DefaultEnv grabs a value from the environment or a default.
+// This is shared by drivers to get config for testing.
+func DefaultEnv(key, def string) string {
+	val := os.Getenv(key)
+	if len(val) == 0 {
+		val = def
+	}
+	return val
 }

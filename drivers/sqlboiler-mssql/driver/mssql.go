@@ -2,6 +2,7 @@ package driver
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"strings"
@@ -16,6 +17,8 @@ func init() {
 	drivers.RegisterFromInit("mssql", &MSSQLDriver{})
 }
 
+//go:generate go-bindata -pkg driver -prefix override override/...
+
 // Assemble is more useful for calling into the library so you don't
 // have to instantiate an empty type.
 func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
@@ -28,6 +31,22 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 type MSSQLDriver struct {
 	connStr string
 	conn    *sql.DB
+}
+
+// Templates that should be added/overridden
+func (MSSQLDriver) Templates() (map[string]string, error) {
+	names := AssetNames()
+	tpls := make(map[string]string)
+	for _, n := range names {
+		b, err := Asset(n)
+		if err != nil {
+			return nil, err
+		}
+
+		tpls[n] = base64.StdEncoding.EncodeToString(b)
+	}
+
+	return tpls, nil
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -64,12 +83,14 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	}()
 
 	dbinfo = &drivers.DBInfo{
+		Schema: schema,
 		Dialect: drivers.Dialect{
 			LQ: '[',
 			RQ: ']',
 
 			UseIndexPlaceholders: true,
 			UseTopClause:         true,
+			UseSchema:            true,
 		},
 	}
 	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)

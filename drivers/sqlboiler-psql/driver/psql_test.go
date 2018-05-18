@@ -23,10 +23,12 @@ import (
 
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
-	flagHostname        = flag.String("hostname", "", "Connect to the server on the given host")
-	flagUsername        = flag.String("username", "", "Username to use when connecting to server")
-	flagPassword        = flag.String("password", "", "Password to use when connecting to server")
-	flagDatabase        = flag.String("database", "", "The database to use")
+
+	envHostname = drivers.DefaultEnv("DRIVER_HOSTNAME", "localhost")
+	envPort     = drivers.DefaultEnv("DRIVER_PORT", "5432")
+	envUsername = drivers.DefaultEnv("DRIVER_USER", "sqlboiler_driver_user")
+	envPassword = drivers.DefaultEnv("DRIVER_PASS", "sqlboiler")
+	envDatabase = drivers.DefaultEnv("DRIVER_DB", "sqlboiler_driver_test")
 )
 
 func TestAssemble(t *testing.T) {
@@ -36,8 +38,8 @@ func TestAssemble(t *testing.T) {
 	}
 
 	out := &bytes.Buffer{}
-	createDB := exec.Command("psql", "-h", *flagHostname, "-U", *flagUsername, *flagDatabase)
-	createDB.Env = append([]string{fmt.Sprintf("PGPASSWORD=%s", *flagPassword)}, os.Environ()...)
+	createDB := exec.Command("psql", "-h", envHostname, "-U", envUsername, envDatabase)
+	createDB.Env = append([]string{fmt.Sprintf("PGPASSWORD=%s", envPassword)}, os.Environ()...)
 	createDB.Stdout = out
 	createDB.Stderr = out
 	createDB.Stdin = bytes.NewReader(b)
@@ -49,11 +51,11 @@ func TestAssemble(t *testing.T) {
 	t.Logf("psql output:\n%s\n", out.Bytes())
 
 	config := drivers.Config{
-		"user":    *flagUsername,
-		"pass":    *flagPassword,
-		"dbname":  *flagDatabase,
-		"host":    *flagHostname,
-		"port":    5432,
+		"user":    envUsername,
+		"pass":    envPassword,
+		"dbname":  envDatabase,
+		"host":    envHostname,
+		"port":    envPort,
 		"sslmode": "disable",
 		"schema":  "public",
 	}

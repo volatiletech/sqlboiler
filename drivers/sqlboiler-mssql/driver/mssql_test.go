@@ -36,17 +36,19 @@ import (
 
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
-	flagHostname        = flag.String("hostname", "", "Connect to the server on the given host")
-	flagUsername        = flag.String("username", "", "Username to use when connecting to server")
-	flagPassword        = flag.String("password", "", "Password to use when connecting to server")
-	flagDatabase        = flag.String("database", "", "The database to use")
+
+	envHostname = drivers.DefaultEnv("DRIVER_HOSTNAME", "localhost")
+	envPort     = drivers.DefaultEnv("DRIVER_PORT", "1433")
+	envUsername = drivers.DefaultEnv("DRIVER_USER", "sqlboiler_driver_user")
+	envPassword = drivers.DefaultEnv("DRIVER_PASS", "Sqlboiler@1234")
+	envDatabase = drivers.DefaultEnv("DRIVER_DB", "sqlboiler_driver_test")
 
 	rgxKeyIDs = regexp.MustCompile(`__[A-F0-9]+$`)
 )
 
 func TestDriver(t *testing.T) {
 	out := &bytes.Buffer{}
-	createDB := exec.Command("sqlcmd", "-S", *flagHostname, "-U", *flagUsername, "-P", *flagPassword, "-d", *flagDatabase, "-b", "-i", "testdatabase.sql")
+	createDB := exec.Command("sqlcmd", "-S", envHostname, "-U", envUsername, "-P", envPassword, "-d", envDatabase, "-b", "-i", "testdatabase.sql")
 	createDB.Stdout = out
 	createDB.Stderr = out
 
@@ -57,11 +59,11 @@ func TestDriver(t *testing.T) {
 	t.Logf("mssql output:\n%s\n", out.Bytes())
 
 	config := drivers.Config{
-		"user":    *flagUsername,
-		"pass":    *flagPassword,
-		"dbname":  *flagDatabase,
-		"host":    *flagHostname,
-		"port":    1433,
+		"user":    envUsername,
+		"pass":    envPassword,
+		"dbname":  envDatabase,
+		"host":    envHostname,
+		"port":    envPort,
 		"sslmode": "disable",
 		"schema":  "dbo",
 	}

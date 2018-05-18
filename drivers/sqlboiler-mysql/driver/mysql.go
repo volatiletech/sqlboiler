@@ -2,6 +2,7 @@ package driver
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"strconv"
 	"strings"
@@ -14,6 +15,8 @@ import (
 func init() {
 	drivers.RegisterFromInit("mysql", &MySQLDriver{})
 }
+
+//go:generate go-bindata -pkg driver -prefix override override/...
 
 // Assemble is more useful for calling into the library so you don't
 // have to instantiate an empty type.
@@ -29,6 +32,22 @@ type MySQLDriver struct {
 	conn    *sql.DB
 
 	tinyIntAsInt bool
+}
+
+// Templates that should be added/overridden
+func (MySQLDriver) Templates() (map[string]string, error) {
+	names := AssetNames()
+	tpls := make(map[string]string)
+	for _, n := range names {
+		b, err := Asset(n)
+		if err != nil {
+			return nil, err
+		}
+
+		tpls[n] = base64.StdEncoding.EncodeToString(b)
+	}
+
+	return tpls, nil
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -77,6 +96,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 			RQ: '`',
 
 			UseLastInsertID: true,
+			UseSchema:       false,
 		},
 	}
 

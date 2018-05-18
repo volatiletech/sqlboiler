@@ -74,7 +74,7 @@ func TestBinaryWarningDriver(t *testing.T) {
 	}
 
 	stderr := &bytes.Buffer{}
-	_, err = assemble(bin.Name(), nil, stderr)
+	err = execute(bin.Name(), "method", nil, nil, stderr)
 	if err != nil {
 		t.Error(err)
 	} else if !strings.Contains(stderr.String(), "warning binary") {
@@ -100,7 +100,7 @@ func TestBinaryBadDriver(t *testing.T) {
 	}
 
 	stderr := &bytes.Buffer{}
-	_, err = assemble(bin.Name(), nil, stderr)
+	err = execute(bin.Name(), "method", nil, nil, stderr)
 	if err == nil {
 		t.Error("it should have failed when the program exited 1")
 	} else if !strings.Contains(stderr.String(), "bad binary") {

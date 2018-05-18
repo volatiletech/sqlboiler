@@ -41,7 +41,7 @@ func DriverMain(driver Interface) {
 	case "templates":
 		templates, err := driver.Templates()
 		if err != nil {
-			fmt.Println(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 		output = templates

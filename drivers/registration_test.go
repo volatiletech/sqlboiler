@@ -11,6 +11,10 @@ func (t testRegistrationDriver) Assemble(config Config) (*DBInfo, error) {
 	}, nil
 }
 
+func (t testRegistrationDriver) Templates() (map[string]string, error) {
+	return nil, nil
+}
+
 func TestRegistration(t *testing.T) {
 	mock := testRegistrationDriver{}
 	RegisterFromInit("mock1", mock)

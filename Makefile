@@ -1,15 +1,14 @@
 # Everything in this make file assumes you have the ability
 # to run the commands as they are written (meaning .my.cnf and .pgpass
 # files set up with admin users) as well as the mssql db set up with
-# the sa / Sqlboiler@1234 credentials (see docker run below for example)
+# the sa / Sqlboiler@1234 credentials. See testdata/env.sh.
 
-USER=sqlboiler_root_user
-DB=sqlboiler_model_test
-PASS=sqlboiler
-MSSQLPASS=Sqlboiler@1234
+-include testdata/env.mk
 
-DRIVER_USER=sqlboiler_driver_user
-DRIVER_DB=sqlboiler_driver_test
+# Automatically import test related environments
+.PHONY: testdata/env.mk
+testdata/env.mk: testdata/env.sh
+	sed 's/"//g ; s/=/:=/' < $< > $@
 
 # Builds all software and runs model tests
 .PHONY: tests
@@ -67,50 +66,50 @@ test:
 .PHONY: test-user-psql
 test-user-psql:
 	# Can't use createuser because it interactively promtps for a password
-	psql --host localhost --username postgres --command "create user $(USER) with superuser password '$(PASS)';"
+	psql --host localhost --username postgres --command "create user $(SQLBOILER_TEST_USER) with superuser password '$(SQLBOILER_TEST_PASS)';"
 
 .PHONY: test-user-mysql
 test-user-mysql:
-	mysql --host localhost --execute "create user $(USER) identified by '$(PASS)';" 
-	mysql --host localhost --execute "grant all privileges on *.* to $(USER);" 
+	mysql --host localhost --execute "create user $(SQLBOILER_TEST_USER) identified by '$(SQLBOILER_TEST_PASS)';" 
+	mysql --host localhost --execute "grant all privileges on *.* to $(SQLBOILER_TEST_USER);" 
 
 # Must be run after a database is created
 .PHONY: test-user-mssql
 test-user-mssql:
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -Q "create login $(USER) with password = '$(MSSQLPASS)';"
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -Q "alter server role sysadmin add member $(USER);"
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -Q "create login $(SQLBOILER_TEST_USER) with password = '$(SQLBOILER_TEST_PASS)';"
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -Q "alter server role sysadmin add member $(SQLBOILER_TEST_USER);"
 
 .PHONY: test-db-psql
 test-db-psql:
-	env PGPASSWORD=$(PASS) dropdb --host localhost --username $(USER) --if-exists $(DB)
-	env PGPASSWORD=$(PASS) createdb --host localhost --owner $(USER) --username $(USER) $(DB)
-	env PGPASSWORD=$(PASS) psql --host localhost --username $(USER) --file testdata/psql_test_schema.sql $(DB)
+	env PGPASSWORD=$(SQLBOILER_TEST_PASS) dropdb --host localhost --username $(SQLBOILER_TEST_USER) --if-exists $(SQLBOILER_TEST_DB)
+	env PGPASSWORD=$(SQLBOILER_TEST_PASS) createdb --host localhost --owner $(SQLBOILER_TEST_USER) --username $(SQLBOILER_TEST_USER) $(SQLBOILER_TEST_DB)
+	env PGPASSWORD=$(SQLBOILER_TEST_PASS) psql --host localhost --username $(SQLBOILER_TEST_USER) --file testdata/psql_test_schema.sql $(SQLBOILER_TEST_DB)
 
 .PHONY: test-db-mysql
 test-db-mysql:
-	mysql --host localhost --user $(USER) --password=$(PASS) --execute "drop database if exists $(DB);"
-	mysql --host localhost --user $(USER) --password=$(PASS) --execute "create database $(DB);"
-	mysql --host localhost --user $(USER) --password=$(PASS) $(DB) < testdata/mysql_test_schema.sql
+	mysql --host localhost --user $(SQLBOILER_TEST_USER) --password=$(SQLBOILER_TEST_PASS) --execute "drop database if exists $(SQLBOILER_TEST_DB);"
+	mysql --host localhost --user $(SQLBOILER_TEST_USER) --password=$(SQLBOILER_TEST_PASS) --execute "create database $(SQLBOILER_TEST_DB);"
+	mysql --host localhost --user $(SQLBOILER_TEST_USER) --password=$(SQLBOILER_TEST_PASS) $(SQLBOILER_TEST_DB) < testdata/mysql_test_schema.sql
 
 .PHONY: test-db-mssql
 test-db-mssql:
-	sqlcmd -S localhost -U $(USER) -P $(MSSQLPASS) -Q "drop database if exists $(DB)";
-	sqlcmd -S localhost -U $(USER) -P $(MSSQLPASS) -Q "create database $(DB)";
-	sqlcmd -S localhost -U $(USER) -P $(MSSQLPASS) -d $(DB) -i testdata/mssql_test_schema.sql
+	sqlcmd -S localhost -U $(SQLBOILER_TEST_USER) -P $(SQLBOILER_TEST_PASS) -Q "drop database if exists $(SQLBOILER_TEST_DB)";
+	sqlcmd -S localhost -U $(SQLBOILER_TEST_USER) -P $(SQLBOILER_TEST_PASS) -Q "create database $(SQLBOILER_TEST_DB)";
+	sqlcmd -S localhost -U $(SQLBOILER_TEST_USER) -P $(SQLBOILER_TEST_PASS) -d $(SQLBOILER_TEST_DB) -i testdata/mssql_test_schema.sql
 
 .PHONY: test-generate-psql
 test-generate-psql:
-	printf "[psql]\nhost=\"localhost\"\nport=5432\nuser=\"%s\"\npass=\"%s\"\ndbname=\"%s\"\nsslmode=\"disable\"\n" $(USER) $(PASS) $(DB) > sqlboiler.toml
+	printf "[psql]\nhost=\"localhost\"\nport=5432\nuser=\"%s\"\npass=\"%s\"\ndbname=\"%s\"\nsslmode=\"disable\"\n" $(SQLBOILER_TEST_USER) $(SQLBOILER_TEST_PASS) $(SQLBOILER_TEST_DB) > sqlboiler.toml
 	./sqlboiler --wipe psql
 
 .PHONY: test-generate-mysql
 test-generate-mysql:
-	printf "[mysql]\nhost=\"localhost\"\nport=3306\nuser=\"%s\"\npass=\"%s\"\ndbname=\"%s\"\nsslmode=\"false\"\n" $(USER) $(PASS) $(DB) > sqlboiler.toml
+	printf "[mysql]\nhost=\"localhost\"\nport=3306\nuser=\"%s\"\npass=\"%s\"\ndbname=\"%s\"\nsslmode=\"false\"\n" $(SQLBOILER_TEST_USER) $(SQLBOILER_TEST_PASS) $(SQLBOILER_TEST_DB) > sqlboiler.toml
 	./sqlboiler --wipe mysql
 
 .PHONY: test-generate-mssql
 test-generate-mssql:
-	printf "[mssql]\nhost=\"localhost\"\nport=1433\nuser=\"%s\"\npass=\"%s\"\ndbname=\"%s\"\nsslmode=\"disable\"\n" $(USER) $(MSSQLPASS) $(DB) > sqlboiler.toml
+	printf "[mssql]\nhost=\"localhost\"\nport=1433\nuser=\"%s\"\npass=\"%s\"\ndbname=\"%s\"\nsslmode=\"disable\"\n" $(SQLBOILER_TEST_USER) $(SQLBOILER_TEST_PASS) $(SQLBOILER_TEST_DB) > sqlboiler.toml
 	./sqlboiler --wipe mssql 
 
 .PHONY: test-psql
@@ -131,45 +130,45 @@ test-mssql:
 
 .PHONY: driver-db-psql
 driver-db-psql:
-	env PGPASSWORD=$(PASS) createdb --host localhost --username $(USER) --owner $(USER) $(DRIVER_DB)
+	env PGPASSWORD=$(SQLBOILER_TEST_PASS) createdb --host localhost --username $(SQLBOILER_TEST_USER) --owner $(SQLBOILER_TEST_USER) $(SQLBOILER_TEST_DRIVER_DB)
 
 .PHONY: driver-db-mysql
 driver-db-mysql:
-	mysql --host localhost --user $(USER) --password=$(PASS) --execute "create database $(DRIVER_DB);"
+	mysql --host localhost --user $(SQLBOILER_TEST_USER) --password=$(SQLBOILER_TEST_PASS) --execute "create database $(SQLBOILER_TEST_DRIVER_DB);"
 
 .PHONY: driver-db-mssql
 driver-db-mssql:
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -Q "create database $(DRIVER_DB);"
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -d $(DRIVER_DB) -Q "exec sp_configure 'contained database authentication', 1;"
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -d $(DRIVER_DB) -Q "reconfigure"
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -d $(DRIVER_DB) -Q "alter database $(DRIVER_DB) set containment = partial;"
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -Q "create database $(SQLBOILER_TEST_DRIVER_DB);"
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -d $(SQLBOILER_TEST_DRIVER_DB) -Q "exec sp_configure 'contained database authentication', 1;"
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -d $(SQLBOILER_TEST_DRIVER_DB) -Q "reconfigure"
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -d $(SQLBOILER_TEST_DRIVER_DB) -Q "alter database $(SQLBOILER_TEST_DRIVER_DB) set containment = partial;"
 
 .PHONY: driver-user-psql
 driver-user-psql:
-	env PGPASSWORD=$(PASS) psql --host localhost --username $(USER) --command "create role $(DRIVER_USER) login nocreatedb nocreaterole password '$(PASS)';" $(DRIVER_DB)
-	env PGPASSWORD=$(PASS) psql --host localhost --username $(USER) --command "alter database $(DRIVER_DB) owner to $(DRIVER_USER);" $(DRIVER_DB)
+	env PGPASSWORD=$(SQLBOILER_TEST_PASS) psql --host localhost --username $(SQLBOILER_TEST_USER) --command "create role $(SQLBOILER_TEST_DRIVER_USER) login nocreatedb nocreaterole password '$(SQLBOILER_TEST_PASS)';" $(SQLBOILER_TEST_DRIVER_DB)
+	env PGPASSWORD=$(SQLBOILER_TEST_PASS) psql --host localhost --username $(SQLBOILER_TEST_USER) --command "alter database $(SQLBOILER_TEST_DRIVER_DB) owner to $(SQLBOILER_TEST_DRIVER_USER);" $(SQLBOILER_TEST_DRIVER_DB)
 
 .PHONY: driver-user-mysql
 driver-user-mysql:
-	mysql --host localhost --execute "create user $(DRIVER_USER) identified by '$(PASS)';" 
-	mysql --host localhost --execute "grant all privileges on $(DRIVER_DB).* to $(DRIVER_USER);" 
+	mysql --host localhost --execute "create user $(SQLBOILER_TEST_DRIVER_USER) identified by '$(SQLBOILER_TEST_PASS)';" 
+	mysql --host localhost --execute "grant all privileges on $(SQLBOILER_TEST_DRIVER_DB).* to $(SQLBOILER_TEST_DRIVER_USER);" 
 
 .PHONY: driver-user-mssql
 driver-user-mssql:
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -d $(DRIVER_DB) -Q "create user $(DRIVER_USER) with password = '$(MSSQLPASS)'";
-	sqlcmd -S localhost -U sa -P $(MSSQLPASS) -d $(DRIVER_DB) -Q "grant alter, control to $(DRIVER_USER)";
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -d $(SQLBOILER_TEST_DRIVER_DB) -Q "create user $(SQLBOILER_TEST_DRIVER_USER) with password = '$(SQLBOILER_TEST_PASS)'";
+	sqlcmd -S localhost -U sa -P $(SQLBOILER_TEST_PASS) -d $(SQLBOILER_TEST_DRIVER_DB) -Q "grant alter, control to $(SQLBOILER_TEST_DRIVER_USER)";
 
 .PHONY: driver-test-psql
 driver-test-psql:
-	go test -v -race github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql/driver -hostname localhost -username $(DRIVER_USER) -password $(PASS) -database $(DRIVER_DB)
+	DRIVER_DB=$(SQLBOILER_TEST_DRIVER_DB) DRIVER_USER=$(SQLBOILER_TEST_DRIVER_USER) DRIVER_PASS=$(SQLBOILER_TEST_DRIVER_PASS) go test -v -race github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql/driver
 
 .PHONY: driver-test-mysql
 driver-test-mysql:
-	go test -v -race github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver -hostname localhost -username $(DRIVER_USER) -password $(PASS) -database $(DRIVER_DB)
+	DRIVER_DB=$(SQLBOILER_TEST_DRIVER_DB) DRIVER_USER=$(SQLBOILER_TEST_DRIVER_USER) DRIVER_PASS=$(SQLBOILER_TEST_DRIVER_PASS) go test -v -race github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver
 
 .PHONY: driver-test-mssql
 driver-test-mssql:
-	go test -v -race github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql/driver -hostname localhost -username $(DRIVER_USER) -password $(MSSQLPASS) -database $(DRIVER_DB)
+	DRIVER_DB=$(SQLBOILER_TEST_DRIVER_DB) DRIVER_USER=$(SQLBOILER_TEST_DRIVER_USER) DRIVER_PASS=$(SQLBOILER_TEST_DRIVER_PASS) go test -v -race github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql/driver
 	
 # ====================================
 # Clean operations

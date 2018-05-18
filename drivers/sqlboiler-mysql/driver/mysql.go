@@ -44,10 +44,10 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	pass := config.MustString(drivers.ConfigPass)
 	dbname := config.MustString(drivers.ConfigDBName)
 	host := config.MustString(drivers.ConfigHost)
-	port := config.MustInt(drivers.ConfigPort)
-	sslmode := config.MustString(drivers.ConfigSSLMode)
+	port := config.DefaultInt(drivers.ConfigPort, 3306)
+	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
 
-	schema, _ := config.String(drivers.ConfigSchema)
+	schema := dbname
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 

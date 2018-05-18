@@ -43,10 +43,10 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	pass := config.MustString(drivers.ConfigPass)
 	dbname := config.MustString(drivers.ConfigDBName)
 	host := config.MustString(drivers.ConfigHost)
-	port := config.MustInt(drivers.ConfigPort)
-	sslmode := config.MustString(drivers.ConfigSSLMode)
+	port := config.DefaultInt(drivers.ConfigPort, 1433)
+	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
 
-	schema := config.MustString(drivers.ConfigSchema)
+	schema := config.DefaultString(drivers.ConfigSchema, "dbo")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 

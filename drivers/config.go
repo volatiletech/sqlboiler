@@ -71,6 +71,16 @@ func (c Config) String(key string) (string, bool) {
 	return str, true
 }
 
+// DefaultString retrieves a non-empty string or the default value provided.
+func (c Config) DefaultString(key, def string) string {
+	str, ok := c.String(key)
+	if !ok {
+		return def
+	}
+
+	return str
+}
+
 // Int retrieves an int, the bool says if it exists, is of the appropriate type,
 // and is non-zero. Coerces float64 to int because JSON and Javascript kinda suck.
 func (c Config) Int(key string) (int, bool) {
@@ -94,6 +104,16 @@ func (c Config) Int(key string) (int, bool) {
 	}
 
 	return integer, true
+}
+
+// DefaultInt retrieves a non-zero int or the default value provided.
+func (c Config) DefaultInt(key string, def int) int {
+	i, ok := c.Int(key)
+	if !ok {
+		return def
+	}
+
+	return i
 }
 
 // StringSlice retrieves an string slice, the bool says if it exists, is of the appropriate type,

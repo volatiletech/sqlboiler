@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kat-co/vala"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -168,43 +167,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 	cmdConfig.DriverConfig = map[string]interface{}{
 		"whitelist": viper.GetStringSlice(driverName + ".whitelist"),
 		"blacklist": viper.GetStringSlice(driverName + ".blacklist"),
-	}
-
-	var validationRules []vala.Checker
-	required := []string{"user", "host", "port", "dbname", "sslmode"}
-
-	//TODO(aarondl): Move these defaults into the drivers themselves, why are they here again? :D
-	switch driverName {
-	case "psql":
-		viper.SetDefault("psql.schema", "public")
-		viper.SetDefault("psql.port", 5432)
-		viper.SetDefault("psql.sslmode", "require")
-		required = append(required, "schema")
-	case "mysql":
-		viper.Set("mysql.schema", viper.GetString("mysql.dbname"))
-		viper.SetDefault("mysql.sslmode", "true")
-		viper.SetDefault("mysql.port", 3306)
-	case "mssql":
-		viper.SetDefault("mssql.schema", "dbo")
-		viper.SetDefault("mssql.sslmode", "true")
-		viper.SetDefault("mssql.port", 1433)
-		required = append(required, "schema")
-	}
-
-	if validationRules == nil {
-		for _, r := range required {
-			key := fmt.Sprintf("%s.%s", driverName, r)
-			switch r {
-			case "port":
-				validationRules = append(validationRules, vala.Not(vala.Equals(viper.GetInt(key), 0, key)))
-			default:
-				validationRules = append(validationRules, vala.StringNotEmpty(viper.GetString(key), key))
-			}
-		}
-	}
-
-	if err := vala.BeginValidation().Validate(validationRules...).Check(); err != nil {
-		return commandFailure(err.Error())
 	}
 
 	keys := allKeys(driverName)

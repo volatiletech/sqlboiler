@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
-	"text/template"
 
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/drivers"
@@ -32,6 +32,7 @@ type State struct {
 	Config *Config
 
 	Driver  drivers.Interface
+	Schema  string
 	Tables  []drivers.Table
 	Dialect drivers.Dialect
 
@@ -39,8 +40,6 @@ type State struct {
 	TestTemplates          *templateList
 	SingletonTemplates     *templateList
 	SingletonTestTemplates *templateList
-
-	TestMainTemplate *template.Template
 }
 
 // New creates a new state based off of the config
@@ -49,19 +48,9 @@ func New(config *Config) (*State, error) {
 		Config: config,
 	}
 
-	// Pull one value out to the top level
-	schemaIntf, ok := s.Config.DriverConfig[drivers.ConfigSchema]
-	if !ok {
-		return nil, errors.New("schema was not defined in the driver config")
-	} else if schema, ok := schemaIntf.(string); !ok {
-		return nil, errors.New("schema in the config was not a string")
-	} else {
-		s.Config.Schema = schema
-	}
-
 	s.Driver = drivers.GetDriver(config.DriverName)
 
-	err := s.initTables(config.DriverConfig)
+	err := s.initDBInfo(config.DriverConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -94,10 +83,9 @@ func New(config *Config) (*State, error) {
 
 // Run executes the sqlboiler templates and outputs them to files based on the
 // state given.
-func (s *State) Run(includeTests bool) error {
+func (s *State) Run() error {
 	singletonData := &templateData{
 		Tables:           s.Tables,
-		Schema:           s.Config.Schema,
 		DriverName:       s.Config.DriverName,
 		PkgName:          s.Config.PkgName,
 		NoHooks:          s.Config.NoHooks,
@@ -114,11 +102,7 @@ func (s *State) Run(includeTests bool) error {
 		return errors.Wrap(err, "singleton template output")
 	}
 
-	if !s.Config.NoTests && includeTests {
-		if err := generateTestMainOutput(s, singletonData); err != nil {
-			return errors.Wrap(err, "unable to generate TestMain output")
-		}
-
+	if !s.Config.NoTests {
 		if err := generateSingletonTestOutput(s, singletonData); err != nil {
 			return errors.Wrap(err, "unable to generate singleton test template output")
 		}
@@ -132,7 +116,6 @@ func (s *State) Run(includeTests bool) error {
 		data := &templateData{
 			Tables:           s.Tables,
 			Table:            table,
-			Schema:           s.Config.Schema,
 			DriverName:       s.Config.DriverName,
 			PkgName:          s.Config.PkgName,
 			NoHooks:          s.Config.NoHooks,
@@ -152,7 +135,7 @@ func (s *State) Run(includeTests bool) error {
 		}
 
 		// Generate the test templates
-		if !s.Config.NoTests && includeTests {
+		if !s.Config.NoTests {
 			if err := generateTestOutput(s, data); err != nil {
 				return errors.Wrap(err, "unable to generate test output")
 			}
@@ -177,41 +160,26 @@ func (s *State) initTemplates() error {
 		return err
 	}
 
-	s.Templates, err = loadTemplates(filepath.Join(basePath, templatesDirectory))
+	templates, err := findTemplates(basePath, templatesDirectory)
+	if err != nil {
+		return err
+	}
+	testTemplates, err := findTemplates(basePath, templatesTestDirectory)
 	if err != nil {
 		return err
 	}
 
-	s.SingletonTemplates, err = loadTemplates(filepath.Join(basePath, templatesSingletonDirectory))
+	for k, v := range testTemplates {
+		templates[k] = v
+	}
+
+	driverTemplates, err := s.Driver.Templates()
 	if err != nil {
 		return err
 	}
 
-	if !s.Config.NoTests {
-		s.TestTemplates, err = loadTemplates(filepath.Join(basePath, templatesTestDirectory))
-		if err != nil {
-			return err
-		}
-
-		s.SingletonTestTemplates, err = loadTemplates(filepath.Join(basePath, templatesSingletonTestDirectory))
-		if err != nil {
-			return err
-		}
-
-		s.TestMainTemplate, err = loadTemplate(filepath.Join(basePath, templatesTestMainDirectory), s.Config.DriverName+"_main.tpl")
-		if err != nil {
-			return err
-		}
-	}
-
-	return s.processReplacements()
-}
-
-// processReplacements loads any replacement templates
-func (s *State) processReplacements() error {
-	basePath, err := getBasePath(s.Config.BaseDir)
-	if err != nil {
-		return err
+	for template, contents := range driverTemplates {
+		templates[template] = base64Loader(contents)
 	}
 
 	for _, replace := range s.Config.Replacements {
@@ -220,47 +188,95 @@ func (s *State) processReplacements() error {
 			return errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)
 		}
 
-		var toReplaceFname string
-		toReplace, replaceWith := splits[0], splits[1]
+		original, replacement := splits[0], splits[1]
 
-		inf, err := os.Stat(filepath.Join(basePath, toReplace))
+		_, ok := templates[original]
+		if !ok {
+			return errors.Errorf("replace can only replace existing templates, %s does not exist", original)
+		}
+
+		templates[original] = fileLoader(replacement)
+	}
+
+	// For stability, sort keys to traverse the map and turn it into a slice
+	keys := make([]string, 0, len(templates))
+	for k := range templates {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	lazyTemplates := make([]lazyTemplate, 0, len(templates))
+	for _, k := range keys {
+		lazyTemplates = append(lazyTemplates, lazyTemplate{
+			Name:   k,
+			Loader: templates[k],
+		})
+	}
+
+	if s.Config.Debug {
+		b, err := json.Marshal(lazyTemplates)
 		if err != nil {
-			return errors.Errorf("cannot stat %q", toReplace)
+			return errors.Wrap(err, "unable to json marshal template list")
 		}
-		if inf.IsDir() {
-			return errors.Errorf("replace argument must be a path to a file not a dir: %q", toReplace)
-		}
-		toReplaceFname = inf.Name()
 
-		inf, err = os.Stat(replaceWith)
+		fmt.Printf("%s\n", b)
+	}
+
+	s.Templates, err = loadTemplates(lazyTemplates, templatesDirectory)
+	if err != nil {
+		return err
+	}
+
+	s.SingletonTemplates, err = loadTemplates(lazyTemplates, templatesSingletonDirectory)
+	if err != nil {
+		return err
+	}
+
+	if !s.Config.NoTests {
+		s.TestTemplates, err = loadTemplates(lazyTemplates, templatesTestDirectory)
 		if err != nil {
-			return errors.Errorf("cannot stat %q", replaceWith)
-		}
-		if inf.IsDir() {
-			return errors.Errorf("replace argument must be a path to a file not a dir: %q", replaceWith)
+			return err
 		}
 
-		switch filepath.Dir(toReplace) {
-		case templatesDirectory:
-			err = replaceTemplate(s.Templates.Template, toReplaceFname, replaceWith)
-		case templatesSingletonDirectory:
-			err = replaceTemplate(s.SingletonTemplates.Template, toReplaceFname, replaceWith)
-		case templatesTestDirectory:
-			err = replaceTemplate(s.TestTemplates.Template, toReplaceFname, replaceWith)
-		case templatesSingletonTestDirectory:
-			err = replaceTemplate(s.SingletonTestTemplates.Template, toReplaceFname, replaceWith)
-		case templatesTestMainDirectory:
-			err = replaceTemplate(s.TestMainTemplate, toReplaceFname, replaceWith)
-		default:
-			return errors.Errorf("replace file's directory not part of any known folder: %s", toReplace)
-		}
-
+		s.SingletonTestTemplates, err = loadTemplates(lazyTemplates, templatesSingletonTestDirectory)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// findTemplates uses a base path: (/home/user/gopath/src/../sqlboiler/)
+// and a root path: /templates
+// to create a bunch of file loaders of the form:
+// templates/00_struct.tpl -> /absolute/path/to/that/file
+// Note the missing leading slash, this is important for the --replace argument
+func findTemplates(base, root string) (map[string]templateLoader, error) {
+	templates := make(map[string]templateLoader)
+	baseRoot := filepath.Join(base, root)
+	err := filepath.Walk(baseRoot, func(path string, fi os.FileInfo, err error) error {
+		if fi.IsDir() {
+			return nil
+		}
+
+		if ext := filepath.Ext(path); ext == ".tpl" {
+			relative, err := filepath.Rel(base, path)
+			if err != nil {
+				return errors.Wrapf(err, "could not find relative path to base root: %s", baseRoot)
+			}
+			relative = strings.TrimLeft(relative, string(os.PathSeparator))
+			templates[relative] = fileLoader(path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return templates, nil
 }
 
 var basePackage = "github.com/volatiletech/sqlboiler"
@@ -278,8 +294,8 @@ func getBasePath(baseDirConfig string) (string, error) {
 	return os.Getwd()
 }
 
-// initTables retrieves all table names from the database.
-func (s *State) initTables(config map[string]interface{}) error {
+// initDBInfo retrieves information about the database
+func (s *State) initDBInfo(config map[string]interface{}) error {
 	dbInfo, err := s.Driver.Assemble(config)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
@@ -293,6 +309,7 @@ func (s *State) initTables(config map[string]interface{}) error {
 		return err
 	}
 
+	s.Schema = dbInfo.Schema
 	s.Tables = dbInfo.Tables
 	s.Dialect = dbInfo.Dialect
 

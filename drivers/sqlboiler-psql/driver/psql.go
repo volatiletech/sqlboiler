@@ -5,6 +5,7 @@ package driver
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strings"
@@ -16,6 +17,8 @@ import (
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
 )
+
+//go:generate go-bindata -pkg driver -prefix override override/...
 
 func init() {
 	drivers.RegisterFromInit("psql", &PostgresDriver{})
@@ -33,6 +36,22 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 type PostgresDriver struct {
 	connStr string
 	conn    *sql.DB
+}
+
+// Templates that should be added/overridden
+func (p PostgresDriver) Templates() (map[string]string, error) {
+	names := AssetNames()
+	tpls := make(map[string]string)
+	for _, n := range names {
+		b, err := Asset(n)
+		if err != nil {
+			return nil, err
+		}
+
+		tpls[n] = base64.StdEncoding.EncodeToString(b)
+	}
+
+	return tpls, nil
 }
 
 // Assemble all the information we need to provide back to the driver
@@ -54,6 +73,8 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 
+	useSchema := schema == "public"
+
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.conn, err = sql.Open("postgres", p.connStr)
 	if err != nil {
@@ -68,11 +89,13 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	}()
 
 	dbinfo = &drivers.DBInfo{
+		Schema: schema,
 		Dialect: drivers.Dialect{
 			LQ: '"',
 			RQ: '"',
 
 			UseIndexPlaceholders: true,
+			UseSchema:            useSchema,
 		},
 	}
 	dbinfo.Tables, err = drivers.Tables(p, schema, whitelist, blacklist)

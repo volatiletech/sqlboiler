@@ -29,7 +29,7 @@ var (
 	flagDatabase        = flag.String("database", "", "The database to use")
 )
 
-func TestDriver(t *testing.T) {
+func TestAssemble(t *testing.T) {
 	b, err := ioutil.ReadFile("testdatabase.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +37,7 @@ func TestDriver(t *testing.T) {
 
 	out := &bytes.Buffer{}
 	createDB := exec.Command("psql", "-h", *flagHostname, "-U", *flagUsername, *flagDatabase)
-	createDB.Env = append([]string{fmt.Sprintf("PGPASSWORD=\"%s\"", *flagPassword)}, os.Environ()...)
+	createDB.Env = append([]string{fmt.Sprintf("PGPASSWORD=%s", *flagPassword)}, os.Environ()...)
 	createDB.Stdout = out
 	createDB.Stderr = out
 	createDB.Stdin = bytes.NewReader(b)

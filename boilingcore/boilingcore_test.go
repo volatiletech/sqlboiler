@@ -45,6 +45,7 @@ func TestNew(t *testing.T) {
 		DriverName: "mock",
 		PkgName:    "models",
 		OutFolder:  out,
+		NoTests:    true,
 		DriverConfig: map[string]interface{}{
 			drivers.ConfigSchema:    "schema",
 			drivers.ConfigBlacklist: []string{"hangars"},
@@ -57,7 +58,7 @@ func TestNew(t *testing.T) {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}
 
-	if err = state.Run(false); err != nil {
+	if err = state.Run(); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 

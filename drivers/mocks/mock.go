@@ -12,6 +12,11 @@ func init() {
 // MockDriver is a mock implementation of the bdb driver Interface
 type MockDriver struct{}
 
+// Templates returns the overriding templates for the driver
+func (m *MockDriver) Templates() (map[string]string, error) {
+	return nil, nil
+}
+
 // Assemble the DBInfo
 func (m *MockDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 	dbinfo = &drivers.DBInfo{

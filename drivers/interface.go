@@ -26,11 +26,15 @@ const (
 // Interface abstracts either a side-effect imported driver or a binary
 // that is called in order to produce the data required for generation.
 type Interface interface {
+	// Assemble the database information into a nice struct
 	Assemble(config Config) (*DBInfo, error)
+	// Templates to add/replace for generation
+	Templates() (map[string]string, error)
 }
 
 // DBInfo is the database's table data and dialect.
 type DBInfo struct {
+	Schema  string  `json:"schema"`
 	Tables  []Table `json:"tables"`
 	Dialect Dialect `json:"dialect"`
 }
@@ -44,6 +48,7 @@ type Dialect struct {
 	UseIndexPlaceholders bool `json:"use_index_placeholders"`
 	UseLastInsertID      bool `json:"use_last_insert_id"`
 	UseTopClause         bool `json:"use_top_clause"`
+	UseSchema            bool `json:"use_schema"`
 }
 
 // Constructor breaks down the functionality required to implement a driver

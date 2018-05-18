@@ -166,29 +166,6 @@ func executeSingletonTemplates(e executeTemplateData) error {
 	return nil
 }
 
-func generateTestMainOutput(state *State, data *templateData) error {
-	if state.TestMainTemplate == nil {
-		return errors.New("No TestMain template located for generation")
-	}
-
-	out := templateByteBuffer
-	out.Reset()
-
-	var imps importers.Set
-	imps.Standard = state.Config.Imports.TestMain[state.Config.DriverName].Standard
-	imps.ThirdParty = state.Config.Imports.TestMain[state.Config.DriverName].ThirdParty
-
-	writeFileDisclaimer(out)
-	writePackageName(out, state.Config.PkgName)
-	writeImports(out, imps)
-
-	if err := executeTemplate(out, state.TestMainTemplate, state.TestMainTemplate.Name(), data); err != nil {
-		return err
-	}
-
-	return writeFile(state.Config.OutFolder, "main_test.go", out)
-}
-
 // writeFileDisclaimer writes the disclaimer at the top with a trailing
 // newline so the package name doesn't get attached to it.
 func writeFileDisclaimer(out *bytes.Buffer) {

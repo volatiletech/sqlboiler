@@ -10,7 +10,6 @@ type Config struct {
 	DriverName   string
 	DriverConfig drivers.Config
 
-	Schema           string
 	PkgName          string
 	OutFolder        string
 	BaseDir          string

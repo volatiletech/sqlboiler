@@ -24,7 +24,7 @@ var (
 )
 
 func initConfig() {
-	if len(flagConfigFile) == 0 {
+	if len(flagConfigFile) != 0 {
 		viper.SetConfigFile(flagConfigFile)
 		if err := viper.ReadInConfig(); err != nil {
 			fmt.Println("Can't read config:", err)
@@ -221,7 +221,7 @@ func configureImports() importers.Collection {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	return cmdState.Run(true)
+	return cmdState.Run()
 }
 
 func postRun(cmd *cobra.Command, args []string) error {

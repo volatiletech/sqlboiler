@@ -1,6 +1,7 @@
 package boilingcore
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -50,7 +51,7 @@ func (t templateData) Quotes(s string) string {
 }
 
 func (t templateData) SchemaTable(table string) string {
-	return strmangle.SchemaTable(t.LQ, t.RQ, t.DriverName, t.Schema, table)
+	return strmangle.SchemaTable(t.LQ, t.RQ, t.Dialect.UseSchema, t.Schema, table)
 }
 
 type templateList struct {
@@ -101,47 +102,56 @@ func (t templateList) Templates() []string {
 	return ret
 }
 
-// loadTemplates loads all of the template files in the specified directory.
-func loadTemplates(dir string) (*templateList, error) {
-	pattern := filepath.Join(dir, "*.tpl")
-	tpl, err := template.New("").Funcs(templateFunctions).ParseGlob(pattern)
+func loadTemplates(lazyTemplates []lazyTemplate, filterPrefix string) (*templateList, error) {
+	tpl := template.New("")
 
-	if err != nil {
-		return nil, err
+	for _, t := range lazyTemplates {
+		if filepath.Dir(t.Name) != filterPrefix {
+			continue
+		}
+
+		byt, err := t.Loader.Load()
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to load template: %s", t.Name)
+		}
+
+		_, err = tpl.New(filepath.Base(t.Name)).Funcs(templateFunctions).Parse(string(byt))
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse template: %s", t.Name)
+		}
 	}
 
-	return &templateList{Template: tpl}, err
+	return &templateList{Template: tpl}, nil
 }
 
-// loadTemplate loads a single template file
-func loadTemplate(dir string, filename string) (*template.Template, error) {
-	pattern := filepath.Join(dir, filename)
-	tpl, err := template.New("").Funcs(templateFunctions).ParseFiles(pattern)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return tpl.Lookup(filename), err
+type lazyTemplate struct {
+	Name   string         `json:"name"`
+	Loader templateLoader `json:"loader"`
 }
 
-// replaceTemplate finds the template matching with name and replaces its
-// contents with the contents of the template located at filename
-func replaceTemplate(tpl *template.Template, name, filename string) error {
-	if tpl == nil {
-		return fmt.Errorf("template for %s is nil", name)
-	}
+type templateLoader interface {
+	Load() ([]byte, error)
+}
 
-	b, err := ioutil.ReadFile(filename)
+type fileLoader string
+
+func (f fileLoader) Load() ([]byte, error) {
+	fname := string(f)
+	b, err := ioutil.ReadFile(fname)
 	if err != nil {
-		return errors.Wrapf(err, "failed reading template file: %s", filename)
+		return nil, errors.Wrapf(err, "failed to load template: %s", fname)
 	}
+	return b, nil
+}
 
-	if tpl, err = tpl.New(name).Funcs(templateFunctions).Parse(string(b)); err != nil {
-		return errors.Wrapf(err, "failed to parse template file: %s", filename)
+type base64Loader string
+
+func (b base64Loader) Load() ([]byte, error) {
+	byt, err := base64.StdEncoding.DecodeString(string(b))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode driver's template, should be base64)")
 	}
-
-	return nil
+	return byt, nil
 }
 
 // set is to stop duplication from named enums, allowing a template loop

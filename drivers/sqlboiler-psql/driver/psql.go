@@ -48,9 +48,9 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	pass := config.MustString(drivers.ConfigPass)
 	dbname := config.MustString(drivers.ConfigDBName)
 	host := config.MustString(drivers.ConfigHost)
-	port := config.IntDefault(drivers.ConfigPort, 5432)
-	sslmode := config.StringDefault(drivers.ConfigSSLMode, "require")
-	schema := config.StringDefault(drivers.ConfigSchema, "public")
+	port := config.DefaultInt(drivers.ConfigPort, 5432)
+	sslmode := config.DefaultString(drivers.ConfigSSLMode, "require")
+	schema := config.DefaultString(drivers.ConfigSchema, "public")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 

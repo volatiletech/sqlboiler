@@ -10,6 +10,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/importers"
 )
 
 func init() {
@@ -422,4 +423,91 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 	}
 
 	return c
+}
+
+// Imports returns important imports for the driver
+func (MySQLDriver) Imports() (col importers.Collection, err error) {
+	col.TestSingleton = importers.Map{
+		"mysql_main": {
+			Standard: importers.List{
+				`"bytes"`,
+				`"database/sql"`,
+				`"fmt"`,
+				`"io"`,
+				`"io/ioutil"`,
+				`"os"`,
+				`"os/exec"`,
+				`"strings"`,
+			},
+			ThirdParty: importers.List{
+				`"github.com/pkg/errors"`,
+				`"github.com/spf13/viper"`,
+				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver"`,
+				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`_ "github.com/go-sql-driver/mysql"`,
+			},
+		},
+	}
+
+	col.BasedOnType = importers.Map{
+		"null.Float32": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Float64": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Int": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Int8": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Int16": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Int32": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Int64": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Uint": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Uint8": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Uint16": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Uint32": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Uint64": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.String": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Bool": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Time": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"null.Bytes": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+
+		"time.Time": {
+			Standard: importers.List{`"time"`},
+		},
+		"null.JSON": {
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+		},
+		"types.JSON": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+		},
+	}
+	return col, err
 }

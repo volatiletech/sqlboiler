@@ -252,45 +252,6 @@ func NewDefaultImports() Collection {
 		},
 	}
 
-	/*col.TestMain = Map{
-		"mysql": {
-			Standard: List{
-				`"bytes"`,
-				`"database/sql"`,
-				`"fmt"`,
-				`"io"`,
-				`"io/ioutil"`,
-				`"os"`,
-				`"os/exec"`,
-				`"strings"`,
-			},
-			ThirdParty: List{
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
-				`_ "github.com/go-sql-driver/mysql"`,
-			},
-		},
-		"mssql": {
-			Standard: List{
-				`"bytes"`,
-				`"database/sql"`,
-				`"fmt"`,
-				`"os"`,
-				`"os/exec"`,
-				`"strings"`,
-			},
-			ThirdParty: List{
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql/driver"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
-				`_ "github.com/denisenkom/go-mssqldb"`,
-			},
-		},
-	}*/
-
 	return col
 }
 

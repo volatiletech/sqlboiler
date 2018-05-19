@@ -8,22 +8,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Add support for geotyepes for psql (thanks @saulortega)
-- Add a boil.sh that includes many commands that help build and test sqlboiler
 - Add a flag to set the config file (thanks @l4u)
-- Add ability for drivers to provide their own templates/replacement templates
 - Add support for citext to psql (thanks @boxofrad)
-- Ignore virtual columns in mysql (thanks @Nykakin)
+- Add virtual columns ignoring for mysql (thanks @Nykakin)
+- Add ability for drivers to provide their own templates/replacement templates
+- Add ability for drivers to specify imports
+- Add a boil.sh that includes many commands that help build and test sqlboiler
 
 ### Changed
 
+#### Driver split
+
+Drivers are now separate binaries. A lot of the reason for this is because
+having to keep all the drivers together inside sqlboiler was going to later
+cause more churn that it was worth. sqlite showed us this immediately with
+it's cgo dependencies as an example. This was the source of a huge number
+of changes, many of them breaking but other than the new workflow of using
+a new binary instead of just a string, users shouldn't actually see too much
+difference.
+
+#### Smaller changes
+
 - Rename postgresql driver to psql
-- Driver split
-
-    Drivers are now separate binaries. A lot of the reason for this is because
-    having to keep all the drivers together inside sqlboiler was going to later
-    cause more churn that it was worth. sqlite showed us this immediately with
-    it's cgo dependencies as an example.
-
 - Drivers are now responsible for their own config validation
 - Drivers are now responsible for their own default config values
 - Drivers can now take any configuration via environment or config files. This
@@ -33,3 +39,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   passed back to sqlboiler when the driver is asked to produce the information
   for the database we're generating for.
 - Imports is now it's own package and is cleaned up significantly
+
+### Removed
+
+- The concept of TestMain is now gone from both templates and imports. It's
+  been superceded by the new driver abilities to supply templates and imports.
+  The drivers add their mains to the TestSingleton templates.

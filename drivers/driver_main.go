@@ -27,6 +27,8 @@ func DriverMain(driver Interface) {
 		}
 	case "templates":
 		// No input for this method
+	case "imports":
+		// No input for this method
 	}
 
 	var output interface{}
@@ -45,6 +47,13 @@ func DriverMain(driver Interface) {
 			os.Exit(1)
 		}
 		output = templates
+	case "imports":
+		collection, err := driver.Imports()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		output = collection
 	}
 
 	b, err := json.Marshal(output)

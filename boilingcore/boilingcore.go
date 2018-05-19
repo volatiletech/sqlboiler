@@ -12,8 +12,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/importers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -53,6 +55,10 @@ func New(config *Config) (*State, error) {
 	err := s.initDBInfo(config.DriverConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
+	}
+
+	if err := s.mergeDriverImports(); err != nil {
+		return nil, errors.Wrap(err, "unable to merge imports from driver")
 	}
 
 	if s.Config.Debug {
@@ -313,6 +319,21 @@ func (s *State) initDBInfo(config map[string]interface{}) error {
 	s.Tables = dbInfo.Tables
 	s.Dialect = dbInfo.Dialect
 
+	return nil
+}
+
+// mergeDriverImports calls the driver and asks for its set
+// of imports, then merges it into the current configuration's
+// imports.
+func (s *State) mergeDriverImports() error {
+	drivers, err := s.Driver.Imports()
+	if err != nil {
+		return errors.Wrap(err, "failed to fetch driver's imports")
+	}
+
+	spew.Dump(drivers)
+
+	s.Config.Imports = importers.Merge(s.Config.Imports, drivers)
 	return nil
 }
 

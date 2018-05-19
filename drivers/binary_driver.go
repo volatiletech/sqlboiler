@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/pkg/errors"
+	"github.com/volatiletech/sqlboiler/importers"
 )
 
 type binaryDriver string
@@ -35,6 +36,16 @@ func (b binaryDriver) Templates() (map[string]string, error) {
 	}
 
 	return templates, nil
+}
+
+// Imports calls the imports function to get imports from the driver
+func (b binaryDriver) Imports() (col importers.Collection, err error) {
+	err = execute(string(b), "imports", nil, &col, os.Stderr)
+	if err != nil {
+		return col, err
+	}
+
+	return col, nil
 }
 
 func execute(executable, method string, input interface{}, output interface{}, errStream io.Writer) error {

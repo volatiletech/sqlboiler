@@ -111,7 +111,7 @@ func executeTemplates(e executeTemplateData) error {
 			colTypes[i] = ct.Type
 		}
 
-		imps = importers.CombineTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)
+		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)
 	}
 
 	writeFileDisclaimer(out)

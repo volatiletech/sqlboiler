@@ -125,7 +125,7 @@ func TestImportsSort(t *testing.T) {
 	}
 }
 
-func TestCombineTypeImports(t *testing.T) {
+func TestAddTypeImports(t *testing.T) {
 	t.Parallel()
 
 	imports1 := Set{
@@ -154,12 +154,16 @@ func TestCombineTypeImports(t *testing.T) {
 		"null.Time",
 		"null.Time",
 		"time.Time",
-		"null.Float",
 	}
 
 	imps := NewDefaultImports()
 
-	res1 := CombineTypeImports(imports1, imps.BasedOnType, types)
+	imps.BasedOnType = Map{
+		"null.Time": Set{ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`}},
+		"time.Time": Set{Standard: List{`"time"`}},
+	}
+
+	res1 := AddTypeImports(imports1, imps.BasedOnType, types)
 
 	if !reflect.DeepEqual(res1, importsExpected) {
 		t.Errorf("Expected res1 to match importsExpected, got:\n\n%#v\n", res1)
@@ -177,14 +181,14 @@ func TestCombineTypeImports(t *testing.T) {
 		},
 	}
 
-	res2 := CombineTypeImports(imports2, imps.BasedOnType, types)
+	res2 := AddTypeImports(imports2, imps.BasedOnType, types)
 
 	if !reflect.DeepEqual(res2, importsExpected) {
 		t.Errorf("Expected res2 to match importsExpected, got:\n\n%#v\n", res1)
 	}
 }
 
-func TestCombineImports(t *testing.T) {
+func TestMergeSet(t *testing.T) {
 	t.Parallel()
 
 	a := Set{
@@ -196,7 +200,7 @@ func TestCombineImports(t *testing.T) {
 		ThirdParty: List{"github.com/volatiletech/sqlboiler"},
 	}
 
-	c := combineImports(a, b)
+	c := mergeSet(a, b)
 
 	if c.Standard[0] != "fmt" && c.Standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.Standard)
@@ -239,6 +243,72 @@ func TestCombineStringSlices(t *testing.T) {
 		t.Error("Len was wrong:", ln)
 	} else if slice[0] != a[0] || slice[1] != a[1] || slice[2] != b[0] || slice[3] != b[1] {
 		t.Errorf("Slice mismatch: %#v + %#v != #%v", a, b, slice)
+	}
+}
+
+func TestMerge(t *testing.T) {
+	var a, b Collection
+
+	a.All = Set{Standard: List{"aa"}, ThirdParty: List{"aa"}}
+	a.Test = Set{Standard: List{"at"}, ThirdParty: List{"at"}}
+	a.Singleton = Map{
+		"a": {Standard: List{"as"}, ThirdParty: List{"as"}},
+		"c": {Standard: List{"as"}, ThirdParty: List{"as"}},
+	}
+	a.TestSingleton = Map{
+		"a": {Standard: List{"at"}, ThirdParty: List{"at"}},
+		"c": {Standard: List{"at"}, ThirdParty: List{"at"}},
+	}
+	a.BasedOnType = Map{
+		"a": {Standard: List{"abot"}, ThirdParty: List{"abot"}},
+		"c": {Standard: List{"abot"}, ThirdParty: List{"abot"}},
+	}
+
+	b.All = Set{Standard: List{"bb"}, ThirdParty: List{"bb"}}
+	b.Test = Set{Standard: List{"bt"}, ThirdParty: List{"bt"}}
+	b.Singleton = Map{
+		"b": {Standard: List{"bs"}, ThirdParty: List{"bs"}},
+		"c": {Standard: List{"bs"}, ThirdParty: List{"bs"}},
+	}
+	b.TestSingleton = Map{
+		"b": {Standard: List{"bt"}, ThirdParty: List{"bt"}},
+		"c": {Standard: List{"bt"}, ThirdParty: List{"bt"}},
+	}
+	b.BasedOnType = Map{
+		"b": {Standard: List{"bbot"}, ThirdParty: List{"bbot"}},
+		"c": {Standard: List{"bbot"}, ThirdParty: List{"bbot"}},
+	}
+
+	c := Merge(a, b)
+
+	setHas := func(s Set, a, b string) {
+		t.Helper()
+		if s.Standard[0] != a {
+			t.Error("standard index 0, want:", a, "got:", s.Standard[0])
+		}
+		if s.Standard[1] != b {
+			t.Error("standard index 1, want:", a, "got:", s.Standard[1])
+		}
+		if s.ThirdParty[0] != a {
+			t.Error("third party index 0, want:", a, "got:", s.ThirdParty[0])
+		}
+		if s.ThirdParty[1] != b {
+			t.Error("third party index 1, want:", a, "got:", s.ThirdParty[1])
+		}
+	}
+	mapHas := func(m Map, key, a, b string) {
+		t.Helper()
+		setHas(m[key], a, b)
+	}
+
+	setHas(c.All, "aa", "bb")
+	setHas(c.Test, "at", "bt")
+	mapHas(c.Singleton, "c", "as", "bs")
+	mapHas(c.TestSingleton, "c", "at", "bt")
+	mapHas(c.BasedOnType, "c", "abot", "bbot")
+
+	if t.Failed() {
+		t.Logf("%#v\n", c)
 	}
 }
 

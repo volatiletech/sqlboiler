@@ -14,7 +14,6 @@ DRIVER_DB="sqlboiler_driver_test"
 
 build() {
     subcommand=$1
-    driver=0
 
     case "${subcommand}" in
         psql)  driver=1; shift ;;

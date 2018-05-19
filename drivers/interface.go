@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	"github.com/volatiletech/sqlboiler/importers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -30,6 +31,8 @@ type Interface interface {
 	Assemble(config Config) (*DBInfo, error)
 	// Templates to add/replace for generation
 	Templates() (map[string]string, error)
+	// Imports to merge for generation
+	Imports() (importers.Collection, error)
 }
 
 // DBInfo is the database's table data and dialect.

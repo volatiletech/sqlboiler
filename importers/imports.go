@@ -12,16 +12,16 @@ import (
 )
 
 // Collection of imports for various templating purposes
+// Drivers add to any and all of these, and is completely responsible
+// for populating BasedOnType.
 type Collection struct {
-	All  Set `toml:"all"`
-	Test Set `toml:"test"`
+	All  Set `toml:"all" json:"all,omitempty"`
+	Test Set `toml:"test" json:"test,omitempty"`
 
-	Singleton     Map `toml:"singleton"`
-	TestSingleton Map `toml:"test_singleton"`
+	Singleton     Map `toml:"singleton" json:"singleton,omitempty"`
+	TestSingleton Map `toml:"test_singleton" json:"test_singleton,omitempty"`
 
-	TestMain Map `toml:"test_main"`
-
-	BasedOnType Map `toml:"based_on_type"`
+	BasedOnType Map `toml:"based_on_type" json:"based_on_type,omitempty"`
 }
 
 // Set defines the optional standard imports and
@@ -111,7 +111,7 @@ func SetFromInterface(intf interface{}) (Set, error) {
 	return s, nil
 }
 
-// Map of type -> import
+// Map of file/type -> imports
 type Map map[string]Set
 
 // MapFromInterface creates a Map from a theoretical map[string]interface{}.
@@ -252,26 +252,7 @@ func NewDefaultImports() Collection {
 		},
 	}
 
-	col.TestMain = Map{
-		"psql": {
-			Standard: List{
-				`"bytes"`,
-				`"database/sql"`,
-				`"fmt"`,
-				`"io"`,
-				`"io/ioutil"`,
-				`"os"`,
-				`"os/exec"`,
-				`"strings"`,
-			},
-			ThirdParty: List{
-				`"github.com/pkg/errors"`,
-				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql/driver"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
-				`_ "github.com/lib/pq"`,
-			},
-		},
+	/*col.TestMain = Map{
 		"mysql": {
 			Standard: List{
 				`"bytes"`,
@@ -308,147 +289,16 @@ func NewDefaultImports() Collection {
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},
 		},
-	}
-
-	// basedOnType imports are only included in the template output if the
-	// database requires one of the following special types. Check
-	// TranslateColumnType to see the type assignments.
-	col.BasedOnType = Map{
-		"null.Float32": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Float64": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Int": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Int8": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Int16": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Int32": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Int64": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Uint": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Uint8": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Uint16": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Uint32": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Uint64": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.String": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Bool": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Time": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.JSON": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"null.Bytes": {
-			ThirdParty: List{`"gopkg.in/volatiletech/null.v6"`},
-		},
-		"time.Time": {
-			Standard: List{`"time"`},
-		},
-		"types.JSON": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"types.BytesArray": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"types.Int64Array": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"types.Float64Array": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"types.BoolArray": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"types.StringArray": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"types.Hstore": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types"`},
-		},
-		"pgeo.Point": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.Line": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.Lseg": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.Box": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.Path": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.Polygon": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.Circle": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullPoint": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullLine": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullLseg": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullBox": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullPath": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullPolygon": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-		"pgeo.NullCircle": {
-			ThirdParty: List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
-		},
-	}
+	}*/
 
 	return col
 }
 
-func combineImports(a, b Set) Set {
-	var c Set
-
-	c.Standard = strmangle.RemoveDuplicates(combineStringSlices(a.Standard, b.Standard))
-	c.ThirdParty = strmangle.RemoveDuplicates(combineStringSlices(a.ThirdParty, b.ThirdParty))
-
-	sort.Sort(c.Standard)
-	sort.Sort(c.ThirdParty)
-
-	return c
-}
-
-func CombineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
+// AddTypeImports takes a set of imports 'a', a type -> import mapping 'typeMap'
+// and a set of column types that are currently in use and produces a new set
+// including both the old standard/third party, as well as the imports required
+// for the types in use.
+func AddTypeImports(a Set, typeMap map[string]Set, columnTypes []string) Set {
 	tmpImp := Set{
 		Standard:   make(List, len(a.Standard)),
 		ThirdParty: make(List, len(a.ThirdParty)),
@@ -458,7 +308,7 @@ func CombineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
 	copy(tmpImp.ThirdParty, a.ThirdParty)
 
 	for _, typ := range columnTypes {
-		for key, imp := range b {
+		for key, imp := range typeMap {
 			if typ == key {
 				tmpImp.Standard = append(tmpImp.Standard, imp.Standard...)
 				tmpImp.ThirdParty = append(tmpImp.ThirdParty, imp.ThirdParty...)
@@ -473,6 +323,53 @@ func CombineTypeImports(a Set, b map[string]Set, columnTypes []string) Set {
 	sort.Sort(tmpImp.ThirdParty)
 
 	return tmpImp
+}
+
+// Merge takes two collections and creates a new one
+// with the de-duplication contents of both.
+func Merge(a, b Collection) Collection {
+	var c Collection
+
+	c.All = mergeSet(a.All, b.All)
+	c.Test = mergeSet(a.Test, b.Test)
+
+	c.Singleton = mergeMap(a.Singleton, b.Singleton)
+	c.TestSingleton = mergeMap(a.TestSingleton, b.TestSingleton)
+
+	c.BasedOnType = mergeMap(a.BasedOnType, b.BasedOnType)
+
+	return c
+}
+
+func mergeSet(a, b Set) Set {
+	var c Set
+
+	c.Standard = strmangle.RemoveDuplicates(combineStringSlices(a.Standard, b.Standard))
+	c.ThirdParty = strmangle.RemoveDuplicates(combineStringSlices(a.ThirdParty, b.ThirdParty))
+
+	sort.Sort(c.Standard)
+	sort.Sort(c.ThirdParty)
+
+	return c
+}
+
+func mergeMap(a, b Map) Map {
+	m := make(Map)
+
+	for k, v := range a {
+		m[k] = v
+	}
+
+	for k, toMerge := range b {
+		exist, ok := m[k]
+		if !ok {
+			m[k] = toMerge
+		}
+
+		m[k] = mergeSet(exist, toMerge)
+	}
+
+	return m
 }
 
 func combineStringSlices(a, b []string) []string {

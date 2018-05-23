@@ -596,9 +596,9 @@ func TestReplaceReservedWords(t *testing.T) {
 	for i, test := range tests {
 		got := ReplaceReservedWords(test.Word)
 		if test.Replace && !strings.HasSuffix(got, "_") {
-			t.Errorf("%i) want suffixed (%s), got: %s", i, test.Word, got)
+			t.Errorf("%d) want suffixed (%s), got: %s", i, test.Word, got)
 		} else if !test.Replace && strings.HasSuffix(got, "_") {
-			t.Errorf("%i) want normal (%s), got: %s", i, test.Word, got)
+			t.Errorf("%d) want normal (%s), got: %s", i, test.Word, got)
 		}
 	}
 }

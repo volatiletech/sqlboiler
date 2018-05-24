@@ -98,6 +98,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 
 			UseIndexPlaceholders: true,
 			UseSchema:            useSchema,
+			UseDefaultKeyword:    true,
 		},
 	}
 	dbinfo.Tables, err = drivers.Tables(p, schema, whitelist, blacklist)

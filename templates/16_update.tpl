@@ -53,7 +53,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 			{{$varNameSingular}}PrimaryKeyColumns,
 			whitelist,
 		)
-		{{if eq .DriverName "mssql"}}
+		{{if .Dialect.UseAutoColumns -}}
 		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
 		{{end}}
 		{{if not .NoAutoTimestamps}}

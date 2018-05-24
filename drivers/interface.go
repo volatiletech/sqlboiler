@@ -50,8 +50,14 @@ type Dialect struct {
 
 	UseIndexPlaceholders bool `json:"use_index_placeholders"`
 	UseLastInsertID      bool `json:"use_last_insert_id"`
-	UseTopClause         bool `json:"use_top_clause"`
 	UseSchema            bool `json:"use_schema"`
+	UseDefaultKeyword    bool `json:"use_default_keyword"`
+
+	// The following is mostly for T-SQL/MSSQL, what a show
+	UseAutoColumns          bool `json:"use_auto_columns"`
+	UseTopClause            bool `json:"use_top_clause"`
+	UseOutputClause         bool `json:"use_output_clause"`
+	UseCaseWhenExistsClause bool `json:"use_case_when_exists_clause"`
 }
 
 // Constructor breaks down the functionality required to implement a driver

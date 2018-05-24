@@ -68,10 +68,10 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		if len(wl) != 0 {
 			cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) %%sVALUES (%s)%%s", strings.Join(wl, "{{.RQ}},{{.LQ}}"), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			{{if eq .DriverName "mysql" -}}
-			cache.query = "INSERT INTO {{$schemaTable}} () VALUES ()"
-			{{else -}}
+			{{if .Dialect.UseDefaultKeyword -}}
 			cache.query = "INSERT INTO {{$schemaTable}} DEFAULT VALUES"
+			{{else -}}
+			cache.query = "INSERT INTO {{$schemaTable}} () VALUES ()"
 			{{end -}}
 		}
 
@@ -81,10 +81,10 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 			{{if .Dialect.UseLastInsertID -}}
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
 			{{else -}}
-				{{if ne .DriverName "mssql" -}}
-			queryReturning = fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
+				{{if .Dialect.UseOutputClause -}}
+				queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
 				{{else -}}
-			queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
+				queryReturning = fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
 				{{end -}}
 			{{end -}}
 		}

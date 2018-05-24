@@ -90,8 +90,13 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 			RQ: ']',
 
 			UseIndexPlaceholders: true,
-			UseTopClause:         true,
 			UseSchema:            true,
+			UseDefaultKeyword:    true,
+
+			UseAutoColumns:          true,
+			UseTopClause:            true,
+			UseOutputClause:         true,
+			UseCaseWhenExistsClause: true,
 		},
 	}
 	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)

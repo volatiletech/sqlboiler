@@ -82,7 +82,7 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
 		)
-		{{- if eq .DriverName "mssql"}}
+		{{- if .Dialect.UseAutoColumns }}
 		fields = strmangle.SetComplement(
 			fields,
 			{{$varNameSingular}}ColumnsWithAuto,

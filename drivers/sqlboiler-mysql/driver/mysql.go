@@ -428,6 +428,16 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 // Imports returns important imports for the driver
 func (MySQLDriver) Imports() (col importers.Collection, err error) {
 	col.TestSingleton = importers.Map{
+		"mysql_upsert": {
+			Standard: importers.List{
+				`"fmt"`,
+				`"strings"`,
+			},
+			ThirdParty: importers.List{
+				`"github.com/volatiletech/sqlboiler/strmangle"`,
+				`"github.com/volatiletech/sqlboiler/drivers"`,
+			},
+		},
 		"mysql_suites_test": {
 			Standard: importers.List{
 				`"testing"`,

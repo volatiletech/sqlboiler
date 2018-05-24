@@ -507,6 +507,16 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 	var col importers.Collection
 
 	col.TestSingleton = importers.Map{
+		"psql_upsert": {
+			Standard: importers.List{
+				`"fmt"`,
+				`"strings"`,
+			},
+			ThirdParty: importers.List{
+				`"github.com/volatiletech/sqlboiler/strmangle"`,
+				`"github.com/volatiletech/sqlboiler/drivers"`,
+			},
+		},
 		"psql_suites_test": {
 			Standard: importers.List{
 				`"testing"`,

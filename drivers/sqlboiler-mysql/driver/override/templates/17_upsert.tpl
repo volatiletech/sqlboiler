@@ -77,7 +77,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateColumns []stri
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
-		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
+		cache.query = buildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
 		cache.retQuery = fmt.Sprintf(
 			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),

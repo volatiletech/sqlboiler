@@ -2,27 +2,27 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG({{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) error {
-	return o.Upsert(boil.GetDB(), {{if eq .DriverName "psql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...)
+func (o *{{$tableNameSingular}}) UpsertG(updateColumns []string, whitelist ...string) error {
+	return o.Upsert(boil.GetDB(), updateColumns, whitelist...)
 }
 
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP({{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
-	if err := o.Upsert(boil.GetDB(), {{if eq .DriverName "psql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertGP(updateColumns []string, whitelist ...string) {
+	if err := o.Upsert(boil.GetDB(), updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, {{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string,	whitelist ...string) {
-	if err := o.Upsert(exec, {{if eq .DriverName "psql"}}updateOnConflict, conflictColumns, {{end}}updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, updateColumns []string, whitelist ...string) {
+	if err := o.Upsert(exec, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName "psql"}}updateOnConflict bool, conflictColumns []string, {{end}}updateColumns []string, whitelist ...string) error {
+func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateColumns []string, whitelist ...string) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -39,18 +39,6 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
-	{{if eq .DriverName "psql"}}
-	if updateOnConflict {
-		buf.WriteByte('t')
-	} else {
-		buf.WriteByte('f')
-	}
-	buf.WriteByte('.')
-	for _, c := range conflictColumns {
-		buf.WriteString(c)
-	}
-	buf.WriteByte('.')
-	{{end -}}
 	for _, c := range updateColumns {
 		buf.WriteString(c)
 	}
@@ -79,55 +67,23 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 			nzDefaults,
 			whitelist,
 		)
-		{{if eq .DriverName "mssql" -}}
-		insert = strmangle.SetComplement(insert, {{$varNameSingular}}ColumnsWithAuto)
-		for i, v := range insert {
-			if strmangle.ContainsAny({{$varNameSingular}}PrimaryKeyColumns, v) && strmangle.ContainsAny({{$varNameSingular}}ColumnsWithDefault, v) {
-				insert = append(insert[:i], insert[i+1:]...)
-			}
-		}
-		if len(insert) == 0 {
-			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build insert column list")
-		}
-
-		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)
-		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithDefault)
-
-		{{end}}
 		update := strmangle.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
 			updateColumns,
 		)
-		{{if eq .DriverName "mssql" -}}
-		update = strmangle.SetComplement(update, {{$varNameSingular}}ColumnsWithAuto)
-		{{end -}}
 
 		if len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
-		{{if eq .DriverName "psql"}}
-		conflict := conflictColumns
-		if len(conflict) == 0 {
-			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
-			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
-		}
-		cache.query = queries.BuildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
-		{{else if eq .DriverName "mysql"}}
 		cache.query = queries.BuildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
 		cache.retQuery = fmt.Sprintf(
 			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),
 		)
-		{{else if eq .DriverName "mssql"}}
-		cache.query = queries.BuildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$varNameSingular}}PrimaryKeyColumns, update, insert, ret)
 
-		whitelist = append({{$varNameSingular}}PrimaryKeyColumns, update...)
-		whitelist = append(whitelist, insert...)
-		{{- end}}
-
-		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, {{if eq .DriverName "mssql"}}whitelist{{else}}insert{{end}})
+		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, insert)
 		if err != nil {
 			return err
 		}
@@ -151,8 +107,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
-	{{if .Dialect.UseLastInsertID -}}
-	{{- $canLastInsertID := .Table.CanLastInsertID -}}
+	{{$canLastInsertID := .Table.CanLastInsertID -}}
 	{{if $canLastInsertID -}}
 	result, err := exec.Exec(cache.query, vals...)
 	{{else -}}
@@ -201,23 +156,8 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, {{if eq .DriverName 
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 	}
-	{{- else}}
-	if len(cache.retMapping) != 0 {
-		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
-		if err == sql.ErrNoRows {
-			err = nil // Postgres doesn't return anything when there's no update
-		}
-	} else {
-		_, err = exec.Exec(cache.query, vals...)
-	}
-	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to upsert {{.Table.Name}}")
-	}
-	{{- end}}
 
-{{if .Dialect.UseLastInsertID -}}
 CacheNoHooks:
-{{end -}}
 	if !cached {
 		{{$varNameSingular}}UpsertCacheMut.Lock()
 		{{$varNameSingular}}UpsertCache[key] = cache

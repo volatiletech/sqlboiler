@@ -507,7 +507,12 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 	var col importers.Collection
 
 	col.TestSingleton = importers.Map{
-		"psql_main": {
+		"psql_suites_test": {
+			Standard: importers.List{
+				`"testing"`,
+			},
+		},
+		"psql_main_test": {
 			Standard: importers.List{
 				`"bytes"`,
 				`"database/sql"`,

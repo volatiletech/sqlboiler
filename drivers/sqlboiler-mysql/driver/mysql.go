@@ -428,7 +428,12 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 // Imports returns important imports for the driver
 func (MySQLDriver) Imports() (col importers.Collection, err error) {
 	col.TestSingleton = importers.Map{
-		"mysql_main": {
+		"mysql_suites_test": {
+			Standard: importers.List{
+				`"testing"`,
+			},
+		},
+		"mysql_main_test": {
 			Standard: importers.List{
 				`"bytes"`,
 				`"database/sql"`,

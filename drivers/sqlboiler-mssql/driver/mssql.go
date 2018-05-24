@@ -407,7 +407,12 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 // Imports returns important imports for the driver
 func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 	col.TestSingleton = importers.Map{
-		"mssql_main": {
+		"mssql_suites_test": {
+			Standard: importers.List{
+				`"testing"`,
+			},
+		},
+		"mssql_main_test": {
 			Standard: importers.List{
 				`"bytes"`,
 				`"database/sql"`,

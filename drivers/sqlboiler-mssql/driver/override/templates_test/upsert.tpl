@@ -19,7 +19,7 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 
 	tx := MustTx(boil.Begin())
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Upsert(tx, {{if eq .DriverName "psql"}}false, nil, {{end}}nil); err != nil {
+	if err = {{$varNameSingular}}.Upsert(tx, nil); err != nil {
 		t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
 	}
 
@@ -36,7 +36,7 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	if err = {{$varNameSingular}}.Upsert(tx, {{if eq .DriverName "psql"}}true, nil, {{end}}nil); err != nil {
+	if err = {{$varNameSingular}}.Upsert(tx, nil); err != nil {
 		t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
 	}
 

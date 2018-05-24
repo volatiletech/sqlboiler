@@ -10,7 +10,7 @@ func MustTx(transactor boil.Transactor, err error) boil.Transactor {
 func newFKeyDestroyer(regex *regexp.Regexp, reader io.Reader) io.Reader {
 	return &fKeyDestroyer{
 		reader: reader,
-    rgx:    regex,
+		rgx:    regex,
 	}
 }
 

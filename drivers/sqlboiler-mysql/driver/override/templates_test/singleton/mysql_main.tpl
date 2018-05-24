@@ -22,12 +22,28 @@ func init() {
 func (m *mysqlTester) setup() error {
 	var err error
 
+	viper.SetDefault("mysql.sslmode", "true")
+	viper.SetDefault("mysql.port", 3306)
+
 	m.dbName = viper.GetString("mysql.dbname")
 	m.host = viper.GetString("mysql.host")
 	m.user = viper.GetString("mysql.user")
 	m.pass = viper.GetString("mysql.pass")
 	m.port = viper.GetInt("mysql.port")
 	m.sslmode = viper.GetString("mysql.sslmode")
+
+	err = vala.BeginValidation().Validate(
+		vala.StringNotEmpty(m.user, "mysql.user"),
+		vala.StringNotEmpty(m.host, "mysql.host"),
+		vala.Not(vala.Equals(m.port, 0, "mysql.port")),
+		vala.StringNotEmpty(m.dbName, "mysql.dbname"),
+		vala.StringNotEmpty(m.sslmode, "mysql.sslmode"),
+	).Check()
+
+	if err != nil {
+		return err
+	}
+
 	// Create a randomized db name.
 	m.testDBName = randomize.StableDBName(m.dbName)
 

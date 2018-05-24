@@ -17,12 +17,30 @@ func init() {
 
 func (m *mssqlTester) setup() error {
 	var err error
+
+	viper.SetDefault("mssql.schema", "dbo")
+	viper.SetDefault("mssql.sslmode", "true")
+	viper.SetDefault("mssql.port", 1433)
+
 	m.dbName = viper.GetString("mssql.dbname")
 	m.host = viper.GetString("mssql.host")
 	m.user = viper.GetString("mssql.user")
 	m.pass = viper.GetString("mssql.pass")
 	m.port = viper.GetInt("mssql.port")
 	m.sslmode = viper.GetString("mssql.sslmode")
+
+	err = vala.BeginValidation().Validate(
+		vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),
+		vala.StringNotEmpty(viper.GetString("mssql.host"), "mssql.host"),
+		vala.Not(vala.Equals(viper.GetInt("mssql.port"), 0, "mssql.port")),
+		vala.StringNotEmpty(viper.GetString("mssql.dbname"), "mssql.dbname"),
+		vala.StringNotEmpty(viper.GetString("mssql.sslmode"), "mssql.sslmode"),
+	).Check()
+
+	if err != nil {
+		return err
+	}
+
 	// Create a randomized db name.
 	m.testDBName = randomize.StableDBName(m.dbName)
 

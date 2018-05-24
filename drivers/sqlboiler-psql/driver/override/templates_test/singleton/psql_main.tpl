@@ -25,12 +25,29 @@ func init() {
 func (p *pgTester) setup() error {
   var err error
 
+	viper.SetDefault("psql.schema", "public")
+	viper.SetDefault("psql.port", 5432)
+	viper.SetDefault("psql.sslmode", "require")
+
   p.dbName = viper.GetString("psql.dbname")
   p.host = viper.GetString("psql.host")
   p.user = viper.GetString("psql.user")
   p.pass = viper.GetString("psql.pass")
   p.port = viper.GetInt("psql.port")
   p.sslmode = viper.GetString("psql.sslmode")
+
+  err = vala.BeginValidation().Validate(
+    vala.StringNotEmpty(p.user, "psql.user"),
+    vala.StringNotEmpty(p.host, "psql.host"),
+    vala.Not(vala.Equals(p.port, 0, "psql.port")),
+    vala.StringNotEmpty(p.dbName, "psql.dbname"),
+    vala.StringNotEmpty(p.sslmode, "psql.sslmode"),
+  ).Check()
+
+  if err != nil {
+    return err
+  }
+
   // Create a randomized db name.
   p.testDBName = randomize.StableDBName(p.dbName)
 

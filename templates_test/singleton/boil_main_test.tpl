@@ -69,7 +69,7 @@ func initViper() error {
 		return nil
 	}
 
-  var err error
+ 	var err error
 
 	viper.SetConfigName("sqlboiler")
 
@@ -93,53 +93,10 @@ func initViper() error {
 		viper.AddConfigPath(p)
 	}
 
-	viper.SetDefault("psql.schema", "public")
-	viper.SetDefault("psql.port", 5432)
-	viper.SetDefault("psql.sslmode", "require")
-	viper.SetDefault("mysql.sslmode", "true")
-	viper.SetDefault("mysql.port", 3306)
-	viper.SetDefault("mssql.schema", "dbo")
-	viper.SetDefault("mssql.sslmode", "true")
-	viper.SetDefault("mssql.port", 1433)
-
 	// Ignore errors here, fall back to defaults and validation to provide errs
 	_ = viper.ReadInConfig()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	return nil
-}
-
-func validateConfig(driverName string) error {
-	if driverName == "psql" {
-		return vala.BeginValidation().Validate(
-			vala.StringNotEmpty(viper.GetString("psql.user"), "psql.user"),
-			vala.StringNotEmpty(viper.GetString("psql.host"), "psql.host"),
-			vala.Not(vala.Equals(viper.GetInt("psql.port"), 0, "psql.port")),
-			vala.StringNotEmpty(viper.GetString("psql.dbname"), "psql.dbname"),
-			vala.StringNotEmpty(viper.GetString("psql.sslmode"), "psql.sslmode"),
-		).Check()
-	}
-
-	if driverName == "mysql" {
-		return vala.BeginValidation().Validate(
-			vala.StringNotEmpty(viper.GetString("mysql.user"), "mysql.user"),
-			vala.StringNotEmpty(viper.GetString("mysql.host"), "mysql.host"),
-			vala.Not(vala.Equals(viper.GetInt("mysql.port"), 0, "mysql.port")),
-			vala.StringNotEmpty(viper.GetString("mysql.dbname"), "mysql.dbname"),
-			vala.StringNotEmpty(viper.GetString("mysql.sslmode"), "mysql.sslmode"),
-		).Check()
-	}
-
-	if driverName == "mssql" {
-		return vala.BeginValidation().Validate(
-			vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),
-			vala.StringNotEmpty(viper.GetString("mssql.host"), "mssql.host"),
-			vala.Not(vala.Equals(viper.GetInt("mssql.port"), 0, "mssql.port")),
-			vala.StringNotEmpty(viper.GetString("mssql.dbname"), "mssql.dbname"),
-			vala.StringNotEmpty(viper.GetString("mssql.sslmode"), "mssql.sslmode"),
-		).Check()
-	}
-
-	return errors.New("not a valid driver name")
 }

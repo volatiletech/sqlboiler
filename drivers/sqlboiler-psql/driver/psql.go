@@ -516,9 +516,11 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
+				`"regexp"`,
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
+				`"github.com/kat-co/vala"`,
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
 				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql/driver"`,

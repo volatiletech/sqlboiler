@@ -30,11 +30,6 @@ func TestMain(m *testing.M) {
 		os.Exit(-2)
 	}
 
-	if err := validateConfig("{{.DriverName}}"); err != nil {
-		fmt.Println("failed to validate config", err)
-		os.Exit(-3)
-	}
-
 	// Set DebugMode so we can see generated sql statements
 	boil.DebugMode = *flagDebugMode
 

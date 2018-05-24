@@ -437,9 +437,11 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
+				`"regexp"`,
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
+				`"github.com/kat-co/vala"`,
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
 				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver"`,

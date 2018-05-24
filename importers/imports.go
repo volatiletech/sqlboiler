@@ -226,8 +226,6 @@ func NewDefaultImports() Collection {
 				`"time"`,
 			},
 			ThirdParty: List{
-				`"github.com/kat-co/vala"`,
-				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
 				`"github.com/volatiletech/sqlboiler/boil"`,
 			},

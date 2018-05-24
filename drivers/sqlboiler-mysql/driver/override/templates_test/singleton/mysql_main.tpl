@@ -1,3 +1,5 @@
+var rgxMySQLkey = regexp.MustCompile(`(?m)((,\n)?\s+CONSTRAINT.*?FOREIGN KEY.*?\n)+`)
+
 type mysqlTester struct {
 	dbConn *sql.DB
 

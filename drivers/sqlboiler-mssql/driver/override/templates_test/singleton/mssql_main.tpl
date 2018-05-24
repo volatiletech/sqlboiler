@@ -1,3 +1,5 @@
+var rgxMSSQLkey = regexp.MustCompile(`(?m)^ALTER TABLE .*ADD\s+CONSTRAINT .* FOREIGN KEY.*?.*\n?REFERENCES.*`)
+
 type mssqlTester struct {
 	dbConn     *sql.DB
 	dbName     string

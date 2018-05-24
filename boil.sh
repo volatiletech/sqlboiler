@@ -183,6 +183,31 @@ driver_test_db() {
 }
 
 # ====================================
+# Bindata
+# ====================================
+
+go_generate() {
+    if test -z "${1}"; then
+        run="${1}"
+    else
+        run="psql mysql mssql"
+    fi
+
+    for i in psql mysql mssql; do
+        run_go_generate "${i}"
+    done
+}
+
+run_go_generate() {
+    path=$1
+    cwd="${PWD}"
+    set -o xtrace
+    cd "drivers/sqlboiler-${path}/driver"
+    go generate
+    cd "${cwd}"
+}
+
+# ====================================
 # Clean
 # ====================================
 
@@ -211,6 +236,8 @@ case "${command}" in
     driver-test-db)   driver_test_db "$1" ;;
     driver-test-user) driver_test_user "$1" ;;
 
+    go-generate) go_generate "$@" ;;
+
     clean) clean ;;
     *)
         echo "./boil.sh command [args]"
@@ -225,4 +252,5 @@ case "${command}" in
         echo "  driver-test <driver> [args] - runs tests for the driver"
         echo "  driver-test-db <driver>     - create driver db (run before driver-test-user)"
         echo "  driver-test-user <driver>   - creates a user for the driver tests (unprivileged)"
+        echo "  go-generate [driver]        - runs go generate on driver packages (omit driver for all)"
 esac

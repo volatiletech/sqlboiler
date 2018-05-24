@@ -12,7 +12,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/importers"
@@ -330,8 +329,6 @@ func (s *State) mergeDriverImports() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch driver's imports")
 	}
-
-	spew.Dump(drivers)
 
 	s.Config.Imports = importers.Merge(s.Config.Imports, drivers)
 	return nil

@@ -23,7 +23,7 @@ type templateData struct {
 	PkgName string
 	Schema  string
 
-	// Controls which code is output (mysql vs pqsl ...)
+	// Helps tune the output
 	DriverName string
 	Dialect    drivers.Dialect
 

@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add ability for drivers to provide their own templates/replacement templates
 - Add ability for drivers to specify imports
 - Add a boil.sh that includes many commands that help build and test sqlboiler
+- Add many more driver dialect flags to be able to remove all the DriverName
+  comparisons inside sqlboiler templates. This allows us to more cleanly support
+  more drivers.
 
 ### Changed
 
@@ -39,6 +42,8 @@ difference.
   passed back to sqlboiler when the driver is asked to produce the information
   for the database we're generating for.
 - Imports is now it's own package and is cleaned up significantly
+- Replace templates (hidden flag) now use the ; separator not : for windows
+  compatibility.
 
 ### Removed
 

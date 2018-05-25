@@ -36,7 +36,7 @@ type templateData struct {
 	NoHooks          bool
 	NoAutoTimestamps bool
 
-	// Tags control which
+	// Tags control which tags are added to the struct
 	Tags []string
 
 	// Generate struct tags as camelCase or snake_case

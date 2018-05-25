@@ -188,7 +188,7 @@ func (s *State) initTemplates() error {
 	}
 
 	for _, replace := range s.Config.Replacements {
-		splits := strings.Split(replace, ":")
+		splits := strings.Split(replace, ";")
 		if len(splits) != 2 {
 			return errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)
 		}

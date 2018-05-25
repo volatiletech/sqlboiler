@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/importers"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -15,6 +16,30 @@ type MockDriver struct{}
 // Templates returns the overriding templates for the driver
 func (m *MockDriver) Templates() (map[string]string, error) {
 	return nil, nil
+}
+
+// Imports return the set of imports that should be merged
+func (m *MockDriver) Imports() (importers.Collection, error) {
+	return importers.Collection{
+		BasedOnType: importers.Map{
+			"null.Int": {
+				ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			},
+			"null.String": {
+				ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			},
+			"null.Time": {
+				ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			},
+			"null.Bytes": {
+				ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			},
+
+			"time.Time": {
+				Standard: importers.List{`"time"`},
+			},
+		},
+	}, nil
 }
 
 // Assemble the DBInfo

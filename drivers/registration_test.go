@@ -1,6 +1,10 @@
 package drivers
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/volatiletech/sqlboiler/importers"
+)
 
 type testRegistrationDriver struct{}
 
@@ -13,6 +17,10 @@ func (t testRegistrationDriver) Assemble(config Config) (*DBInfo, error) {
 
 func (t testRegistrationDriver) Templates() (map[string]string, error) {
 	return nil, nil
+}
+
+func (t testRegistrationDriver) Imports() (importers.Collection, error) {
+	return importers.Collection{}, nil
 }
 
 func TestRegistration(t *testing.T) {

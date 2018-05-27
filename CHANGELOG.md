@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Add support for geotyepes for psql (thanks @saulortega)
+- Add support for rows affected to Update/Delete calls.
+- Add support for geotypes for psql (thanks @saulortega)
 - Add a flag to set the config file (thanks @l4u)
 - Add support for citext to psql (thanks @boxofrad)
 - Add virtual columns ignoring for mysql (thanks @Nykakin)
@@ -44,6 +45,8 @@ difference.
 - Imports is now it's own package and is cleaned up significantly
 - Replace templates (hidden flag) now use the ; separator not : for windows
   compatibility.
+- Rows affected is now on by default, this is a breaking change but easily
+  fixed by using the flag to turn it off.
 
 ### Removed
 

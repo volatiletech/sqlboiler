@@ -3,6 +3,40 @@
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
+{{if .AddGlobal -}}
+// {{$tableNameSingular}}ExistsG checks if the {{$tableNameSingular}} row exists.
+func {{$tableNameSingular}}ExistsG({{$pkArgs}}) (bool, error) {
+	return {{$tableNameSingular}}Exists(boil.GetDB(), {{$pkNames | join ", "}})
+}
+
+{{end -}}
+
+{{if .AddPanic -}}
+// {{$tableNameSingular}}ExistsP checks if the {{$tableNameSingular}} row exists. Panics on error.
+func {{$tableNameSingular}}ExistsP(exec boil.Executor, {{$pkArgs}}) bool {
+	e, err := {{$tableNameSingular}}Exists(exec, {{$pkNames | join ", "}})
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return e
+}
+
+{{end -}}
+
+{{if and .AddGlobal .AddPanic -}}
+// {{$tableNameSingular}}ExistsGP checks if the {{$tableNameSingular}} row exists. Panics on error.
+func {{$tableNameSingular}}ExistsGP({{$pkArgs}}) bool {
+	e, err := {{$tableNameSingular}}Exists(boil.GetDB(), {{$pkNames | join ", "}})
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return e
+}
+
+{{end -}}
+
 // {{$tableNameSingular}}Exists checks if the {{$tableNameSingular}} row exists.
 func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error) {
 	var exists bool
@@ -25,29 +59,4 @@ func {{$tableNameSingular}}Exists(exec boil.Executor, {{$pkArgs}}) (bool, error)
 	}
 
 	return exists, nil
-}
-
-// {{$tableNameSingular}}ExistsG checks if the {{$tableNameSingular}} row exists.
-func {{$tableNameSingular}}ExistsG({{$pkArgs}}) (bool, error) {
-	return {{$tableNameSingular}}Exists(boil.GetDB(), {{$pkNames | join ", "}})
-}
-
-// {{$tableNameSingular}}ExistsGP checks if the {{$tableNameSingular}} row exists. Panics on error.
-func {{$tableNameSingular}}ExistsGP({{$pkArgs}}) bool {
-	e, err := {{$tableNameSingular}}Exists(boil.GetDB(), {{$pkNames | join ", "}})
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
-}
-
-// {{$tableNameSingular}}ExistsP checks if the {{$tableNameSingular}} row exists. Panics on error.
-func {{$tableNameSingular}}ExistsP(exec boil.Executor, {{$pkArgs}}) bool {
-	e, err := {{$tableNameSingular}}Exists(exec, {{$pkNames | join ", "}})
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return e
 }

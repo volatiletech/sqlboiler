@@ -3,11 +3,28 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
+{{if .AddGlobal -}}
 // Find{{$tableNameSingular}}G retrieves a single record by ID.
 func Find{{$tableNameSingular}}G({{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
 	return Find{{$tableNameSingular}}(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
 }
 
+{{end -}}
+
+{{if .AddPanic -}}
+// Find{{$tableNameSingular}}P retrieves a single record by ID with an executor, and panics on error.
+func Find{{$tableNameSingular}}P(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
+	retobj, err := Find{{$tableNameSingular}}(exec, {{$pkNames | join ", "}}, selectCols...)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return retobj
+}
+
+{{end -}}
+
+{{if and .AddGlobal .AddPanic -}}
 // Find{{$tableNameSingular}}GP retrieves a single record by ID, and panics on error.
 func Find{{$tableNameSingular}}GP({{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
 	retobj, err := Find{{$tableNameSingular}}(boil.GetDB(), {{$pkNames | join ", "}}, selectCols...)
@@ -17,6 +34,8 @@ func Find{{$tableNameSingular}}GP({{$pkArgs}}, selectCols ...string) *{{$tableNa
 
 	return retobj
 }
+
+{{end -}}
 
 // Find{{$tableNameSingular}} retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
@@ -42,14 +61,4 @@ func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...s
 	}
 
 	return {{$varNameSingular}}Obj, nil
-}
-
-// Find{{$tableNameSingular}}P retrieves a single record by ID with an executor, and panics on error.
-func Find{{$tableNameSingular}}P(exec boil.Executor, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-	retobj, err := Find{{$tableNameSingular}}(exec, {{$pkNames | join ", "}}, selectCols...)
-	if err != nil {
-		panic(boil.WrapErr(err))
-	}
-
-	return retobj
 }

@@ -1,11 +1,15 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
+{{if .AddGlobal -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
 func (o *{{$tableNameSingular}}) UpsertG(updateColumns []string, whitelist ...string) error {
 	return o.Upsert(boil.GetDB(), updateColumns, whitelist...)
 }
 
+{{end -}}
+
+{{if and .AddGlobal .AddPanic -}}
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
 func (o *{{$tableNameSingular}}) UpsertGP(updateColumns []string, whitelist ...string) {
 	if err := o.Upsert(boil.GetDB(), updateColumns, whitelist...); err != nil {
@@ -13,6 +17,9 @@ func (o *{{$tableNameSingular}}) UpsertGP(updateColumns []string, whitelist ...s
 	}
 }
 
+{{end -}}
+
+{{if .AddPanic -}}
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
 func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, updateColumns []string, whitelist ...string) {
@@ -20,6 +27,8 @@ func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, updateColumns []str
 		panic(boil.WrapErr(err))
 	}
 }
+
+{{end -}}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateColumns []string, whitelist ...string) error {

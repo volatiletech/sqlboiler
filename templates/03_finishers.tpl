@@ -1,5 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{if .AddPanic -}}
 // OneP returns a single {{$varNameSingular}} record from the query, and panics on error.
 func (q {{$varNameSingular}}Query) OneP() (*{{$tableNameSingular}}) {
 	o, err := q.One()
@@ -9,6 +10,8 @@ func (q {{$varNameSingular}}Query) OneP() (*{{$tableNameSingular}}) {
 
 	return o
 }
+
+{{end -}}
 
 // One returns a single {{$varNameSingular}} record from the query.
 func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
@@ -33,6 +36,7 @@ func (q {{$varNameSingular}}Query) One() (*{{$tableNameSingular}}, error) {
 	return o, nil
 }
 
+{{if .AddPanic -}}
 // AllP returns all {{$tableNameSingular}} records from the query, and panics on error.
 func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
 	o, err := q.All()
@@ -42,6 +46,8 @@ func (q {{$varNameSingular}}Query) AllP() {{$tableNameSingular}}Slice {
 
 	return o
 }
+
+{{end -}}
 
 // All returns all {{$tableNameSingular}} records from the query.
 func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
@@ -65,6 +71,7 @@ func (q {{$varNameSingular}}Query) All() ({{$tableNameSingular}}Slice, error) {
 	return o, nil
 }
 
+{{if .AddPanic -}}
 // CountP returns the count of all {{$tableNameSingular}} records in the query, and panics on error.
 func (q {{$varNameSingular}}Query) CountP() int64 {
 	c, err := q.Count()
@@ -74,6 +81,8 @@ func (q {{$varNameSingular}}Query) CountP() int64 {
 
 	return c
 }
+
+{{end -}}
 
 // Count returns the count of all {{$tableNameSingular}} records in the query.
 func (q {{$varNameSingular}}Query) Count() (int64, error) {
@@ -90,6 +99,7 @@ func (q {{$varNameSingular}}Query) Count() (int64, error) {
 	return count, nil
 }
 
+{{if .AddPanic -}}
 // Exists checks if the row exists in the table, and panics on error.
 func (q {{$varNameSingular}}Query) ExistsP() bool {
 	e, err := q.Exists()
@@ -99,6 +109,8 @@ func (q {{$varNameSingular}}Query) ExistsP() bool {
 
 	return e
 }
+
+{{end -}}
 
 // Exists checks if the row exists in the table.
 func (q {{$varNameSingular}}Query) Exists() (bool, error) {

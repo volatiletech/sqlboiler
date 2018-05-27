@@ -16,6 +16,8 @@ type Config struct {
 	Tags             []string
 	Replacements     []string
 	Debug            bool
+	AddGlobal        bool
+	AddPanic         bool
 	NoTests          bool
 	NoHooks          bool
 	NoAutoTimestamps bool

@@ -93,6 +93,8 @@ func (s *State) Run() error {
 		Tables:           s.Tables,
 		DriverName:       s.Config.DriverName,
 		PkgName:          s.Config.PkgName,
+		AddGlobal:        s.Config.AddGlobal,
+		AddPanic:         s.Config.AddPanic,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
 		NoRowsAffected:   s.Config.NoRowsAffected,

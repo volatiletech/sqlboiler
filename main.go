@@ -97,6 +97,8 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-rows-affected", "", false, "Disable rows affected in the generated API")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
+	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
+	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel or snake (default snake)")
@@ -155,6 +157,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 		PkgName:          viper.GetString("pkgname"),
 		BaseDir:          viper.GetString("basedir"),
 		Debug:            viper.GetBool("debug"),
+		AddGlobal:        viper.GetBool("add-global-variants"),
+		AddPanic:         viper.GetBool("add-panic-variants"),
 		NoTests:          viper.GetBool("no-tests"),
 		NoHooks:          viper.GetBool("no-hooks"),
 		NoRowsAffected:   viper.GetBool("no-rows-affected"),

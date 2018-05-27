@@ -8,6 +8,7 @@
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 		{{- $foreignPKeyCols := (getTable $dot.Tables .ForeignTable).PKey.Columns -}}
 		{{- $foreignSchemaTable := .ForeignTable | $dot.SchemaTable}}
+{{if $.AddGlobal -}}
 // Add{{$txt.Function.Name}}G adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to o.R.{{$txt.Function.Name}}.
@@ -17,6 +18,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}G(insert bool, rel
 	return o.Add{{$txt.Function.Name}}(boil.GetDB(), insert, related...)
 }
 
+{{end -}}
+
+{{if $.AddPanic -}}
 // Add{{$txt.Function.Name}}P adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to o.R.{{$txt.Function.Name}}.
@@ -28,6 +32,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}P(exec boil.Execut
 	}
 }
 
+{{end -}}
+
+{{if and $.AddGlobal $.AddPanic -}}
 // Add{{$txt.Function.Name}}GP adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
 // Appends related to o.R.{{$txt.Function.Name}}.
@@ -38,6 +45,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}GP(insert bool, re
 		panic(boil.WrapErr(err))
 	}
 }
+
+{{end -}}
 
 // Add{{$txt.Function.Name}} adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
@@ -132,6 +141,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 }
 
 			{{- if (or .ForeignColumnNullable .ToJoinTable)}}
+{{if $.AddGlobal -}}
 // Set{{$txt.Function.Name}}G removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -143,6 +153,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}G(insert bool, rel
 	return o.Set{{$txt.Function.Name}}(boil.GetDB(), insert, related...)
 }
 
+{{end -}}
+
+{{if $.AddPanic -}}
 // Set{{$txt.Function.Name}}P removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -156,6 +169,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}P(exec boil.Execut
 	}
 }
 
+{{end -}}
+
+{{if and $.AddGlobal $.AddPanic -}}
 // Set{{$txt.Function.Name}}GP removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
 // in related items, optionally inserting them as new records.
@@ -168,6 +184,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}GP(insert bool, re
 		panic(boil.WrapErr(err))
 	}
 }
+
+{{end -}}
 
 // Set{{$txt.Function.Name}} removes all previously related items of the
 // {{$table.Name | singular}} replacing them completely with the passed
@@ -216,6 +234,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 	return o.Add{{$txt.Function.Name}}(exec, insert, related...)
 }
 
+{{if $.AddGlobal -}}
 // Remove{{$txt.Function.Name}}G relationships from objects passed in.
 // Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)
 // Sets related.R.{{$txt.Function.ForeignName}}.
@@ -224,6 +243,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}G(related ...*{
 	return o.Remove{{$txt.Function.Name}}(boil.GetDB(), related...)
 }
 
+{{end -}}
+
+{{if $.AddPanic -}}
 // Remove{{$txt.Function.Name}}P relationships from objects passed in.
 // Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)
 // Sets related.R.{{$txt.Function.ForeignName}}.
@@ -234,6 +256,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}P(exec boil.Exe
 	}
 }
 
+{{end -}}
+
+{{if and $.AddGlobal $.AddPanic -}}
 // Remove{{$txt.Function.Name}}GP relationships from objects passed in.
 // Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)
 // Sets related.R.{{$txt.Function.ForeignName}}.
@@ -243,6 +268,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}GP(related ...*
 		panic(boil.WrapErr(err))
 	}
 }
+
+{{end -}}
 
 // Remove{{$txt.Function.Name}} relationships from objects passed in.
 // Removes related items from R.{{$txt.Function.Name}} (uses pointer comparison, removal does not keep order)

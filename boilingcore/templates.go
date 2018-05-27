@@ -32,7 +32,9 @@ type templateData struct {
 	LQ string
 	RQ string
 
-	// Turn off auto timestamps or hook generation
+	// Control various generation features
+	AddGlobal        bool
+	AddPanic         bool
 	NoHooks          bool
 	NoAutoTimestamps bool
 	NoRowsAffected   bool

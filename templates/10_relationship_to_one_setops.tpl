@@ -6,6 +6,7 @@
 		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $varNameSingular := .Table | singular | camelCase}}
 		{{- $schemaTable := .Table | $dot.SchemaTable}}
+{{if $.AddGlobal -}}
 // Set{{$txt.Function.Name}}G of the {{.Table | singular}} to the related item.
 // Sets o.R.{{$txt.Function.Name}} to related.
 // Adds o to related.R.{{$txt.Function.ForeignName}}.
@@ -14,6 +15,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}G(insert bool, rel
 	return o.Set{{$txt.Function.Name}}(boil.GetDB(), insert, related)
 }
 
+{{end -}}
+
+{{if $.AddPanic -}}
 // Set{{$txt.Function.Name}}P of the {{.Table | singular}} to the related item.
 // Sets o.R.{{$txt.Function.Name}} to related.
 // Adds o to related.R.{{$txt.Function.ForeignName}}.
@@ -24,6 +28,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}P(exec boil.Execut
 	}
 }
 
+{{end -}}
+
+{{if and $.AddGlobal $.AddPanic -}}
 // Set{{$txt.Function.Name}}GP of the {{.Table | singular}} to the related item.
 // Sets o.R.{{$txt.Function.Name}} to related.
 // Adds o to related.R.{{$txt.Function.ForeignName}}.
@@ -33,6 +40,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}GP(insert bool, re
 		panic(boil.WrapErr(err))
 	}
 }
+
+{{end -}}
 
 // Set{{$txt.Function.Name}} of the {{.Table | singular}} to the related item.
 // Sets o.R.{{$txt.Function.Name}} to related.
@@ -96,6 +105,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 }
 
 		{{- if .Nullable}}
+{{if $.AddGlobal -}}
 // Remove{{$txt.Function.Name}}G relationship.
 // Sets o.R.{{$txt.Function.Name}} to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -104,6 +114,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}G(related *{{$t
 	return o.Remove{{$txt.Function.Name}}(boil.GetDB(), related)
 }
 
+{{end -}}
+
+{{if $.AddPanic -}}
 // Remove{{$txt.Function.Name}}P relationship.
 // Sets o.R.{{$txt.Function.Name}} to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -114,6 +127,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}P(exec boil.Exe
 	}
 }
 
+{{end -}}
+
+{{if and $.AddGlobal $.AddPanic -}}
 // Remove{{$txt.Function.Name}}GP relationship.
 // Sets o.R.{{$txt.Function.Name}} to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
@@ -123,6 +139,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}GP(related *{{$
 		panic(boil.WrapErr(err))
 	}
 }
+
+{{end -}}
 
 // Remove{{$txt.Function.Name}} relationship.
 // Sets o.R.{{$txt.Function.Name}} to nil.

@@ -95,6 +95,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
+	rootCmd.PersistentFlags().BoolP("no-rows-affected", "", false, "Disable rows affected in the generated API")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
@@ -156,6 +157,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Debug:            viper.GetBool("debug"),
 		NoTests:          viper.GetBool("no-tests"),
 		NoHooks:          viper.GetBool("no-hooks"),
+		NoRowsAffected:   viper.GetBool("no-rows-affected"),
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 		Wipe:             viper.GetBool("wipe"),
 		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake

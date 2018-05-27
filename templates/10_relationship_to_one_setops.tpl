@@ -131,7 +131,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 	var err error
 
 	o.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
-	if err = o.Update(exec, "{{.Column}}"); err != nil {
+	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(exec, "{{.Column}}"); err != nil {
 		o.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}

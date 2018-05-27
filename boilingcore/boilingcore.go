@@ -89,13 +89,15 @@ func New(config *Config) (*State, error) {
 // Run executes the sqlboiler templates and outputs them to files based on the
 // state given.
 func (s *State) Run() error {
-	singletonData := &templateData{
+	data := &templateData{
 		Tables:           s.Tables,
 		DriverName:       s.Config.DriverName,
 		PkgName:          s.Config.PkgName,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
+		NoRowsAffected:   s.Config.NoRowsAffected,
 		StructTagCasing:  s.Config.StructTagCasing,
+		Tags:             s.Config.Tags,
 		Dialect:          s.Dialect,
 		LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
 		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
@@ -103,12 +105,12 @@ func (s *State) Run() error {
 		StringFuncs: templateStringMappers,
 	}
 
-	if err := generateSingletonOutput(s, singletonData); err != nil {
+	if err := generateSingletonOutput(s, data); err != nil {
 		return errors.Wrap(err, "singleton template output")
 	}
 
 	if !s.Config.NoTests {
-		if err := generateSingletonTestOutput(s, singletonData); err != nil {
+		if err := generateSingletonTestOutput(s, data); err != nil {
 			return errors.Wrap(err, "unable to generate singleton test template output")
 		}
 	}
@@ -118,21 +120,7 @@ func (s *State) Run() error {
 			continue
 		}
 
-		data := &templateData{
-			Tables:           s.Tables,
-			Table:            table,
-			DriverName:       s.Config.DriverName,
-			PkgName:          s.Config.PkgName,
-			NoHooks:          s.Config.NoHooks,
-			NoAutoTimestamps: s.Config.NoAutoTimestamps,
-			StructTagCasing:  s.Config.StructTagCasing,
-			Tags:             s.Config.Tags,
-			Dialect:          s.Dialect,
-			LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
-			RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
-
-			StringFuncs: templateStringMappers,
-		}
+		data.Table = table
 
 		// Generate the regular templates
 		if err := generateOutput(s, data); err != nil {

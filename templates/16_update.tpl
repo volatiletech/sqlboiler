@@ -3,26 +3,35 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) error {
+func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	return o.Update(boil.GetDB(), whitelist...)
 }
 
 // UpdateGP a single {{$tableNameSingular}} record.
 // UpdateGP takes a whitelist of column names that should be updated.
 // Panics on error. See Update for whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {
-	if err := o.Update(boil.GetDB(), whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update(boil.GetDB(), whitelist...)
+	if err != nil {
 		panic(boil.WrapErr(err))
 	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
 }
 
 // UpdateP uses an executor to update the {{$tableNameSingular}}, and panics on error.
 // See Update for whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... string) {
-	err := o.Update(exec, whitelist...)
+func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... string) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update(exec, whitelist...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
 }
 
 // Update uses an executor to update the {{$tableNameSingular}}.
@@ -32,13 +41,13 @@ func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... strin
 // - All primary keys are subtracted from this set
 // Update does not automatically update the record in case of default values. Use .Reload()
 // to refresh the records.
-func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) error {
+func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	{{- template "timestamp_update_helper" . -}}
 
 	var err error
 	{{if not .NoHooks -}}
 	if err = o.doBeforeUpdateHooks(exec); err != nil {
-		return err
+		return {{if not .NoRowsAffected}}0, {{end -}} err
 	}
 	{{end -}}
 
@@ -62,7 +71,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		}
 		{{end -}}
 		if len(wl) == 0 {
-			return errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
+			return {{if not .NoRowsAffected}}0, {{end -}} errors.New("{{.PkgName}}: unable to update {{.Table.Name}}, could not build whitelist")
 		}
 
 		cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
@@ -71,7 +80,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		)
 		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, append(wl, {{$varNameSingular}}PrimaryKeyColumns...))
 		if err != nil {
-			return err
+			return {{if not .NoRowsAffected}}0, {{end -}} err
 		}
 	}
 
@@ -82,10 +91,23 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 
+	{{if .NoRowsAffected -}}
 	_, err = exec.Exec(cache.query, values...)
+	{{else -}}
+	var result sql.Result
+	result, err = exec.Exec(cache.query, values...)
+	{{end -}}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
 	}
+
+	{{if not .NoRowsAffected -}}
+	rowsAff, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "{{.PkgName}}: failed to get rows affected by update for {{.Table.Name}}")
+	}
+
+	{{end -}}
 
 	if !cached {
 		{{$varNameSingular}}UpdateCacheMut.Lock()
@@ -94,59 +116,86 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	}
 
 	{{if not .NoHooks -}}
-	return o.doAfterUpdateHooks(exec)
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} o.doAfterUpdateHooks(exec)
 	{{- else -}}
-	return nil
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 	{{- end}}
 }
 
 // UpdateAllP updates all rows with matching column names, and panics on error.
-func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {
-	if err := q.UpdateAll(cols); err != nil {
+func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.UpdateAll(cols)
+	if err != nil {
 		panic(boil.WrapErr(err))
 	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q {{$varNameSingular}}Query) UpdateAll(cols M) error {
+func (q {{$varNameSingular}}Query) UpdateAll(cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	queries.SetUpdate(q.Query, cols)
 
+	{{if .NoRowsAffected -}}
 	_, err := q.Query.Exec()
+	{{else -}}
+	result, err := q.Query.Exec()
+	{{end -}}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to update all for {{.Table.Name}}")
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to update all for {{.Table.Name}}")
 	}
 
-	return nil
+	{{if not .NoRowsAffected -}}
+	rowsAff, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "{{.PkgName}}: unable to retrieve rows affected for {{.Table.Name}}")
+	}
+
+	{{end -}}
+
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 }
 
 // UpdateAllG updates all rows with the specified column values.
-func (o {{$tableNameSingular}}Slice) UpdateAllG(cols M) error {
+func (o {{$tableNameSingular}}Slice) UpdateAllG(cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	return o.UpdateAll(boil.GetDB(), cols)
 }
 
 // UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o {{$tableNameSingular}}Slice) UpdateAllGP(cols M) {
-	if err := o.UpdateAll(boil.GetDB(), cols); err != nil {
+func (o {{$tableNameSingular}}Slice) UpdateAllGP(cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.UpdateAll(boil.GetDB(), cols)
+	if err != nil {
 		panic(boil.WrapErr(err))
 	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
 }
 
 // UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o {{$tableNameSingular}}Slice) UpdateAllP(exec boil.Executor, cols M) {
-	if err := o.UpdateAll(exec, cols); err != nil {
+func (o {{$tableNameSingular}}Slice) UpdateAllP(exec boil.Executor, cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.UpdateAll(exec, cols)
+	if err != nil {
 		panic(boil.WrapErr(err))
 	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error {
+func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	ln := int64(len(o))
 	if ln == 0 {
-		return nil
+		return {{if not .NoRowsAffected}}0, {{end -}} nil
 	}
 
 	if len(cols) == 0 {
-		return errors.New("{{.PkgName}}: update all requires at least one column argument")
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.New("{{.PkgName}}: update all requires at least one column argument")
 	}
 
 	colNames := make([]string, len(cols))
@@ -174,10 +223,21 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) error
 		fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
+	{{if .NoRowsAffected -}}
 	_, err := exec.Exec(sql, args...)
+	{{else -}}
+	result, err := exec.Exec(sql, args...)
+	{{end -}}
 	if err != nil {
-		return errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")
 	}
 
-	return nil
+	{{if not .NoRowsAffected -}}
+	rowsAff, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "{{.PkgName}}: unable to retrieve rows affected all in update all {{$varNameSingular}}")
+	}
+	{{end -}}
+
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 }

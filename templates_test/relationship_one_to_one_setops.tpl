@@ -77,7 +77,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
 		}
 
-		if err = x.Delete(tx); err != nil {
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete(tx); err != nil {
 			t.Fatal("failed to delete x", err)
 		}
 	}

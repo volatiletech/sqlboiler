@@ -18,9 +18,19 @@ func test{{$tableNamePlural}}Delete(t *testing.T) {
 		t.Error(err)
 	}
 
+	{{if .NoRowsAffected -}}
 	if err = {{$varNameSingular}}.Delete(tx); err != nil {
 		t.Error(err)
 	}
+
+	{{else -}}
+	if rowsAff, err := {{$varNameSingular}}.Delete(tx); err != nil {
+		t.Error(err)
+	} else if rowsAff != 1 {
+		t.Error("should only have deleted one row, but affected:", rowsAff)
+	}
+
+	{{end -}}
 
 	count, err := {{$tableNamePlural}}(tx).Count()
 	if err != nil {
@@ -48,9 +58,19 @@ func test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
+	{{if .NoRowsAffected -}}
 	if err = {{$tableNamePlural}}(tx).DeleteAll(); err != nil {
 		t.Error(err)
 	}
+
+	{{else -}}
+	if rowsAff, err := {{$tableNamePlural}}(tx).DeleteAll(); err != nil {
+		t.Error(err)
+	} else if rowsAff != 1 {
+		t.Error("should only have deleted one row, but affected:", rowsAff)
+	}
+
+	{{end -}}
 
 	count, err := {{$tableNamePlural}}(tx).Count()
 	if err != nil {
@@ -80,9 +100,19 @@ func test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
 
 	slice := {{$tableNameSingular}}Slice{{"{"}}{{$varNameSingular}}{{"}"}}
 
+	{{if .NoRowsAffected -}}
 	if err = slice.DeleteAll(tx); err != nil {
 		t.Error(err)
 	}
+
+	{{else -}}
+	if rowsAff, err := slice.DeleteAll(tx); err != nil {
+		t.Error(err)
+	} else if rowsAff != 1 {
+		t.Error("should only have deleted one row, but affected:", rowsAff)
+	}
+
+	{{end -}}
 
 	count, err := {{$tableNamePlural}}(tx).Count()
 	if err != nil {

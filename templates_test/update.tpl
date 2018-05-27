@@ -5,6 +5,9 @@
 func test{{$tableNamePlural}}Update(t *testing.T) {
 	t.Parallel()
 
+	if 0 == len({{$varNameSingular}}PrimaryKeyColumns) {
+		t.Skip("Skipping table with no primary key columns")
+	}
 	if len({{$varNameSingular}}Columns) == len({{$varNameSingular}}PrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
@@ -31,13 +34,21 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 		t.Error("want one record, got:", count)
 	}
 
-	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, {{$varNameSingular}}, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
+	{{if .NoRowsAffected -}}
 	if err = {{$varNameSingular}}.Update(tx); err != nil {
 		t.Error(err)
 	}
+	{{else -}}
+	if rowsAff, err := {{$varNameSingular}}.Update(tx); err != nil {
+		t.Error(err)
+	} else if rowsAff != 1 {
+		t.Error("should only affect one row but affected", rowsAff)
+	}
+	{{end -}}
 }
 
 func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
@@ -97,7 +108,15 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 	}
 
 	slice := {{$tableNameSingular}}Slice{{"{"}}{{$varNameSingular}}{{"}"}}
+	{{if .NoRowsAffected -}}
 	if err = slice.UpdateAll(tx, updateMap); err != nil {
 		t.Error(err)
 	}
+	{{else -}}
+	if rowsAff, err := slice.UpdateAll(tx, updateMap); err != nil {
+		t.Error(err)
+	} else if rowsAff != 1 {
+		t.Error("wanted one record updated but got", rowsAff)
+	}
+	{{end -}}
 }

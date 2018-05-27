@@ -276,7 +276,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 			rel.R.{{$txt.Function.ForeignName}} = nil
 		}
 		{{end -}}
-		if err = rel.Update(exec, "{{.ForeignColumn}}"); err != nil {
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = rel.Update(exec, "{{.ForeignColumn}}"); err != nil {
 			return err
 		}
 	}

@@ -35,6 +35,7 @@ type templateData struct {
 	// Turn off auto timestamps or hook generation
 	NoHooks          bool
 	NoAutoTimestamps bool
+	NoRowsAffected   bool
 
 	// Tags control which tags are added to the struct
 	Tags []string

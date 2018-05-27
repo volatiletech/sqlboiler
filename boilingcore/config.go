@@ -19,6 +19,7 @@ type Config struct {
 	NoTests          bool
 	NoHooks          bool
 	NoAutoTimestamps bool
+	NoRowsAffected   bool
 	Wipe             bool
 	StructTagCasing  string
 

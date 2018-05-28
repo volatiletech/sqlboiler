@@ -49,6 +49,7 @@ difference.
   fixed by using the flag to turn it off.
 - Panic and Global variants are now hidden behind flags. This reduces the size
   of the generated code by 15%. We may remove them entirely in the future.
+- Changed all $dot references to $. as is proper
 
 ### Removed
 

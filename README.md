@@ -202,6 +202,9 @@ fmt.Println(len(users.R.FavoriteMovies))
   it's models and without this enabled any models with `DATE`/`DATETIME` columns will not work.
 
 ### Pro Tips
+* It's highly recommended to use transactions where sqlboiler will be doing
+  multiple database calls (relationship setops with insertions for example) for
+  both performance and data integrity.
 * Foreign key column names should end with `_id`.
   * Foreign key column names in the format `x_id` will generate clearer method names.
   It is advisable to use this naming convention whenever it makes sense for your database schema.
@@ -674,8 +677,10 @@ Where("(name=? OR age=?) AND height=?", "John", 24, 183)
 
 ### Function Variations
 
-You will find that most functions have the following variations. We've used the
-```Delete``` method to demonstrate:
+Functions can have variations generated for them by using the flags
+`--add-global-variants` and `--add-panic-variants`. Once you've used these
+flags or set the appropriate values in your configuration file extra method
+overloads will be generated. We've used the `Delete` method to demonstrate:
 
 ```go
 // Set the global db handle for G method variants.
@@ -689,7 +694,7 @@ err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil
 pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
 
 db.Begin()              // Normal sql package way of creating a transaction
-boil.Begin()            // Uses the global database handle set by boil.SetDB()
+boil.Begin()            // Uses the global database handle set by boil.SetDB() (doesn't require flag)
 ```
 
 Note that it's slightly different for query building.
@@ -880,6 +885,11 @@ We provide the following methods for managing relationships on objects:
 - `AddX()`: Add more relationships to the existing set of related Xs: pilot.AddLanguages(...)
 - `SetX()`: Remove all existing relationships, and replace them with the provided set: pilot.SetLanguages(...)
 - `RemoveX()`: Remove all provided relationships: pilot.RemoveLanguages(...)
+
+**Important**: Remember to use transactions around these set helpers for performance
+and data integrity. SQLBoiler does not do this automatically due to it's transparent API which allows
+you to batch any number of calls in a transaction without spawning subtransactions you don't know
+about or are not supported by your database.
 
 **To One** code examples:
 

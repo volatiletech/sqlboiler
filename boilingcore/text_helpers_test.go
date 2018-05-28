@@ -26,6 +26,7 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.LocalTable.NameGo = "Jet"
 	expect.LocalTable.ColumnNameGo = "PilotID"
 
+	expect.ForeignTable.Name = "pilot"
 	expect.ForeignTable.NameGo = "Pilot"
 	expect.ForeignTable.NamePluralGo = "Pilots"
 	expect.ForeignTable.ColumnName = "id"
@@ -48,6 +49,7 @@ func TestTxtsFromOne(t *testing.T) {
 	expect.LocalTable.NameGo = "Jet"
 	expect.LocalTable.ColumnNameGo = "AirportID"
 
+	expect.ForeignTable.Name = "airport"
 	expect.ForeignTable.NameGo = "Airport"
 	expect.ForeignTable.NamePluralGo = "Airports"
 	expect.ForeignTable.ColumnName = "id"
@@ -97,6 +99,7 @@ func TestTxtsFromOneToOne(t *testing.T) {
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
+	expect.ForeignTable.Name = "jet"
 	expect.ForeignTable.NameGo = "Jet"
 	expect.ForeignTable.NamePluralGo = "Jets"
 	expect.ForeignTable.ColumnName = "pilot_id"
@@ -127,6 +130,7 @@ func TestTxtsFromMany(t *testing.T) {
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
+	expect.ForeignTable.Name = "license"
 	expect.ForeignTable.NameGo = "License"
 	expect.ForeignTable.NamePluralGo = "Licenses"
 	expect.ForeignTable.NameHumanReadable = "licenses"
@@ -147,6 +151,7 @@ func TestTxtsFromMany(t *testing.T) {
 	expect.LocalTable.NameGo = "Pilot"
 	expect.LocalTable.ColumnNameGo = "ID"
 
+	expect.ForeignTable.Name = "language"
 	expect.ForeignTable.NameGo = "Language"
 	expect.ForeignTable.NamePluralGo = "Languages"
 	expect.ForeignTable.NameHumanReadable = "languages"

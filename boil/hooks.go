@@ -15,3 +15,15 @@ const (
 	AfterDeleteHook
 	AfterUpsertHook
 )
+
+// QueryHookPoint is the point in time at which we hook query
+type QueryHookPoint int
+
+// the query hook point constants
+const (
+	InsertHook QueryHookPoint = iota + 1
+	SelectHook
+	UpdateHook
+	DeleteHook
+	UpsertHook
+)

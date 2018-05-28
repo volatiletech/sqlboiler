@@ -316,7 +316,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "null.Bool"
 		case "date", "datetime", "timestamp":
 			c.Type = "null.Time"
-		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob", "geometry", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon", "geometrycollection":
 			c.Type = "null.Bytes"
 		case "json":
 			c.Type = "types.JSON"
@@ -366,7 +366,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 			c.Type = "bool"
 		case "date", "datetime", "timestamp":
 			c.Type = "time.Time"
-		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob", "geometry", "point", "linestring", "polygon", "multipoint", "multilinestring", "multipolygon", "geometrycollection":
 			c.Type = "[]byte"
 		case "json":
 			c.Type = "types.JSON"

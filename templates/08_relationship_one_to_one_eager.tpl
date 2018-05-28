@@ -34,16 +34,20 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		}
 	}
 
-	query := fmt.Sprintf(
-		"select * from {{.ForeignTable | $dot.SchemaTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
+	q := {{$txt.ForeignTable.NamePluralGo}}(e,
+		qm.WhereIn(
+			"{{.ForeignColumn | $dot.Quotes}} in ?",
+			args...,
+		),
 	)
 
-	if boil.DebugMode {
-		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	{{if not $dot.NoHooks -}}
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
+		return err
 	}
+	{{- end}}
 
-	results, err := e.Query(query, args...)
+	results, err := q.Query.Query()
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{$txt.ForeignTable.NameGo}}")
 	}

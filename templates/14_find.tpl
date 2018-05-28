@@ -1,5 +1,6 @@
 {{- $tableNameSingular := .Table.Name | singular | titleCase -}}
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
@@ -23,15 +24,19 @@ func Find{{$tableNameSingular}}GP({{$pkArgs}}, selectCols ...string) *{{$tableNa
 func Find{{$tableNameSingular}}(exec boil.Executor, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
 	{{$varNameSingular}}Obj := &{{$tableNameSingular}}{}
 
-	sel := "*"
-	if len(selectCols) > 0 {
-		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
-	}
-	query := fmt.Sprintf(
-		"select %s from {{.Table.Name | .SchemaTable}} where {{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", sel,
+	q := {{$tableNamePlural}}(exec,
+		qm.Select(selectCols...),
+		qm.Where(
+			"{{if .Dialect.IndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}",
+			{{$pkNames | join ", "}},
+		),
 	)
 
-	q := queries.Raw(exec, query, {{$pkNames | join ", "}})
+	{{if not .NoHooks -}}
+	if err := q.doSelectHooks(queries.GetExecutor(q.Query)); nil != err {
+		return nil, err
+	}
+	{{- end}}
 
 	err := q.Bind({{$varNameSingular}}Obj)
 	if err != nil {

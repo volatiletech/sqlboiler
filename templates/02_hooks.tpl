@@ -134,4 +134,81 @@ func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}
 			{{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
 	}
 }
+
+var {{$varNameSingular}}QueryInsertHooks []{{$tableNameSingular}}QueryHook
+var {{$varNameSingular}}QuerySelectHooks []{{$tableNameSingular}}QueryHook
+var {{$varNameSingular}}QueryUpdateHooks []{{$tableNameSingular}}QueryHook
+var {{$varNameSingular}}QueryDeleteHooks []{{$tableNameSingular}}QueryHook
+var {{$varNameSingular}}QueryUpsertHooks []{{$tableNameSingular}}QueryHook
+
+// doInsertHooks executes all "insert" hooks.
+func (q {{$varNameSingular}}Query) doInsertHooks(exec boil.Executor) (err error) {
+	for _, hook := range {{$varNameSingular}}QueryInsertHooks {
+		if err := hook(exec, q.Query); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doSelectHooks executes all "select" hooks.
+func (q {{$varNameSingular}}Query) doSelectHooks(exec boil.Executor) (err error) {
+	for _, hook := range {{$varNameSingular}}QuerySelectHooks {
+		if err := hook(exec, q.Query); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doUpdateHooks executes all "update" hooks.
+func (q {{$varNameSingular}}Query) doUpdateHooks(exec boil.Executor) (err error) {
+	for _, hook := range {{$varNameSingular}}QueryUpdateHooks {
+		if err := hook(exec, q.Query); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doDeleteHooks executes all "delete" hooks.
+func (q {{$varNameSingular}}Query) doDeleteHooks(exec boil.Executor) (err error) {
+	for _, hook := range {{$varNameSingular}}QueryDeleteHooks {
+		if err := hook(exec, q.Query); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doUpsertHooks executes all "upsert" hooks.
+func (q {{$varNameSingular}}Query) doUpsertHooks(exec boil.Executor) (err error) {
+	for _, hook := range {{$varNameSingular}}QueryUpsertHooks {
+		if err := hook(exec, q.Query); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Add{{$tableNameSingular}}QueryHook registers your query hook function for all future operations.
+func Add{{$tableNameSingular}}QueryHook(hookPoint boil.QueryHookPoint, {{$varNameSingular}}QueryHook {{$tableNameSingular}}QueryHook) {
+	switch hookPoint {
+		case boil.InsertHook:
+			{{$varNameSingular}}QueryInsertHooks = append({{$varNameSingular}}QueryInsertHooks, {{$varNameSingular}}QueryHook)
+		case boil.SelectHook:
+			{{$varNameSingular}}QuerySelectHooks = append({{$varNameSingular}}QuerySelectHooks, {{$varNameSingular}}QueryHook)
+		case boil.UpdateHook:
+			{{$varNameSingular}}QueryUpdateHooks = append({{$varNameSingular}}QueryUpdateHooks, {{$varNameSingular}}QueryHook)
+		case boil.DeleteHook:
+			{{$varNameSingular}}QueryDeleteHooks = append({{$varNameSingular}}QueryDeleteHooks, {{$varNameSingular}}QueryHook)
+		case boil.UpsertHook:
+			{{$varNameSingular}}QueryUpsertHooks = append({{$varNameSingular}}QueryUpsertHooks, {{$varNameSingular}}QueryHook)
+	}
+}
 {{- end}}

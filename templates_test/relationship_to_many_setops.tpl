@@ -1,11 +1,10 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
 	{{- $varNameSingular := .Table | singular | camelCase -}}
 	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-	{{- $txt := txtsFromToMany $dot.Tables $table .}}
+	{{- $txt := txtsFromToMany $.Tables $table .}}
 func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 

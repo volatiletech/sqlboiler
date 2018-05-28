@@ -1,8 +1,7 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $.Tables $.Table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {

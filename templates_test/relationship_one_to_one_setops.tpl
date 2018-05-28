@@ -1,11 +1,10 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.ToOneRelationships -}}
-		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table .}}
+		{{- $txt := txtsFromOneToOne $.Tables $.Table .}}
 {{- $varNameSingular := .Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-{{- $foreignPKeyCols := (getTable $dot.Tables .ForeignTable).PKey.Columns}}
+{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns}}
 func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
@@ -55,7 +54,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		}
 
 		{{if setInclude .ForeignColumn $foreignPKeyCols -}}
-		if exists, err := {{$txt.ForeignTable.NameGo}}Exists(tx, x.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", x."}}); err != nil {
+		if exists, err := {{$txt.ForeignTable.NameGo}}Exists(tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
 			t.Fatal(err)
 		} else if !exists {
 			t.Error("want 'x' to exist")

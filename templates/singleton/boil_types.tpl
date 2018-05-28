@@ -58,7 +58,6 @@ MySQL output looks like:    TableNameColNameEnumValue = "enumvalue"
 
 It only titlecases the EnumValue portion if it's snake-cased.
 */}}
-{{$dot := . -}}
 {{$once := onceNew}}
 {{- range $table := .Tables -}}
 	{{- range $col := $table.Columns | filterColumnsByEnum -}}

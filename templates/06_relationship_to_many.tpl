@@ -1,11 +1,10 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $txt := txtsFromToMany $dot.Tables $table . -}}
-		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}
+		{{- $txt := txtsFromToMany $.Tables $table . -}}
+		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
 {{if $.AddGlobal -}}
 // {{$txt.Function.Name}}G retrieves all the {{.ForeignTable | singular}}'s {{$txt.ForeignTable.NameHumanReadable}}
 {{- if not (eq $txt.Function.Name $txt.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
@@ -26,12 +25,12 @@ func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, 
 		{{if .ToJoinTable -}}
 	queryMods = append(queryMods,
 		{{$schemaJoinTable := .JoinTable | $.SchemaTable -}}
-		qm.InnerJoin("{{$schemaJoinTable}} on {{$schemaForeignTable}}.{{.ForeignColumn | $dot.Quotes}} = {{$schemaJoinTable}}.{{.JoinForeignColumn | $dot.Quotes}}"),
-		qm.Where("{{$schemaJoinTable}}.{{.JoinLocalColumn | $dot.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		qm.InnerJoin("{{$schemaJoinTable}} on {{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}} = {{$schemaJoinTable}}.{{.JoinForeignColumn | $.Quotes}}"),
+		qm.Where("{{$schemaJoinTable}}.{{.JoinLocalColumn | $.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
 	)
 		{{else -}}
 	queryMods = append(queryMods,
-		qm.Where("{{$schemaForeignTable}}.{{.ForeignColumn | $dot.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		qm.Where("{{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
 	)
 		{{end}}
 

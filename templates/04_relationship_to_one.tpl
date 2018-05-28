@@ -1,8 +1,7 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $.Tables $.Table . -}}
 		{{- $varNameSingular := .ForeignTable | singular | camelCase}}
 {{if $.AddGlobal -}}
 // {{$txt.Function.Name}}G pointed to by the foreign key.
@@ -21,7 +20,7 @@ func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(exec boil.Executor, 
 	queryMods = append(queryMods, mods...)
 
 	query := {{$txt.ForeignTable.NamePluralGo}}(exec, queryMods...)
-	queries.SetFrom(query.Query, "{{.ForeignTable | $dot.SchemaTable}}")
+	queries.SetFrom(query.Query, "{{.ForeignTable | $.SchemaTable}}")
 
 	return query
 }

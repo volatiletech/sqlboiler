@@ -1,11 +1,10 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
-		{{- $txt := txtsFromToMany $dot.Tables $dot.Table . -}}
+		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
+		{{- $txt := txtsFromToMany $.Tables $.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
-		{{- $schemaForeignTable := .ForeignTable | $dot.SchemaTable}}
+		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
@@ -36,14 +35,14 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 
 		{{if .ToJoinTable -}}
-			{{- $schemaJoinTable := .JoinTable | $dot.SchemaTable -}}
+			{{- $schemaJoinTable := .JoinTable | $.SchemaTable -}}
 	query := fmt.Sprintf(
-		"select {{id 0 | $dot.Quotes}}.*, {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} from {{$schemaForeignTable}} as {{id 0 | $dot.Quotes}} inner join {{$schemaJoinTable}} as {{id 1 | $dot.Quotes}} on {{id 0 | $dot.Quotes}}.{{.ForeignColumn | $dot.Quotes}} = {{id 1 | $dot.Quotes}}.{{.JoinForeignColumn | $dot.Quotes}} where {{id 1 | $dot.Quotes}}.{{.JoinLocalColumn | $dot.Quotes}} in (%s)",
+		"select {{id 0 | $.Quotes}}.*, {{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} from {{$schemaForeignTable}} as {{id 0 | $.Quotes}} inner join {{$schemaJoinTable}} as {{id 1 | $.Quotes}} on {{id 0 | $.Quotes}}.{{.ForeignColumn | $.Quotes}} = {{id 1 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}} where {{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in (%s)",
 		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
 	)
 		{{else -}}
 	query := fmt.Sprintf(
-		"select * from {{$schemaForeignTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
+		"select * from {{$schemaForeignTable}} where {{.ForeignColumn | $.Quotes}} in (%s)",
 		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
 	)
 		{{end -}}
@@ -60,15 +59,15 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 
 	var resultSlice []*{{$txt.ForeignTable.NameGo}}
 	{{if .ToJoinTable -}}
-	{{- $foreignTable := getTable $dot.Tables .ForeignTable -}}
-	{{- $joinTable := getTable $dot.Tables .JoinTable -}}
+	{{- $foreignTable := getTable $.Tables .ForeignTable -}}
+	{{- $joinTable := getTable $.Tables .JoinTable -}}
 	{{- $localCol := $joinTable.GetColumn .JoinLocalColumn}}
 	var localJoinCols []{{$localCol.Type}}
 	for results.Next() {
 		one := new({{$txt.ForeignTable.NameGo}})
 		var localJoinCol {{$localCol.Type}}
 
-		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $dot.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
+		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
 		if err = results.Err(); err != nil {
 			return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
 		}
@@ -86,7 +85,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 	{{end}}
 
-	{{if not $dot.NoHooks -}}
+	{{if not $.NoHooks -}}
 	if len({{.ForeignTable | singular | camelCase}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {

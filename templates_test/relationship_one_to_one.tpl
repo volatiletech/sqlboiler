@@ -1,8 +1,7 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.ToOneRelationships -}}
-		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {

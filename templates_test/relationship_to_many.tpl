@@ -1,9 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . }}
 	{{- $table := .Table }}
 	{{- range .Table.ToManyRelationships -}}
-	{{- $txt := txtsFromToMany $dot.Tables $table .}}
+	{{- $txt := txtsFromToMany $.Tables $table .}}
 	{{- $varNameSingular := .Table | singular | camelCase -}}
 	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
 func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
@@ -44,11 +43,11 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	}
 
 	{{if .ToJoinTable -}}
-	_, err = tx.Exec("insert into {{.JoinTable | $dot.SchemaTable}} ({{.JoinLocalColumn | $dot.Quotes}}, {{.JoinForeignColumn | $dot.Quotes}}) values {{if $dot.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$txt.LocalTable.ColumnNameGo}}, b.{{$txt.ForeignTable.ColumnNameGo}})
+	_, err = tx.Exec("insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$txt.LocalTable.ColumnNameGo}}, b.{{$txt.ForeignTable.ColumnNameGo}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = tx.Exec("insert into {{.JoinTable | $dot.SchemaTable}} ({{.JoinLocalColumn | $dot.Quotes}}, {{.JoinForeignColumn | $dot.Quotes}}) values {{if $dot.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$txt.LocalTable.ColumnNameGo}}, c.{{$txt.ForeignTable.ColumnNameGo}})
+	_, err = tx.Exec("insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$txt.LocalTable.ColumnNameGo}}, c.{{$txt.ForeignTable.ColumnNameGo}})
 	if err != nil {
 		t.Fatal(err)
 	}

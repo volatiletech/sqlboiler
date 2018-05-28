@@ -1,8 +1,7 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table .}}
+		{{- $txt := txtsFromFKey $.Tables $.Table .}}
 {{- $varNameSingular := .Table | singular | camelCase -}}
 {{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
@@ -60,8 +59,8 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}})
 		}
 
-		{{if setInclude .Column $dot.Table.PKey.Columns -}}
-		if exists, err := {{$txt.LocalTable.NameGo}}Exists(tx, a.{{$dot.Table.PKey.Columns | stringMap $dot.StringFuncs.titleCase | join ", a."}}); err != nil {
+		{{if setInclude .Column $.Table.PKey.Columns -}}
+		if exists, err := {{$txt.LocalTable.NameGo}}Exists(tx, a.{{$.Table.PKey.Columns | stringMap $.StringFuncs.titleCase | join ", a."}}); err != nil {
 			t.Fatal(err)
 		} else if !exists {
 			t.Error("want 'a' to exist")

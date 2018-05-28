@@ -1,9 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.ToOneRelationships -}}
-		{{- $txt := txtsFromOneToOne $dot.Tables $dot.Table . -}}
-		{{- $varNameSingular := $dot.Table.Name | singular | camelCase -}}
+		{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
+		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
@@ -35,7 +34,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	}
 
 	query := fmt.Sprintf(
-		"select * from {{.ForeignTable | $dot.SchemaTable}} where {{.ForeignColumn | $dot.Quotes}} in (%s)",
+		"select * from {{.ForeignTable | $.SchemaTable}} where {{.ForeignColumn | $.Quotes}} in (%s)",
 		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
 	)
 
@@ -54,7 +53,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		return errors.Wrap(err, "failed to bind eager loaded slice {{$txt.ForeignTable.NameGo}}")
 	}
 
-	{{if not $dot.NoHooks -}}
+	{{if not $.NoHooks -}}
 	if len({{$varNameSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(e); err != nil {

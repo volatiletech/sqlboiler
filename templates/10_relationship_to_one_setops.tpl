@@ -1,11 +1,10 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $dot.Tables $dot.Table . -}}
+		{{- $txt := txtsFromFKey $.Tables $.Table . -}}
 		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $varNameSingular := .Table | singular | camelCase}}
-		{{- $schemaTable := .Table | $dot.SchemaTable}}
+		{{- $schemaTable := .Table | $.SchemaTable}}
 {{if $.AddGlobal -}}
 // Set{{$txt.Function.Name}}G of the {{.Table | singular}} to the related item.
 // Sets o.R.{{$txt.Function.Name}} to related.
@@ -56,10 +55,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executo
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE {{$schemaTable}} SET %s WHERE %s",
-		strmangle.SetParamNames("{{$dot.LQ}}", "{{$dot.RQ}}", {{if $dot.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.Column}}"{{"}"}}),
-		strmangle.WhereClause("{{$dot.LQ}}", "{{$dot.RQ}}", {{if $dot.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns),
+		strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.Column}}"{{"}"}}),
+		strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns),
 	)
-	values := []interface{}{related.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$dot.Table.PKey.Columns | stringMap $dot.StringFuncs.titleCase | join ", o."}}{{"}"}}
+	values := []interface{}{related.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$.Table.PKey.Columns | stringMap $.StringFuncs.titleCase | join ", o."}}{{"}"}}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)

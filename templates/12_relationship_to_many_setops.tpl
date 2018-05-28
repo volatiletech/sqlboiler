@@ -1,13 +1,12 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $dot := . -}}
 	{{- $table := .Table -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- $txt := txtsFromToMany $dot.Tables $table . -}}
+		{{- $txt := txtsFromToMany $.Tables $table . -}}
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
-		{{- $foreignPKeyCols := (getTable $dot.Tables .ForeignTable).PKey.Columns -}}
-		{{- $foreignSchemaTable := .ForeignTable | $dot.SchemaTable}}
+		{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns -}}
+		{{- $foreignSchemaTable := .ForeignTable | $.SchemaTable}}
 {{if $.AddGlobal -}}
 // Add{{$txt.Function.Name}}G adds the given related objects to the existing relationships
 // of the {{$table.Name | singular}}, optionally inserting them as new records.
@@ -69,10 +68,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 		}{{if not .ToJoinTable}} else {
 			updateQuery := fmt.Sprintf(
 				"UPDATE {{$foreignSchemaTable}} SET %s WHERE %s",
-				strmangle.SetParamNames("{{$dot.LQ}}", "{{$dot.RQ}}", {{if $dot.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.ForeignColumn}}"{{"}"}}),
-				strmangle.WhereClause("{{$dot.LQ}}", "{{$dot.RQ}}", {{if $dot.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$foreignVarNameSingular}}PrimaryKeyColumns),
+				strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.ForeignColumn}}"{{"}"}}),
+				strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$foreignVarNameSingular}}PrimaryKeyColumns),
 			)
-			values := []interface{}{o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$foreignPKeyCols | stringMap $dot.StringFuncs.titleCase | join ", rel."}}{{"}"}}
+			values := []interface{}{o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", rel."}}{{"}"}}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -92,7 +91,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}(exec boil.Executo
 
 	{{if .ToJoinTable -}}
 	for _, rel := range related {
-		query := "insert into {{.JoinTable | $dot.SchemaTable}} ({{.JoinLocalColumn | $dot.Quotes}}, {{.JoinForeignColumn | $dot.Quotes}}) values {{if $dot.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}"
+		query := "insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}"
 		values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}, rel.{{$txt.ForeignTable.ColumnNameGo}}}
 
 		if boil.DebugMode {
@@ -195,10 +194,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}GP(insert bool, re
 // Sets related.R.{{$txt.Function.ForeignName}}'s {{$txt.Function.Name}} accordingly.
 func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}(exec boil.Executor, insert bool, related ...*{{$txt.ForeignTable.NameGo}}) error {
 	{{if .ToJoinTable -}}
-	query := "delete from {{.JoinTable | $dot.SchemaTable}} where {{.JoinLocalColumn | $dot.Quotes}} = {{if $dot.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}"
+	query := "delete from {{.JoinTable | $.SchemaTable}} where {{.JoinLocalColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}"
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}
 	{{else -}}
-	query := "update {{.ForeignTable | $dot.SchemaTable}} set {{.ForeignColumn | $dot.Quotes}} = null where {{.ForeignColumn | $dot.Quotes}} = {{if $dot.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}"
+	query := "update {{.ForeignTable | $.SchemaTable}} set {{.ForeignColumn | $.Quotes}} = null where {{.ForeignColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}"
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}
 	{{end -}}
 	if boil.DebugMode {
@@ -278,7 +277,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}(exec boil.Exec
 	var err error
 	{{if .ToJoinTable -}}
 	query := fmt.Sprintf(
-		"delete from {{.JoinTable | $dot.SchemaTable}} where {{.JoinLocalColumn | $dot.Quotes}} = {{if $dot.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}} and {{.JoinForeignColumn | $dot.Quotes}} in (%s)",
+		"delete from {{.JoinTable | $.SchemaTable}} where {{.JoinLocalColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}} and {{.JoinForeignColumn | $.Quotes}} in (%s)",
 		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
 	)
 	values := []interface{}{{"{"}}o.{{$txt.LocalTable.ColumnNameGo}}}

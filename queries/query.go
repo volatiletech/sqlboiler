@@ -157,6 +157,14 @@ func SetSQL(q *Query, sql string, args ...interface{}) {
 	q.rawSQL = rawSQL{sql: sql, args: args}
 }
 
+// SetArgs is primarily for re-use of a query so that the
+// query text does not need to be re-generated, useful
+// if you're performing the same query with different arguments
+// over and over.
+func SetArgs(q *Query, args ...interface{}) {
+	q.rawSQL.args = args
+}
+
 // SetLoad on the query.
 func SetLoad(q *Query, relationships ...string) {
 	q.load = append([]string(nil), relationships...)

@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -139,10 +140,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	driverName := args[0]
 	driverPath := args[0]
+
 	if strings.ContainsRune(driverName, os.PathSeparator) {
 		driverName = strings.Replace(filepath.Base(driverName), "sqlboiler-", "", 1)
 	} else {
 		driverPath = "sqlboiler-" + driverPath
+		if p, err := exec.LookPath(driverPath); err == nil {
+			driverPath = p
+		}
 	}
 
 	driverPath, err = filepath.Abs(driverPath)
@@ -167,6 +172,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake
 		Tags:             viper.GetStringSlice("tag"),
 		Replacements:     viper.GetStringSlice("replace"),
+	}
+
+	if cmdConfig.Debug {
+		fmt.Fprintln(os.Stderr, "using driver:", driverPath)
 	}
 
 	// Configure the driver

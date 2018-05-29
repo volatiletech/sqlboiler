@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add many more driver dialect flags to be able to remove all the DriverName
   comparisons inside sqlboiler templates. This allows us to more cleanly support
   more drivers.
+- Add ability to override imports via config file
 
 ### Changed
 
@@ -39,7 +40,11 @@ difference.
 - Drivers can now take any configuration via environment or config files. This
   allows drivers to be much more configurable and there's no constraints
   imposed by the main/testing of sqlboiler itself.
-- Schema is no longer a sqlboiler level configuration setting. Instead it is
+- MySQL driver no longer accepts `tinyint_as_bool` via command line. Instead
+  the flag has been inverted (tinyint_as_int) to stop the automatic bool
+  conversion and it's now passed in as a driver configuration setting (via the
+  env or config).
+- Schema is no longer an sqlboiler level configuration setting. Instead it is
   passed back to sqlboiler when the driver is asked to produce the information
   for the database we're generating for.
 - Imports is now it's own package and is cleaned up significantly

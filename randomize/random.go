@@ -12,7 +12,7 @@ const alphabetLowerAlpha = "abcdefghijklmnopqrstuvwxyz"
 func randStr(s *Seed, ln int) string {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(alphabetAll[s.nextInt()%len(alphabetAll)])
+		str[i] = byte(alphabetAll[s.NextInt()%len(alphabetAll)])
 	}
 
 	return string(str)
@@ -21,7 +21,7 @@ func randStr(s *Seed, ln int) string {
 func randByteSlice(s *Seed, ln int) []byte {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(s.nextInt() % 256)
+		str[i] = byte(s.NextInt() % 256)
 	}
 
 	return str
@@ -71,15 +71,15 @@ func randMacAddr() string {
 	)
 }
 
-func randLsn() string {
-	a := rand.Int63n(9000000)
-	b := rand.Int63n(9000000)
+func randLsn(s *Seed) string {
+	a := s.NextInt() % 9000000
+	b := s.NextInt() % 9000000
 	return fmt.Sprintf("%d/%d", a, b)
 }
 
-func randTxID() string {
+func randTxID(s *Seed) string {
 	// Order of integers is relevant
-	a := rand.Intn(200) + 100
+	a := s.NextInt()%200 + 100
 	b := a + 100
 	c := a
 	d := a + 50
@@ -87,7 +87,7 @@ func randTxID() string {
 }
 
 func randMoney(s *Seed) string {
-	return fmt.Sprintf("%d.00", s.nextInt())
+	return fmt.Sprintf("%d.00", s.NextInt())
 }
 
 // StableDBName takes a database name in, and generates

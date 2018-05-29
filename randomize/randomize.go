@@ -86,7 +86,7 @@ func NewSeed() *Seed {
 	return (*Seed)(s)
 }
 
-func (s *Seed) nextInt() int {
+func (s *Seed) NextInt() int {
 	return int(atomic.AddInt64((*int64)(s), 1) % math.MaxInt32)
 }
 
@@ -153,9 +153,9 @@ func Struct(s *Seed, str interface{}, colTypes map[string]string, canBeNull bool
 // not cause mismatches in the test data comparisons.
 func randDate(s *Seed) time.Time {
 	t := time.Date(
-		1972+s.nextInt()%60,
-		time.Month(1+(s.nextInt()%12)),
-		1+(s.nextInt()%25),
+		1972+s.NextInt()%60,
+		time.Month(1+(s.NextInt()%12)),
+		1+(s.NextInt()%25),
 		0,
 		0,
 		0,
@@ -184,7 +184,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 		}
 
 		if kind == reflect.Struct {
-			val := null.NewString(enum, s.nextInt()%2 == 0)
+			val := null.NewString(enum, s.NextInt()%2 == 0)
 			field.Set(reflect.ValueOf(val))
 		} else {
 			field.Set(reflect.ValueOf(enum))
@@ -205,7 +205,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			switch typ {
 			case typeNullString:
 				if fieldType == "interval" {
-					value = null.NewString(strconv.Itoa((s.nextInt()%26)+2)+" days", true)
+					value = null.NewString(strconv.Itoa((s.NextInt()%26)+2)+" days", true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -262,7 +262,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			case typeNullInt32:
 				if fieldType == "mediumint" {
 					// 8388607 is the max for 3 byte int
-					value = null.NewInt32(int32(s.nextInt())%8388607, true)
+					value = null.NewInt32(int32(s.NextInt())%8388607, true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -272,8 +272,8 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				return nil
 			case typeHStore:
 				value := types.HStore{}
-				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
-				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.NextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.NextInt()%3 == 0}
 				field.Set(reflect.ValueOf(value))
 				return nil
 			case typePoint:
@@ -338,7 +338,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			switch kind {
 			case reflect.String:
 				if fieldType == "interval" {
-					value = strconv.Itoa((s.nextInt()%26)+2) + " days"
+					value = strconv.Itoa((s.NextInt()%26)+2) + " days"
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -394,7 +394,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 			case reflect.Int32:
 				if fieldType == "mediumint" {
 					// 8388607 is the max for 3 byte int
-					value = int32(s.nextInt()) % 8388607
+					value = int32(s.NextInt()) % 8388607
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -406,8 +406,8 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				return nil
 			case typeHStore:
 				value := types.HStore{}
-				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
-				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.nextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.NextInt()%3 == 0}
+				value[randStr(s, 3)] = sql.NullString{String: randStr(s, 3), Valid: s.NextInt()%3 == 0}
 				field.Set(reflect.ValueOf(value))
 				return nil
 			case typePoint:
@@ -474,7 +474,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 	// depending on the canBeNull flag.
 	if canBeNull {
 		// 1 in 3 chance of being null or zero value
-		isNull = s.nextInt()%3 == 0
+		isNull = s.NextInt()%3 == 0
 	} else {
 		// if canBeNull is false, then never return null values.
 		isNull = false
@@ -513,14 +513,14 @@ func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} 
 	fieldType = strings.TrimLeft(fieldType, "ARRAY")
 	switch typ {
 	case typeInt64Array:
-		return types.Int64Array{int64(s.nextInt()), int64(s.nextInt())}
+		return types.Int64Array{int64(s.NextInt()), int64(s.NextInt())}
 	case typeFloat64Array:
-		return types.Float64Array{float64(s.nextInt()), float64(s.nextInt())}
+		return types.Float64Array{float64(s.NextInt()), float64(s.NextInt())}
 	case typeBoolArray:
-		return types.BoolArray{s.nextInt()%2 == 0, s.nextInt()%2 == 0, s.nextInt()%2 == 0}
+		return types.BoolArray{s.NextInt()%2 == 0, s.NextInt()%2 == 0, s.NextInt()%2 == 0}
 	case typeStringArray:
 		if fieldType == "interval" {
-			value := strconv.Itoa((s.nextInt()%26)+2) + " days"
+			value := strconv.Itoa((s.NextInt()%26)+2) + " days"
 			return types.StringArray{value, value}
 		}
 		if fieldType == "uuid" {
@@ -629,35 +629,35 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 	case typeTime:
 		return randDate(s)
 	case typeNullBool:
-		return null.NewBool(s.nextInt()%2 == 0, true)
+		return null.NewBool(s.NextInt()%2 == 0, true)
 	case typeNullString:
 		return null.NewString(randStr(s, 1), true)
 	case typeNullTime:
 		return null.NewTime(randDate(s), true)
 	case typeNullFloat32:
-		return null.NewFloat32(float32(s.nextInt()%10)/10.0+float32(s.nextInt()%10), true)
+		return null.NewFloat32(float32(s.NextInt()%10)/10.0+float32(s.NextInt()%10), true)
 	case typeNullFloat64:
-		return null.NewFloat64(float64(s.nextInt()%10)/10.0+float64(s.nextInt()%10), true)
+		return null.NewFloat64(float64(s.NextInt()%10)/10.0+float64(s.NextInt()%10), true)
 	case typeNullInt:
-		return null.NewInt(int(int32(s.nextInt()%math.MaxInt32)), true)
+		return null.NewInt(int(int32(s.NextInt()%math.MaxInt32)), true)
 	case typeNullInt8:
-		return null.NewInt8(int8(s.nextInt()%math.MaxInt8), true)
+		return null.NewInt8(int8(s.NextInt()%math.MaxInt8), true)
 	case typeNullInt16:
-		return null.NewInt16(int16(s.nextInt()%math.MaxInt16), true)
+		return null.NewInt16(int16(s.NextInt()%math.MaxInt16), true)
 	case typeNullInt32:
-		return null.NewInt32(int32(s.nextInt()%math.MaxInt32), true)
+		return null.NewInt32(int32(s.NextInt()%math.MaxInt32), true)
 	case typeNullInt64:
-		return null.NewInt64(int64(s.nextInt()), true)
+		return null.NewInt64(int64(s.NextInt()), true)
 	case typeNullUint:
-		return null.NewUint(uint(s.nextInt()), true)
+		return null.NewUint(uint(s.NextInt()), true)
 	case typeNullUint8:
-		return null.NewUint8(uint8(s.nextInt()%math.MaxUint8), true)
+		return null.NewUint8(uint8(s.NextInt()%math.MaxUint8), true)
 	case typeNullUint16:
-		return null.NewUint16(uint16(s.nextInt()%math.MaxUint16), true)
+		return null.NewUint16(uint16(s.NextInt()%math.MaxUint16), true)
 	case typeNullUint32:
-		return null.NewUint32(uint32(s.nextInt()%math.MaxUint32), true)
+		return null.NewUint32(uint32(s.NextInt()%math.MaxUint32), true)
 	case typeNullUint64:
-		return null.NewUint64(uint64(s.nextInt()), true)
+		return null.NewUint64(uint64(s.NextInt()), true)
 	case typeNullBytes:
 		return null.NewBytes(randByteSlice(s, 1), true)
 	case typeNullByte:
@@ -671,7 +671,7 @@ func getStructRandValue(s *Seed, typ reflect.Type) interface{} {
 func getVariableZeroValue(s *Seed, kind reflect.Kind, typ reflect.Type) interface{} {
 	switch typ.String() {
 	case "types.Byte":
-		// Decimal 65 is 'A'. 0 is not a valid UTF8, so cannot use a zero value here.
+		// Decimal 65 is 'A'. 0 is not valid UTF8, so cannot use a zero value here.
 		return types.Byte(65)
 	}
 
@@ -722,29 +722,29 @@ func getVariableRandValue(s *Seed, kind reflect.Kind, typ reflect.Type) interfac
 
 	switch kind {
 	case reflect.Float32:
-		return float32(float32(s.nextInt()%10)/10.0 + float32(s.nextInt()%10))
+		return float32(float32(s.NextInt()%10)/10.0 + float32(s.NextInt()%10))
 	case reflect.Float64:
-		return float64(float64(s.nextInt()%10)/10.0 + float64(s.nextInt()%10))
+		return float64(float64(s.NextInt()%10)/10.0 + float64(s.NextInt()%10))
 	case reflect.Int:
-		return s.nextInt()
+		return s.NextInt()
 	case reflect.Int8:
-		return int8(s.nextInt() % math.MaxInt8)
+		return int8(s.NextInt() % math.MaxInt8)
 	case reflect.Int16:
-		return int16(s.nextInt() % math.MaxInt16)
+		return int16(s.NextInt() % math.MaxInt16)
 	case reflect.Int32:
-		return int32(s.nextInt() % math.MaxInt32)
+		return int32(s.NextInt() % math.MaxInt32)
 	case reflect.Int64:
-		return int64(s.nextInt())
+		return int64(s.NextInt())
 	case reflect.Uint:
-		return uint(s.nextInt())
+		return uint(s.NextInt())
 	case reflect.Uint8:
-		return uint8(s.nextInt() % math.MaxUint8)
+		return uint8(s.NextInt() % math.MaxUint8)
 	case reflect.Uint16:
-		return uint16(s.nextInt() % math.MaxUint16)
+		return uint16(s.NextInt() % math.MaxUint16)
 	case reflect.Uint32:
-		return uint32(s.nextInt() % math.MaxUint32)
+		return uint32(s.NextInt() % math.MaxUint32)
 	case reflect.Uint64:
-		return uint64(s.nextInt())
+		return uint64(s.NextInt())
 	case reflect.Bool:
 		return true
 	case reflect.String:
@@ -766,5 +766,5 @@ func randEnumValue(s *Seed, enum string) (string, error) {
 		return "", fmt.Errorf("unable to parse enum string: %s", enum)
 	}
 
-	return vals[s.nextInt()%len(vals)], nil
+	return vals[s.NextInt()%len(vals)], nil
 }

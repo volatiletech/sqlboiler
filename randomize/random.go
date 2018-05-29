@@ -4,12 +4,19 @@ import (
 	"crypto/md5"
 	"fmt"
 	"math/rand"
+	"strconv"
+	"strings"
+	"time"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 const alphabetAll = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const alphabetLowerAlpha = "abcdefghijklmnopqrstuvwxyz"
 
-func randStr(s *Seed, ln int) string {
+// Str creates a randomized string from printable characters in the alphabet
+func Str(s *Seed, ln int) string {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
 		str[i] = byte(alphabetAll[s.NextInt()%len(alphabetAll)])
@@ -18,32 +25,92 @@ func randStr(s *Seed, ln int) string {
 	return string(str)
 }
 
-func randByteSlice(s *Seed, ln int) []byte {
+// FormattedString checks a field type to see if it's in a range of special
+// values and if so returns a randomized string for it.
+func FormattedString(s *Seed, fieldType string) (string, bool) {
+	if strings.HasPrefix(fieldType, "enum") {
+		enum, err := EnumValue(s, fieldType)
+		if err != nil {
+			panic(err)
+		}
+
+		return enum, true
+	}
+
+	switch fieldType {
+	case "json", "jsonb":
+		return `"` + Str(s, 1) + `"`, true
+	case "interval":
+		return strconv.Itoa((s.NextInt()%26)+2) + " days", true
+	case "uuid":
+		randomUUID, err := uuid.NewV4()
+		if err != nil {
+			panic(err)
+		}
+		return randomUUID.String(), true
+	case "cidr", "inet":
+		return randNetAddr(s), true
+	case "macaddr":
+		return randMacAddr(s), true
+	case "pg_lsn":
+		return randLsn(s), true
+	case "txid_snapshot":
+		return randTxID(s), true
+	case "money":
+		return randMoney(s), true
+	}
+
+	return "", false
+}
+
+// MediumInt is a special case in mysql (thanks for that -_-)
+// this function checks if the fieldtype matches and if so returns
+// a random value in the proper range.
+func MediumInt(s *Seed, fieldType string) (int32, bool) {
+	if fieldType == "mediumint" {
+		return int32(s.NextInt()) % 8388607, true
+	}
+
+	return 0, false
+}
+
+// Date generates a random time.Time between 1850 and 2050.
+// Only the Day/Month/Year columns are set so that Dates and DateTimes do
+// not cause mismatches in the test data comparisons.
+func Date(s *Seed) time.Time {
+	t := time.Date(
+		1972+s.NextInt()%60,
+		time.Month(1+(s.NextInt()%12)),
+		1+(s.NextInt()%25),
+		0,
+		0,
+		0,
+		0,
+		time.UTC,
+	)
+
+	return t
+}
+
+// EnumValue takes an enum field type, parses it's definition
+// to figure out valid values, and selects a random one from within them.
+func EnumValue(s *Seed, enum string) (string, error) {
+	vals := strmangle.ParseEnumVals(enum)
+	if vals == nil || len(vals) == 0 {
+		return "", fmt.Errorf("unable to parse enum string: %s", enum)
+	}
+
+	return vals[s.NextInt()%len(vals)], nil
+}
+
+// ByteSlice creates a random set of bytes (non-printables included)
+func ByteSlice(s *Seed, ln int) []byte {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
 		str[i] = byte(s.NextInt() % 256)
 	}
 
 	return str
-}
-
-func randPoint(s *Seed) string {
-	a := s.NextInt() % 100
-	b := a + 1
-	return fmt.Sprintf("(%d,%d)", a, b)
-}
-
-func randBox(s *Seed) string {
-	a := s.NextInt() % 100
-	b := a + 1
-	c := a + 2
-	d := a + 3
-	return fmt.Sprintf("(%d,%d),(%d,%d)", a, b, c, d)
-}
-
-func randCircle(s *Seed) string {
-	a, b, c := s.NextInt()%100, s.NextInt()%100, s.NextInt()%100
-	return fmt.Sprintf("((%d,%d),%d)", a, b, c)
 }
 
 func randNetAddr(s *Seed) string {

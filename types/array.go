@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"github.com/lib/pq/oid"
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 type parameterStatus struct {
@@ -565,6 +566,11 @@ func (a BoolArray) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
+// Randomize for sqlboiler
+func (a *BoolArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*a = BoolArray{seed.NextInt()%2 == 0, seed.NextInt()%2 == 0, seed.NextInt()%2 == 0}
+}
+
 // BytesArray represents a one-dimensional array of the PostgreSQL bytea type.
 type BytesArray [][]byte
 
@@ -636,6 +642,11 @@ func (a BytesArray) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
+// Randomize for sqlboiler
+func (a *BytesArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*a = BytesArray{randomize.ByteSlice(seed, 4), randomize.ByteSlice(seed, 4), randomize.ByteSlice(seed, 4)}
+}
+
 // Float64Array represents a one-dimensional array of the PostgreSQL double
 // precision type.
 type Float64Array []float64
@@ -696,6 +707,11 @@ func (a Float64Array) Value() (driver.Value, error) {
 	}
 
 	return "{}", nil
+}
+
+// Randomize for sqlboiler
+func (a *Float64Array) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*a = Float64Array{float64(seed.NextInt()), float64(seed.NextInt())}
 }
 
 // GenericArray implements the driver.Valuer and sql.Scanner interfaces for
@@ -914,6 +930,11 @@ func (a Int64Array) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
+// Randomize for sqlboiler
+func (a *Int64Array) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*a = Int64Array{int64(seed.NextInt()), int64(seed.NextInt())}
+}
+
 // StringArray represents a one-dimensional array of the PostgreSQL character types.
 type StringArray []string
 
@@ -973,6 +994,24 @@ func (a StringArray) Value() (driver.Value, error) {
 	}
 
 	return "{}", nil
+}
+
+// Randomize for sqlboiler
+func (a *StringArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	strs := make([]string, 2)
+	fieldType = strings.TrimPrefix(fieldType, "ARRAY")
+
+	for i := range strs {
+		val, ok := randomize.FormattedString(seed, fieldType)
+		if ok {
+			strs[i] = val
+			continue
+		}
+
+		strs[i] = randomize.Str(seed, 1)
+	}
+
+	*a = strs
 }
 
 // appendArray appends rv to the buffer, returning the extended buffer and

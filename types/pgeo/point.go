@@ -2,19 +2,23 @@ package pgeo
 
 import (
 	"database/sql/driver"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
-//Points are the fundamental two-dimensional building block for geometric types.
-//X and Y are the respective coordinates, as floating-point numbers
+// Point is the fundamental two-dimensional building block for geometric types.
+// X and Y are the respective coordinates, as floating-point numbers
 type Point struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
 }
 
+// Value representation for database
 func (p Point) Value() (driver.Value, error) {
 	return valuePoint(p)
 }
 
+// Scan from query
 func (p *Point) Scan(src interface{}) error {
 	return scanPoint(p, src)
 }
@@ -41,4 +45,26 @@ func scanPoint(p *Point, src interface{}) error {
 
 	return nil
 
+}
+
+func randPoint(seed *randomize.Seed) Point {
+	return Point{newRandNum(seed), newRandNum(seed)}
+}
+
+func randPoints(seed *randomize.Seed, n int) []Point {
+	var points = []Point{}
+	if n <= 0 {
+		return points
+	}
+
+	for i := 0; i < n; i++ {
+		points = append(points, randPoint(seed))
+	}
+
+	return points
+}
+
+// Randomize for sqlboiler
+func (p *Point) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*p = randPoint(seed)
 }

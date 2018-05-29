@@ -2,13 +2,17 @@ package pgeo
 
 import (
 	"database/sql/driver"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
+// NullPolygon allows polygon to be null
 type NullPolygon struct {
 	Polygon
 	Valid bool `json:"valid"`
 }
 
+// Value for database
 func (p NullPolygon) Value() (driver.Value, error) {
 	if !p.Valid {
 		return nil, nil
@@ -17,6 +21,7 @@ func (p NullPolygon) Value() (driver.Value, error) {
 	return valuePolygon(p.Polygon)
 }
 
+// Scan from sql query
 func (p *NullPolygon) Scan(src interface{}) error {
 	if src == nil {
 		p.Polygon, p.Valid = NewPolygon([]Point{Point{}, Point{}, Point{}, Point{}}), false
@@ -25,4 +30,15 @@ func (p *NullPolygon) Scan(src interface{}) error {
 
 	p.Valid = true
 	return scanPolygon(&p.Polygon, src)
+}
+
+// Randomize for sqlboiler
+func (p *NullPolygon) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	if shouldBeNull {
+		p.Valid = false
+		return
+	}
+
+	p.Valid = true
+	p.Polygon = randPolygon(seed)
 }

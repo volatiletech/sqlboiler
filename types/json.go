@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // JSON is an alias for json.RawMessage, which is
@@ -74,4 +76,9 @@ func (j *JSON) Scan(src interface{}) error {
 	*j = JSON(append((*j)[0:0], source...))
 
 	return nil
+}
+
+// Randomize for sqlboiler
+func (j *JSON) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*j = []byte(`"` + randomize.Str(seed, 1) + `"`)
 }

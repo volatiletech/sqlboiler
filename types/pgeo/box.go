@@ -4,15 +4,19 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
-//Boxes are represented by pairs of points that are opposite corners of the box.
+// Box is represented by pairs of points that are opposite corners of the box.
 type Box [2]Point
 
+// Value for the database
 func (b Box) Value() (driver.Value, error) {
 	return valueBox(b)
 }
 
+// Scan from sql query
 func (b *Box) Scan(src interface{}) error {
 	return scanBox(b, src)
 }
@@ -39,4 +43,13 @@ func scanBox(b *Box, src interface{}) error {
 	*b = NewBox(points[0], points[1])
 
 	return nil
+}
+
+func randBox(seed *randomize.Seed) Box {
+	return Box([2]Point{randPoint(seed), randPoint(seed)})
+}
+
+// Randomize for sqlboiler
+func (b *Box) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*b = randBox(seed)
 }

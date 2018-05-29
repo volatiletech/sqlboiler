@@ -2,13 +2,17 @@ package pgeo
 
 import (
 	"database/sql/driver"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
+// NullLseg allows line segment to be null
 type NullLseg struct {
 	Lseg
 	Valid bool `json:"valid"`
 }
 
+// Value for database
 func (l NullLseg) Value() (driver.Value, error) {
 	if !l.Valid {
 		return nil, nil
@@ -17,6 +21,7 @@ func (l NullLseg) Value() (driver.Value, error) {
 	return valueLseg(l.Lseg)
 }
 
+// Scan from sql query
 func (l *NullLseg) Scan(src interface{}) error {
 	if src == nil {
 		l.Lseg, l.Valid = NewLseg(Point{}, Point{}), false
@@ -25,4 +30,15 @@ func (l *NullLseg) Scan(src interface{}) error {
 
 	l.Valid = true
 	return scanLseg(&l.Lseg, src)
+}
+
+// Randomize for sqlboiler
+func (l *NullLseg) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	if shouldBeNull {
+		l.Valid = false
+		return
+	}
+
+	l.Valid = true
+	l.Lseg = randLseg(seed)
 }

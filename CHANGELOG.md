@@ -55,6 +55,8 @@ difference.
 - Panic and Global variants are now hidden behind flags. This reduces the size
   of the generated code by 15%. We may remove them entirely in the future.
 - Changed all $dot references to $. as is proper
+- Randomize now counts on an interface to do proper randomization for
+  custom types.
 
 ### Removed
 

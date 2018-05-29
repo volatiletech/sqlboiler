@@ -2,13 +2,17 @@ package pgeo
 
 import (
 	"database/sql/driver"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
+// NullLine allows line to be null
 type NullLine struct {
 	Line
 	Valid bool `json:"valid"`
 }
 
+// Value for database
 func (l NullLine) Value() (driver.Value, error) {
 	if !l.Valid {
 		return nil, nil
@@ -17,6 +21,7 @@ func (l NullLine) Value() (driver.Value, error) {
 	return valueLine(l.Line)
 }
 
+// Scan from sql query
 func (l *NullLine) Scan(src interface{}) error {
 	if src == nil {
 		l.Line, l.Valid = NewLine(0, 0, 0), false
@@ -25,4 +30,15 @@ func (l *NullLine) Scan(src interface{}) error {
 
 	l.Valid = true
 	return scanLine(&l.Line, src)
+}
+
+// Randomize for sqlboiler
+func (l *NullLine) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	if shouldBeNull {
+		l.Valid = false
+		return
+	}
+
+	l.Valid = true
+	l.Line = randLine(seed)
 }

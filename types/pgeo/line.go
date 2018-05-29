@@ -5,19 +5,23 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
-//Line represents a infinite line with the linear equation Ax + By + C = 0, where A and B are not both zero.
+// Line represents a infinite line with the linear equation Ax + By + C = 0, where A and B are not both zero.
 type Line struct {
 	A float64 `json:"a"`
 	B float64 `json:"b"`
 	C float64 `json:"c"`
 }
 
+// Value for database
 func (l Line) Value() (driver.Value, error) {
 	return valueLine(l)
 }
 
+// Scan from sql query
 func (l *Line) Scan(src interface{}) error {
 	return scanLine(l, src)
 }
@@ -50,4 +54,13 @@ func scanLine(l *Line, src interface{}) error {
 	*l = NewLine(nums[0], nums[1], nums[2])
 
 	return nil
+}
+
+func randLine(seed *randomize.Seed) Line {
+	return Line{newRandNum(seed), newRandNum(seed), 0}
+}
+
+// Randomize for sqlboiler
+func (l *Line) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*l = randLine(seed)
 }

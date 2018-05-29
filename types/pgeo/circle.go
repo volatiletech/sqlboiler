@@ -6,18 +6,22 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
-//Circles are represented by a center point and radius.
+// Circle is represented by a center point and radius.
 type Circle struct {
 	Point
 	Radius float64 `json:"radius"`
 }
 
+// Value for the database
 func (c Circle) Value() (driver.Value, error) {
 	return valueCircle(c)
 }
 
+// Scan from sql query
 func (c *Circle) Scan(src interface{}) error {
 	return scanCircle(c, src)
 }
@@ -56,4 +60,13 @@ func scanCircle(c *Circle, src interface{}) error {
 	*c = NewCircle(points[0], r)
 
 	return nil
+}
+
+func randCircle(seed *randomize.Seed) Circle {
+	return Circle{randPoint(seed), newRandNum(seed)}
+}
+
+// Randomize for sqlboiler
+func (c *Circle) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	*c = randCircle(seed)
 }

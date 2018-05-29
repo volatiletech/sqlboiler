@@ -3,12 +3,12 @@ package pgeo
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 func iToS(src interface{}) (string, error) {
@@ -98,7 +98,6 @@ func parsePointsSrc(src interface{}) ([]Point, error) {
 	return parsePoints(val)
 }
 
-func newRandNum() float64 {
-	rand.Seed(time.Now().UTC().UnixNano())
-	return rand.Float64() + float64(time.Now().Second()) + float64(rand.Intn(30))
+func newRandNum(s *randomize.Seed) float64 {
+	return float64(s.NextInt())
 }

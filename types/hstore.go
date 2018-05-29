@@ -23,6 +23,8 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"strings"
+
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // HStore is a wrapper for transferring HStore values back and forth easily.
@@ -132,4 +134,16 @@ func (h HStore) Value() (driver.Value, error) {
 		parts = append(parts, thispart)
 	}
 	return []byte(strings.Join(parts, ",")), nil
+}
+
+// Randomize for sqlboiler
+func (h *HStore) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	if shouldBeNull {
+		*h = nil
+		return
+	}
+
+	*h = make(map[string]sql.NullString)
+	(*h)[randomize.Str(seed, 3)] = sql.NullString{String: randomize.Str(seed, 3), Valid: seed.NextInt()%3 == 0}
+	(*h)[randomize.Str(seed, 3)] = sql.NullString{String: randomize.Str(seed, 3), Valid: seed.NextInt()%3 == 0}
 }

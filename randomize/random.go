@@ -27,40 +27,39 @@ func randByteSlice(s *Seed, ln int) []byte {
 	return str
 }
 
-func randPoint() string {
-	a := rand.Intn(100)
+func randPoint(s *Seed) string {
+	a := s.NextInt() % 100
 	b := a + 1
 	return fmt.Sprintf("(%d,%d)", a, b)
 }
 
-func randBox() string {
-	a := rand.Intn(100)
+func randBox(s *Seed) string {
+	a := s.NextInt() % 100
 	b := a + 1
 	c := a + 2
 	d := a + 3
 	return fmt.Sprintf("(%d,%d),(%d,%d)", a, b, c, d)
 }
 
-func randCircle() string {
-	a, b, c := rand.Intn(100), rand.Intn(100), rand.Intn(100)
+func randCircle(s *Seed) string {
+	a, b, c := s.NextInt()%100, s.NextInt()%100, s.NextInt()%100
 	return fmt.Sprintf("((%d,%d),%d)", a, b, c)
 }
 
-func randNetAddr() string {
+func randNetAddr(s *Seed) string {
 	return fmt.Sprintf(
 		"%d.%d.%d.%d",
-		rand.Intn(254)+1,
-		rand.Intn(254)+1,
-		rand.Intn(254)+1,
-		rand.Intn(254)+1,
+		s.NextInt()%254+1,
+		s.NextInt()%254+1,
+		s.NextInt()%254+1,
+		s.NextInt()%254+1,
 	)
 }
 
-func randMacAddr() string {
+func randMacAddr(s *Seed) string {
 	buf := make([]byte, 6)
-	_, err := rand.Read(buf)
-	if err != nil {
-		panic(err)
+	for i := range buf {
+		buf[i] = byte(s.NextInt())
 	}
 
 	// Set the local bit

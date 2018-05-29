@@ -86,6 +86,7 @@ func NewSeed() *Seed {
 	return (*Seed)(s)
 }
 
+// NextInt retrives an integer in order
 func (s *Seed) NextInt() int {
 	return int(atomic.AddInt64((*int64)(s), 1) % math.MaxInt32)
 }
@@ -220,37 +221,37 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				}
 				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
 					fieldType == "path" || fieldType == "polygon" {
-					value = null.NewString(randBox(), true)
+					value = null.NewString(randBox(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "cidr" || fieldType == "inet" {
-					value = null.NewString(randNetAddr(), true)
+					value = null.NewString(randNetAddr(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "macaddr" {
-					value = null.NewString(randMacAddr(), true)
+					value = null.NewString(randMacAddr(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "circle" {
-					value = null.NewString(randCircle(), true)
+					value = null.NewString(randCircle(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "pg_lsn" {
-					value = null.NewString(randLsn(), true)
+					value = null.NewString(randLsn(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "point" {
-					value = null.NewString(randPoint(), true)
+					value = null.NewString(randPoint(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "txid_snapshot" {
-					value = null.NewString(randTxID(), true)
+					value = null.NewString(randTxID(s), true)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -352,37 +353,37 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				}
 				if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
 					fieldType == "path" || fieldType == "polygon" {
-					value = randBox()
+					value = randBox(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "cidr" || fieldType == "inet" {
-					value = randNetAddr()
+					value = randNetAddr(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "macaddr" {
-					value = randMacAddr()
+					value = randMacAddr(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "circle" {
-					value = randCircle()
+					value = randCircle(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "pg_lsn" {
-					value = randLsn()
+					value = randLsn(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "point" {
-					value = randPoint()
+					value = randPoint(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
 				if fieldType == "txid_snapshot" {
-					value = randTxID()
+					value = randTxID(s)
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
@@ -533,31 +534,31 @@ func getArrayRandValue(s *Seed, typ reflect.Type, fieldType string) interface{} 
 		}
 		if fieldType == "box" || fieldType == "line" || fieldType == "lseg" ||
 			fieldType == "path" || fieldType == "polygon" {
-			value := randBox()
+			value := randBox(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "cidr" || fieldType == "inet" {
-			value := randNetAddr()
+			value := randNetAddr(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "macaddr" {
-			value := randMacAddr()
+			value := randMacAddr(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "circle" {
-			value := randCircle()
+			value := randCircle(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "pg_lsn" {
-			value := randLsn()
+			value := randLsn(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "point" {
-			value := randPoint()
+			value := randPoint(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "txid_snapshot" {
-			value := randTxID()
+			value := randTxID(s)
 			return types.StringArray{value, value}
 		}
 		if fieldType == "money" {

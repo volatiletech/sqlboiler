@@ -225,11 +225,8 @@ func configureImports() importers.Collection {
 	if viper.IsSet("imports.test_singleton") {
 		imports.TestSingleton = mustMap(importers.MapFromInterface(viper.Get("imports.test_singleton")))
 	}
-	if viper.IsSet("imports.test_main") {
-		imports.TestSingleton = mustMap(importers.MapFromInterface(viper.Get("imports.test_main")))
-	}
 	if viper.IsSet("imports.based_on_type") {
-		imports.TestSingleton = mustMap(importers.MapFromInterface(viper.Get("imports.based_on_type")))
+		imports.BasedOnType = mustMap(importers.MapFromInterface(viper.Get("imports.based_on_type")))
 	}
 
 	return imports

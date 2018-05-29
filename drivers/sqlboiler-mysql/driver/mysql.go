@@ -468,59 +468,59 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 
 	col.BasedOnType = importers.Map{
 		"null.Float32": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Float64": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Int": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Int8": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Int16": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Int32": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Int64": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Uint": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Uint8": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Uint16": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Uint32": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Uint64": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.String": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Bool": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Time": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"null.Bytes": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 
 		"time.Time": {
 			Standard: importers.List{`"time"`},
 		},
 		"null.JSON": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v6"`},
+			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
 		},
 		"types.JSON": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},

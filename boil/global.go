@@ -8,7 +8,8 @@ import (
 
 var (
 	// currentDB is a global database handle for the package
-	currentDB Executor
+	currentDB        Executor
+	currentContextDB ContextExecutor
 	// timestampLocation is the timezone used for the
 	// automated setting of created_at/updated_at columns
 	timestampLocation = time.UTC
@@ -26,11 +27,19 @@ var DebugWriter io.Writer = os.Stdout
 // SetDB initializes the database handle for all template db interactions
 func SetDB(db Executor) {
 	currentDB = db
+	if c, ok := currentDB.(ContextExecutor); ok {
+		currentContextDB = c
+	}
 }
 
 // GetDB retrieves the global state database handle
 func GetDB() Executor {
 	return currentDB
+}
+
+// GetContextDB retrieves the global state database handle as a context executor
+func GetContextDB() ContextExecutor {
+	return currentContextDB
 }
 
 // SetLocation sets the global timestamp Location.

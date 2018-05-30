@@ -7,7 +7,8 @@
 	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
 func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	var err error
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var a {{$txt.LocalTable.NameGo}}
@@ -18,7 +19,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
 	}
 
-	if err := a.Insert(tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
@@ -35,10 +36,10 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	b.{{$txt.Function.ForeignAssignment}} = a.{{$txt.Function.LocalAssignment}}
 	c.{{$txt.Function.ForeignAssignment}} = a.{{$txt.Function.LocalAssignment}}
 	{{- end}}
-	if err = b.Insert(tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert(tx); err != nil {
+	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
@@ -54,7 +55,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	{{end}}
 
 	{{$varname := .ForeignTable | singular | camelCase -}}
-	{{$varname}}, err := a.{{$txt.Function.Name}}(tx).All()
+	{{$varname}}, err := a.{{$txt.Function.Name}}().All({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +87,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	}
 
 	slice := {{$txt.LocalTable.NameGo}}Slice{&a}
-	if err = a.L.Load{{$txt.Function.Name}}(tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice)); err != nil {
+	if err = a.L.Load{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice)); err != nil {
 		t.Fatal(err)
 	}
 	if got := len(a.R.{{$txt.Function.Name}}); got != 2 {
@@ -94,7 +95,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	}
 
 	a.R.{{$txt.Function.Name}} = nil
-	if err = a.L.Load{{$txt.Function.Name}}(tx, true, &a); err != nil {
+	if err = a.L.Load{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &a); err != nil {
 		t.Fatal(err)
 	}
 	if got := len(a.R.{{$txt.Function.Name}}); got != 2 {

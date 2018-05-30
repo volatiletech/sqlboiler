@@ -17,13 +17,14 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}{{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}}{{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Upsert(tx, nil); err != nil {
+	if err = {{$varNameSingular}}.Upsert({{if not .NoContext}}ctx, {{end -}} tx, nil); err != nil {
 		t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
 	}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,11 +37,11 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	if err = {{$varNameSingular}}.Upsert(tx, nil); err != nil {
+	if err = {{$varNameSingular}}.Upsert({{if not .NoContext}}ctx, {{end -}} tx, nil); err != nil {
 		t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
 	}
 
-	count, err = {{$tableNamePlural}}(tx).Count()
+	count, err = {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}

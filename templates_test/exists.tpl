@@ -12,14 +12,15 @@ func test{{$tableNamePlural}}Exists(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	{{$pkeyArgs := .Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", " -}}
-	e, err := {{$tableNameSingular}}Exists(tx, {{$pkeyArgs}})
+	e, err := {{$tableNameSingular}}Exists({{if not .NoContext}}ctx, {{end -}} tx, {{$pkeyArgs}})
 	if err != nil {
 		t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
 	}

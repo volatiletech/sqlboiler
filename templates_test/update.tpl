@@ -19,13 +19,14 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -39,11 +40,11 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = {{$varNameSingular}}.Update(tx); err != nil {
+	if err = {{$varNameSingular}}.Update({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 	{{else -}}
-	if rowsAff, err := {{$varNameSingular}}.Update(tx); err != nil {
+	if rowsAff, err := {{$varNameSingular}}.Update({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only affect one row but affected", rowsAff)
@@ -65,13 +66,14 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -109,11 +111,11 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 
 	slice := {{$tableNameSingular}}Slice{{"{"}}{{$varNameSingular}}{{"}"}}
 	{{if .NoRowsAffected -}}
-	if err = slice.UpdateAll(tx, updateMap); err != nil {
+	if err = slice.UpdateAll({{if not .NoContext}}ctx, {{end -}} tx, updateMap); err != nil {
 		t.Error(err)
 	}
 	{{else -}}
-	if rowsAff, err := slice.UpdateAll(tx, updateMap); err != nil {
+	if rowsAff, err := slice.UpdateAll({{if not .NoContext}}ctx, {{end -}} tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)

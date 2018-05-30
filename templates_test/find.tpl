@@ -12,13 +12,14 @@ func test{{$tableNamePlural}}Find(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	{{$varNameSingular}}Found, err := Find{{$tableNameSingular}}(tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", "}})
+	{{$varNameSingular}}Found, err := Find{{$tableNameSingular}}({{if not .NoContext}}ctx, {{end -}} tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." $varNameSingular) | join ", "}})
 	if err != nil {
 		t.Error(err)
 	}

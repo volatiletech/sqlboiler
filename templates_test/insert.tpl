@@ -13,13 +13,14 @@ func test{{$tableNamePlural}}Insert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -39,13 +40,14 @@ func test{{$tableNamePlural}}InsertWhitelist(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx, {{$varNameSingular}}ColumnsWithoutDefault...); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx, {{$varNameSingular}}ColumnsWithoutDefault...); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}

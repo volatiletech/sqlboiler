@@ -18,6 +18,7 @@ type Config struct {
 	Debug            bool
 	AddGlobal        bool
 	AddPanic         bool
+	NoContext        bool
 	NoTests          bool
 	NoHooks          bool
 	NoAutoTimestamps bool

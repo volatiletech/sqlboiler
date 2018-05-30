@@ -3,8 +3,8 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // InsertG a single record. See Insert for whitelist behavior description.
-func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
-	return o.Insert(boil.GetDB(), whitelist...)
+func (o *{{$tableNameSingular}}) InsertG({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ... string) error {
+	return o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...)
 }
 
 {{end -}}
@@ -12,8 +12,8 @@ func (o *{{$tableNameSingular}}) InsertG(whitelist ... string) error {
 {{if .AddPanic -}}
 // InsertP a single record using an executor, and panics on error. See Insert
 // for whitelist behavior description.
-func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... string) {
-	if err := o.Insert(exec, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) {
+	if err := o.Insert({{if not .NoContext}}ctx, {{end -}} exec, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -23,8 +23,8 @@ func (o *{{$tableNameSingular}}) InsertP(exec boil.Executor, whitelist ... strin
 {{if and .AddGlobal .AddPanic -}}
 // InsertGP a single record, and panics on error. See Insert for whitelist
 // behavior description.
-func (o *{{$tableNameSingular}}) InsertGP(whitelist ... string) {
-	if err := o.Insert(boil.GetDB(), whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ... string) {
+	if err := o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -36,7 +36,7 @@ func (o *{{$tableNameSingular}}) InsertGP(whitelist ... string) {
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
 // - All columns without a default value are included (i.e. name, age)
 // - All columns with a default, but non-zero are included (i.e. health = 75)
-func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string) error {
+func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
 	}
@@ -45,7 +45,7 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	{{- template "timestamp_insert_helper" . }}
 
 	{{if not .NoHooks -}}
-	if err := o.doBeforeInsertHooks(exec); err != nil {
+	if err := o.doBeforeInsertHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
 		return err
 	}
 	{{- end}}
@@ -114,9 +114,17 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 	{{if .Dialect.UseLastInsertID -}}
 	{{- $canLastInsertID := .Table.CanLastInsertID -}}
 	{{if $canLastInsertID -}}
+		{{if .NoContext -}}
 	result, err := exec.Exec(cache.query, vals...)
+		{{else -}}
+	result, err := exec.ExecContext(ctx, cache.query, vals...)
+		{{end -}}
 	{{else -}}
+		{{if .NoContext -}}
 	_, err = exec.Exec(cache.query, vals...)
+		{{else -}}
+	_, err = exec.ExecContext(ctx, cache.query, vals...)
+		{{end -}}
 	{{- end}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
@@ -157,15 +165,27 @@ func (o *{{$tableNameSingular}}) Insert(exec boil.Executor, whitelist ... string
 		fmt.Fprintln(boil.DebugWriter, identifierCols...)
 	}
 
+	{{if .NoContext -}}
 	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+	{{else -}}
+	err = exec.QueryRowContext(ctx, cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 	}
 	{{else}}
 	if len(cache.retMapping) != 0 {
+		{{if .NoContext -}}
 		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		{{else -}}
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
+		{{end -}}
 	} else {
+		{{if .NoContext -}}
 		_, err = exec.Exec(cache.query, vals...)
+		{{else -}}
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		{{end -}}
 	}
 
 	if err != nil {
@@ -183,7 +203,7 @@ CacheNoHooks:
 	}
 
 	{{if not .NoHooks -}}
-	return o.doAfterInsertHooks(exec)
+	return o.doAfterInsertHooks({{if not .NoContext}}ctx, {{end -}} exec)
 	{{- else -}}
 	return nil
 	{{- end}}

@@ -60,6 +60,11 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to merge imports from driver")
 	}
 
+	if !s.Config.NoContext {
+		s.Config.Imports.All.Standard = append(s.Config.Imports.All.Standard, `"context"`)
+		s.Config.Imports.Test.Standard = append(s.Config.Imports.Test.Standard, `"context"`)
+	}
+
 	if s.Config.Debug {
 		b, err := json.Marshal(s.Tables)
 		if err != nil {
@@ -95,6 +100,7 @@ func (s *State) Run() error {
 		PkgName:          s.Config.PkgName,
 		AddGlobal:        s.Config.AddGlobal,
 		AddPanic:         s.Config.AddPanic,
+		NoContext:        s.Config.NoContext,
 		NoHooks:          s.Config.NoHooks,
 		NoAutoTimestamps: s.Config.NoAutoTimestamps,
 		NoRowsAffected:   s.Config.NoRowsAffected,

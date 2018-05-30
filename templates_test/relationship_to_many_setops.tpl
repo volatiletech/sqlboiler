@@ -8,7 +8,8 @@
 func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var a {{$txt.LocalTable.NameGo}}
@@ -25,13 +26,13 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 		}
 	}
 
-	if err := a.Insert(tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert(tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert(tx); err != nil {
+	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
@@ -41,7 +42,7 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.Add{{$txt.Function.Name}}(tx, i != 0, x...)
+		err = a.Add{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,7 +90,7 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.{{$txt.Function.Name}}(tx).Count()
+		count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -103,7 +104,8 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var a {{$txt.LocalTable.NameGo}}
@@ -120,22 +122,22 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 		}
 	}
 
-	if err = a.Insert(tx); err != nil {
+	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert(tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert(tx); err != nil {
+	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
-	err = a.Set{{$txt.Function.Name}}(tx, false, &b, &c)
+	err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.{{$txt.Function.Name}}(tx).Count()
+	count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,12 +145,12 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.Set{{$txt.Function.Name}}(tx, true, &d, &e)
+	err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &d, &e)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.{{$txt.Function.Name}}(tx).Count()
+	count, err = a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,7 +225,8 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var a {{$txt.LocalTable.NameGo}}
@@ -240,16 +243,16 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 		}
 	}
 
-	if err := a.Insert(tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
-	err = a.Add{{$txt.Function.Name}}(tx, true, foreigners...)
+	err = a.Add{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.{{$txt.Function.Name}}(tx).Count()
+	count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,12 +260,12 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.Remove{{$txt.Function.Name}}(tx, foreigners[:2]...)
+	err = a.Remove{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.{{$txt.Function.Name}}(tx).Count()
+	count, err = a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}

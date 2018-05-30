@@ -5,7 +5,7 @@
 func test{{$tableNamePlural}}(t *testing.T) {
 	t.Parallel()
 
-	query := {{$tableNamePlural}}(nil)
+	query := {{$tableNamePlural}}()
 
 	if query.Query == nil {
 		t.Error("expected a query, got nothing")

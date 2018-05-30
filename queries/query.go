@@ -1,6 +1,7 @@
 package queries
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -21,7 +22,6 @@ const (
 
 // Query holds the state for the built up query
 type Query struct {
-	executor   boil.Executor
 	dialect    *drivers.Dialect
 	rawSQL     rawSQL
 	load       []string
@@ -70,9 +70,8 @@ type join struct {
 }
 
 // Raw makes a raw query, usually for use with bind
-func Raw(exec boil.Executor, query string, args ...interface{}) *Query {
+func Raw(query string, args ...interface{}) *Query {
 	return &Query{
-		executor: exec,
 		rawSQL: rawSQL{
 			sql:  query,
 			args: args,
@@ -82,43 +81,73 @@ func Raw(exec boil.Executor, query string, args ...interface{}) *Query {
 
 // RawG makes a raw query using the global boil.Executor, usually for use with bind
 func RawG(query string, args ...interface{}) *Query {
-	return Raw(boil.GetDB(), query, args...)
+	return Raw(query, args...)
 }
 
 // Exec executes a query that does not need a row returned
-func (q *Query) Exec() (sql.Result, error) {
+func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
 	qs, args := buildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	return q.executor.Exec(qs, args...)
+	return exec.Exec(qs, args...)
 }
 
 // QueryRow executes the query for the One finisher and returns a row
-func (q *Query) QueryRow() *sql.Row {
+func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
 	qs, args := buildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	return q.executor.QueryRow(qs, args...)
+	return exec.QueryRow(qs, args...)
 }
 
 // Query executes the query for the All finisher and returns multiple rows
-func (q *Query) Query() (*sql.Rows, error) {
+func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
 	qs, args := buildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	return q.executor.Query(qs, args...)
+	return exec.Query(qs, args...)
+}
+
+// ExecContext executes a query that does not need a row returned
+func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql.Result, error) {
+	qs, args := buildQuery(q)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
+	}
+	return exec.ExecContext(ctx, qs, args...)
+}
+
+// QueryRowContext executes the query for the One finisher and returns a row
+func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) *sql.Row {
+	qs, args := buildQuery(q)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
+	}
+	return exec.QueryRowContext(ctx, qs, args...)
+}
+
+// QueryContext executes the query for the All finisher and returns multiple rows
+func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*sql.Rows, error) {
+	qs, args := buildQuery(q)
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, qs)
+		fmt.Fprintln(boil.DebugWriter, args)
+	}
+	return exec.QueryContext(ctx, qs, args...)
 }
 
 // ExecP executes a query that does not need a row returned
 // It will panic on error
-func (q *Query) ExecP() sql.Result {
-	res, err := q.Exec()
+func (q *Query) ExecP(exec boil.Executor) sql.Result {
+	res, err := q.Exec(exec)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -128,23 +157,13 @@ func (q *Query) ExecP() sql.Result {
 
 // QueryP executes the query for the All finisher and returns multiple rows
 // It will panic on error
-func (q *Query) QueryP() *sql.Rows {
-	rows, err := q.Query()
+func (q *Query) QueryP(exec boil.Executor) *sql.Rows {
+	rows, err := q.Query(exec)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
 
 	return rows
-}
-
-// SetExecutor on the query.
-func SetExecutor(q *Query, exec boil.Executor) {
-	q.executor = exec
-}
-
-// GetExecutor on the query.
-func GetExecutor(q *Query) boil.Executor {
-	return q.executor
 }
 
 // SetDialect on the query.

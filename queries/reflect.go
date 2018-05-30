@@ -1,6 +1,7 @@
 package queries
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"reflect"
@@ -38,9 +39,10 @@ const (
 
 // BindP executes the query and inserts the
 // result into the passed in object pointer.
-// It panics on error. See boil.Bind() documentation.
-func (q *Query) BindP(obj interface{}) {
-	if err := q.Bind(obj); err != nil {
+// It panics on error.
+// Also see documentation for Bind() and Query.Bind()
+func (q *Query) BindP(ctx context.Context, exec boil.Executor, obj interface{}) {
+	if err := q.Bind(ctx, exec, obj); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -94,14 +96,24 @@ func Bind(rows *sql.Rows, obj interface{}) error {
 // Bind executes the query and inserts the
 // result into the passed in object pointer
 //
-// See documentation for boil.Bind()
-func (q *Query) Bind(obj interface{}) error {
+// If Context is non-nil it will upgrade the
+// Executor to a ContextExecutor and query with the passed context.
+// If Context is non-nil, any eager loading that's done must also
+// be using load* methods that support context as the first parameter.
+//
+// Also see documentation for Bind()
+func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) error {
 	structType, sliceType, bkind, err := bindChecks(obj)
 	if err != nil {
 		return err
 	}
 
-	rows, err := q.Query()
+	var rows *sql.Rows
+	if ctx != nil {
+		rows, err = q.QueryContext(ctx, exec.(boil.ContextExecutor))
+	} else {
+		rows, err = q.Query(exec)
+	}
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
@@ -111,7 +123,7 @@ func (q *Query) Bind(obj interface{}) error {
 	}
 
 	if len(q.load) != 0 {
-		return eagerLoad(q.executor, q.load, obj, bkind)
+		return eagerLoad(ctx, exec, q.load, obj, bkind)
 	}
 
 	return nil

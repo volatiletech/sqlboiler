@@ -12,19 +12,20 @@ func test{{$tableNamePlural}}Delete(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = {{$varNameSingular}}.Delete(tx); err != nil {
+	if err = {{$varNameSingular}}.Delete({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	{{else -}}
-	if rowsAff, err := {{$varNameSingular}}.Delete(tx); err != nil {
+	if rowsAff, err := {{$varNameSingular}}.Delete({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
@@ -32,7 +33,7 @@ func test{{$tableNamePlural}}Delete(t *testing.T) {
 
 	{{end -}}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -52,19 +53,20 @@ func test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = {{$tableNamePlural}}(tx).DeleteAll(); err != nil {
+	if err = {{$tableNamePlural}}().DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	{{else -}}
-	if rowsAff, err := {{$tableNamePlural}}(tx).DeleteAll(); err != nil {
+	if rowsAff, err := {{$tableNamePlural}}().DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
@@ -72,7 +74,7 @@ func test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 
 	{{end -}}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -92,21 +94,22 @@ func test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	slice := {{$tableNameSingular}}Slice{{"{"}}{{$varNameSingular}}{{"}"}}
 
 	{{if .NoRowsAffected -}}
-	if err = slice.DeleteAll(tx); err != nil {
+	if err = slice.DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
 	{{else -}}
-	if rowsAff, err := slice.DeleteAll(tx); err != nil {
+	if rowsAff, err := slice.DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
@@ -114,7 +117,7 @@ func test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
 
 	{{end -}}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}

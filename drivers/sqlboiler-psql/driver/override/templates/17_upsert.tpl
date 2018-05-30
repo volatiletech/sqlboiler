@@ -3,16 +3,16 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
-	return o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...)
+func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+	return o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, whitelist...)
 }
 
 {{end -}}
 
 {{if and .AddGlobal .AddPanic -}}
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
-	if err := o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
+	if err := o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -22,8 +22,8 @@ func (o *{{$tableNameSingular}}) UpsertGP(updateOnConflict bool, conflictColumns
 {{if .AddPanic -}}
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
-	if err := o.Upsert(exec, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
+	if err := o.Upsert({{if not .NoContext}}ctx, {{end -}} exec, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -31,7 +31,7 @@ func (o *{{$tableNameSingular}}) UpsertP(exec boil.Executor, updateOnConflict bo
 {{end -}}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -39,7 +39,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
 	{{- template "timestamp_upsert_helper" . }}
 
 	{{if not .NoHooks -}}
-	if err := o.doBeforeUpsertHooks(exec); err != nil {
+	if err := o.doBeforeUpsertHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
 		return err
 	}
 	{{- end}}
@@ -128,12 +128,20 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
 	}
 
 	if len(cache.retMapping) != 0 {
+		{{if .NoContext -}}
 		err = exec.QueryRow(cache.query, vals...).Scan(returns...)
+		{{else -}}
+		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
+		{{end -}}
 		if err == sql.ErrNoRows {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {
+		{{if .NoContext -}}
 		_, err = exec.Exec(cache.query, vals...)
+		{{else -}}
+		_, err = exec.ExecContext(ctx, cache.query, vals...)
+		{{end -}}
 	}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert {{.Table.Name}}")
@@ -146,7 +154,7 @@ func (o *{{$tableNameSingular}}) Upsert(exec boil.Executor, updateOnConflict boo
 	}
 
 	{{if not .NoHooks -}}
-	return o.doAfterUpsertHooks(exec)
+	return o.doAfterUpsertHooks({{if not .NoContext}}ctx, {{end -}} exec)
 	{{- else -}}
 	return nil
 	{{- end}}

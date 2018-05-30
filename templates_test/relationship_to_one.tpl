@@ -5,7 +5,8 @@
 		{{- $varNameSingular := .Table | singular | camelCase -}}
 		{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase}}
 func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var local {{$txt.LocalTable.NameGo}}
@@ -26,16 +27,16 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.
 	foreign.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
 	{{- end}}
 
-	if err := foreign.Insert(tx); err != nil {
+	if err := foreign.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
 	local.{{$txt.Function.LocalAssignment}} = foreign.{{$txt.Function.ForeignAssignment}}
-	if err := local.Insert(tx); err != nil {
+	if err := local.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.{{$txt.Function.Name}}(tx).One()
+	check, err := local.{{$txt.Function.Name}}().One({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +50,7 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.
 	}
 
 	slice := {{$txt.LocalTable.NameGo}}Slice{&local}
-	if err = local.L.Load{{$txt.Function.Name}}(tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice)); err != nil {
+	if err = local.L.Load{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice)); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.{{$txt.Function.Name}} == nil {
@@ -57,7 +58,7 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.
 	}
 
 	local.R.{{$txt.Function.Name}} = nil
-	if err = local.L.Load{{$txt.Function.Name}}(tx, true, &local); err != nil {
+	if err = local.L.Load{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &local); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.{{$txt.Function.Name}} == nil {

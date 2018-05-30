@@ -200,7 +200,7 @@ func TestEagerLoadFromOne(t *testing.T) {
 	obj := &testEager{}
 
 	toLoad := []string{"ChildOne.NestedMany", "ChildOne.NestedOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
-	err := eagerLoad(nil, toLoad, obj, kindStruct)
+	err := eagerLoad(nil, nil, toLoad, obj, kindStruct)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -242,7 +242,7 @@ func TestEagerLoadFromMany(t *testing.T) {
 	}
 
 	toLoad := []string{"ChildOne.NestedMany", "ChildOne.NestedOne", "ChildMany.NestedMany", "ChildMany.NestedOne"}
-	err := eagerLoad(nil, toLoad, &slice, kindPtrSliceStruct)
+	err := eagerLoad(nil, nil, toLoad, &slice, kindPtrSliceStruct)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -286,7 +286,7 @@ func TestEagerLoadZeroParents(t *testing.T) {
 	obj := &testEager{}
 
 	toLoad := []string{"ZeroMany.NestedMany", "ZeroOne.NestedOne", "ZeroMany.NestedMany", "ZeroOne.NestedOne"}
-	err := eagerLoad(nil, toLoad, obj, kindStruct)
+	err := eagerLoad(nil, nil, toLoad, obj, kindStruct)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -308,7 +308,7 @@ func TestEagerLoadZeroParentsMany(t *testing.T) {
 	}
 
 	toLoad := []string{"ZeroMany.NestedMany", "ZeroOne.NestedOne", "ZeroMany.NestedMany", "ZeroOne.NestedOne"}
-	err := eagerLoad(nil, toLoad, &obj, kindPtrSliceStruct)
+	err := eagerLoad(nil, nil, toLoad, &obj, kindPtrSliceStruct)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,8 @@
 func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var a {{$txt.LocalTable.NameGo}}
@@ -25,15 +26,15 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		t.Fatal(err)
 	}
 
-	if err := a.Insert(tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert(tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
 	for i, x := range []*{{$txt.ForeignTable.NameGo}}{&b, &c} {
-		err = a.Set{{$txt.Function.Name}}(tx, i != 0, x)
+		err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -54,7 +55,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		}
 
 		{{if setInclude .ForeignColumn $foreignPKeyCols -}}
-		if exists, err := {{$txt.ForeignTable.NameGo}}Exists(tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
+		if exists, err := {{$txt.ForeignTable.NameGo}}Exists({{if not $.NoContext}}ctx, {{end -}} tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
 			t.Fatal(err)
 		} else if !exists {
 			t.Error("want 'x' to exist")
@@ -63,7 +64,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		zero := reflect.Zero(reflect.TypeOf(x.{{$txt.Function.ForeignAssignment}}))
 		reflect.Indirect(reflect.ValueOf(&x.{{$txt.Function.ForeignAssignment}})).Set(zero)
 
-		if err = x.Reload(tx); err != nil {
+		if err = x.Reload({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 		{{- end}}
@@ -76,7 +77,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
 		}
 
-		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete(tx); err != nil {
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 			t.Fatal("failed to delete x", err)
 		}
 	}
@@ -86,7 +87,8 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
 	var err error
 
-	tx := MustTx(boil.Begin())
+	{{if not $.NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
 	var a {{$txt.LocalTable.NameGo}}
@@ -100,19 +102,19 @@ func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}U
 		t.Fatal(err)
 	}
 
-	if err = a.Insert(tx); err != nil {
+	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.Set{{$txt.Function.Name}}(tx, true, &b); err != nil {
+	if err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.Remove{{$txt.Function.Name}}(tx, &b); err != nil {
+	if err = a.Remove{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.{{$txt.Function.Name}}(tx).Count()
+	count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}

@@ -4,20 +4,20 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // ReloadG refetches the object from the database using the primary keys.
-func (o *{{$tableNameSingular}}) ReloadG() error {
+func (o *{{$tableNameSingular}}) ReloadG({{if not .NoContext}}ctx context.Context{{end}}) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{$tableNameSingular}} provided for reload")
 	}
 
-	return o.Reload(boil.GetDB())
+	return o.Reload({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}})
 }
 
 {{end -}}
 
 {{if .AddPanic -}}
 // ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *{{$tableNameSingular}}) ReloadP(exec boil.Executor) {
-	if err := o.Reload(exec); err != nil {
+func (o *{{$tableNameSingular}}) ReloadP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) {
+	if err := o.Reload({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -26,8 +26,8 @@ func (o *{{$tableNameSingular}}) ReloadP(exec boil.Executor) {
 
 {{if and .AddGlobal .AddPanic -}}
 // ReloadGP refetches the object from the database and panics on error.
-func (o *{{$tableNameSingular}}) ReloadGP() {
-	if err := o.ReloadG(); err != nil {
+func (o *{{$tableNameSingular}}) ReloadGP({{if not .NoContext}}ctx context.Context{{end}}) {
+	if err := o.Reload({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -36,8 +36,8 @@ func (o *{{$tableNameSingular}}) ReloadGP() {
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
-	ret, err := Find{{$tableNameSingular}}(exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+func (o *{{$tableNameSingular}}) Reload({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) error {
+	ret, err := Find{{$tableNameSingular}}({{if not .NoContext}}ctx, {{end -}} exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
 	if err != nil {
 		return err
 	}
@@ -49,12 +49,12 @@ func (o *{{$tableNameSingular}}) Reload(exec boil.Executor) error {
 {{if .AddGlobal -}}
 // ReloadAllG refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
+func (o *{{$tableNameSingular}}Slice) ReloadAllG({{if not .NoContext}}ctx context.Context{{end}}) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: empty {{$tableNameSingular}}Slice provided for reload all")
 	}
 
-	return o.ReloadAll(boil.GetDB())
+	return o.ReloadAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}})
 }
 
 {{end -}}
@@ -63,8 +63,8 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllG() error {
 // ReloadAllP refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 // Panics on error.
-func (o *{{$tableNameSingular}}Slice) ReloadAllP(exec boil.Executor) {
-	if err := o.ReloadAll(exec); err != nil {
+func (o *{{$tableNameSingular}}Slice) ReloadAllP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) {
+	if err := o.ReloadAll({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -75,8 +75,8 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllP(exec boil.Executor) {
 // ReloadAllGP refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 // Panics on error.
-func (o *{{$tableNameSingular}}Slice) ReloadAllGP() {
-	if err := o.ReloadAllG(); err != nil {
+func (o *{{$tableNameSingular}}Slice) ReloadAllGP({{if not .NoContext}}ctx context.Context{{end}}) {
+	if err := o.ReloadAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -85,7 +85,7 @@ func (o *{{$tableNameSingular}}Slice) ReloadAllGP() {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
+func (o *{{$tableNameSingular}}Slice) ReloadAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
@@ -100,9 +100,9 @@ func (o *{{$tableNameSingular}}Slice) ReloadAll(exec boil.Executor) error {
 	sql := "SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns, len(*o))
 
-	q := queries.Raw(exec, sql, args...)
+	q := queries.Raw(sql, args...)
 
-	err := q.Bind(&{{$varNamePlural}})
+	err := q.Bind({{if .NoContext}}nil{{else}}ctx{{end}}, exec, &{{$varNamePlural}})
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to reload all in {{$tableNameSingular}}Slice")
 	}

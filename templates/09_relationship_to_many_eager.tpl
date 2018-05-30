@@ -7,7 +7,7 @@
 		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
+func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}) error {
 	var slice []*{{$txt.LocalTable.NameGo}}
 	var object *{{$txt.LocalTable.NameGo}}
 
@@ -51,7 +51,11 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
 	}
 
+	{{if $.NoContext -}}
 	results, err := e.Query(query, args...)
+	{{else -}}
+	results, err := e.QueryContext(ctx, query, args...)
+	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
 	}
@@ -88,7 +92,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 	{{if not $.NoHooks -}}
 	if len({{.ForeignTable | singular | camelCase}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(e); err != nil {
+			if err := obj.doAfterSelectHooks({{if $.NoContext}}e{{else}}ctx, e{{end -}}); err != nil {
 				return err
 			}
 		}

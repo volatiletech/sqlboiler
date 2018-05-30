@@ -12,13 +12,14 @@ func test{{$tableNamePlural}}Bind(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	if err = {{$tableNamePlural}}(tx).Bind({{$varNameSingular}}); err != nil {
+	if err = {{$tableNamePlural}}().Bind({{if .NoContext}}nil{{else}}ctx{{end}}, tx, {{$varNameSingular}}); err != nil {
 		t.Error(err)
 	}
 }
@@ -33,13 +34,14 @@ func test{{$tableNamePlural}}One(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	if x, err := {{$tableNamePlural}}(tx).One(); err != nil {
+	if x, err := {{$tableNamePlural}}().One({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	} else if x == nil {
 		t.Error("expected to get a non nil record")
@@ -60,16 +62,17 @@ func test{{$tableNamePlural}}All(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}One.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
-	if err = {{$varNameSingular}}Two.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}Two.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := {{$tableNamePlural}}(tx).All()
+	slice, err := {{$tableNamePlural}}().All({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -93,16 +96,17 @@ func test{{$tableNamePlural}}Count(t *testing.T) {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	tx := MustTx(boil.Begin())
+	{{if not .NoContext}}ctx := context.Background(){{end}}
+	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}One.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
-	if err = {{$varNameSingular}}Two.Insert(tx); err != nil {
+	if err = {{$varNameSingular}}Two.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$tableNamePlural}}(tx).Count()
+	count, err := {{$tableNamePlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}

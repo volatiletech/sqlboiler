@@ -4,8 +4,8 @@
 {{if .AddGlobal -}}
 // UpdateG a single {{$tableNameSingular}} record. See Update for
 // whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
-	return o.Update(boil.GetDB(), whitelist...)
+func (o *{{$tableNameSingular}}) UpdateG({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ...string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	return o.Update({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...)
 }
 
 {{end -}}
@@ -13,8 +13,8 @@ func (o *{{$tableNameSingular}}) UpdateG(whitelist ...string) {{if .NoRowsAffect
 {{if .AddPanic -}}
 // UpdateP uses an executor to update the {{$tableNameSingular}}, and panics on error.
 // See Update for whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... string) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update(exec, whitelist...)
+func (o *{{$tableNameSingular}}) UpdateP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update({{if not .NoContext}}ctx, {{end -}} exec, whitelist...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -30,8 +30,8 @@ func (o *{{$tableNameSingular}}) UpdateP(exec boil.Executor, whitelist ... strin
 // UpdateGP a single {{$tableNameSingular}} record.
 // UpdateGP takes a whitelist of column names that should be updated.
 // Panics on error. See Update for whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update(boil.GetDB(), whitelist...)
+func (o *{{$tableNameSingular}}) UpdateGP({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ...string) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -50,12 +50,12 @@ func (o *{{$tableNameSingular}}) UpdateGP(whitelist ...string) {{if not .NoRowsA
 // - All primary keys are subtracted from this set
 // Update does not automatically update the record in case of default values. Use .Reload()
 // to refresh the records.
-func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+func (o *{{$tableNameSingular}}) Update({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	{{- template "timestamp_update_helper" . -}}
 
 	var err error
 	{{if not .NoHooks -}}
-	if err = o.doBeforeUpdateHooks(exec); err != nil {
+	if err = o.doBeforeUpdateHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
 		return {{if not .NoRowsAffected}}0, {{end -}} err
 	}
 	{{end -}}
@@ -101,10 +101,18 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	}
 
 	{{if .NoRowsAffected -}}
+		{{if .NoContext -}}
 	_, err = exec.Exec(cache.query, values...)
+		{{else -}}
+	_, err = exec.ExecContext(ctx, cache.query, values...)
+		{{end -}}
 	{{else -}}
 	var result sql.Result
+		{{if .NoContext -}}
 	result, err = exec.Exec(cache.query, values...)
+		{{else -}}
+	result, err = exec.ExecContext(ctx, cache.query, values...)
+		{{end -}}
 	{{end -}}
 	if err != nil {
 		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to update {{.Table.Name}} row")
@@ -125,7 +133,7 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 	}
 
 	{{if not .NoHooks -}}
-	return {{if not .NoRowsAffected}}rowsAff, {{end -}} o.doAfterUpdateHooks(exec)
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} o.doAfterUpdateHooks({{if not .NoContext}}ctx, {{end -}} exec)
 	{{- else -}}
 	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 	{{- end}}
@@ -133,8 +141,8 @@ func (o *{{$tableNameSingular}}) Update(exec boil.Executor, whitelist ... string
 
 {{if .AddPanic -}}
 // UpdateAllP updates all rows with matching column names, and panics on error.
-func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.UpdateAll(cols)
+func (q {{$varNameSingular}}Query) UpdateAllP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.UpdateAll({{if not .NoContext}}ctx, {{end -}} exec, cols)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -147,13 +155,21 @@ func (q {{$varNameSingular}}Query) UpdateAllP(cols M) {{if not .NoRowsAffected}}
 {{end -}}
 
 // UpdateAll updates all rows with the specified column values.
-func (q {{$varNameSingular}}Query) UpdateAll(cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+func (q {{$varNameSingular}}Query) UpdateAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	queries.SetUpdate(q.Query, cols)
 
 	{{if .NoRowsAffected -}}
-	_, err := q.Query.Exec()
+		{{if .NoContext -}}
+	_, err := q.Query.Exec(exec)
+		{{else -}}
+	_, err := q.Query.ExecContext(ctx, exec)
+		{{end -}}
 	{{else -}}
-	result, err := q.Query.Exec()
+		{{if .NoContext -}}
+	result, err := q.Query.Exec(exec)
+		{{else -}}
+	result, err := q.Query.ExecContext(ctx, exec)
+		{{end -}}
 	{{end -}}
 	if err != nil {
 		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to update all for {{.Table.Name}}")
@@ -172,16 +188,16 @@ func (q {{$varNameSingular}}Query) UpdateAll(cols M) {{if .NoRowsAffected}}error
 
 {{if .AddGlobal -}}
 // UpdateAllG updates all rows with the specified column values.
-func (o {{$tableNameSingular}}Slice) UpdateAllG(cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
-	return o.UpdateAll(boil.GetDB(), cols)
+func (o {{$tableNameSingular}}Slice) UpdateAllG({{if not .NoContext}}ctx context.Context, {{end -}} cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	return o.UpdateAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, cols)
 }
 
 {{end -}}
 
 {{if and .AddGlobal .AddPanic -}}
 // UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o {{$tableNameSingular}}Slice) UpdateAllGP(cols M) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.UpdateAll(boil.GetDB(), cols)
+func (o {{$tableNameSingular}}Slice) UpdateAllGP({{if not .NoContext}}ctx context.Context, {{end -}} cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.UpdateAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, cols)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -195,8 +211,8 @@ func (o {{$tableNameSingular}}Slice) UpdateAllGP(cols M) {{if not .NoRowsAffecte
 
 {{if .AddPanic -}}
 // UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o {{$tableNameSingular}}Slice) UpdateAllP(exec boil.Executor, cols M) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.UpdateAll(exec, cols)
+func (o {{$tableNameSingular}}Slice) UpdateAllP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.UpdateAll({{if not .NoContext}}ctx, {{end -}} exec, cols)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -209,7 +225,7 @@ func (o {{$tableNameSingular}}Slice) UpdateAllP(exec boil.Executor, cols M) {{if
 {{end -}}
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+func (o {{$tableNameSingular}}Slice) UpdateAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	ln := int64(len(o))
 	if ln == 0 {
 		return {{if not .NoRowsAffected}}0, {{end -}} nil
@@ -245,9 +261,17 @@ func (o {{$tableNameSingular}}Slice) UpdateAll(exec boil.Executor, cols M) {{if 
 	}
 
 	{{if .NoRowsAffected -}}
+		{{if .NoContext -}}
 	_, err := exec.Exec(sql, args...)
+		{{else -}}
+	_, err := exec.ExecContext(ctx, sql, args...)
+		{{end -}}
 	{{else -}}
+		{{if .NoContext -}}
 	result, err := exec.Exec(sql, args...)
+		{{else -}}
+	result, err := exec.ExecContext(ctx, sql, args...)
+		{{end -}}
 	{{end -}}
 	if err != nil {
 		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to update all in {{$varNameSingular}} slice")

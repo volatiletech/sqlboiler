@@ -35,29 +35,36 @@ difference.
 
 #### Smaller changes
 
+- Queries no longer keep a handle to the database and therefore the db
+  parameter is no longer passed in where you create a query, instead it's passed
+  in where you execute the query.
+- context.Context is now piped through everything, this is a breaking change
+  syntactically. This can be controlled by the --no-context flag.
 - Rename postgresql driver to psql
-- Drivers are now responsible for their own config validation
-- Drivers are now responsible for their own default config values
-- Drivers can now take any configuration via environment or config files. This
-  allows drivers to be much more configurable and there's no constraints
-  imposed by the main/testing of sqlboiler itself.
 - MySQL driver no longer accepts `tinyint_as_bool` via command line. Instead
   the flag has been inverted (tinyint_as_int) to stop the automatic bool
   conversion and it's now passed in as a driver configuration setting (via the
   env or config).
 - Schema is no longer an sqlboiler level configuration setting. Instead it is
   passed back to sqlboiler when the driver is asked to produce the information
-  for the database we're generating for.
-- Imports is now it's own package and is cleaned up significantly
-- Replace templates (hidden flag) now use the ; separator not : for windows
-  compatibility.
-- Rows affected is now on by default, this is a breaking change but easily
-  fixed by using the flag to turn it off.
+  for the database we're generating for. This is a breaking change.
+- Rows affected is now returned by update and deletes by default. This is
+  syntactically a breaking change. This can be controlled by the
+  --no-rows-affected flag.
 - Panic and Global variants are now hidden behind flags. This reduces the size
-  of the generated code by 15%. We may remove them entirely in the future.
-- Changed all $dot references to $. as is proper
+  of the generated code by 15%. This is a breaking change if you were using
+  them.
 - Randomize now counts on an interface to do proper randomization for
   custom types.
+- Imports is now it's own package and is cleaned up significantly
+- Changed all $dot references to $. as is proper
+- Drivers are now responsible for their own config validation
+- Drivers are now responsible for their own default config values
+- Drivers can now take any configuration via environment or config files. This
+  allows drivers to be much more configurable and there's no constraints
+  imposed by the main/testing of sqlboiler itself.
+- Replace templates (hidden flag) now use the ; separator not : for windows
+  compatibility.
 
 ### Removed
 

@@ -134,21 +134,21 @@ if err != nil {
 
 // If you don't want to pass in db to all generated methods
 // you can use boil.SetDB to set it globally, and then use
-// the G variant methods like so:
+// the G variant methods like so (--add-global-variants to enable)
 boil.SetDB(db)
-users, err := models.UsersG().All()
+users, err := models.Users().AllG(ctx)
 
 // Query all users
-users, err := models.Users(db).All()
+users, err := models.Users().All(ctx, db)
 
-// Panic-able if you like to code that way
-users := models.Users(db).AllP()
+// Panic-able if you like to code that way (--add-panic-variants to enable)
+users := models.Users().AllP(db)
 
 // More complex query
-users, err := models.Users(db, Where("age > ?", 30), Limit(5), Offset(6)).All()
+users, err := models.Users(Where("age > ?", 30), Limit(5), Offset(6)).All(db, ctx)
 
 // Ultra complex query
-users, err := models.Users(db,
+users, err := models.Users(
   Select("id", "name"),
   InnerJoin("credit_cards c on c.user_id = users.id"),
   Where("age > ?", 30),
@@ -158,25 +158,25 @@ users, err := models.Users(db,
   Having("count(c.id) > ?", 2),
   Limit(5),
   Offset(6),
-).All()
+).All(ctx, db)
 
 // Use any "boil.Executor" implementation (*sql.DB, *sql.Tx, data-dog mock db)
 // for any query.
-tx, err := db.Begin()
+tx, err := db.BeginTx(ctx, nil)
 if err != nil {
   return err
 }
-users, err := models.Users(tx).All()
+users, err := models.Users().All(ctx, tx)
 
 // Relationships
-user, err := models.Users(db).One()
+user, err := models.Users().One(ctx, db)
 if err != nil {
   return err
 }
-movies, err := user.FavoriteMovies(db).All()
+movies, err := user.FavoriteMovies().All(ctx, db)
 
 // Eager loading
-users, err := models.Users(db, Load("FavoriteMovies")).All()
+users, err := models.Users(Load("FavoriteMovies")).All(ctx, db)
 if err != nil {
   return err
 }
@@ -219,6 +219,10 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ```shell
 go get -u -t github.com/volatiletech/sqlboiler
+
+# Also install the driver of your choice, there exists pqsl, mysql, mssql
+# These are separate binaries.
+go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
 ```
 
 #### Configuration
@@ -234,9 +238,9 @@ order:
 - `$XDG_CONFIG_HOME/sqlboiler/`
 - `$HOME/.config/sqlboiler/`
 
-We require you pass in your `postgres` and `mysql` database configuration via the configuration file rather than env vars.
+We require you pass in your `psql` and `mysql` database configuration via the configuration file rather than env vars.
 There is no command line argument support for database configuration. Values given under the `postgres` and `mysql`
-block are passed directly to the postgres and mysql drivers. Here is a rundown of all the different
+block are passed directly to the psql and mysql drivers. Here is a rundown of all the different
 values that can go in that section:
 
 | Name | Required | Postgres Default | MySQL Default |
@@ -251,26 +255,29 @@ values that can go in that section:
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
 
-| Name               | Defaults  |
-| ------------------ | --------- |
-| basedir            | none      |
-| schema             | "public" *(or dbname for mysql)* |
-| pkgname            | "models"  |
-| output             | "models"  |
-| whitelist          | []        |
-| blacklist          | []        |
-| tag                | []        |
-| debug              | false     |
-| no-hooks           | false     |
-| no-tests           | false     |
-| no-auto-timestamps | false     |
+| Name                | Defaults  |
+| ------------------- | --------- |
+| basedir             | none      |
+| pkgname             | "models"  |
+| output              | "models"  |
+| whitelist           | []        |
+| blacklist           | []        |
+| tag                 | []        |
+| debug               | false     |
+| add-global-variants | false     |
+| add-panic-variants  | false     |
+| no-context          | false     |
+| no-hooks            | false     |
+| no-tests            | false     |
+| no-auto-timestamps  | false     |
+| no-rows-affected    | false     |
 
 Example:
 
 ```toml
 blacklist=["migrations", "other"]
 schema="myschema"
-[postgres]
+[psql]
   dbname="dbname"
   host="localhost"
   port=5432
@@ -305,21 +312,26 @@ Usage:
   sqlboiler [flags] <driver>
 
 Examples:
-sqlboiler postgres
+sqlboiler psql
 
 Flags:
-      --basedir string          The base directory has the templates and templates_test folders
-  -b, --blacklist stringSlice   Do not include these tables in your generated package
-  -d, --debug                   Debug mode prints stack traces on error
-      --no-auto-timestamps      Disable automatic timestamps for created_at/updated_at
-      --no-hooks                Disable hooks feature for your models
-      --no-tests                Disable generated go test files
-  -o, --output string           The name of the folder to output to (default "models")
-  -p, --pkgname string          The name you wish to assign to your generated package (default "models")
-  -s, --schema string           The name of your database schema, for databases that support real schemas (default "public")
-  -t, --tag stringSlice         Struct tags to be included on your models in addition to json, yaml, toml
-      --version                 Print the version
-  -w, --whitelist stringSlice   Only include these tables in your generated package
+      --add-global-variants        Enable generation for global variants
+      --add-panic-variants         Enable generation for panic variants
+      --basedir string             The base directory has the templates and templates_test folders
+  -c, --config string              Filename of config file to override default lookup
+  -d, --debug                      Debug mode prints stack traces on error
+  -h, --help                       help for sqlboiler
+      --no-auto-timestamps         Disable automatic timestamps for created_at/updated_at
+      --no-context                 Disable context.Context usage in the generated code
+      --no-hooks                   Disable hooks feature for your models
+      --no-rows-affected           Disable rows affected in the generated API
+      --no-tests                   Disable generated go test files
+  -o, --output string              The name of the folder to output to (default "models")
+  -p, --pkgname string             The name you wish to assign to your generated package (default "models")
+      --struct-tag-casing string   Decides the casing for go structure tag names. camel or snake (default snake) (default "snake")
+  -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
+      --version                    Print the version
+      --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
 ```
 
 Follow the steps below to do some basic model generation. Once you've generated
@@ -330,7 +342,7 @@ with SQLBoiler. If you find there are some failing tests, please check the
 
 ```sh
 # Generate our models and exclude the migrations table
-sqlboiler -b goose_migrations postgres
+sqlboiler -b goose_migrations psql
 
 # Run the generated tests
 go test ./models
@@ -338,9 +350,12 @@ go test ./models
 
 *Note: No `mysqldump` or `pg_dump` equivalent for Microsoft SQL Server, so generated tests must be supplemented by `tables_schema.sql` with `CREATE TABLE ...` queries*
 
-
 You can use `go generate` for SQLBoiler if you want to to make it easy to
-run the command.
+run the command for your application:
+
+```go
+//go:generate sqlboiler --flags-go-here psql
+```
 
 It's important to not modify anything in the output folder, which brings us to
 the next topic: regeneration.
@@ -376,7 +391,7 @@ extend the models, the first way is the most desirable:
 package modext
 
 // UserFirstTimeSetup is an extension of the user model.
-func UserFirstTimeSetup(db *sql.DB, u *models.User) error { ... }
+func UserFirstTimeSetup(ctx, context.Context, db *sql.DB, u *models.User) error { ... }
 ```
 
 Code organization is accomplished by using multiple files, and everything
@@ -385,10 +400,10 @@ is passed as a parameter so these kinds of methods are very easy to test.
 Calling code is also very straightforward:
 
 ```go
-user, err := Users(db).One()
+user, err := Users().One(ctx, db)
 // elided error check
 
-err = modext.UserFirstTimeSetup(db, user)
+err = modext.UserFirstTimeSetup(ctx, db, user)
 // elided error check
 ```
 
@@ -408,16 +423,16 @@ type users struct {}
 var Users = users{}
 
 // FirstTimeSetup is an extension of the user model.
-func (u users) FirstTimeSetup(db *sql.DB, u *models.User) error { ... }
+func (u users) FirstTimeSetup(ctx context.Context, db *sql.DB, u *models.User) error { ... }
 ```
 
 Calling code then looks a little bit different:
 
 ```go
-user, err := Users(db).One()
+user, err := Users().One(ctx, db)
 // elided error check
 
-err = modext.Users.FirstTimeSetup(db, user)
+err = modext.Users.FirstTimeSetup(ctx, db, user)
 // elided error check
 ```
 
@@ -438,11 +453,11 @@ generated struct even if it's empty, or have inconsistencies, some places where
 you use the enhanced model, and some where you do not.
 
 ```go
-user, err := Users(db).One()
+user, err := Users().One(ctx, db)
 // elided error check
 
 enhUser := modext.User{user}
-err = ehnUser.FirstTimeSetup(db)
+err = ehnUser.FirstTimeSetup(ctx, db)
 // elided error check
 ```
 
@@ -598,13 +613,13 @@ Here are a few examples:
 
 ```go
 // SELECT COUNT(*) FROM pilots;
-count, err := models.Pilots().Count()
+count, err := models.Pilots().Count(ctx, db)
 
 // SELECT * FROM "pilots" LIMIT 5;
-pilots, err := models.Pilots(qm.Limit(5)).All()
+pilots, err := models.Pilots(qm.Limit(5)).All(ctx, db)
 
 // DELETE FROM "pilots" WHERE "id"=$1;
-err := models.Pilots(qm.Where("id=?", 1)).DeleteAll()
+err := models.Pilots(qm.Where("id=?", 1)).DeleteAll(ctx, db)
 ```
 
 In the event that you would like to build a query and specify the table yourself, you
@@ -612,7 +627,7 @@ can do so using `models.NewQuery()`:
 
 ```go
 // Select all rows from the pilots table by using the From query mod.
-err := models.NewQuery(db, From("pilots")).All()
+err := models.NewQuery(db, From("pilots")).All(ctx, db)
 ```
 
 As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
@@ -686,15 +701,15 @@ overloads will be generated. We've used the `Delete` method to demonstrate:
 // Set the global db handle for G method variants.
 boil.SetDB(db)
 
-pilot, _ := models.FindPilot(db, 1)
+pilot, _ := models.FindPilot(ctx, db, 1)
 
-err := pilot.Delete(db) // Regular variant, takes a db handle (boil.Executor interface).
-pilot.DeleteP(db)       // Panic variant, takes a db handle and panics on error.
-err := pilot.DeleteG()  // Global variant, uses the globally set db handle (boil.SetDB()).
-pilot.DeleteGP()        // Global&Panic variant, combines the global db handle and panic on error.
+err := pilot.Delete(ctx, db) // Regular variant, takes a db handle (boil.Executor interface).
+pilot.DeleteP(ctx, db)       // Panic variant, takes a db handle and panics on error.
+err := pilot.DeleteG(ctx)    // Global variant, uses the globally set db handle (boil.SetDB()).
+pilot.DeleteGP(ctx)          // Global&Panic variant, combines the global db handle and panic on error.
 
-db.Begin()              // Normal sql package way of creating a transaction
-boil.Begin()            // Uses the global database handle set by boil.SetDB() (doesn't require flag)
+db.Begin()                   // Normal sql package way of creating a transaction
+boil.BeginTx(ctx, nil)       // Uses the global database handle set by boil.SetDB() (doesn't require flag)
 ```
 
 Note that it's slightly different for query building.
@@ -709,7 +724,7 @@ your db handle use the `G` or regular variation of the [Starter](#query-building
 
 ```go
 // These are called like the following:
-models.Pilots(db).All()
+models.Pilots().All(ctx, db)
 
 One() // Retrieve one row as object (same as LIMIT(1))
 All() // Retrieve all rows as objects (same as SELECT * FROM)
@@ -729,7 +744,7 @@ We provide `queries.Raw()` for executing raw queries. Generally you will want to
 this, like the following:
 
 ```go
-err := queries.Raw(db, "select * from pilots where id=$1", 5).Bind(&obj)
+err := queries.Raw(db, "select * from pilots where id=$1", 5).Bind(ctx, db, &obj)
 ```
 
 You can use your own structs or a generated struct as a parameter to Bind. Bind supports both
@@ -828,15 +843,15 @@ you have defined in your database by using foreign keys.
 We attach these helpers directly to your model struct, for example:
 
 ```go
-jet, _ := models.FindJet(db, 1)
+jet, _ := models.FindJet(ctx, db, 1)
 
 // "to one" relationship helper method.
 // This will retrieve the pilot for the jet.
-pilot, err := jet.Pilot(db).One()
+pilot, err := jet.Pilot().One(ctx, db)
 
 // "to many" relationship helper method.
 // This will retrieve all languages for the pilot.
-languages, err := pilot.Languages(db).All()
+languages, err := pilot.Languages().All(ctx, db)
 ```
 
 If your relationship involves a join table SQLBoiler will figure it out for you transparently.
@@ -848,14 +863,14 @@ For example, take the following:
 
 ```go
 // Avoid this loop query pattern, it is slow.
-jets, _ := models.Jets(db).All()
+jets, _ := models.Jets().All(ctx, db)
 pilots := make([]models.Pilot, len(jets))
 for i := 0; i < len(jets); i++ {
-  pilots[i] = jets[i].Pilot(db).OneP()
+  pilots[i] = jets[i].Pilot().OneP(ctx, db)
 }
 
 // Instead, use Eager Loading!
-jets, _ := models.Jets(db, Load("Pilot")).All()
+jets, _ := models.Jets(Load("Pilot")).All(ctx, db)
 ```
 
 Eager loading can be combined with other query mods, and it can also eager load recursively.
@@ -863,16 +878,16 @@ Eager loading can be combined with other query mods, and it can also eager load 
 ```go
 // Example of a nested load.
 // Each jet will have its pilot loaded, and each pilot will have its languages loaded.
-jets, _ := models.Jets(db, Load("Pilot.Languages")).All()
+jets, _ := models.Jets(Load("Pilot.Languages")).All(ctx, db)
 // Note that each level of a nested Load call will be loaded. No need to call Load() multiple times.
 
 // A larger, random example
-users, _ := models.Users(db,
+users, _ := models.Users(
   Load("Pets.Vets"),
   Load("Pets.Toys"),
   Load("Property"),
   Where("age > ?", 23),
-).All()
+).All(ctx, db)
 ```
 
 We provide the following methods for managing relationships on objects:
@@ -894,28 +909,28 @@ about or are not supported by your database.
 **To One** code examples:
 
 ```go
-  jet, _ := models.FindJet(db, 1)
-  pilot, _ := models.FindPilot(db, 1)
+  jet, _ := models.FindJet(ctx, db, 1)
+  pilot, _ := models.FindPilot(ctx, db, 1)
 
   // Set the pilot to an existing pilot
-  err := jet.SetPilot(db, false, &pilot)
+  err := jet.SetPilot(ctx, db, false, &pilot)
 
   pilot = models.Pilot{
     Name: "Erlich",
   }
 
   // Insert the pilot into the database and assign it to a jet
-  err := jet.SetPilot(db, true, &pilot)
+  err := jet.SetPilot(ctx, db, true, &pilot)
 
   // Remove a relationship. This method only exists for foreign keys that can be NULL.
-  err := jet.RemovePilot(db, &pilot)
+  err := jet.RemovePilot(ctx, db, &pilot)
 ```
 
 **To Many** code examples:
 
 ```go
-  pilots, _ := models.Pilots(db).All()
-  languages, _ := models.Languages(db).All()
+  pilots, _ := models.Pilots().All(ctx, db)
+  languages, _ := models.Languages().All(ctx, db)
 
   // Set a group of language relationships
   err := pilots.SetLanguages(db, false, &languages)
@@ -927,18 +942,18 @@ about or are not supported by your database.
   }
 
   // Insert new a group of languages and assign them to a pilot
-  err := pilots.SetLanguages(db, true, languages...)
+  err := pilots.SetLanguages(ctx, db, true, languages...)
 
   // Add another language relationship to the existing set of relationships
-  err := pilots.AddLanguages(db, false, &someOtherLanguage)
+  err := pilots.AddLanguages(ctx, db, false, &someOtherLanguage)
 
   anotherLanguage := models.Language{Language: "Archi"}
 
   // Insert and then add another language relationship
-  err := pilots.AddLanguages(db, true, &anotherLanguage)
+  err := pilots.AddLanguages(ctx, db, true, &anotherLanguage)
 
   // Remove a group of relationships
-  err := pilots.RemoveLanguages(db, languages...)
+  err := pilots.RemoveLanguages(ctx, db, languages...)
 ```
 
 ### Hooks
@@ -967,7 +982,7 @@ it with the `AddModelHook` method. Here is an example of a before insert hook:
 
 ```go
 // Define my hook function
-func myHook(exec boil.Executor, p *Pilot) error {
+func myHook(ctx context.Context, exec boil.ContextExecutor, p *Pilot) error {
   // Do stuff
   return nil
 }
@@ -976,24 +991,25 @@ func myHook(exec boil.Executor, p *Pilot) error {
 models.AddPilotHook(boil.BeforeInsertHook, myHook)
 ```
 
-Your `ModelHook` will always be defined as `func(boil.Executor, *Model) error`
+Your `ModelHook` will always be defined as `func(context.Context, boil.ContextExecutor, *Model) error` if context is not turned off.
 
 ### Transactions
 
-The boil.Executor interface powers all of SQLBoiler. This means anything that conforms
-to the three `Exec/Query/QueryRow` methods can be used. `sql.DB`, `sql.Tx` as well as other
+The `boil.Executor` and `boil.ContextExecutor` interface powers all of SQLBoiler. This means
+anything that conforms to the three `Exec/Query/QueryRow` methods (and their context-aware variants)
+can be used to execute queries. `sql.DB`, `sql.Tx` as well as other
 libraries (`sqlx`) conform to this interface, and therefore any of these things may be
 used as an executor for any query in the system. This makes using transactions very simple:
 
 
 ```go
-tx, err := db.Begin()
+tx, err := db.BeginTx(ctx, nil)
 if err != nil {
   return err
 }
 
-users, _ := models.Pilots(tx).All()
-users.DeleteAll(tx)
+users, _ := models.Pilots().All(ctx, tx)
+users.DeleteAll(ctx, tx)
 
 // Rollback or commit
 tx.Commit()
@@ -1001,8 +1017,9 @@ tx.Rollback()
 ```
 
 It's also worth noting that there's a way to take advantage of `boil.SetDB()`
-by using the [boil.Begin()](https://godoc.org/github.com/volatiletech/sqlboiler/boil#Begin) function.
-This opens a transaction using the globally stored database.
+by using the
+[boil.BeginTx()](https://godoc.org/github.com/volatiletech/sqlboiler/boil#BeginTx) 
+function. This opens a transaction using the globally stored database.
 
 ### Debug Logging
 
@@ -1025,10 +1042,10 @@ Select is done through [Query Building](#query-building) and [Find](#find). Here
 
 ```go
 // Select one pilot
-pilot, err := models.Pilots(db, qm.Where("name=?", "Tim")).One()
+pilot, err := models.Pilots(qm.Where("name=?", "Tim")).One(ctx, db)
 
 // Select specific columns of many jets
-jets, err := models.Jets(db, qm.Select("age", "name")).All()
+jets, err := models.Jets(qm.Select("age", "name")).All(ctx, db)
 ```
 
 ### Find
@@ -1059,24 +1076,24 @@ database after the `Insert` is finished executing. This includes auto-incrementi
 ```go
 var p1 models.Pilot
 p1.Name = "Larry"
-err := p1.Insert(db) // Insert the first pilot with name "Larry"
+err := p1.Insert(ctx, db) // Insert the first pilot with name "Larry"
 // p1 now has an ID field set to 1
 
 var p2 models.Pilot
 p2.Name "Boris"
-err := p2.Insert(db) // Insert the second pilot with name "Boris"
+err := p2.Insert(ctx, db) // Insert the second pilot with name "Boris"
 // p2 now has an ID field set to 2
 
 var p3 models.Pilot
 p3.ID = 25
 p3.Name = "Rupert"
-err := p3.Insert(db) // Insert the third pilot with a specific ID
+err := p3.Insert(ctx, db) // Insert the third pilot with a specific ID
 // The id for this row was inserted as 25 in the database.
 
 var p4 models.Pilot
 p4.ID = 0
 p4.Name = "Nigel"
-err := p4.Insert(db, "id", "name") // Insert the fourth pilot with a zero value ID
+err := p4.Insert(ctx, db, "id", "name") // Insert the fourth pilot with a zero value ID
 // The id for this row was inserted as 0 in the database.
 // Note: We had to use the whitelist for this, otherwise
 // SQLBoiler would presume you wanted to auto-increment
@@ -1096,16 +1113,16 @@ If a `whitelist` argument is provided, `update` will only update the columns spe
 
 ```go
 // Find a pilot and update his name
-pilot, _ := models.FindPilot(db, 1)
+pilot, _ := models.FindPilot(ctx, db, 1)
 pilot.Name = "Neo"
-err := pilot.Update(db)
+err := pilot.Update(ctx, db)
 
 // Update a slice of pilots to have the name "Smith"
-pilots, _ := models.Pilots(db).All()
-err := pilots.UpdateAll(db, models.M{"name": "Smith"})
+pilots, _ := models.Pilots().All(ctx, db)
+err := pilots.UpdateAll(ctx, db, models.M{"name": "Smith"})
 
 // Update all pilots in the database to to have the name "Smith"
-err := models.Pilots(db).UpdateAll(models.M{"name": "Smith"})
+err := models.Pilots().UpdateAll(ctx, db, models.M{"name": "Smith"})
 ```
 
 ### Delete
@@ -1115,14 +1132,14 @@ Delete a single object, a slice of objects or specific objects through [Query Bu
 ```go
 pilot, _ := models.FindPilot(db, 1)
 // Delete the pilot from the database
-err := pilot.Delete(db)
+err := pilot.Delete(ctx, db)
 
 // Delete all pilots from the database
-err := models.Pilots(db).DeleteAll()
+err := models.Pilots().DeleteAll(ctx, db)
 
 // Delete a slice of pilots from the database
-pilots, _ := models.Pilots(db).All()
-err := pilots.DeleteAll(db)
+pilots, _ := models.Pilots().All(ctx, db)
+err := pilots.DeleteAll(ctx, db)
 ```
 
 ### Upsert
@@ -1142,11 +1159,11 @@ p1.Name = "Gaben"
 
 // INSERT INTO pilots ("id", "name") VALUES($1, $2)
 // ON CONFLICT DO NOTHING
-err := p1.Upsert(db, false, nil, nil)
+err := p1.Upsert(ctx, db, false, nil, nil)
 
 // INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
-err := p1.Upsert(db, true, []string{"id"}, []string{"name"})
+err := p1.Upsert(ctx, db, true, []string{"id"}, []string{"name"})
 
 // Set p1.ID to a zero value. We will have to use the whitelist now.
 p1.ID = 0
@@ -1154,7 +1171,7 @@ p1.Name = "Hogan"
 
 // INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
-err := p1.Upsert(db, true, []string{"id"}, []string{"name"}, "id", "name")
+err := p1.Upsert(ctx, db, true, []string{"id"}, []string{"name"}, "id", "name")
 ```
 
 The `updateOnConflict` argument allows you to specify whether you would like Postgres
@@ -1171,16 +1188,16 @@ you can use `Reload` and `ReloadAll` to reload the objects using the primary key
 attached to the objects.
 
 ```go
-pilot, _ := models.FindPilot(db, 1)
+pilot, _ := models.FindPilot(ctx, db, 1)
 
 // > Object becomes out of sync for some reason, perhaps async processing
 
 // Refresh the object with the latest data from the db
-err := pilot.Reload(db)
+err := pilot.Reload(ctx, db)
 
 // Reload all objects in a slice
-pilots, _ := models.Pilots(db).All()
-err := pilots.ReloadAll(db)
+pilots, _ := models.Pilots().All(ctx, db)
+err := pilots.ReloadAll(ctx, db)
 ```
 
 Note: `Reload` and `ReloadAll` are not recursive, if you need your relationships reloaded
@@ -1189,13 +1206,13 @@ you will need to call the `Reload` methods on those yourself.
 ### Exists
 
 ```go
-jet, err := models.FindJet(db, 1)
+jet, err := models.FindJet(ctx, db, 1)
 
 // Check if the pilot assigned to this jet exists.
-exists, err := jet.Pilot(db).Exists()
+exists, err := jet.Pilot(ctx, db).Exists()
 
 // Check if the pilot with ID 5 exists
-exists, err := models.Pilots(db, Where("id=?", 5)).Exists()
+exists, err := models.Pilots(ctx, db, Where("id=?", 5)).Exists()
 ```
 
 ### Enums

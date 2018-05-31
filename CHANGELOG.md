@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   comparisons inside sqlboiler templates. This allows us to more cleanly support
   more drivers.
 - Add ability to override imports via config file
+- Add ability to replace types using the config file
 - Add ability to re-use queries with SetArgs
 
 ### Changed

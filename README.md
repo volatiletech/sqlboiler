@@ -52,6 +52,9 @@ Table of Contents
         * [Configuration](#configuration)
         * [Initial Generation](#initial-generation)
         * [Regeneration](#regeneration)
+        * [Controlling Generation](#controlling-generation)
+          * [Types](#types)
+          * [Imports](#imports)
         * [Extending Generated Models](#extending-generated-models)
     * [Diagnosing Problems](#diagnosing-problems)
     * [Features &amp; Examples](#features--examples)
@@ -375,6 +378,77 @@ The bottom line is that this tool should always produce the same result from
 the same source. And the intention is to always regenerate from a pure state.
 The only reason the `--wipe` flag isn't defaulted to on is because we don't
 like programs that `rm -rf` things on the filesystem without being asked to.
+
+#### Controlling Generation
+
+The templates get executed in a specific way each time. There's a variety of
+configuration options on the command line/config file that can control what
+features are turned on or off.
+
+In addition to the command line flags there are two features that are only
+available via the config file and can use some explanation.
+
+##### Types
+
+There exists the ability to override types that the driver has suggested
+or found. The way to accomplish this is through the config file.
+
+```toml
+[[types]]
+  # The match is a drivers.Column struct, and matches on almost all fields.
+  # Notable exceptions the unique bool. Matches are done
+  # with logical and, it must match all specified matchers. Boolean values
+  # are only checked if all the string specifiers match first, and they
+  # must always match.
+  [types.match]
+    type = "null.String"
+    nullable = true
+
+  # The replace is what we replace the strings with. You cannot modify any
+  # boolean values in here. But we could change the Go type (the most useful thing)
+  # or the DBType or FullDBType etc. if for some reason we needed to.
+  [types.replace]
+    type = "mynull.String"
+
+  # These imports specified here overwrite the definition of the type's "based_on_type"
+  # list. The type entry that is replaced is the replaced type's "type" field.
+  # In the above example it would add an entry for mynull.String, if we did not
+  # change the type in our replacement, it would overwrite the null.String entry.
+  [types.imports]
+    third_party = ['"gihub.com/me/mynull"']
+```
+
+##### Imports
+
+Imports are overridable by the user. This can be used in conjunction with
+replacing the templates for extreme cases. Typically this should be avoided.
+
+Note that specifying any section of the imports completely overwrites that
+section. It's also true that the driver can still specify imports and those
+will be merged in to what is provided here.
+
+```toml
+[imports.all]
+  standard = ['"context"']
+  third_party = ['"github.com/my/package"']
+
+# Changes imports for the boil_queries file
+[imports.singleton."boil_queries"]
+  standard = ['"context"']
+  third_party = ['"github.com/my/package"']
+
+# Same syntax as all
+[imports.test]
+
+# Same syntax as singleton
+[imports.test_singleton]
+
+# Changes imports when a model contains null.Int32
+[imports.based_on_type."null.Int32"]
+  standard = ['"context"']
+  third_party = ['"github.com/my/package"']
+```
+
 
 #### Extending generated models
 

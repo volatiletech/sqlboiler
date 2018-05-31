@@ -174,6 +174,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake
 		Tags:             viper.GetStringSlice("tag"),
 		Replacements:     viper.GetStringSlice("replace"),
+		TypeReplaces:     boilingcore.ConvertTypeReplace(viper.Get("types")),
 	}
 
 	if cmdConfig.Debug {

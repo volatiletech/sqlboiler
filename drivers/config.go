@@ -5,6 +5,7 @@ package drivers
 
 import (
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -128,8 +129,14 @@ func (c Config) StringSlice(key string) ([]string, bool) {
 		return nil, false
 	}
 
-	slice, ok := ss.([]string)
-	if !ok {
+	var slice []string
+	if intfSlice, ok := ss.([]interface{}); ok {
+		for _, i := range intfSlice {
+			slice = append(slice, i.(string))
+		}
+	} else if stringSlice, ok := ss.([]string); ok {
+		slice = stringSlice
+	} else {
 		return nil, false
 	}
 
@@ -137,7 +144,6 @@ func (c Config) StringSlice(key string) ([]string, bool) {
 	if len(slice) == 0 {
 		return nil, false
 	}
-
 	return slice, true
 }
 
@@ -149,4 +155,46 @@ func DefaultEnv(key, def string) string {
 		val = def
 	}
 	return val
+}
+
+// TablesFromList takes a whitelist or blacklist and returns
+// the table names.
+func TablesFromList(list []string) []string {
+	if len(list) == 0 {
+		return nil
+	}
+
+	var tables []string
+	for _, i := range list {
+		splits := strings.Split(i, ".")
+
+		if len(splits) == 1 {
+			tables = append(tables, splits[0])
+		}
+	}
+
+	return tables
+}
+
+// ColumnsFromList takes a whitelist or blacklist and returns
+// the columns for a given table.
+func ColumnsFromList(list []string, tablename string) []string {
+	if len(list) == 0 {
+		return nil
+	}
+
+	var columns []string
+	for _, i := range list {
+		splits := strings.Split(i, ".")
+
+		if len(splits) != 2 {
+			continue
+		}
+
+		if splits[0] == tablename {
+			columns = append(columns, splits[1])
+		}
+	}
+
+	return columns
 }

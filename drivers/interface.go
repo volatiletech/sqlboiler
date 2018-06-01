@@ -65,7 +65,7 @@ type Dialect struct {
 // implementations.
 type Constructor interface {
 	TableNames(schema string, whitelist, blacklist []string) ([]string, error)
-	Columns(schema, tableName string) ([]Column, error)
+	Columns(schema, tableName string, whitelist, blacklist []string) ([]Column, error)
 	PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error)
 	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
 
@@ -91,7 +91,7 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 			Name: name,
 		}
 
-		if t.Columns, err = c.Columns(schema, name); err != nil {
+		if t.Columns, err = c.Columns(schema, name, whitelist, blacklist); err != nil {
 			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 

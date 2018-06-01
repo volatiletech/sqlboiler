@@ -212,6 +212,11 @@ func TestConfigStringSlice(t *testing.T) {
 			Ok:     true,
 		},
 		{
+			Config: map[string]interface{}{key: []interface{}{"str"}},
+			Value:  []string{"str"},
+			Ok:     true,
+		},
+		{
 			Config: map[string]interface{}{key: []string{}},
 			Value:  nil,
 			Ok:     false,
@@ -237,5 +242,32 @@ func TestConfigStringSlice(t *testing.T) {
 		if !reflect.DeepEqual(value, test.Value) {
 			t.Error(i, "want:", test.Value, "got:", value)
 		}
+	}
+}
+
+func TestTablesFromList(t *testing.T) {
+	t.Parallel()
+
+	if TablesFromList(nil) != nil {
+		t.Error("expected a shortcut to getting nil back")
+	}
+
+	if got := TablesFromList([]string{"a.b", "b", "c.d"}); !reflect.DeepEqual(got, []string{"b"}) {
+		t.Error("list was wrong:", got)
+	}
+}
+
+func TestColumnsFromList(t *testing.T) {
+	t.Parallel()
+
+	if ColumnsFromList(nil, "table") != nil {
+		t.Error("expected a shortcut to getting nil back")
+	}
+
+	if got := ColumnsFromList([]string{"a.b", "b", "c.d", "c.a"}, "c"); !reflect.DeepEqual(got, []string{"d", "a"}) {
+		t.Error("list was wrong:", got)
+	}
+	if got := ColumnsFromList([]string{"a.b", "b", "c.d", "c.a"}, "b"); len(got) != 0 {
+		t.Error("list was wrong:", got)
 	}
 }

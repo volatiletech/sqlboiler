@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/importers"
+	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 func init() {
@@ -137,14 +138,20 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query += fmt.Sprintf(" AND table_name IN (%s);", strings.Repeat(",?", len(whitelist))[1:])
-		for _, w := range whitelist {
-			args = append(args, w)
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" AND table_name IN (%s);", strings.Repeat(",?", len(tables))[1:])
+			for _, w := range tables {
+				args = append(args, w)
+			}
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf(" AND table_name not IN (%s);", strings.Repeat(",?", len(blacklist))[1:])
-		for _, b := range blacklist {
-			args = append(args, b)
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" AND table_name not IN (%s);", strings.Repeat(",?", len(tables))[1:])
+			for _, b := range tables {
+				args = append(args, b)
+			}
 		}
 	}
 
@@ -170,10 +177,10 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (m *MSSQLDriver) Columns(schema, tableName string) ([]drivers.Column, error) {
+func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
 	var columns []drivers.Column
-
-	rows, err := m.conn.Query(`
+	args := []interface{}{schema, tableName}
+	query := `
 	SELECT column_name,
        CASE
          WHEN character_maximum_length IS NULL THEN data_type
@@ -204,9 +211,27 @@ func (m *MSSQLDriver) Columns(schema, tableName string) ([]drivers.Column, error
        END AS is_unique,
 	   COLUMNPROPERTY(object_id($1 + '.' + $2), c.column_name, 'IsIdentity') as is_identity
 	FROM information_schema.columns c
-	WHERE table_schema = $1 AND table_name = $2;
-	`, schema, tableName)
+	WHERE table_schema = $1 AND table_name = $2`
 
+	if len(whitelist) > 0 {
+		cols := drivers.ColumnsFromList(whitelist, tableName)
+		if len(cols) > 0 {
+			query += fmt.Sprintf(" and c.column_name in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
+			for _, w := range cols {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		cols := drivers.ColumnsFromList(blacklist, tableName)
+		if len(cols) > 0 {
+			query += fmt.Sprintf(" and c.column_name not in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
+			for _, w := range cols {
+				args = append(args, w)
+			}
+		}
+	}
+
+	rows, err := m.conn.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

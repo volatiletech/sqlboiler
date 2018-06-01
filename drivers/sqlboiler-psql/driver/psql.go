@@ -143,14 +143,20 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s);", strmangle.Placeholders(true, len(whitelist), 2, 1))
-		for _, w := range whitelist {
-			args = append(args, w)
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s);", strmangle.Placeholders(true, len(tables), 2, 1))
+			for _, w := range tables {
+				args = append(args, w)
+			}
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(true, len(blacklist), 2, 1))
-		for _, b := range blacklist {
-			args = append(args, b)
+		tables := drivers.TablesFromList(blacklist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(true, len(tables), 2, 1))
+			for _, b := range tables {
+				args = append(args, b)
+			}
 		}
 	}
 
@@ -176,11 +182,12 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (p *PostgresDriver) Columns(schema, tableName string) ([]drivers.Column, error) {
+func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
 	var columns []drivers.Column
+	args := []interface{}{schema, tableName}
 
-	rows, err := p.conn.Query(`
-		select
+	query := `
+	select
 		c.column_name,
 		(
 			case when pgt.typtype = 'e'
@@ -232,8 +239,27 @@ func (p *PostgresDriver) Columns(schema, tableName string) ([]drivers.Column, er
 		left join information_schema.element_types e
 			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
 			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
-		where c.table_name = $2 and c.table_schema = $1;
-	`, schema, tableName)
+		where c.table_name = $2 and c.table_schema = $1`
+
+	if len(whitelist) > 0 {
+		cols := drivers.ColumnsFromList(whitelist, tableName)
+		if len(cols) > 0 {
+			query += fmt.Sprintf(" and c.column_name in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
+			for _, w := range cols {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		cols := drivers.ColumnsFromList(blacklist, tableName)
+		if len(cols) > 0 {
+			query += fmt.Sprintf(" and c.column_name not in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
+			for _, w := range cols {
+				args = append(args, w)
+			}
+		}
+	}
+
+	rows, err := p.conn.Query(query, args...)
 
 	if err != nil {
 		return nil, err

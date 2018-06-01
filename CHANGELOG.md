@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add ability to override imports via config file
 - Add ability to replace types using the config file
 - Add ability to re-use queries with SetArgs
+- Add ability to specify blacklisted or whitelisted columns in a table by
+  using the syntax tablename.columnname in the driver's whitelist/blacklist
+  config setting.
 
 ### Changed
 

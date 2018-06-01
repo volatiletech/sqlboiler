@@ -142,14 +142,20 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
-		query += fmt.Sprintf(" and table_name in (%s);", strings.Repeat(",?", len(whitelist))[1:])
-		for _, w := range whitelist {
-			args = append(args, w)
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s);", strings.Repeat(",?", len(tables))[1:])
+			for _, w := range tables {
+				args = append(args, w)
+			}
 		}
 	} else if len(blacklist) > 0 {
-		query += fmt.Sprintf(" and table_name not in (%s);", strings.Repeat(",?", len(blacklist))[1:])
-		for _, b := range blacklist {
-			args = append(args, b)
+		tables := drivers.TablesFromList(blacklist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s);", strings.Repeat(",?", len(tables))[1:])
+			for _, b := range tables {
+				args = append(args, b)
+			}
 		}
 	}
 
@@ -175,10 +181,11 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
-func (m *MySQLDriver) Columns(schema, tableName string) ([]drivers.Column, error) {
+func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
 	var columns []drivers.Column
+	args := []interface{}{tableName, schema}
 
-	rows, err := m.conn.Query(`
+	query := `
 	select
 	c.column_name,
 	c.column_type,
@@ -195,9 +202,27 @@ func (m *MySQLDriver) Columns(schema, tableName string) ([]drivers.Column, error
 				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%';
-	`, tableName, schema)
+	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'`
 
+	if len(whitelist) > 0 {
+		cols := drivers.ColumnsFromList(whitelist, tableName)
+		if len(cols) > 0 {
+			query += fmt.Sprintf(" and c.column_name in (%s)", strings.Repeat(",?", len(cols))[1:])
+			for _, w := range cols {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		cols := drivers.ColumnsFromList(blacklist, tableName)
+		if len(cols) > 0 {
+			query += fmt.Sprintf(" and c.column_name not in (%s)", strings.Repeat(",?", len(cols))[1:])
+			for _, w := range cols {
+				args = append(args, w)
+			}
+		}
+	}
+
+	rows, err := m.conn.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

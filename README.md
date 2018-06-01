@@ -97,7 +97,7 @@ Table of Contents
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
-- Table whitelist/blacklist
+- Table and column whitelist/blacklist
 - Relationships/Associations
 - Eager loading (recursive)
 - Custom struct tags
@@ -246,14 +246,26 @@ There is no command line argument support for database configuration. Values giv
 block are passed directly to the psql and mysql drivers. Here is a rundown of all the different
 values that can go in that section:
 
-| Name | Required | Postgres Default | MySQL Default |
+| Name | Required | Postgres Default | MySQL Default
 | --- | --- | --- | --- |
-| dbname  | yes       | none      | none   |
-| host    | yes       | none      | none   |
-| port    | no        | 5432      | 3306   |
-| user    | yes       | none      | none   |
-| pass    | no        | none      | none   |
-| sslmode | no        | "require" | "true" |
+| dbname    | yes       | none      | none   |
+| host      | yes       | none      | none   |
+| port      | no        | 5432      | 3306   |
+| user      | yes       | none      | none   |
+| pass      | no        | none      | none   |
+| sslmode   | no        | "require" | "true" |
+| whitelist | no        | []        | []     |
+| blacklist | no        | []        | []     |
+
+Example of whitelist/blacklist:
+
+```toml
+[psql]
+# Removes migrations table, and the name column from the addresses table
+# from being generated. Foreign keys that reference tables or columns that
+# are no longer generated because of whitelists or blacklists may cause problems.
+blacklist = ["migrations", "addresses.name"]
+```
 
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
@@ -263,8 +275,6 @@ not to pass them through the command line or environment variables:
 | basedir             | none      |
 | pkgname             | "models"  |
 | output              | "models"  |
-| whitelist           | []        |
-| blacklist           | []        |
 | tag                 | []        |
 | debug               | false     |
 | add-global-variants | false     |

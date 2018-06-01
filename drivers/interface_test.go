@@ -23,7 +23,7 @@ func (m testMockDriver) TableNames(schema string, whitelist, blacklist []string)
 }
 
 // Columns returns a list of mock columns
-func (m testMockDriver) Columns(schema, tableName string) ([]Column, error) {
+func (m testMockDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]Column, error) {
 	return map[string][]Column{
 		"pilots": {
 			{Name: "id", Type: "int", DBType: "integer"},
@@ -204,9 +204,9 @@ func TestFilterForeignKeys(t *testing.T) {
 	}
 
 	tests := []struct {
-		Whitelist	[]string
-		Blacklist	[]string
-		ExpectFkNum	int
+		Whitelist   []string
+		Blacklist   []string
+		ExpectFkNum int
 	}{
 		{[]string{}, []string{}, 3},
 		{[]string{"one", "two", "three"}, []string{}, 2},

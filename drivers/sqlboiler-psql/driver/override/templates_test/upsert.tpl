@@ -12,15 +12,15 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
-	{{$varNameSingular}} := {{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, &{{$varNameSingular}}, {{$varNameSingular}}DBTypes, true); err != nil {
+	o := {{$tableNameSingular}}{}
+	if err = randomize.Struct(seed, &o, {{$varNameSingular}}DBTypes, true); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}{{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}}{{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}.Upsert({{if not .NoContext}}ctx, {{end -}} tx, false, nil, nil); err != nil {
+	if err = o.Upsert({{if not .NoContext}}ctx, {{end -}} tx, false, nil, nil); err != nil {
 		t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
 	}
 
@@ -33,11 +33,11 @@ func test{{$tableNamePlural}}Upsert(t *testing.T) {
 	}
 
 	// Attempt the UPDATE side of an UPSERT
-	if err = randomize.Struct(seed, &{{$varNameSingular}}, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
+	if err = randomize.Struct(seed, &o, {{$varNameSingular}}DBTypes, false, {{$varNameSingular}}PrimaryKeyColumns...); err != nil {
 		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
 	}
 
-	if err = {{$varNameSingular}}.Upsert({{if not .NoContext}}ctx, {{end -}} tx, true, nil, nil); err != nil {
+	if err = o.Upsert({{if not .NoContext}}ctx, {{end -}} tx, true, nil, nil); err != nil {
 		t.Errorf("Unable to upsert {{$tableNameSingular}}: %s", err)
 	}
 

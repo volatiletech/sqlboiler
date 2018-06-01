@@ -71,19 +71,34 @@ func SetComplement(a []string, b []string) []string {
 
 // SetMerge will return a merged slice without duplicates
 func SetMerge(a []string, b []string) []string {
-	var x, merged []string
+	merged := make([]string, 0, len(a)+len(b))
 
-	x = append(x, a...)
-	x = append(x, b...)
-
-	check := map[string]bool{}
-	for _, v := range x {
-		if check[v] == true {
-			continue
+	for _, aVal := range a {
+		found := false
+		for _, mVal := range merged {
+			if aVal == mVal {
+				found = true
+				break
+			}
 		}
 
-		merged = append(merged, v)
-		check[v] = true
+		if !found {
+			merged = append(merged, aVal)
+		}
+	}
+
+	for _, bVal := range b {
+		found := false
+		for _, mVal := range merged {
+			if bVal == mVal {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			merged = append(merged, bVal)
+		}
 	}
 
 	return merged

@@ -436,6 +436,11 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 
 // Imports returns important imports for the driver
 func (MSSQLDriver) Imports() (col importers.Collection, err error) {
+	col.All = importers.Set{
+		Standard: importers.List{
+			`"strconv"`,
+		},
+	}
 	col.TestSingleton = importers.Map{
 		"mssql_upsert": {
 			Standard: importers.List{

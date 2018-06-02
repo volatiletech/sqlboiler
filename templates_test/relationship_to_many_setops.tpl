@@ -26,13 +26,13 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 		}
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -122,13 +122,13 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 		}
 	}
 
-	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -243,7 +243,7 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 		}
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 

@@ -2,19 +2,19 @@
 {{- $varNameSingular := .Table.Name | singular | camelCase -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
-// UpdateG a single {{$tableNameSingular}} record. See Update for
-// whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateG({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ...string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
-	return o.Update({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...)
+// UpdateG a single {{$tableNameSingular}} record using the global executor.
+// See Update for more documentation.
+func (o *{{$tableNameSingular}}) UpdateG({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	return o.Update({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns)
 }
 
 {{end -}}
 
 {{if .AddPanic -}}
 // UpdateP uses an executor to update the {{$tableNameSingular}}, and panics on error.
-// See Update for whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update({{if not .NoContext}}ctx, {{end -}} exec, whitelist...)
+// See Update for more documentation.
+func (o *{{$tableNameSingular}}) UpdateP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update({{if not .NoContext}}ctx, {{end -}} exec, columns)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -27,11 +27,10 @@ func (o *{{$tableNameSingular}}) UpdateP({{if .NoContext}}exec boil.Executor{{el
 {{end -}}
 
 {{if and .AddGlobal .AddPanic -}}
-// UpdateGP a single {{$tableNameSingular}} record.
-// UpdateGP takes a whitelist of column names that should be updated.
-// Panics on error. See Update for whitelist behavior description.
-func (o *{{$tableNameSingular}}) UpdateGP({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ...string) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...)
+// UpdateGP a single {{$tableNameSingular}} record using the global executor. Panics on error.
+// See Update for more documentation.
+func (o *{{$tableNameSingular}}) UpdateGP({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end}}err := o.Update({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -44,13 +43,9 @@ func (o *{{$tableNameSingular}}) UpdateGP({{if not .NoContext}}ctx context.Conte
 {{end -}}
 
 // Update uses an executor to update the {{$tableNameSingular}}.
-// Whitelist behavior: If a whitelist is provided, only the columns given are updated.
-// No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
-// - All columns are inferred to start with
-// - All primary keys are subtracted from this set
-// Update does not automatically update the record in case of default values. Use .Reload()
-// to refresh the records.
-func (o *{{$tableNameSingular}}) Update({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+// See boil.UpdateColumnSet documentation to understand column list inference for updates.
+// Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
+func (o *{{$tableNameSingular}}) Update({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	{{- template "timestamp_update_helper" . -}}
 
 	var err error
@@ -60,22 +55,22 @@ func (o *{{$tableNameSingular}}) Update({{if .NoContext}}exec boil.Executor{{els
 	}
 	{{end -}}
 
-	key := makeCacheKey(whitelist, nil)
+	key := makeCacheKey(columns, nil)
 	{{$varNameSingular}}UpdateCacheMut.RLock()
 	cache, cached := {{$varNameSingular}}UpdateCache[key]
 	{{$varNameSingular}}UpdateCacheMut.RUnlock()
 
 	if !cached {
-		wl := strmangle.UpdateColumnSet(
+		wl := boil.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
-			whitelist,
+			columns,
 		)
 		{{if .Dialect.UseAutoColumns -}}
 		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
 		{{end}}
 		{{if not .NoAutoTimestamps}}
-		if len(whitelist) == 0 {
+		if columns.Kind != boil.ColumnsWhitelist {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		{{end -}}

@@ -191,8 +191,12 @@ func NewDefaultImports() Collection {
 			},
 		},
 		"boil_types": {
+			Standard: List{
+				`"strconv"`,
+			},
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
+				`"github.com/volatiletech/sqlboiler/boil"`,
 				`"github.com/volatiletech/sqlboiler/strmangle"`,
 			},
 		},

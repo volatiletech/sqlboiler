@@ -15,7 +15,7 @@ func test{{$tableNamePlural}}Delete(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
@@ -56,7 +56,7 @@ func test{{$tableNamePlural}}QueryDeleteAll(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
@@ -97,7 +97,7 @@ func test{{$tableNamePlural}}SliceDeleteAll(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 

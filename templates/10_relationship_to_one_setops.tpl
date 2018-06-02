@@ -48,7 +48,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}GP({{if not $.NoCo
 func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related *{{$txt.ForeignTable.NameGo}}) error {
 	var err error
 	if insert {
-		if err = related.Insert({{if not $.NoContext}}ctx, {{end -}} exec); err != nil {
+		if err = related.Insert({{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -155,9 +155,9 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoConte
 
 	o.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
 	{{if $.NoContext -}}
-	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(exec, "{{.Column}}"); err != nil {
+	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(exec, boil.Whitelist("{{.Column}}")); err != nil {
 	{{else -}}
-	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(ctx, exec, "{{.Column}}"); err != nil {
+	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(ctx, exec, boil.Whitelist("{{.Column}}")); err != nil {
 	{{end -}}
 		o.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")

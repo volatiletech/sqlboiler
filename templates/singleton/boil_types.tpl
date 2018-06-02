@@ -18,12 +18,19 @@ type updateCache struct {
 	valueMapping []uint64
 }
 
-func makeCacheKey(wl, nzDefaults []string) string {
+func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	buf := strmangle.GetBuffer()
 
-	for _, w := range wl {
-		buf.WriteString(w)
+	buf.WriteString(strconv.Itoa(cols.Kind))
+	buf.WriteByte('.')
+
+	switch cols.Kind {
+	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
+		for _, w := range cols.Cols {
+			buf.WriteString(w)
+		}
 	}
+
 	if len(nzDefaults) != 0 {
 		buf.WriteByte('.')
 	}

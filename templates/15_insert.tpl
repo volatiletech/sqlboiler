@@ -3,8 +3,8 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // InsertG a single record. See Insert for whitelist behavior description.
-func (o *{{$tableNameSingular}}) InsertG({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ... string) error {
-	return o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...)
+func (o *{{$tableNameSingular}}) InsertG({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) error {
+	return o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns)
 }
 
 {{end -}}
@@ -12,8 +12,8 @@ func (o *{{$tableNameSingular}}) InsertG({{if not .NoContext}}ctx context.Contex
 {{if .AddPanic -}}
 // InsertP a single record using an executor, and panics on error. See Insert
 // for whitelist behavior description.
-func (o *{{$tableNameSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) {
-	if err := o.Insert({{if not .NoContext}}ctx, {{end -}} exec, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {
+	if err := o.Insert({{if not .NoContext}}ctx, {{end -}} exec, columns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -23,8 +23,8 @@ func (o *{{$tableNameSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{el
 {{if and .AddGlobal .AddPanic -}}
 // InsertGP a single record, and panics on error. See Insert for whitelist
 // behavior description.
-func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Context, {{end -}} whitelist ... string) {
-	if err := o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) {
+	if err := o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -36,7 +36,7 @@ func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Conte
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
 // - All columns without a default value are included (i.e. name, age)
 // - All columns with a default, but non-zero are included (i.e. health = 75)
-func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, whitelist ... string) error {
+func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
 	}
@@ -52,18 +52,18 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 
 	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
 
-	key := makeCacheKey(whitelist, nzDefaults)
+	key := makeCacheKey(columns, nzDefaults)
 	{{$varNameSingular}}InsertCacheMut.RLock()
 	cache, cached := {{$varNameSingular}}InsertCache[key]
 	{{$varNameSingular}}InsertCacheMut.RUnlock()
 
 	if !cached {
-		wl, returnColumns := strmangle.InsertColumnSet(
+		wl, returnColumns := boil.InsertColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,
-			whitelist,
+			columns,
 		)
 
 		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)

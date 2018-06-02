@@ -55,7 +55,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}({{if $.NoContext}
 		related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
 		{{- end}}
 
-		if err = related.Insert({{if not $.NoContext}}ctx, {{end -}} exec); err != nil {
+		if err = related.Insert({{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	} else {
@@ -149,7 +149,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoConte
 	var err error
 
 	related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = false
-	if {{if not $.NoRowsAffected}}_, {{end -}} err = related.Update({{if not $.NoContext}}ctx, {{end -}} exec, "{{.ForeignColumn}}"); err != nil {
+	if {{if not $.NoRowsAffected}}_, {{end -}} err = related.Update({{if not $.NoContext}}ctx, {{end -}} exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
 		related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}

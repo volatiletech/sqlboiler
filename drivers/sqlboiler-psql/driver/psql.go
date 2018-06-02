@@ -533,6 +533,11 @@ func getArrayType(c drivers.Column) string {
 func (p PostgresDriver) Imports() (importers.Collection, error) {
 	var col importers.Collection
 
+	col.All = importers.Set{
+		Standard: importers.List{
+			`"strconv"`,
+		},
+	}
 	col.TestSingleton = importers.Map{
 		"psql_upsert": {
 			Standard: importers.List{

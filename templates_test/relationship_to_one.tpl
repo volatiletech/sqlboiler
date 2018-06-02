@@ -27,12 +27,12 @@ func test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.
 	foreign.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
 	{{- end}}
 
-	if err := foreign.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err := foreign.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
 	local.{{$txt.Function.LocalAssignment}} = foreign.{{$txt.Function.ForeignAssignment}}
-	if err := local.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err := local.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 

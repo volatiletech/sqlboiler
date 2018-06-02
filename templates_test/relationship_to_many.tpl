@@ -19,7 +19,7 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -36,10 +36,10 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	b.{{$txt.Function.ForeignAssignment}} = a.{{$txt.Function.LocalAssignment}}
 	c.{{$txt.Function.ForeignAssignment}} = a.{{$txt.Function.LocalAssignment}}
 	{{- end}}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 

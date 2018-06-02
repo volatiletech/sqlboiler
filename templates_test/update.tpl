@@ -22,7 +22,7 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
@@ -40,11 +40,11 @@ func test{{$tableNamePlural}}Update(t *testing.T) {
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = o.Update({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Update({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 	{{else -}}
-	if rowsAff, err := o.Update({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if rowsAff, err := o.Update({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only affect one row but affected", rowsAff)
@@ -69,7 +69,7 @@ func test{{$tableNamePlural}}SliceUpdateAll(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 

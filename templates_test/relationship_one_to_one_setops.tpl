@@ -26,10 +26,10 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		t.Fatal(err)
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -102,7 +102,7 @@ func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}U
 		t.Fatal(err)
 	}
 
-	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 

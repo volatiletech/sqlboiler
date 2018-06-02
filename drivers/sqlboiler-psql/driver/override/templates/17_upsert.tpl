@@ -3,16 +3,16 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
-	return o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, whitelist...)
+func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+	return o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, insertColumns)
 }
 
 {{end -}}
 
 {{if and .AddGlobal .AddPanic -}}
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
-	if err := o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
+	if err := o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -22,8 +22,8 @@ func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Conte
 {{if .AddPanic -}}
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
-	if err := o.Upsert({{if not .NoContext}}ctx, {{end -}} exec, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
+func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
+	if err := o.Upsert({{if not .NoContext}}ctx, {{end -}} exec, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -31,7 +31,8 @@ func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{el
 {{end -}}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+// See boil.Columns documentation for how to properly use updateColumns and insertColumns.
+func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -58,12 +59,22 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 		buf.WriteString(c)
 	}
 	buf.WriteByte('.')
-	for _, c := range updateColumns {
-		buf.WriteString(c)
+	buf.WriteString(strconv.Itoa(updateColumns.Kind))
+	buf.WriteByte('.')
+	switch updateColumns.Kind {
+	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
+		for _, c := range updateColumns.Cols {
+			buf.WriteString(c)
+		}
 	}
 	buf.WriteByte('.')
-	for _, c := range whitelist {
-		buf.WriteString(c)
+	buf.WriteString(strconv.Itoa(insertColumns.Kind))
+	buf.WriteByte('.')
+	switch insertColumns.Kind {
+	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
+		for _, c := range insertColumns.Cols {
+			buf.WriteString(c)
+		}
 	}
 	buf.WriteByte('.')
 	for _, c := range nzDefaults {
@@ -79,14 +90,14 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	var err error
 
 	if !cached {
-		insert, ret := strmangle.InsertColumnSet(
+		insert, ret := boil.InsertColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,
-			whitelist,
+			insertColumns,
 		)
-		update := strmangle.UpdateColumnSet(
+		update := boil.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
 			updateColumns,

@@ -15,7 +15,7 @@ func test{{$tableNamePlural}}Bind(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
@@ -37,7 +37,7 @@ func test{{$tableNamePlural}}One(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
@@ -65,10 +65,10 @@ func test{{$tableNamePlural}}All(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = {{$varNameSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = {{$varNameSingular}}Two.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = {{$varNameSingular}}Two.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
@@ -99,10 +99,10 @@ func test{{$tableNamePlural}}Count(t *testing.T) {
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
-	if err = {{$varNameSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = {{$varNameSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
-	if err = {{$varNameSingular}}Two.Insert({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = {{$varNameSingular}}Two.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 

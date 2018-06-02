@@ -39,14 +39,22 @@ difference.
 
 #### Smaller changes
 
+- Insert, Update and Upsert now take a `boil.Columns` instead of a
+  `whitelist []string`. This allows more flexibility in that we can use
+  different column list kinds to control what gets inserted and updated.
+  See `boil.Infer`, `boil.Whitelist`, `boil.Blacklist`, `boil.Greylist`.
+  This is a breaking change to the syntax of Insert and Update as this argument
+  is no longer optional. To migrate an app and keep the same behavior,
+  add `boil.Infer()` where there's a missing argument, and add
+  `boil.Whitelist("columns", "here")` where columns were previously specified.
 - Queries no longer keep a handle to the database and therefore the db
   parameter is no longer passed in where you create a query, instead it's passed
   in where you execute the query.
 - context.Context is now piped through everything, this is a breaking change
-  syntactically. This can be controlled by the --no-context flag.
+  syntactically. This can be controlled by the `--no-context` flag.
 - Rename postgresql driver to psql
 - MySQL driver no longer accepts `tinyint_as_bool` via command line. Instead
-  the flag has been inverted (tinyint_as_int) to stop the automatic bool
+  the flag has been inverted (`tinyint_as_int`) to stop the automatic bool
   conversion and it's now passed in as a driver configuration setting (via the
   env or config).
 - Schema is no longer an sqlboiler level configuration setting. Instead it is
@@ -54,20 +62,23 @@ difference.
   for the database we're generating for. This is a breaking change.
 - Rows affected is now returned by update and deletes by default. This is
   syntactically a breaking change. This can be controlled by the
-  --no-rows-affected flag.
+  `--no-rows-affected` flag.
 - Panic and Global variants are now hidden behind flags. This reduces the size
   of the generated code by 15%. This is a breaking change if you were using
   them.
 - Randomize now counts on an interface to do proper randomization for
   custom types.
 - Imports is now it's own package and is cleaned up significantly
-- Changed all $dot references to $. as is proper
+- Changed all `$dot` references to `$.` as is proper
 - Drivers are now responsible for their own config validation
 - Drivers are now responsible for their own default config values
+- Upsert is no longer a core part of sqlboiler, and is currently being provided
+  by all three supported drivers, but other drivers may choose not to implement
+  it.
 - Drivers can now take any configuration via environment or config files. This
   allows drivers to be much more configurable and there's no constraints
   imposed by the main/testing of sqlboiler itself.
-- Replace templates (hidden flag) now use the ; separator not : for windows
+- Replace templates (hidden flag) now use the `;` separator not `:` for windows
   compatibility.
 
 ### Removed

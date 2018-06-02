@@ -62,7 +62,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}({{if $.NoContext}
 				{{end -}}
 			{{end -}}
 
-			if err = rel.Insert({{if not $.NoContext}}ctx, {{end -}} exec); err != nil {
+			if err = rel.Insert({{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		}{{if not .ToJoinTable}} else {
@@ -318,7 +318,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoConte
 			rel.R.{{$txt.Function.ForeignName}} = nil
 		}
 		{{end -}}
-		if {{if not $.NoRowsAffected}}_, {{end -}} err = rel.Update({{if not $.NoContext}}ctx, {{end -}} exec, "{{.ForeignColumn}}"); err != nil {
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = rel.Update({{if not $.NoContext}}ctx, {{end -}} exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
 			return err
 		}
 	}

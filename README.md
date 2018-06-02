@@ -1146,13 +1146,19 @@ jet, err := models.FindJet(db, 1, "name", "color")
 
 ### Insert
 
-The main thing to be aware of with `Insert` is how the `whitelist` operates. If no whitelist
-argument is provided, `Insert` will abide by the following rules:
+The main thing to be aware of with `Insert` is how the `columns` argument operates. You can supply
+one of the following column lists: `boil.Infer`, `boil.Whitelist`, `boil.Blacklist`, or `boil.Greylist`.
 
-- Insert all columns **without** a database default value.
-- Insert all columns with a non-zero value that have a database default value.
+| Column List | Behavior |
+| ----------- | -------- |
+| Infer       | Infer the column list using "smart" rules
+| Whitelist   | Insert only the columns specified in this list
+| Blacklist   | Infer the column list, but ensure these columns are not inserted
+| Greylist    | Infer the column list, but ensure these columns are inserted
 
-On the other hand, if a whitelist is provided, we will only insert the columns specified in the whitelist.
+See the documentation for
+[boil.InsertColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#InsertColumnSet)
+for more details.
 
 Also note that your object will automatically be updated with any missing default values from the
 database after the `Insert` is finished executing. This includes auto-incrementing column values.
@@ -1160,24 +1166,24 @@ database after the `Insert` is finished executing. This includes auto-incrementi
 ```go
 var p1 models.Pilot
 p1.Name = "Larry"
-err := p1.Insert(ctx, db) // Insert the first pilot with name "Larry"
+err := p1.Insert(ctx, db, boil.Infer()) // Insert the first pilot with name "Larry"
 // p1 now has an ID field set to 1
 
 var p2 models.Pilot
 p2.Name "Boris"
-err := p2.Insert(ctx, db) // Insert the second pilot with name "Boris"
+err := p2.Insert(ctx, db, boil.Infer()) // Insert the second pilot with name "Boris"
 // p2 now has an ID field set to 2
 
 var p3 models.Pilot
 p3.ID = 25
 p3.Name = "Rupert"
-err := p3.Insert(ctx, db) // Insert the third pilot with a specific ID
+err := p3.Insert(ctx, db, boil.Infer()) // Insert the third pilot with a specific ID
 // The id for this row was inserted as 25 in the database.
 
 var p4 models.Pilot
 p4.ID = 0
 p4.Name = "Nigel"
-err := p4.Insert(ctx, db, "id", "name") // Insert the fourth pilot with a zero value ID
+err := p4.Insert(ctx, db, boil.Whitelist("id", "name")) // Insert the fourth pilot with a zero value ID
 // The id for this row was inserted as 0 in the database.
 // Note: We had to use the whitelist for this, otherwise
 // SQLBoiler would presume you wanted to auto-increment
@@ -1190,10 +1196,19 @@ for a collection of rows.
 `Update` on a single object optionally takes a `whitelist`. The purpose of the
 whitelist is to specify which columns in your object should be updated in the database.
 
-If no `whitelist` argument is provided, `Update` will update every column except for
-`primary key` columns.
+Like `Insert`, this method also takes a `Columns` type, but the behavior is slighty different.
+Although the descriptions below look similar the full documentation reveals the differences.
 
-If a `whitelist` argument is provided, `update` will only update the columns specified.
+| Column List | Behavior |
+| ----------- | -------- |
+| Infer       | Infer the column list using "smart" rules
+| Whitelist   | Update only the columns specified in this list
+| Blacklist   | Infer the column list for updating, but ensure these columns are not updated
+| Greylist    | Infer the column list, but ensure these columns are updated
+
+See the documentation for
+[boil.UpdateColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#UpdateColumnSet)
+for more details.
 
 ```go
 // Find a pilot and update his name
@@ -1231,7 +1246,9 @@ err := pilots.DeleteAll(ctx, db)
 [Upsert](https://www.postgresql.org/docs/9.5/static/sql-insert.html) allows you to perform an insert
 that optionally performs an update when a conflict is found against existing row values.
 
-The `whitelist` operates in the same fashion that it does for [Insert](#insert).
+The `updateColumns` and `insertColumns` operates in the same fashion that it does for [Update](#update) 
+and [Insert](#insert).
+
 
 If an insert is performed, your object will be updated with any missing default values from the database,
 such as auto-incrementing column values.
@@ -1243,11 +1260,11 @@ p1.Name = "Gaben"
 
 // INSERT INTO pilots ("id", "name") VALUES($1, $2)
 // ON CONFLICT DO NOTHING
-err := p1.Upsert(ctx, db, false, nil, nil)
+err := p1.Upsert(ctx, db, false, nil, boil.Infer())
 
 // INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
-err := p1.Upsert(ctx, db, true, []string{"id"}, []string{"name"})
+err := p1.Upsert(ctx, db, true, []string{"id"}, boil.Whitelist("name"), boil.Infer())
 
 // Set p1.ID to a zero value. We will have to use the whitelist now.
 p1.ID = 0
@@ -1255,7 +1272,7 @@ p1.Name = "Hogan"
 
 // INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
-err := p1.Upsert(ctx, db, true, []string{"id"}, []string{"name"}, "id", "name")
+err := p1.Upsert(ctx, db, true, []string{"id"}, boil.Whitelist("name"), boil.Whitelist("id", "name"))
 ```
 
 The `updateOnConflict` argument allows you to specify whether you would like Postgres
@@ -1265,6 +1282,9 @@ The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns f
 For MySQL, this param will not be generated.
 
 Note: Passing a different set of column values to the update component is not currently supported.
+
+Note: Upsert is now not guaranteed to be provided by SQLBoiler and it's now up to each driver
+individually to support it since it's a bit outside of the reach of the sql standard.
 
 ### Reload
 In the event that your objects get out of sync with the database for whatever reason,

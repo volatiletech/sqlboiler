@@ -452,6 +452,12 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 
 // Imports returns important imports for the driver
 func (MySQLDriver) Imports() (col importers.Collection, err error) {
+	col.All = importers.Set{
+		Standard: importers.List{
+			`"strconv"`,
+		},
+	}
+
 	col.TestSingleton = importers.Map{
 		"mysql_upsert": {
 			Standard: importers.List{

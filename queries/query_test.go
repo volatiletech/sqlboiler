@@ -55,7 +55,23 @@ func TestSetLoad(t *testing.T) {
 	}
 
 	if q.load[0] != "one" || q.load[1] != "two" {
-		t.Errorf("Was not expected string, got %s", q.load)
+		t.Errorf("Was not expected string, got %v", q.load)
+	}
+}
+
+type apple struct{}
+
+func (apple) Apply(*Query) {}
+
+func TestSetLoadMods(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetLoadMods(q, "a", apple{})
+	SetLoadMods(q, "b", apple{})
+
+	if len(q.loadMods) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.loadMods))
 	}
 }
 

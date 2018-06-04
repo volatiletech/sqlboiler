@@ -123,7 +123,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	}
 
 	if len(q.load) != 0 {
-		return eagerLoad(ctx, exec, q.load, obj, bkind)
+		return eagerLoad(ctx, exec, q.load, q.loadMods, obj, bkind)
 	}
 
 	return nil

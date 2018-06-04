@@ -22,9 +22,12 @@ const (
 
 // Query holds the state for the built up query
 type Query struct {
-	dialect    *drivers.Dialect
-	rawSQL     rawSQL
-	load       []string
+	dialect *drivers.Dialect
+	rawSQL  rawSQL
+
+	load     []string
+	loadMods map[string]Applicator
+
 	delete     bool
 	update     map[string]interface{}
 	selectCols []string
@@ -39,6 +42,13 @@ type Query struct {
 	limit      int
 	offset     int
 	forlock    string
+}
+
+// Applicator exists only to allow
+// query mods into the query struct around
+// eager loaded relationships.
+type Applicator interface {
+	Apply(*Query)
 }
 
 type where struct {
@@ -190,8 +200,17 @@ func SetLoad(q *Query, relationships ...string) {
 }
 
 // AppendLoad on the query.
-func AppendLoad(q *Query, relationships ...string) {
-	q.load = append(q.load, relationships...)
+func AppendLoad(q *Query, relationships string) {
+	q.load = append(q.load, relationships)
+}
+
+// SetLoadMods on the query.
+func SetLoadMods(q *Query, rel string, appl Applicator) {
+	if q.loadMods == nil {
+		q.loadMods = make(map[string]Applicator)
+	}
+
+	q.loadMods[rel] = appl
 }
 
 // SetSelect on the query.

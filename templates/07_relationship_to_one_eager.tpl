@@ -3,10 +3,10 @@
 	{{- range .Table.FKeys -}}
 		{{- $txt := txtsFromFKey $.Tables $.Table . -}}
 		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
-		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
+		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}) error {
+func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
 	var slice []*{{$txt.LocalTable.NameGo}}
 	var object *{{$txt.LocalTable.NameGo}}
 
@@ -33,19 +33,15 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 		}
 	}
 
-	query := fmt.Sprintf(
-		"select * from {{.ForeignTable | $.SchemaTable}} where {{.ForeignColumn | $.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
-	)
-
-	if boil.DebugMode {
-		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	query := NewQuery(qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`), qm.WhereIn(`{{.ForeignColumn}} in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
 	}
 
 	{{if $.NoContext -}}
-	results, err := e.Query(query, args...)
+	results, err := query.Query(e)
 	{{else -}}
-	results, err := e.QueryContext(ctx, query, args...)
+	results, err := query.QueryContext(ctx, e)
 	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{$txt.ForeignTable.NameGo}}")

@@ -5,6 +5,18 @@ import "github.com/volatiletech/sqlboiler/queries"
 // QueryMod to modify the query object
 type QueryMod func(q *queries.Query)
 
+type queryMods []QueryMod
+
+// Apply applies the query mods to a query, satisfying
+// the applicator interface in queries. This "clever"
+// inversion of dependency is because suddenly the
+// eager loading needs to be able to store query mods
+// in the query object, which before - never knew about
+// query mods.
+func (m queryMods) Apply(q *queries.Query) {
+	Apply(q, m...)
+}
+
 // Apply the query mods to the Query object
 func Apply(q *queries.Query, mods ...QueryMod) {
 	for _, mod := range mods {
@@ -24,9 +36,32 @@ func SQL(sql string, args ...interface{}) QueryMod {
 // MyThing or MyThings.
 // Relationship name plurality is important, if your relationship is
 // singular, you need to specify the singular form and vice versa.
-func Load(relationships ...string) QueryMod {
+//
+// In the following example we see how to eager load a users's videos
+// and the video's tags comments, and publisher during a query to find users.
+//
+//   models.Users(qm.Load("Videos.Tags"))
+//
+// In order to filter better on the query for the relationships you can additionally
+// supply query mods.
+//
+//   models.Users(qm.Load("Videos.Tags", Where("deleted = ?", isDeleted)))
+//
+// Keep in mind the above only sets the query mods for the query on the last specified
+// relationship. In this case, only Tags will get the query mod. If you want to do
+// intermediate relationships with query mods you must specify them separately:
+//
+//   models.Users(
+//     qm.Load("Videos", Where("deleted = false"))
+//     qm.Load("Videos.Tags", Where("deleted = ?", isDeleted))
+//   )
+func Load(relationship string, mods ...QueryMod) QueryMod {
 	return func(q *queries.Query) {
-		queries.AppendLoad(q, relationships...)
+		queries.AppendLoad(q, relationship)
+
+		if len(mods) != 0 {
+			queries.SetLoadMods(q, relationship, queryMods(mods))
+		}
 	}
 }
 

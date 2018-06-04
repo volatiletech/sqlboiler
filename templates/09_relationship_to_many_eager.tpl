@@ -7,7 +7,7 @@
 		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}) error {
+func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
 	var slice []*{{$txt.LocalTable.NameGo}}
 	var object *{{$txt.LocalTable.NameGo}}
 
@@ -36,25 +36,23 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 
 		{{if .ToJoinTable -}}
 			{{- $schemaJoinTable := .JoinTable | $.SchemaTable -}}
-	query := fmt.Sprintf(
-		"select {{id 0 | $.Quotes}}.*, {{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} from {{$schemaForeignTable}} as {{id 0 | $.Quotes}} inner join {{$schemaJoinTable}} as {{id 1 | $.Quotes}} on {{id 0 | $.Quotes}}.{{.ForeignColumn | $.Quotes}} = {{id 1 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}} where {{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
+	query := NewQuery(
+		qm.Select("{{id 0 | $.Quotes}}.*, {{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}}"),
+		qm.From("{{$schemaForeignTable}} as {{id 0 | $.Quotes}}"),
+		qm.InnerJoin("{{$schemaJoinTable}} as {{id 1 | $.Quotes}} on {{id 0 | $.Quotes}}.{{.ForeignColumn | $.Quotes}} = {{id 1 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}}"),
+		qm.WhereIn("{{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in ?", args...),
 	)
 		{{else -}}
-	query := fmt.Sprintf(
-		"select * from {{$schemaForeignTable}} where {{.ForeignColumn | $.Quotes}} in (%s)",
-		strmangle.Placeholders(dialect.UseIndexPlaceholders, count, 1, 1),
-	)
+	query := NewQuery(qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`), qm.Where(`{{.ForeignColumn}} in ?`, args...))
 		{{end -}}
-
-	if boil.DebugMode {
-		fmt.Fprintf(boil.DebugWriter, "%s\n%v\n", query, args)
+	if mods != nil {
+		mods.Apply(query)
 	}
 
 	{{if $.NoContext -}}
-	results, err := e.Query(query, args...)
+	results, err := query.Query(query, e)
 	{{else -}}
-	results, err := e.QueryContext(ctx, query, args...)
+	results, err := query.QueryContext(ctx, e)
 	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")

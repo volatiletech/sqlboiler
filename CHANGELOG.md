@@ -47,6 +47,11 @@ difference.
   is no longer optional. To migrate an app and keep the same behavior,
   add `boil.Infer()` where there's a missing argument, and add
   `boil.Whitelist("columns", "here")` where columns were previously specified.
+- Eager loading can now accept QueryMods. This is a breaking change. To migrate
+  an application simply take calls that were of the form: `Load("a.b", "a.c")`
+  and break them into two separate `Load()` query mods. The second argument
+  is now a variadic slice of query mods, hence the breaking change. See the docs
+  for `Load()` for more details.
 - Queries no longer keep a handle to the database and therefore the db
   parameter is no longer passed in where you create a query, instead it's passed
   in where you execute the query.

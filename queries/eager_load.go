@@ -16,6 +16,7 @@ type loadRelationshipState struct {
 	exec   boil.Executor
 	loaded map[string]struct{}
 	toLoad []string
+	mods   map[string]Applicator
 }
 
 func (l loadRelationshipState) hasLoaded(depth int) bool {
@@ -49,11 +50,12 @@ func (l loadRelationshipState) buildKey(depth int) string {
 // obj should be one of:
 // *[]*struct or *struct
 // bkind should reflect what kind of thing it is above
-func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, obj interface{}, bkind bindKind) error {
+func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, mods map[string]Applicator, obj interface{}, bkind bindKind) error {
 	state := loadRelationshipState{
 		ctx:    ctx, // defiant to the end, I know this is frowned upon
 		exec:   exec,
 		loaded: map[string]struct{}{},
+		mods:   mods,
 	}
 	for _, toLoad := range toLoad {
 		state.toLoad = strings.Split(toLoad, ".")
@@ -178,12 +180,17 @@ func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.V
 		val = reflect.Indirect(val)
 	}
 
-	methodArgs := make([]reflect.Value, 0, 4)
+	methodArgs := make([]reflect.Value, 0, 5)
 	methodArgs = append(methodArgs, val.FieldByName(loaderStructName))
 	if ctxArg.IsValid() {
 		methodArgs = append(methodArgs, ctxArg)
 	}
 	methodArgs = append(methodArgs, execArg, reflect.ValueOf(bkind == kindStruct), loadingFrom)
+	if mods, ok := l.mods[l.buildKey(depth)]; ok {
+		methodArgs = append(methodArgs, reflect.ValueOf(mods))
+	} else {
+		methodArgs = append(methodArgs, reflect.Zero(reflect.TypeOf(applicatorSentinelPointer)))
+	}
 
 	ret := loadMethod.Func.Call(methodArgs)
 	if intf := ret[0].Interface(); intf != nil {
@@ -295,3 +302,12 @@ func findRelationshipStruct(obj reflect.Value) (reflect.Value, error) {
 
 	return relationshipStruct, nil
 }
+
+// can't create a nil Applicator without
+// an actual implementer to use as a basis for the
+// zero value :\
+type applicatorSentinel struct{}
+
+func (applicatorSentinel) Apply(*Query) {}
+
+var applicatorSentinelPointer *applicatorSentinel

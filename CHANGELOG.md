@@ -86,3 +86,9 @@ difference.
 - The concept of TestMain is now gone from both templates and imports. It's
   been superceded by the new driver abilities to supply templates and imports.
   The drivers add their mains to the TestSingleton templates.
+
+### Fixed
+
+- Fixed a bug in Bind() where all the given `*sql.Rows` would be consumed
+  even in the event where we were binding to a single object. This allows
+  for slower scanning of a `*sql.Rows` object.

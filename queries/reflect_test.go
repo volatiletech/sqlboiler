@@ -56,6 +56,7 @@ func TestBindStruct(t *testing.T) {
 
 	ret := sqlmock.NewRows([]string{"id", "test"})
 	ret.AddRow(driver.Value(int64(35)), driver.Value("pat"))
+	ret.AddRow(driver.Value(int64(65)), driver.Value("hat"))
 	mock.ExpectQuery(`SELECT \* FROM "fun";`).WillReturnRows(ret)
 
 	err = query.Bind(nil, db, &testResults)

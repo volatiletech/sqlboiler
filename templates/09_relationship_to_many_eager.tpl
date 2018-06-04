@@ -37,10 +37,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 		{{if .ToJoinTable -}}
 			{{- $schemaJoinTable := .JoinTable | $.SchemaTable -}}
 	query := NewQuery(
-		qm.Select("{{id 0 | $.Quotes}}.*, {{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}}"),
-		qm.From("{{$schemaForeignTable}} as {{id 0 | $.Quotes}}"),
-		qm.InnerJoin("{{$schemaJoinTable}} as {{id 1 | $.Quotes}} on {{id 0 | $.Quotes}}.{{.ForeignColumn | $.Quotes}} = {{id 1 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}}"),
-		qm.WhereIn("{{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in ?", args...),
+		qm.Select("{{$schemaForeignTable}}.*, {{id 0 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}}"),
+		qm.From("{{$schemaForeignTable}}"),
+		qm.InnerJoin("{{$schemaJoinTable}} as {{id 0 | $.Quotes}} on {{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}} = {{id 0 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}}"),
+		qm.WhereIn("{{id 0 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in ?", args...),
 	)
 		{{else -}}
 	query := NewQuery(qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`), qm.WhereIn(`{{.ForeignColumn}} in ?`, args...))

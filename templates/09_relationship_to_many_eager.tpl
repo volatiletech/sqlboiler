@@ -43,7 +43,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 		qm.WhereIn("{{id 1 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in ?", args...),
 	)
 		{{else -}}
-	query := NewQuery(qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`), qm.Where(`{{.ForeignColumn}} in ?`, args...))
+	query := NewQuery(qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`), qm.WhereIn(`{{.ForeignColumn}} in ?`, args...))
 		{{end -}}
 	if mods != nil {
 		mods.Apply(query)

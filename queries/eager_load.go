@@ -189,7 +189,7 @@ func (l loadRelationshipState) callLoadFunction(depth int, loadingFrom reflect.V
 	if mods, ok := l.mods[l.buildKey(depth)]; ok {
 		methodArgs = append(methodArgs, reflect.ValueOf(mods))
 	} else {
-		methodArgs = append(methodArgs, reflect.Zero(reflect.TypeOf(applicatorSentinelPointer)))
+		methodArgs = append(methodArgs, applicatorSentinelVal)
 	}
 
 	ret := loadMethod.Func.Call(methodArgs)
@@ -303,11 +303,7 @@ func findRelationshipStruct(obj reflect.Value) (reflect.Value, error) {
 	return relationshipStruct, nil
 }
 
-// can't create a nil Applicator without
-// an actual implementer to use as a basis for the
-// zero value :\
-type applicatorSentinel struct{}
-
-func (applicatorSentinel) Apply(*Query) {}
-
-var applicatorSentinelPointer *applicatorSentinel
+var (
+	applicatorSentinel    Applicator
+	applicatorSentinelVal = reflect.ValueOf(&applicatorSentinel).Elem()
+)

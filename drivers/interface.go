@@ -44,6 +44,10 @@ type DBInfo struct {
 
 // Dialect describes the databases requirements in terms of which features
 // it speaks and what kind of quoting mechanisms it uses.
+//
+// WARNING: When updating this struct there is a copy of it inside
+// the boil_queries template that is used for users to create queries
+// without having to figure out what their dialect is.
 type Dialect struct {
 	LQ rune `json:"lq"`
 	RQ rune `json:"rq"`

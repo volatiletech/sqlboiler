@@ -5,7 +5,7 @@
 		{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
-// loaded structs of the objects.
+// loaded structs of the objects. This is for a 1-1 relationship.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
 	var slice []*{{$txt.LocalTable.NameGo}}
 	var object *{{$txt.LocalTable.NameGo}}

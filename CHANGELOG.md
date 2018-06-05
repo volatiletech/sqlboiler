@@ -100,3 +100,5 @@ difference.
 - Fixed a problem in eager loading where the same object would be queried
   for multiple times. This was simply inefficient and so we now de-duplicate
   the ids before creating the query.
+- Fix a bug with insert where if the columns to insert were nil, values
+  would never be loaded into the query (RETURNING clause missing).

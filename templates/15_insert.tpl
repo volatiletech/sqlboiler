@@ -78,9 +78,9 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 			cache.query = fmt.Sprintf("INSERT INTO {{$schemaTable}} ({{.LQ}}%s{{.RQ}}) %%sVALUES (%s)%%s", strings.Join(wl, "{{.RQ}},{{.LQ}}"), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
 			{{if .Dialect.UseDefaultKeyword -}}
-			cache.query = "INSERT INTO {{$schemaTable}} DEFAULT VALUES"
+			cache.query = "INSERT INTO {{$schemaTable}} %sDEFAULT VALUES%s"
 			{{else -}}
-			cache.query = "INSERT INTO {{$schemaTable}} () VALUES ()"
+			cache.query = "INSERT INTO {{$schemaTable}} () VALUES ()%s%s"
 			{{end -}}
 		}
 
@@ -91,16 +91,14 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
 			{{else -}}
 				{{if .Dialect.UseOutputClause -}}
-				queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
+			queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
 				{{else -}}
-				queryReturning = fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
+			queryReturning = fmt.Sprintf(" RETURNING {{.LQ}}%s{{.RQ}}", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"))
 				{{end -}}
 			{{end -}}
 		}
 
-		if len(wl) != 0 {
-			cache.query = fmt.Sprintf(cache.query, queryOutput, queryReturning)
-		}
+		cache.query = fmt.Sprintf(cache.query, queryOutput, queryReturning)
 	}
 
 	value := reflect.Indirect(reflect.ValueOf(o))

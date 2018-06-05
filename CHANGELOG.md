@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add ability to specify blacklisted or whitelisted columns in a table by
   using the syntax tablename.columnname in the driver's whitelist/blacklist
   config setting.
+- Add way to create a relationship struct: `modelName.R.NewStruct()`
 
 ### Changed
 

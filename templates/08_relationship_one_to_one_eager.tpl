@@ -1,8 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- range .Table.ToOneRelationships -}}
-		{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
 		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
+		{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.

@@ -51,6 +51,11 @@ type {{$modelNameCamel}}R struct {
 	{{end -}}{{/* range tomany */}}
 }
 
+// NewStruct creates a new relationship struct
+func (*{{$modelNameCamel}}R) NewStruct() *{{$modelNameCamel}}R {
+	return &{{$modelNameCamel}}R{}
+}
+
 // {{$modelNameCamel}}L is where Load methods for each relationship are stored.
 type {{$modelNameCamel}}L struct{}
 {{end -}}

@@ -97,3 +97,6 @@ difference.
 - Fixed a bug in Bind() where all the given `*sql.Rows` would be consumed
   even in the event where we were binding to a single object. This allows
   for slower scanning of a `*sql.Rows` object.
+- Fixed a problem in eager loading where the same object would be queried
+  for multiple times. This was simply inefficient and so we now de-duplicate
+  the ids before creating the query.

@@ -763,8 +763,8 @@ Offset(5)
 For("update nowait")
 
 // Eager Loading -- Load takes the relationship name, ie the struct field name of the
-// Relationship struct field you want to load.
-Load("Languages") // If it's a ToOne relationship it's in singular form, ToMany is plural.
+// Relationship struct field you want to load. Optionally also takes query mods to filter on that query.
+Load("Languages", Where(...)) // If it's a ToOne relationship it's in singular form, ToMany is plural.
 ```
 
 Note: We don't force you to break queries apart like this if you don't want to, the following
@@ -965,10 +965,13 @@ Eager loading can be combined with other query mods, and it can also eager load 
 jets, _ := models.Jets(Load("Pilot.Languages")).All(ctx, db)
 // Note that each level of a nested Load call will be loaded. No need to call Load() multiple times.
 
-// A larger, random example
+// A larger example. In the below scenario, Pets will only be queried one time, despite
+// showing up twice because they're the same query (the user's pets)
 users, _ := models.Users(
   Load("Pets.Vets"),
-  Load("Pets.Toys"),
+  // the query mods passed in below only affect the query for Toys
+  // to use query mods against Pets itself, you must declare it separately
+  Load("Pets.Toys", Where("toys.deleted = ?", isDeleted)),
   Load("Property"),
   Where("age > ?", 23),
 ).All(ctx, db)

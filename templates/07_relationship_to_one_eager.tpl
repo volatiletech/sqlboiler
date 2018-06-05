@@ -10,26 +10,36 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	var slice []*{{$txt.LocalTable.NameGo}}
 	var object *{{$txt.LocalTable.NameGo}}
 
-	count := 1
 	if singular {
 		object = {{$arg}}.(*{{$txt.LocalTable.NameGo}})
 	} else {
 		slice = *{{$arg}}.(*[]*{{$txt.LocalTable.NameGo}})
-		count = len(slice)
 	}
 
-	args := make([]interface{}, count)
+	args := make([]interface{}, 0, 1)
 	if singular {
 		if object.R == nil {
 			object.R = &{{$varNameSingular}}R{}
 		}
-		args[0] = object.{{$txt.LocalTable.ColumnNameGo}}
+		args = append(args, object.{{$txt.LocalTable.ColumnNameGo}})
 	} else {
-		for i, obj := range slice {
+		Outer:
+		for _, obj := range slice {
 			if obj.R == nil {
 				obj.R = &{{$varNameSingular}}R{}
 			}
-			args[i] = obj.{{$txt.LocalTable.ColumnNameGo}}
+
+			for _, a := range args {
+				{{if $txt.Function.UsesBytes -}}
+				if 0 == bytes.Compare(a.([]byte), obj.{{$txt.Function.LocalAssignment}}) {
+				{{else -}}
+				if a == obj.{{$txt.Function.LocalAssignment}} {
+				{{end -}}
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.{{$txt.LocalTable.ColumnNameGo}})
 		}
 	}
 

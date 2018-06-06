@@ -53,6 +53,8 @@ difference.
   and break them into two separate `Load()` query mods. The second argument
   is now a variadic slice of query mods, hence the breaking change. See the docs
   for `Load()` for more details.
+- Eager loading now attaches both sides of the relationship in the `R` structs.
+  This is consistent with the way the set relationship helpers work.
 - Queries no longer keep a handle to the database and therefore the db
   parameter is no longer passed in where you create a query, instead it's passed
   in where you execute the query.

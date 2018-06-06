@@ -1,7 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- range .Table.ToManyRelationships -}}
-		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
+		{{- $varNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $txt := txtsFromToMany $.Tables $.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
 		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
@@ -112,6 +113,16 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	{{- end}}
 	if singular {
 		object.R.{{$txt.Function.Name}} = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &{{$foreignNameSingular}}R{}
+			}
+			{{if .ToJoinTable -}}
+			foreign.R.{{$txt.Function.ForeignName}} = append(foreign.R.{{$txt.Function.ForeignName}}, object)
+			{{else -}}
+			foreign.R.{{$txt.Function.ForeignName}} = object
+			{{end -}}
+		}
 		return nil
 	}
 
@@ -125,6 +136,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 			if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
+				if foreign.R == nil {
+					foreign.R = &{{$foreignNameSingular}}R{}
+				}
+				foreign.R.{{$txt.Function.ForeignName}} = append(foreign.R.{{$txt.Function.ForeignName}}, local)
 				break
 			}
 		}
@@ -138,6 +153,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
+				if foreign.R == nil {
+					foreign.R = &{{$foreignNameSingular}}R{}
+				}
+				foreign.R.{{$txt.Function.ForeignName}} = local
 				break
 			}
 		}

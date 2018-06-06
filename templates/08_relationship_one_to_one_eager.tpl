@@ -1,7 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- range .Table.ToOneRelationships -}}
-		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
+		{{- $varNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
@@ -84,8 +85,12 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	}
 
 	if singular {
-		object.R.{{$txt.Function.Name}} = resultSlice[0]
-		return nil
+		foreign := resultSlice[0]
+		object.R.{{$txt.Function.Name}} = foreign
+		if foreign.R == nil {
+			foreign.R = &{{$foreignNameSingular}}R{}
+		}
+		foreign.R.{{$txt.Function.ForeignName}} = object
 	}
 
 	for _, local := range slice {
@@ -96,6 +101,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = foreign
+				if foreign.R == nil {
+					foreign.R = &{{$foreignNameSingular}}R{}
+				}
+				foreign.R.{{$txt.Function.ForeignName}} = local
 				break
 			}
 		}

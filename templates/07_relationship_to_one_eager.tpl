@@ -1,7 +1,8 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- range .Table.FKeys -}}
-		{{- $varNameSingular := $.Table.Name | singular | camelCase -}}
+		{{- $varNameSingular := .Table | singular | camelCase -}}
+		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
 		{{- $txt := txtsFromFKey $.Tables $.Table . -}}
 		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo}}
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
@@ -84,7 +85,16 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	}
 
 	if singular {
-		object.R.{{$txt.Function.Name}} = resultSlice[0]
+		foreign := resultSlice[0]
+		object.R.{{$txt.Function.Name}} = foreign
+		if foreign.R == nil {
+			foreign.R = &{{$foreignNameSingular}}R{}
+		}
+		{{if .Unique -}}
+		foreign.R.{{$txt.Function.ForeignName}} = object
+		{{else -}}
+		foreign.R.{{$txt.Function.ForeignName}} = append(foreign.R.{{$txt.Function.ForeignName}}, object)
+		{{end -}}
 		return nil
 	}
 
@@ -96,6 +106,14 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = foreign
+				if foreign.R == nil {
+					foreign.R = &{{$foreignNameSingular}}R{}
+				}
+				{{if .Unique -}}
+				foreign.R.{{$txt.Function.ForeignName}} = local
+				{{else -}}
+				foreign.R.{{$txt.Function.ForeignName}} = append(foreign.R.{{$txt.Function.ForeignName}}, local)
+				{{end -}}
 				break
 			}
 		}

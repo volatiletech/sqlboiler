@@ -84,7 +84,7 @@ func (m *MockDriver) TableNames(schema string, whitelist, blacklist []string) ([
 }
 
 // Columns returns a list of mock columns
-func (m *MockDriver) Columns(schema, tableName string) ([]drivers.Column, error) {
+func (m *MockDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
 	return map[string][]drivers.Column{
 		"pilots": {
 			{Name: "id", Type: "int", DBType: "integer"},

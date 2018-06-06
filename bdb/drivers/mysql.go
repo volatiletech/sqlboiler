@@ -53,7 +53,7 @@ func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 	}
 	config.Addr += ":" + strconv.Itoa(port)
 	config.TLSConfig = sslmode
-	config.AllowNativePasswords = false
+	config.AllowNativePasswords = true
 
 	// MySQL is a bad, and by default reads date/datetime into a []byte
 	// instead of a time.Time. Tell it to stop being a bad.

@@ -117,9 +117,14 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
-	defer rows.Close()
 	if res := bind(rows, obj, structType, sliceType, bkind); res != nil {
 		return res
+	}
+	if err = rows.Close(); err != nil {
+		return err
+	}
+	if err = rows.Err(); err != nil {
+		return err
 	}
 
 	if len(q.load) != 0 {

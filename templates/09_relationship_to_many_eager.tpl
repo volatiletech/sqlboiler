@@ -87,15 +87,18 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 		resultSlice = append(resultSlice, one)
 		localJoinCols = append(localJoinCols, localJoinCol)
 	}
-
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
-	}
-	{{else -}}
+	{{- else -}}
 	if err = queries.Bind(results, &resultSlice); err != nil {
 		return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
 	}
-	{{end}}
+	{{- end}}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on {{.ForeignTable}}")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for {{.ForeignTable}}")
+	}
 
 	{{if not $.NoHooks -}}
 	if len({{.ForeignTable | singular | camelCase}}AfterSelectHooks) != 0 {

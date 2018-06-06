@@ -56,11 +56,17 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{$txt.ForeignTable.NameGo}}")
 	}
-	defer results.Close()
 
 	var resultSlice []*{{$txt.ForeignTable.NameGo}}
 	if err = queries.Bind(results, &resultSlice); err != nil {
 		return errors.Wrap(err, "failed to bind eager loaded slice {{$txt.ForeignTable.NameGo}}")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for {{.ForeignTable}}")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for {{.ForeignTable}}")
 	}
 
 	{{if not $.NoHooks -}}

@@ -5,11 +5,16 @@ import (
 )
 
 // Columns kinds
+// Note: These are not exported because they should only be used
+// internally. To hide the clutter from the public API so boil
+// continues to be a package aimed towards users, we add a method
+// to query for each kind on the column type itself, see IsInfer
+// as example.
 const (
-	ColumnsInfer int = iota
-	ColumnsWhitelist
-	ColumnsGreylist
-	ColumnsBlacklist
+	columnsInfer int = iota
+	columnsWhitelist
+	columnsGreylist
+	columnsBlacklist
 )
 
 // Columns is a list of columns and a kind of list.
@@ -24,16 +29,30 @@ type Columns struct {
 // Infer is a placeholder that means there is no other list, simply
 // infer the final list of columns for insert/update etc.
 func Infer() Columns {
-	return Columns{}
+	return Columns{
+		Kind: columnsInfer,
+	}
+}
+
+// IsInfer checks to see if these columns should be inferred.
+// This method is here simply to not have to export the columns types.
+func (c Columns) IsInfer() bool {
+	return c.Kind == columnsInfer
 }
 
 // Whitelist creates a list that completely overrides column inference.
 // It becomes the final list for the insert/update etc.
 func Whitelist(columns ...string) Columns {
 	return Columns{
-		Kind: ColumnsWhitelist,
+		Kind: columnsWhitelist,
 		Cols: columns,
 	}
+}
+
+// IsWhitelist checks to see if these columns should be inferred.
+// This method is here simply to not have to export the columns types.
+func (c Columns) IsWhitelist() bool {
+	return c.Kind == columnsWhitelist
 }
 
 // Blacklist creates a list that overrides column inference choices
@@ -42,18 +61,30 @@ func Whitelist(columns ...string) Columns {
 // that list to produce the final list.
 func Blacklist(columns ...string) Columns {
 	return Columns{
-		Kind: ColumnsBlacklist,
+		Kind: columnsBlacklist,
 		Cols: columns,
 	}
+}
+
+// IsBlacklist checks to see if these columns should be inferred.
+// This method is here simply to not have to export the columns types.
+func (c Columns) IsBlacklist() bool {
+	return c.Kind == columnsBlacklist
 }
 
 // Greylist creates a list that adds to the inferred column choices.
 // The final list is composed of both inferred columns and greylisted columns.
 func Greylist(columns ...string) Columns {
 	return Columns{
-		Kind: ColumnsGreylist,
+		Kind: columnsGreylist,
 		Cols: columns,
 	}
+}
+
+// IsGreylist checks to see if these columns should be inferred.
+// This method is here simply to not have to export the columns types.
+func (c Columns) IsGreylist() bool {
+	return c.Kind == columnsGreylist
 }
 
 // InsertColumnSet generates the set of columns to insert and return for an insert statement.
@@ -76,9 +107,9 @@ func Greylist(columns ...string) Columns {
 //  Greylist:
 //    insert: columns-without-default + non-zero-default-columns + greylist
 //    return: columns-with-defaults - insert
-func InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []string, columns Columns) ([]string, []string) {
-	switch columns.Kind {
-	case ColumnsInfer:
+func (c Columns) InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []string) ([]string, []string) {
+	switch c.Kind {
+	case columnsInfer:
 		insert := make([]string, len(noDefaults))
 		copy(insert, noDefaults)
 		insert = append(insert, nonZeroDefaults...)
@@ -86,23 +117,23 @@ func InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []string, colum
 		ret := strmangle.SetComplement(defaults, insert)
 		return insert, ret
 
-	case ColumnsWhitelist:
-		return columns.Cols, strmangle.SetComplement(defaults, columns.Cols)
+	case columnsWhitelist:
+		return c.Cols, strmangle.SetComplement(defaults, c.Cols)
 
-	case ColumnsBlacklist:
+	case columnsBlacklist:
 		insert := make([]string, len(noDefaults))
 		copy(insert, noDefaults)
 		insert = append(insert, nonZeroDefaults...)
-		insert = strmangle.SetComplement(insert, columns.Cols)
+		insert = strmangle.SetComplement(insert, c.Cols)
 		insert = strmangle.SortByKeys(cols, insert)
 		ret := strmangle.SetComplement(defaults, insert)
 		return insert, ret
 
-	case ColumnsGreylist:
+	case columnsGreylist:
 		insert := make([]string, len(noDefaults))
 		copy(insert, noDefaults)
 		insert = append(insert, nonZeroDefaults...)
-		insert = strmangle.SetMerge(insert, columns.Cols)
+		insert = strmangle.SetMerge(insert, c.Cols)
 		insert = strmangle.SortByKeys(cols, insert)
 		ret := strmangle.SetComplement(defaults, insert)
 		return insert, ret
@@ -120,17 +151,17 @@ func InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []string, colum
 //  whitelist: whitelist
 //  blacklist: all - pkeys - blacklist
 //  greylist:  all - pkeys + greylist
-func UpdateColumnSet(allColumns, pkeyCols []string, columns Columns) []string {
-	switch columns.Kind {
-	case ColumnsInfer:
+func (c Columns) UpdateColumnSet(allColumns, pkeyCols []string) []string {
+	switch c.Kind {
+	case columnsInfer:
 		return strmangle.SetComplement(allColumns, pkeyCols)
-	case ColumnsWhitelist:
-		return columns.Cols
-	case ColumnsBlacklist:
-		return strmangle.SetComplement(strmangle.SetComplement(allColumns, pkeyCols), columns.Cols)
-	case ColumnsGreylist:
+	case columnsWhitelist:
+		return c.Cols
+	case columnsBlacklist:
+		return strmangle.SetComplement(strmangle.SetComplement(allColumns, pkeyCols), c.Cols)
+	case columnsGreylist:
 		// okay to modify return of SetComplement since it's a new slice
-		update := append(strmangle.SetComplement(allColumns, pkeyCols), columns.Cols...)
+		update := append(strmangle.SetComplement(allColumns, pkeyCols), c.Cols...)
 		return strmangle.SortByKeys(allColumns, update)
 	default:
 		panic("not a real column list kind")

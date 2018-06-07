@@ -22,13 +22,8 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	buf := strmangle.GetBuffer()
 
 	buf.WriteString(strconv.Itoa(cols.Kind))
-	buf.WriteByte('.')
-
-	switch cols.Kind {
-	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
-		for _, w := range cols.Cols {
-			buf.WriteString(w)
-		}
+	for _, w := range cols.Cols {
+		buf.WriteString(w)
 	}
 
 	if len(nzDefaults) != 0 {

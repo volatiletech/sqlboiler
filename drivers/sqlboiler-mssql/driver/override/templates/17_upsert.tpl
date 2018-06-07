@@ -49,19 +49,13 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
 	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	switch updateColumns.Kind {
-	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
-		for _, c := range updateColumns.Cols {
-			buf.WriteString(c)
-		}
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
 	}
 	buf.WriteByte('.')
 	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	switch insertColumns.Kind {
-	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
-		for _, c := range insertColumns.Cols {
-			buf.WriteString(c)
-		}
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
 	}
 	buf.WriteByte('.')
 	for _, c := range nzDefaults {
@@ -77,12 +71,11 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	var err error
 
 	if !cached {
-		insert, ret := strmangle.InsertColumnSet(
+		insert, ret := insertColumns.InsertColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,
-			whitelist,
 		)
 		insert = strmangle.SetComplement(insert, {{$varNameSingular}}ColumnsWithAuto)
 		for i, v := range insert {
@@ -97,10 +90,9 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)
 		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithDefault)
 
-		update := strmangle.UpdateColumnSet(
+		update := updateColumns.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
-			updateColumns,
 		)
 		update = strmangle.SetComplement(update, {{$varNameSingular}}ColumnsWithAuto)
 

@@ -43,7 +43,7 @@ func (o *{{$tableNameSingular}}) UpdateGP({{if not .NoContext}}ctx context.Conte
 {{end -}}
 
 // Update uses an executor to update the {{$tableNameSingular}}.
-// See boil.UpdateColumnSet documentation to understand column list inference for updates.
+// See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *{{$tableNameSingular}}) Update({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	{{- template "timestamp_update_helper" . -}}
@@ -61,16 +61,15 @@ func (o *{{$tableNameSingular}}) Update({{if .NoContext}}exec boil.Executor{{els
 	{{$varNameSingular}}UpdateCacheMut.RUnlock()
 
 	if !cached {
-		wl := boil.UpdateColumnSet(
+		wl := columns.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
-			columns,
 		)
 		{{if .Dialect.UseAutoColumns -}}
 		wl = strmangle.SetComplement(wl, {{$varNameSingular}}ColumnsWithAuto)
 		{{end}}
 		{{if not .NoAutoTimestamps}}
-		if columns.Kind != boil.ColumnsWhitelist {
+		if !columns.IsWhitelist() {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		{{end -}}

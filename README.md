@@ -1160,7 +1160,7 @@ one of the following column lists: `boil.Infer`, `boil.Whitelist`, `boil.Blackli
 | Greylist    | Infer the column list, but ensure these columns are inserted
 
 See the documentation for
-[boil.InsertColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#InsertColumnSet)
+[boil.Columns.InsertColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.InsertColumnSet)
 for more details.
 
 Also note that your object will automatically be updated with any missing default values from the
@@ -1210,7 +1210,7 @@ Although the descriptions below look similar the full documentation reveals the 
 | Greylist    | Infer the column list, but ensure these columns are updated
 
 See the documentation for
-[boil.UpdateColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#UpdateColumnSet)
+[boil.Columns.UpdateColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.UpdateColumnSet)
 for more details.
 
 ```go
@@ -1249,7 +1249,7 @@ err := pilots.DeleteAll(ctx, db)
 [Upsert](https://www.postgresql.org/docs/9.5/static/sql-insert.html) allows you to perform an insert
 that optionally performs an update when a conflict is found against existing row values.
 
-The `updateColumns` and `insertColumns` operates in the same fashion that it does for [Update](#update) 
+The `updateColumns` and `insertColumns` operates in the same fashion that it does for [Update](#update)
 and [Insert](#insert).
 
 

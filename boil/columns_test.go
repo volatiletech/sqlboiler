@@ -9,21 +9,21 @@ func TestColumns(t *testing.T) {
 	t.Parallel()
 
 	list := Whitelist("a", "b")
-	if list.Kind != ColumnsWhitelist {
+	if list.Kind != columnsWhitelist || !list.IsWhitelist() {
 		t.Error(list.Kind)
 	}
 	if list.Cols[0] != "a" || list.Cols[1] != "b" {
 		t.Error("columns were wrong")
 	}
 	list = Blacklist("a", "b")
-	if list.Kind != ColumnsBlacklist {
+	if list.Kind != columnsBlacklist || !list.IsBlacklist() {
 		t.Error(list.Kind)
 	}
 	if list.Cols[0] != "a" || list.Cols[1] != "b" {
 		t.Error("columns were wrong")
 	}
 	list = Greylist("a", "b")
-	if list.Kind != ColumnsGreylist {
+	if list.Kind != columnsGreylist || !list.IsGreylist() {
 		t.Error(list.Kind)
 	}
 	if list.Cols[0] != "a" || list.Cols[1] != "b" {
@@ -31,7 +31,7 @@ func TestColumns(t *testing.T) {
 	}
 
 	list = Infer()
-	if list.Kind != ColumnsInfer {
+	if list.Kind != columnsInfer || !list.IsInfer() {
 		t.Error(list.Kind)
 	}
 	if len(list.Cols) != 0 {
@@ -47,11 +47,11 @@ func TestInsertColumnSet(t *testing.T) {
 	nodefaults := []string{"b"}
 
 	tests := []struct {
+		Columns         Columns
 		Cols            []string
 		Defaults        []string
 		NoDefaults      []string
 		NonZeroDefaults []string
-		Columns         Columns
 		Set             []string
 		Ret             []string
 	}{
@@ -93,7 +93,7 @@ func TestInsertColumnSet(t *testing.T) {
 			test.NoDefaults = nodefaults
 		}
 
-		set, ret := InsertColumnSet(test.Cols, test.Defaults, test.NoDefaults, test.NonZeroDefaults, test.Columns)
+		set, ret := test.Columns.InsertColumnSet(test.Cols, test.Defaults, test.NoDefaults, test.NonZeroDefaults)
 
 		if !reflect.DeepEqual(set, test.Set) {
 			t.Errorf("%d) set was wrong\nwant: %v\ngot:  %v", i, test.Set, set)
@@ -108,27 +108,27 @@ func TestUpdateColumnSet(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
+		Columns Columns
 		Cols    []string
 		PKeys   []string
-		Columns Columns
 		Out     []string
 	}{
 		// Infer
-		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Columns: Infer(), Out: []string{"b"}},
+		{Columns: Infer(), Cols: []string{"a", "b"}, PKeys: []string{"a"}, Out: []string{"b"}},
 
 		// Whitelist
-		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Columns: Whitelist("a"), Out: []string{"a"}},
-		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Columns: Whitelist("a", "b"), Out: []string{"a", "b"}},
+		{Columns: Whitelist("a"), Cols: []string{"a", "b"}, PKeys: []string{"a"}, Out: []string{"a"}},
+		{Columns: Whitelist("a", "b"), Cols: []string{"a", "b"}, PKeys: []string{"a"}, Out: []string{"a", "b"}},
 
 		// Blacklist
-		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Columns: Blacklist("b"), Out: []string{}},
+		{Columns: Blacklist("b"), Cols: []string{"a", "b"}, PKeys: []string{"a"}, Out: []string{}},
 
 		// Greylist
-		{Cols: []string{"a", "b"}, PKeys: []string{"a"}, Columns: Greylist("a"), Out: []string{"a", "b"}},
+		{Columns: Greylist("a"), Cols: []string{"a", "b"}, PKeys: []string{"a"}, Out: []string{"a", "b"}},
 	}
 
 	for i, test := range tests {
-		set := UpdateColumnSet(test.Cols, test.PKeys, test.Columns)
+		set := test.Columns.UpdateColumnSet(test.Cols, test.PKeys)
 
 		if !reflect.DeepEqual(set, test.Out) {
 			t.Errorf("%d) set was wrong\nwant: %v\ngot:  %v", i, test.Out, set)

@@ -60,21 +60,13 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	}
 	buf.WriteByte('.')
 	buf.WriteString(strconv.Itoa(updateColumns.Kind))
-	buf.WriteByte('.')
-	switch updateColumns.Kind {
-	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
-		for _, c := range updateColumns.Cols {
-			buf.WriteString(c)
-		}
+	for _, c := range updateColumns.Cols {
+		buf.WriteString(c)
 	}
 	buf.WriteByte('.')
 	buf.WriteString(strconv.Itoa(insertColumns.Kind))
-	buf.WriteByte('.')
-	switch insertColumns.Kind {
-	case boil.ColumnsWhitelist, boil.ColumnsBlacklist, boil.ColumnsGreylist:
-		for _, c := range insertColumns.Cols {
-			buf.WriteString(c)
-		}
+	for _, c := range insertColumns.Cols {
+		buf.WriteString(c)
 	}
 	buf.WriteByte('.')
 	for _, c := range nzDefaults {
@@ -90,17 +82,15 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	var err error
 
 	if !cached {
-		insert, ret := boil.InsertColumnSet(
+		insert, ret := insertColumns.InsertColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,
-			insertColumns,
 		)
-		update := boil.UpdateColumnSet(
+		update := updateColumns.UpdateColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}PrimaryKeyColumns,
-			updateColumns,
 		)
 
 		if len(update) == 0 {

@@ -32,10 +32,7 @@ func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Conte
 {{end -}}
 
 // Insert a single record using an executor.
-// Whitelist behavior: If a whitelist is provided, only those columns supplied are inserted
-// No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
-// - All columns without a default value are included (i.e. name, age)
-// - All columns with a default, but non-zero are included (i.e. health = 75)
+// See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
 func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
@@ -58,12 +55,11 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 	{{$varNameSingular}}InsertCacheMut.RUnlock()
 
 	if !cached {
-		wl, returnColumns := boil.InsertColumnSet(
+		wl, returnColumns := columns.InsertColumnSet(
 			{{$varNameSingular}}Columns,
 			{{$varNameSingular}}ColumnsWithDefault,
 			{{$varNameSingular}}ColumnsWithoutDefault,
 			nzDefaults,
-			columns,
 		)
 
 		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)

@@ -538,7 +538,7 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 			`"strconv"`,
 		},
 	}
-	col.TestSingleton = importers.Map{
+	col.Singleton = importers.Map{
 		"psql_upsert": {
 			Standard: importers.List{
 				`"fmt"`,
@@ -549,6 +549,8 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"github.com/volatiletech/sqlboiler/drivers"`,
 			},
 		},
+	}
+	col.TestSingleton = importers.Map{
 		"psql_suites_test": {
 			Standard: importers.List{
 				`"testing"`,

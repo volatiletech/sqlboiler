@@ -458,7 +458,7 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 		},
 	}
 
-	col.TestSingleton = importers.Map{
+	col.Singleton = importers.Map{
 		"mysql_upsert": {
 			Standard: importers.List{
 				`"fmt"`,
@@ -469,6 +469,9 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/volatiletech/sqlboiler/drivers"`,
 			},
 		},
+	}
+
+	col.TestSingleton = importers.Map{
 		"mysql_suites_test": {
 			Standard: importers.List{
 				`"testing"`,

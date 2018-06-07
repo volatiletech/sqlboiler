@@ -441,7 +441,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			`"strconv"`,
 		},
 	}
-	col.TestSingleton = importers.Map{
+	col.Singleton = importers.Map{
 		"mssql_upsert": {
 			Standard: importers.List{
 				`"fmt"`,
@@ -452,6 +452,8 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/volatiletech/sqlboiler/drivers"`,
 			},
 		},
+	}
+	col.TestSingleton = importers.Map{
 		"mssql_suites_test": {
 			Standard: importers.List{
 				`"testing"`,

@@ -21,6 +21,7 @@ type Config struct {
 	Postgres PostgresConfig
 	MySQL    MySQLConfig
 	MSSQL    MSSQLConfig
+	SQLite   SQLiteConfig
 }
 
 // PostgresConfig configures a postgres database
@@ -51,4 +52,9 @@ type MSSQLConfig struct {
 	Port    int
 	DBName  string
 	SSLMode string
+}
+
+// SQLiteConfig configures a sqlite db
+type SQLiteConfig struct {
+	File string
 }

@@ -307,6 +307,8 @@ func (s *State) initDriver(driverName string) error {
 			s.Config.MySQL.Port,
 			s.Config.MySQL.SSLMode,
 		)
+	case "sqlite":
+		s.Driver = drivers.NewSQLiteDriver(s.Config.SQLite.File)
 	case "mssql":
 		s.Driver = drivers.NewMSSQLDriver(
 			s.Config.MSSQL.User,

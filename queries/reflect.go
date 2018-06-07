@@ -221,6 +221,7 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	}
 
 	foundOne := false
+Rows:
 	for rows.Next() {
 		foundOne = true
 		var newStruct reflect.Value
@@ -244,6 +245,8 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		}
 
 		switch bkind {
+		case kindStruct:
+			break Rows
 		case kindSliceStruct:
 			ptrSlice.Set(reflect.Append(ptrSlice, oneStruct))
 		case kindPtrSliceStruct:

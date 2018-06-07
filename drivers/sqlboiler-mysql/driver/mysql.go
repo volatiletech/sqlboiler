@@ -111,7 +111,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 
 // MySQLBuildQueryString builds a query string for MySQL.
 func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
-	var config mysql.Config
+	config := mysql.NewConfig()
 
 	config.User = user
 	if len(pass) != 0 {

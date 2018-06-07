@@ -55,7 +55,10 @@ func (j JSON) Value() (driver.Value, error) {
 		return nil, err
 	}
 
-	return []byte(r), nil
+	// must use string rather than []byte as MySQL treats []byte as binary but
+	// doesn't allow binary types to be inserted into JSON columns due to the lack
+	// of explicit character encoding information.
+	return string(r), nil
 }
 
 // Scan stores the src in *j.

@@ -32,10 +32,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 			}
 
 			for _, a := range args {
-				{{if $txt.Function.UsesBytes -}}
-				if 0 == bytes.Compare(a.([]byte), obj.{{$txt.Function.LocalAssignment}}) {
+				{{if $txt.Function.UsesPrimitives -}}
+				if a == obj.{{$txt.LocalTable.ColumnNameGo}} {
 				{{else -}}
-				if a == obj.{{$txt.Function.LocalAssignment}} {
+				if queries.Equal(a, obj.{{$txt.LocalTable.ColumnNameGo}}) {
 				{{end -}}
 					continue Outer
 				}
@@ -130,10 +130,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	for i, foreign := range resultSlice {
 		localJoinCol := localJoinCols[i]
 		for _, local := range slice {
-			{{if $txt.Function.UsesBytes -}}
-			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, localJoinCol) {
+			{{if $txt.Function.UsesPrimitives -}}
+			if local.{{$txt.LocalTable.ColumnNameGo}} == localJoinCol {
 			{{else -}}
-			if local.{{$txt.Function.LocalAssignment}} == localJoinCol {
+			if queries.Equal(local.{{$txt.LocalTable.ColumnNameGo}}, localJoinCol) {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
 				if foreign.R == nil {
@@ -147,10 +147,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	{{else -}}
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			{{if $txt.Function.UsesBytes -}}
-			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
+			{{if $txt.Function.UsesPrimitives -}}
+			if local.{{$txt.LocalTable.ColumnNameGo}} == foreign.{{$txt.ForeignTable.ColumnNameGo}} {
 			{{else -}}
-			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
+			if queries.Equal(local.{{$txt.LocalTable.ColumnNameGo}}, foreign.{{$txt.ForeignTable.ColumnNameGo}}) {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
 				if foreign.R == nil {

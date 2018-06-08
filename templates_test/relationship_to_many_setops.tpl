@@ -59,19 +59,19 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 		}
 		{{- else}}
 
-		{{if $txt.Function.UsesBytes -}}
-		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, first.{{$txt.Function.ForeignAssignment}}) {
-			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, first.{{$txt.Function.ForeignAssignment}})
+		{{if $txt.Function.UsesPrimitives -}}
+		if a.{{$txt.LocalTable.ColumnNameGo}} != first.{{$txt.ForeignTable.ColumnNameGo}} {
+			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, first.{{$txt.ForeignTable.ColumnNameGo}})
 		}
-		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, second.{{$txt.Function.ForeignAssignment}}) {
-			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, second.{{$txt.Function.ForeignAssignment}})
+		if a.{{$txt.LocalTable.ColumnNameGo}} != second.{{$txt.ForeignTable.ColumnNameGo}} {
+			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, second.{{$txt.ForeignTable.ColumnNameGo}})
 		}
 		{{else -}}
-		if a.{{$txt.Function.LocalAssignment}} != first.{{$txt.Function.ForeignAssignment}} {
-			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, first.{{$txt.Function.ForeignAssignment}})
+		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, first.{{$txt.ForeignTable.ColumnNameGo}}) {
+			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, first.{{$txt.ForeignTable.ColumnNameGo}})
 		}
-		if a.{{$txt.Function.LocalAssignment}} != second.{{$txt.Function.ForeignAssignment}} {
-			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, second.{{$txt.Function.ForeignAssignment}})
+		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, second.{{$txt.ForeignTable.ColumnNameGo}}) {
+			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, second.{{$txt.ForeignTable.ColumnNameGo}})
 		}
 		{{- end}}
 
@@ -178,25 +178,25 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 	}
 	{{- else}}
 
-	if b.{{$txt.ForeignTable.ColumnNameGo}}.Valid {
+	if !queries.IsValuerNil(b.{{$txt.ForeignTable.ColumnNameGo}}) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if c.{{$txt.ForeignTable.ColumnNameGo}}.Valid {
+	if !queries.IsValuerNil(c.{{$txt.ForeignTable.ColumnNameGo}}) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	{{if $txt.Function.UsesBytes -}}
-	if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, d.{{$txt.Function.ForeignAssignment}}) {
-		t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, d.{{$txt.Function.ForeignAssignment}})
+	{{if $txt.Function.UsesPrimitives -}}
+	if a.{{$txt.LocalTable.ColumnNameGo}} != d.{{$txt.ForeignTable.ColumnNameGo}} {
+		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, d.{{$txt.ForeignTable.ColumnNameGo}})
 	}
-	if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, e.{{$txt.Function.ForeignAssignment}}) {
-		t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, e.{{$txt.Function.ForeignAssignment}})
+	if a.{{$txt.LocalTable.ColumnNameGo}} != e.{{$txt.ForeignTable.ColumnNameGo}} {
+		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, e.{{$txt.ForeignTable.ColumnNameGo}})
 	}
 	{{else -}}
-	if a.{{$txt.Function.LocalAssignment}} != d.{{$txt.Function.ForeignAssignment}} {
-		t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, d.{{$txt.Function.ForeignAssignment}})
+	if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, d.{{$txt.ForeignTable.ColumnNameGo}}) {
+		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, d.{{$txt.ForeignTable.ColumnNameGo}})
 	}
-	if a.{{$txt.Function.LocalAssignment}} != e.{{$txt.Function.ForeignAssignment}} {
-		t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, e.{{$txt.Function.ForeignAssignment}})
+	if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, e.{{$txt.ForeignTable.ColumnNameGo}}) {
+		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, e.{{$txt.ForeignTable.ColumnNameGo}})
 	}
 	{{- end}}
 
@@ -289,10 +289,10 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 	}
 	{{- else}}
 
-	if b.{{$txt.ForeignTable.ColumnNameGo}}.Valid {
+	if !queries.IsValuerNil(b.{{$txt.ForeignTable.ColumnNameGo}}) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if c.{{$txt.ForeignTable.ColumnNameGo}}.Valid {
+	if !queries.IsValuerNil(c.{{$txt.ForeignTable.ColumnNameGo}}) {
 		t.Error("want c's foreign key value to be nil")
 	}
 

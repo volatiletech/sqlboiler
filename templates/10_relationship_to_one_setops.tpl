@@ -75,10 +75,11 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}({{if $.NoContext}
 	}
 	{{- end}}
 
-	o.{{$txt.Function.LocalAssignment}} = related.{{$txt.Function.ForeignAssignment}}
-	{{if .Nullable -}}
-	o.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
-	{{- end}}
+	{{if $txt.Function.UsesPrimitives -}}
+	o.{{$txt.LocalTable.ColumnNameGo}} = related.{{$txt.ForeignTable.ColumnNameGo}}
+	{{else -}}
+	queries.Assign(&o.{{$txt.LocalTable.ColumnNameGo}}, related.{{$txt.ForeignTable.ColumnNameGo}})
+	{{end -}}
 
 	if o.R == nil {
 		o.R = &{{$varNameSingular}}R{
@@ -153,13 +154,12 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}GP({{if not $.N
 func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related *{{$txt.ForeignTable.NameGo}}) error {
 	var err error
 
-	o.{{$txt.LocalTable.ColumnNameGo}}.Valid = false
+	queries.SetScanner(&o.{{$txt.LocalTable.ColumnNameGo}}, nil)
 	{{if $.NoContext -}}
 	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(exec, boil.Whitelist("{{.Column}}")); err != nil {
 	{{else -}}
 	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(ctx, exec, boil.Whitelist("{{.Column}}")); err != nil {
 	{{end -}}
-		o.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}
 
@@ -172,10 +172,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoConte
 	related.R.{{$txt.Function.ForeignName}} = nil
 	{{else -}}
 	for i, ri := range related.R.{{$txt.Function.ForeignName}} {
-		{{if $txt.Function.UsesBytes -}}
-		if 0 != bytes.Compare(o.{{$txt.Function.LocalAssignment}}, ri.{{$txt.Function.LocalAssignment}}) {
+		{{if $txt.Function.UsesPrimitives -}}
+		if o.{{$txt.LocalTable.ColumnNameGo}} != ri.{{$txt.LocalTable.ColumnNameGo}} {
 		{{else -}}
-		if o.{{$txt.Function.LocalAssignment}} != ri.{{$txt.Function.LocalAssignment}} {
+		if queries.Equal(o.{{$txt.LocalTable.ColumnNameGo}}, ri.{{$txt.LocalTable.ColumnNameGo}}) {
 		{{end -}}
 			continue
 		}

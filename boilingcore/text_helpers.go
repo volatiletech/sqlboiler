@@ -29,10 +29,7 @@ type TxtToOne struct {
 		Name        string
 		ForeignName string
 
-		UsesBytes bool
-
-		LocalAssignment   string
-		ForeignAssignment string
+		UsesPrimitives bool
 	}
 }
 
@@ -51,23 +48,11 @@ func txtsFromFKey(tables []drivers.Table, table drivers.Table, fkey drivers.Fore
 
 	r.Function.Name, r.Function.ForeignName = txtNameToOne(fkey)
 
-	if fkey.Nullable {
-		col := table.GetColumn(fkey.Column)
-		r.Function.LocalAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(fkey.Column), strings.TrimPrefix(col.Type, "null."))
-	} else {
-		r.Function.LocalAssignment = strmangle.TitleCase(fkey.Column)
-	}
-
+	localColumn := table.GetColumn(fkey.Column)
 	foreignTable := drivers.GetTable(tables, fkey.ForeignTable)
 	foreignColumn := foreignTable.GetColumn(fkey.ForeignColumn)
 
-	if fkey.ForeignColumnNullable {
-		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(fkey.ForeignColumn), strings.TrimPrefix(foreignColumn.Type, "null."))
-	} else {
-		r.Function.ForeignAssignment = strmangle.TitleCase(fkey.ForeignColumn)
-	}
-
-	r.Function.UsesBytes = foreignColumn.Type == "[]byte"
+	r.Function.UsesPrimitives = isPrimitive(localColumn.Type) && isPrimitive(foreignColumn.Type)
 
 	return r
 }
@@ -87,14 +72,12 @@ func txtsFromOneToOne(tables []drivers.Table, table drivers.Table, oneToOne driv
 	}
 
 	rel := txtsFromFKey(tables, table, fkey)
-	col := table.GetColumn(oneToOne.Column)
 
 	// Reverse foreign key
 	rel.ForeignKey.Table, rel.ForeignKey.ForeignTable = rel.ForeignKey.ForeignTable, rel.ForeignKey.Table
 	rel.ForeignKey.Column, rel.ForeignKey.ForeignColumn = rel.ForeignKey.ForeignColumn, rel.ForeignKey.Column
 	rel.ForeignKey.Nullable, rel.ForeignKey.ForeignColumnNullable = rel.ForeignKey.ForeignColumnNullable, rel.ForeignKey.Nullable
 	rel.ForeignKey.Unique, rel.ForeignKey.ForeignColumnUnique = rel.ForeignKey.ForeignColumnUnique, rel.ForeignKey.Unique
-	rel.Function.UsesBytes = col.Type == "[]byte"
 	rel.Function.ForeignName, rel.Function.Name = txtNameToOne(drivers.ForeignKey{
 		Table:         oneToOne.ForeignTable,
 		Column:        oneToOne.ForeignColumn,
@@ -124,10 +107,7 @@ type TxtToMany struct {
 		Name        string
 		ForeignName string
 
-		UsesBytes bool
-
-		LocalAssignment   string
-		ForeignAssignment string
+		UsesPrimitives bool
 	}
 }
 
@@ -148,21 +128,9 @@ func txtsFromToMany(tables []drivers.Table, table drivers.Table, rel drivers.ToM
 	r.Function.Name, r.Function.ForeignName = txtNameToMany(rel)
 
 	col := table.GetColumn(rel.Column)
-	if rel.Nullable {
-		r.Function.LocalAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.Column), strings.TrimPrefix(col.Type, "null."))
-	} else {
-		r.Function.LocalAssignment = strmangle.TitleCase(rel.Column)
-	}
-
-	if rel.ForeignColumnNullable {
-		foreignTable := drivers.GetTable(tables, rel.ForeignTable)
-		foreignColumn := foreignTable.GetColumn(rel.ForeignColumn)
-		r.Function.ForeignAssignment = fmt.Sprintf("%s.%s", strmangle.TitleCase(rel.ForeignColumn), strings.TrimPrefix(foreignColumn.Type, "null."))
-	} else {
-		r.Function.ForeignAssignment = strmangle.TitleCase(rel.ForeignColumn)
-	}
-
-	r.Function.UsesBytes = col.Type == "[]byte"
+	foreignTable := drivers.GetTable(tables, rel.ForeignTable)
+	foreignCol := foreignTable.GetColumn(rel.ForeignColumn)
+	r.Function.UsesPrimitives = isPrimitive(col.Type) && isPrimitive(foreignCol.Type)
 
 	return r
 }
@@ -285,4 +253,20 @@ func trimSuffixes(str string) string {
 	}
 
 	return str
+}
+
+func isPrimitive(typ string) bool {
+	switch typ {
+	// Numeric
+	case "int", "int8", "int16", "int32", "int64":
+		return true
+	case "uint", "uint8", "uint16", "uint32", "uint64":
+		return true
+	case "float32", "float64":
+		return true
+	case "byte", "rune", "string":
+		return true
+	}
+
+	return false
 }

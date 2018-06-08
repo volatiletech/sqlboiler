@@ -94,6 +94,9 @@ difference.
 - The concept of TestMain is now gone from both templates and imports. It's
   been superceded by the new driver abilities to supply templates and imports.
   The drivers add their mains to the TestSingleton templates.
+- Remove the reliance on the null package in the templates. Instead favor
+  using the sql.Scanner and driver.Valuer interface that most types will
+  implement anyway (and the null package does too).
 
 ### Fixed
 

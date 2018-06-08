@@ -20,18 +20,15 @@ func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$t
 		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
 	}
 
-	{{if .ForeignColumnNullable -}}
-	foreign.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
-	{{- end}}
-	{{if .Nullable -}}
-	local.{{$txt.LocalTable.ColumnNameGo}}.Valid = true
-	{{- end}}
-
 	if err := local.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	foreign.{{$txt.Function.ForeignAssignment}} = local.{{$txt.Function.LocalAssignment}}
+	{{if $txt.Function.UsesPrimitives -}}
+	foreign.{{$txt.ForeignTable.ColumnNameGo}} = local.{{$txt.LocalTable.ColumnNameGo}}
+	{{else -}}
+	queries.Assign(&foreign.{{$txt.ForeignTable.ColumnNameGo}}, local.{{$txt.LocalTable.ColumnNameGo}})
+	{{end -}}
 	if err := foreign.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -41,12 +38,12 @@ func test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$t
 		t.Fatal(err)
 	}
 
-	{{if $txt.Function.UsesBytes -}}
-	if 0 != bytes.Compare(check.{{$txt.Function.ForeignAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
+	{{if $txt.Function.UsesPrimitives -}}
+	if check.{{$txt.ForeignTable.ColumnNameGo}} != foreign.{{$txt.ForeignTable.ColumnNameGo}} {
 	{{else -}}
-	if check.{{$txt.Function.ForeignAssignment}} != foreign.{{$txt.Function.ForeignAssignment}} {
+	if !queries.Equal(check.{{$txt.ForeignTable.ColumnNameGo}}, foreign.{{$txt.ForeignTable.ColumnNameGo}}) {
 	{{end -}}
-		t.Errorf("want: %v, got %v", foreign.{{$txt.Function.ForeignAssignment}}, check.{{$txt.Function.ForeignAssignment}})
+		t.Errorf("want: %v, got %v", foreign.{{$txt.ForeignTable.ColumnNameGo}}, check.{{$txt.ForeignTable.ColumnNameGo}})
 	}
 
 	slice := {{$txt.LocalTable.NameGo}}Slice{&local}

@@ -33,9 +33,7 @@ func TestTxtsFromOne(t *testing.T) {
 
 	expect.Function.Name = "Pilot"
 	expect.Function.ForeignName = "Jet"
-
-	expect.Function.LocalAssignment = "PilotID.Int"
-	expect.Function.ForeignAssignment = "ID"
+	expect.Function.UsesPrimitives = false
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -55,9 +53,7 @@ func TestTxtsFromOne(t *testing.T) {
 
 	expect.Function.Name = "Airport"
 	expect.Function.ForeignName = "Jets"
-
-	expect.Function.LocalAssignment = "AirportID"
-	expect.Function.ForeignAssignment = "ID"
+	expect.Function.UsesPrimitives = true
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -104,9 +100,7 @@ func TestTxtsFromOneToOne(t *testing.T) {
 
 	expect.Function.Name = "Jet"
 	expect.Function.ForeignName = "Pilot"
-
-	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "PilotID.Int"
+	expect.Function.UsesPrimitives = false
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -135,8 +129,7 @@ func TestTxtsFromMany(t *testing.T) {
 
 	expect.Function.Name = "Licenses"
 	expect.Function.ForeignName = "Pilot"
-	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "PilotID"
+	expect.Function.UsesPrimitives = true
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
@@ -155,8 +148,7 @@ func TestTxtsFromMany(t *testing.T) {
 
 	expect.Function.Name = "Languages"
 	expect.Function.ForeignName = "Pilots"
-	expect.Function.LocalAssignment = "ID"
-	expect.Function.ForeignAssignment = "ID"
+	expect.Function.UsesPrimitives = true
 
 	if !reflect.DeepEqual(expect, texts) {
 		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))

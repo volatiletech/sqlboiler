@@ -1,12 +1,16 @@
 package queries
 
 import (
+	"bytes"
 	"context"
+	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/volatiletech/sqlboiler/drivers"
 
@@ -582,4 +586,260 @@ func TestBind_InnerJoinSelect(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Error(err)
 	}
+}
+
+func TestEqual(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+
+	tests := []struct {
+		A    interface{}
+		B    interface{}
+		Want bool
+	}{
+		{A: int(5), B: int(5), Want: true},
+		{A: int(5), B: int(6), Want: false},
+		{A: int(5), B: int32(5), Want: true},
+		{A: []byte("hello"), B: []byte("hello"), Want: true},
+		{A: []byte("hello"), B: []byte("world"), Want: false},
+		{A: "hello", B: sql.NullString{String: "hello", Valid: true}, Want: true},
+		{A: "hello", B: sql.NullString{Valid: false}, Want: false},
+		{A: now, B: now, Want: true},
+		{A: now, B: now.Add(time.Hour), Want: false},
+	}
+
+	for i, test := range tests {
+		if got := Equal(test.A, test.B); got != test.Want {
+			t.Errorf("%d) compare %#v and %#v resulted in wrong value, want: %t, got %t", i, test.A, test.B, test.Want, got)
+		}
+	}
+}
+
+func TestAssignBytes(t *testing.T) {
+	t.Parallel()
+
+	var dst []byte
+	var src = []byte("hello")
+
+	Assign(&dst, src)
+	if !bytes.Equal(dst, src) {
+		t.Error("bytes were not equal!")
+	}
+}
+
+func TestAssignScanValue(t *testing.T) {
+	t.Parallel()
+
+	var nsDst sql.NullString
+	var nsSrc sql.NullString
+
+	nsSrc.String = "hello"
+	nsSrc.Valid = true
+
+	Assign(&nsDst, nsSrc)
+
+	if !nsDst.Valid {
+		t.Error("n was still null")
+	}
+	if nsDst.String != "hello" {
+		t.Error("assignment did not occur")
+	}
+
+	var niDst sql.NullInt64
+	var niSrc sql.NullInt64
+
+	niSrc.Valid = true
+	niSrc.Int64 = 5
+
+	Assign(&niDst, niSrc)
+
+	if !niDst.Valid {
+		t.Error("n was still null")
+	}
+	if niDst.Int64 != 5 {
+		t.Error("assignment did not occur")
+	}
+}
+
+func TestAssignScanNoValue(t *testing.T) {
+	t.Parallel()
+
+	var ns sql.NullString
+	s := "hello"
+
+	Assign(&ns, s)
+
+	if !ns.Valid {
+		t.Error("n was still null")
+	}
+	if ns.String != "hello" {
+		t.Error("assignment did not occur")
+	}
+
+	var niDst sql.NullInt64
+	i := 5
+
+	Assign(&niDst, i)
+
+	if !niDst.Valid {
+		t.Error("n was still null")
+	}
+	if niDst.Int64 != 5 {
+		t.Error("assignment did not occur")
+	}
+}
+
+func TestAssignNoScanValue(t *testing.T) {
+	t.Parallel()
+
+	var ns sql.NullString
+	var s string
+
+	ns.String = "hello"
+	ns.Valid = true
+	Assign(&s, ns)
+
+	if s != "hello" {
+		t.Error("assignment did not occur")
+	}
+
+	var ni sql.NullInt64
+	var i int
+
+	ni.Int64 = 5
+	ni.Valid = true
+	Assign(&i, ni)
+
+	if i != 5 {
+		t.Error("assignment did not occur")
+	}
+}
+
+func TestAssignNil(t *testing.T) {
+	t.Parallel()
+
+	var ns sql.NullString
+	s := "hello"
+
+	Assign(&s, ns)
+	if s != "" {
+		t.Errorf("should have assigned a zero value: %q", s)
+	}
+}
+
+func TestAssignPanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected a panic")
+		}
+	}()
+
+	var aint, bint int
+	Assign(&aint, bint)
+}
+
+type nullTime struct {
+	Time  time.Time
+	Valid bool
+}
+
+func (t *nullTime) Scan(value interface{}) error {
+	var err error
+	switch x := value.(type) {
+	case time.Time:
+		t.Time = x
+	case nil:
+		t.Valid = false
+		return nil
+	default:
+		err = fmt.Errorf("cannot scan type %T into nullTime: %v", value, value)
+	}
+	t.Valid = err == nil
+	return err
+}
+
+// Value implements the driver Valuer interface.
+func (t nullTime) Value() (driver.Value, error) {
+	if !t.Valid {
+		return nil, nil
+	}
+	return t.Time, nil
+}
+
+func TestMustTime(t *testing.T) {
+	t.Parallel()
+
+	var nt nullTime
+
+	if !MustTime(nt).IsZero() {
+		t.Error("should be zero")
+	}
+
+	now := time.Now()
+
+	nt.Valid = true
+	nt.Time = now
+
+	if !MustTime(nt).Equal(now) {
+		t.Error("time was wrong")
+	}
+}
+
+func TestMustTimePanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("it should have panic'd")
+		}
+	}()
+
+	var ns sql.NullString
+	ns.Valid = true
+	ns.String = "hello"
+	MustTime(ns)
+}
+
+func TestIsValuerNil(t *testing.T) {
+	t.Parallel()
+
+	var ns sql.NullString
+	if !IsValuerNil(ns) {
+		t.Error("it should be nil")
+	}
+
+	ns.Valid = true
+	if IsValuerNil(ns) {
+		t.Error("it should not be nil")
+	}
+}
+
+func TestSetScanner(t *testing.T) {
+	t.Parallel()
+
+	var ns sql.NullString
+	SetScanner(&ns, "hello")
+
+	if !ns.Valid {
+		t.Error("it should not be null")
+	}
+	if ns.String != "hello" {
+		t.Error("it's value should have been hello")
+	}
+}
+
+func TestSetScannerPanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("it should have panic'd")
+		}
+	}()
+
+	var ns nullTime
+	SetScanner(&ns, "hello")
 }

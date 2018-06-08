@@ -31,10 +31,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 			}
 
 			for _, a := range args {
-				{{if $txt.Function.UsesBytes -}}
-				if 0 == bytes.Compare(a.([]byte), obj.{{$txt.Function.LocalAssignment}}) {
+				{{if $txt.Function.UsesPrimitives -}}
+				if a == obj.{{$txt.LocalTable.ColumnNameGo}} {
 				{{else -}}
-				if a == obj.{{$txt.Function.LocalAssignment}} {
+				if queries.Equal(a, obj.{{$txt.LocalTable.ColumnNameGo}}) {
 				{{end -}}
 					continue Outer
 				}
@@ -100,10 +100,10 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			{{if $txt.Function.UsesBytes -}}
-			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {
+			{{if $txt.Function.UsesPrimitives -}}
+			if local.{{$txt.LocalTable.ColumnNameGo}} == foreign.{{$txt.ForeignTable.ColumnNameGo}} {
 			{{else -}}
-			if local.{{$txt.Function.LocalAssignment}} == foreign.{{$txt.Function.ForeignAssignment}} {
+			if queries.Equal(local.{{$txt.LocalTable.ColumnNameGo}}, foreign.{{$txt.ForeignTable.ColumnNameGo}}) {
 			{{end -}}
 				local.R.{{$txt.Function.Name}} = foreign
 				if foreign.R == nil {

@@ -56,9 +56,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}({{if $.NoContext}
 	for _, rel := range related {
 		if insert {
 			{{if not .ToJoinTable -}}
-			rel.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
-				{{if .ForeignColumnNullable -}}
-			rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+				{{if $txt.Function.UsesPrimitives -}}
+			rel.{{$txt.ForeignTable.ColumnNameGo}} = o.{{$txt.LocalTable.ColumnNameGo}}
+				{{else -}}
+			queries.Assign(&rel.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$txt.LocalTable.ColumnNameGo}})
 				{{end -}}
 			{{end -}}
 
@@ -86,9 +87,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Add{{$txt.Function.Name}}({{if $.NoContext}
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
-			{{if .ForeignColumnNullable -}}
-			rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+			{{if $txt.Function.UsesPrimitives -}}
+			rel.{{$txt.ForeignTable.ColumnNameGo}} = o.{{$txt.LocalTable.ColumnNameGo}}
+			{{else -}}
+			queries.Assign(&rel.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$txt.LocalTable.ColumnNameGo}})
 			{{end -}}
 		}{{end -}}
 	}
@@ -230,7 +232,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}({{if $.NoContext}
 	{{else -}}
 	if o.R != nil {
 		for _, rel := range o.R.{{$txt.Function.Name}} {
-			rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = false
+			queries.SetScanner(&rel.{{$txt.ForeignTable.ColumnNameGo}}, nil)
 			if rel.R == nil {
 				continue
 			}
@@ -312,7 +314,7 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoConte
 	}
 	{{else -}}
 	for _, rel := range related {
-		rel.{{$txt.ForeignTable.ColumnNameGo}}.Valid = false
+		queries.SetScanner(&rel.{{$txt.ForeignTable.ColumnNameGo}}, nil)
 		{{if not .ToJoinTable -}}
 		if rel.R != nil {
 			rel.R.{{$txt.Function.ForeignName}} = nil
@@ -356,10 +358,10 @@ func remove{{$txt.Function.Name}}From{{$txt.Function.ForeignName}}Slice(o *{{$tx
 			continue
 		}
 		for i, ri := range rel.R.{{$txt.Function.ForeignName}} {
-			{{if $txt.Function.UsesBytes -}}
-			if 0 != bytes.Compare(o.{{$txt.Function.LocalAssignment}}, ri.{{$txt.Function.LocalAssignment}}) {
+			{{if $txt.Function.UsesPrimitives -}}
+			if o.{{$txt.LocalTable.ColumnNameGo}} != ri.{{$txt.LocalTable.ColumnNameGo}} {
 			{{else -}}
-			if o.{{$txt.Function.LocalAssignment}} != ri.{{$txt.Function.LocalAssignment}} {
+			if !queries.Equal(o.{{$txt.LocalTable.ColumnNameGo}}, ri.{{$txt.LocalTable.ColumnNameGo}}) {
 			{{end -}}
 				continue
 			}

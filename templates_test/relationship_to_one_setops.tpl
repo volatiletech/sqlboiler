@@ -52,12 +52,12 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 		}
 		{{end -}}
 
-		{{if $txt.Function.UsesBytes -}}
-		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}}) {
+		{{if $txt.Function.UsesPrimitives -}}
+		if a.{{$txt.LocalTable.ColumnNameGo}} != x.{{$txt.ForeignTable.ColumnNameGo}} {
 		{{else -}}
-		if a.{{$txt.Function.LocalAssignment}} != x.{{$txt.Function.ForeignAssignment}} {
+		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, x.{{$txt.ForeignTable.ColumnNameGo}}) {
 		{{end -}}
-			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}})
+			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}})
 		}
 
 		{{if setInclude .Column $.Table.PKey.Columns -}}
@@ -67,19 +67,19 @@ func test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{
 			t.Error("want 'a' to exist")
 		}
 		{{else -}}
-		zero := reflect.Zero(reflect.TypeOf(a.{{$txt.Function.LocalAssignment}}))
-		reflect.Indirect(reflect.ValueOf(&a.{{$txt.Function.LocalAssignment}})).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.{{$txt.LocalTable.ColumnNameGo}}))
+		reflect.Indirect(reflect.ValueOf(&a.{{$txt.LocalTable.ColumnNameGo}})).Set(zero)
 
 		if err = a.Reload({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		{{if $txt.Function.UsesBytes -}}
-		if 0 != bytes.Compare(a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}}) {
+		{{if $txt.Function.UsesPrimitives -}}
+		if a.{{$txt.LocalTable.ColumnNameGo}} != x.{{$txt.ForeignTable.ColumnNameGo}} {
 		{{else -}}
-		if a.{{$txt.Function.LocalAssignment}} != x.{{$txt.Function.ForeignAssignment}} {
+		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, x.{{$txt.ForeignTable.ColumnNameGo}}) {
 		{{end -}}
-			t.Error("foreign key was wrong value", a.{{$txt.Function.LocalAssignment}}, x.{{$txt.Function.ForeignAssignment}})
+			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, x.{{$txt.ForeignTable.ColumnNameGo}})
 		}
 		{{- end}}
 	}
@@ -128,7 +128,7 @@ func test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}Usin
 		t.Error("R struct entry should be nil")
 	}
 
-	if a.{{$txt.LocalTable.ColumnNameGo}}.Valid {
+	if !queries.IsValuerNil(a.{{$txt.LocalTable.ColumnNameGo}}) {
 		t.Error("foreign key value should be nil")
 	}
 

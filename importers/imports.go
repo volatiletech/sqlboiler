@@ -165,7 +165,6 @@ func NewDefaultImports() Collection {
 
 	col.All = Set{
 		Standard: List{
-			`"bytes"`,
 			`"database/sql"`,
 			`"fmt"`,
 			`"reflect"`,
@@ -210,6 +209,7 @@ func NewDefaultImports() Collection {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/sqlboiler/boil"`,
+			`"github.com/volatiletech/sqlboiler/queries"`,
 			`"github.com/volatiletech/sqlboiler/randomize"`,
 			`"github.com/volatiletech/sqlboiler/strmangle"`,
 		},

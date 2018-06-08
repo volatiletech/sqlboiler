@@ -5,26 +5,24 @@
 	currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
 			{{- if eq $col.Name "created_at" -}}
-				{{- if $col.Nullable}}
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
-	}
-				{{- else}}
+				{{- if eq $col.Type "time.Time" }}
 	if o.CreatedAt.IsZero() {
 		o.CreatedAt = currTime
+	}
+				{{- else}}
+	if queries.MustTime(o.CreatedAt) {
+		queries.SetScanner(&o.CreatedAt, currTime)
 	}
 				{{- end -}}
 			{{- end -}}
 			{{- if eq $col.Name "updated_at" -}}
-				{{- if $col.Nullable}}
-	if o.UpdatedAt.Time.IsZero() {
-		o.UpdatedAt.Time = currTime
-		o.UpdatedAt.Valid = true
-	}
-				{{- else}}
+				{{- if eq $col.Type "time.Time"}}
 	if o.UpdatedAt.IsZero() {
 		o.UpdatedAt = currTime
+	}
+				{{- else}}
+	if queries.MustTime(o.UpdatedAt).IsZero() {
+		queries.SetScanner(&o.UpdatedAt, currTime)
 	}
 				{{- end -}}
 			{{- end -}}
@@ -39,11 +37,10 @@
 	currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
 			{{- if eq $col.Name "updated_at" -}}
-				{{- if $col.Nullable}}
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
-				{{- else}}
+				{{- if eq $col.Type "time.Time"}}
 	o.UpdatedAt = currTime
+				{{- else}}
+	queries.SetScanner(&o.UpdatedAt, currTime)
 				{{- end -}}
 			{{- end -}}
 		{{end}}
@@ -57,23 +54,21 @@
 	currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
 			{{- if eq $col.Name "created_at" -}}
-				{{- if $col.Nullable}}
-	if o.CreatedAt.Time.IsZero() {
-		o.CreatedAt.Time = currTime
-		o.CreatedAt.Valid = true
-	}
-				{{- else}}
+				{{- if eq $col.Type "time.Time"}}
 	if o.CreatedAt.IsZero() {
 		o.CreatedAt = currTime
+	}
+				{{- else}}
+	if queries.MustTime(o.CreatedAt).Time.IsZero() {
+		queries.SetScanner(&o.CreatedAt, currTime)
 	}
 				{{- end -}}
 			{{- end -}}
 			{{- if eq $col.Name "updated_at" -}}
-				{{- if $col.Nullable}}
-	o.UpdatedAt.Time = currTime
-	o.UpdatedAt.Valid = true
-				{{- else}}
+				{{- if eq $col.Type "time.Time"}}
 	o.UpdatedAt = currTime
+				{{- else}}
+	queries.SetScanner(&o.UpdatedAt, currTime)
 				{{- end -}}
 			{{- end -}}
 		{{end}}

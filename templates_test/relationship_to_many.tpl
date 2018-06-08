@@ -25,16 +25,15 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 
 	randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}ColumnsWithDefault...)
 	randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}ColumnsWithDefault...)
-	{{if .Nullable -}}
-	a.{{.Column | titleCase}}.Valid = true
-	{{- end}}
-	{{- if .ForeignColumnNullable}}
-	b.{{.ForeignColumn | titleCase}}.Valid = true
-	c.{{.ForeignColumn | titleCase}}.Valid = true
-	{{- end}}
+
 	{{if not .ToJoinTable -}}
-	b.{{$txt.Function.ForeignAssignment}} = a.{{$txt.Function.LocalAssignment}}
-	c.{{$txt.Function.ForeignAssignment}} = a.{{$txt.Function.LocalAssignment}}
+		{{if $txt.Function.UsesPrimitives}}
+	b.{{$txt.ForeignTable.ColumnNameGo}} = a.{{$txt.LocalTable.ColumnNameGo}}
+	c.{{$txt.ForeignTable.ColumnNameGo}} = a.{{$txt.LocalTable.ColumnNameGo}}
+		{{else -}}
+	queries.Assign(&b.{{$txt.ForeignTable.ColumnNameGo}}, a.{{$txt.LocalTable.ColumnNameGo}})
+	queries.Assign(&c.{{$txt.ForeignTable.ColumnNameGo}}, a.{{$txt.LocalTable.ColumnNameGo}})
+		{{- end}}
 	{{- end}}
 	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
@@ -62,18 +61,18 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 
 	bFound, cFound := false, false
 	for _, v := range {{$varname}} {
-		{{if $txt.Function.UsesBytes -}}
-		if 0 == bytes.Compare(v.{{$txt.Function.ForeignAssignment}}, b.{{$txt.Function.ForeignAssignment}}) {
+		{{if $txt.Function.UsesPrimitives -}}
+		if v.{{$txt.ForeignTable.ColumnNameGo}} == b.{{$txt.ForeignTable.ColumnNameGo}} {
 			bFound = true
 		}
-		if 0 == bytes.Compare(v.{{$txt.Function.ForeignAssignment}}, c.{{$txt.Function.ForeignAssignment}}) {
+		if v.{{$txt.ForeignTable.ColumnNameGo}} == c.{{$txt.ForeignTable.ColumnNameGo}} {
 			cFound = true
 		}
 		{{else -}}
-		if v.{{$txt.Function.ForeignAssignment}} == b.{{$txt.Function.ForeignAssignment}} {
+		if queries.Equal(v.{{$txt.ForeignTable.ColumnNameGo}}, b.{{$txt.ForeignTable.ColumnNameGo}}) {
 			bFound = true
 		}
-		if v.{{$txt.Function.ForeignAssignment}} == c.{{$txt.Function.ForeignAssignment}} {
+		if queries.Equal(v.{{$txt.ForeignTable.ColumnNameGo}}, c.{{$txt.ForeignTable.ColumnNameGo}}) {
 			cFound = true
 		}
 		{{end -}}

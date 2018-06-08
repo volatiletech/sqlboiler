@@ -50,9 +50,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}({{if $.NoContext}
 	var err error
 
 	if insert {
-		related.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
-		{{if .ForeignColumnNullable -}}
-		related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+		{{if $txt.Function.UsesPrimitives -}}
+		related.{{$txt.ForeignTable.ColumnNameGo}} = o.{{$txt.LocalTable.ColumnNameGo}}
+		{{else -}}
+		queries.Assign(&related.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$txt.LocalTable.ColumnNameGo}})
 		{{- end}}
 
 		if err = related.Insert({{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
@@ -79,9 +80,10 @@ func (o *{{$txt.LocalTable.NameGo}}) Set{{$txt.Function.Name}}({{if $.NoContext}
 			return errors.Wrap(err, "failed to update foreign table")
 		}
 
-		related.{{$txt.Function.ForeignAssignment}} = o.{{$txt.Function.LocalAssignment}}
-		{{if .ForeignColumnNullable -}}
-		related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
+		{{if $txt.Function.UsesPrimitives -}}
+		related.{{$txt.ForeignTable.ColumnNameGo}} = o.{{$txt.LocalTable.ColumnNameGo}}
+		{{else -}}
+		queries.Assign(&related.{{$txt.ForeignTable.ColumnNameGo}}, o.{{$txt.LocalTable.ColumnNameGo}})
 		{{- end}}
 	}
 
@@ -148,9 +150,8 @@ func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}GP({{if not $.N
 func (o *{{$txt.LocalTable.NameGo}}) Remove{{$txt.Function.Name}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related *{{$txt.ForeignTable.NameGo}}) error {
 	var err error
 
-	related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = false
+	queries.SetScanner(&related.{{$txt.ForeignTable.ColumnNameGo}}, nil)
 	if {{if not $.NoRowsAffected}}_, {{end -}} err = related.Update({{if not $.NoContext}}ctx, {{end -}} exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
-		related.{{$txt.ForeignTable.ColumnNameGo}}.Valid = true
 		return errors.Wrap(err, "failed to update local table")
 	}
 

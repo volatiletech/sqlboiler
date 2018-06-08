@@ -1,12 +1,15 @@
 package queries
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -420,4 +423,210 @@ func makeCacheKey(typ string, cols []string) string {
 	strmangle.PutBuffer(buf)
 
 	return mapKey
+}
+
+// Equal is different to reflect.DeepEqual in that it's both less efficient
+// less magical, and dosen't concern itself with a wide variety of types that could
+// be present but it does use the driver.Valuer interface since many types that will
+// go through database things will use these.
+//
+// We're focused on basic types + []byte. Since we're really only interested in things
+// that are typically used for primary keys in a database.
+//
+// Choosing not to use the DefaultParameterConverter here because sqlboiler doesn't generate
+// pointer columns.
+func Equal(a, b interface{}) bool {
+	if (a == nil && b != nil) || (a != nil && b == nil) {
+		return false
+	}
+
+	// Here we make a fast-path for bytes, because it's the most likely thing
+	// this method will be called with.
+	if ab, ok := a.([]byte); ok {
+		if bb, ok := b.([]byte); ok {
+			return bytes.Equal(ab, bb)
+		}
+	}
+
+	var err error
+	// If either is a sql.Scanner, pull the primitive value out before we get into type checking
+	// since we can't compare complex types anyway.
+	if v, ok := a.(driver.Valuer); ok {
+		a, err = v.Value()
+		if err != nil {
+			panic(fmt.Sprintf("while comparing values, although 'a' implemented driver.Valuer, an error occured when calling it: %+v", err))
+		}
+	}
+	if v, ok := b.(driver.Valuer); ok {
+		b, err = v.Value()
+		if err != nil {
+			panic(fmt.Sprintf("while comparing values, although 'b' implemented driver.Valuer, an error occured when calling it: %+v", err))
+		}
+	}
+
+	// Do nil checks again, since a Null type could have returned nil
+	if (a == nil && b != nil) || (a != nil && b == nil) {
+		return false
+	}
+
+	a = upgradeNumericTypes(a)
+	b = upgradeNumericTypes(b)
+
+	if at, bt := reflect.TypeOf(a), reflect.TypeOf(b); at != bt {
+		panic(fmt.Sprintf("primitive type of a (%s) was not the same primitive type as b (%s)", at.String(), bt.String()))
+	}
+
+	switch t := a.(type) {
+	case int64, float64, bool, string:
+		return a == b
+	case []byte:
+		return bytes.Equal(t, b.([]byte))
+	case time.Time:
+		return t.Equal(b.(time.Time))
+	}
+
+	return false
+}
+
+// Assign assigns a value to another using reflection.
+// Dst must be a pointer.
+func Assign(dst, src interface{}) {
+	// Fast path for []byte since it's one of the
+	// most frequent other "ids" we'll be assigning.
+	if db, ok := dst.(*[]byte); ok {
+		if sb, ok := src.([]byte); ok {
+			*db = make([]byte, len(sb))
+			copy(*db, sb)
+			return
+		}
+	}
+
+	scan, isDstScanner := dst.(sql.Scanner)
+	val, isSrcValuer := src.(driver.Valuer)
+
+	switch {
+	case isDstScanner && isSrcValuer:
+		val, err := val.Value()
+		if err != nil {
+			panic(fmt.Sprintf("tried to call value on %T but got err: %+v", src, err))
+		}
+
+		err = scan.Scan(val)
+		if err != nil {
+			panic(fmt.Sprintf("tried to call Scan on %T with %#v but got err: %+v", dst, val, err))
+		}
+
+	case isDstScanner && !isSrcValuer:
+		// Compress any lower width integer types
+		src = upgradeNumericTypes(src)
+
+		if err := scan.Scan(src); err != nil {
+			panic(fmt.Sprintf("tried to call Scan on %T with %#v but got err: %+v", dst, val, err))
+		}
+
+	case !isDstScanner && isSrcValuer:
+		val, err := val.Value()
+		if err != nil {
+			panic(fmt.Sprintf("tried to call value on %T but got err: %+v", src, err))
+		}
+
+		assignValue(dst, val)
+
+	default:
+		// We should always be comparing primitives with each other with == in templates
+		// so this method should never be called for say: string, string, or int, int
+		panic("this case should have been handled by something other than this method")
+	}
+}
+
+func upgradeNumericTypes(i interface{}) interface{} {
+	switch t := i.(type) {
+	case int:
+		return int64(t)
+	case int8:
+		return int64(t)
+	case int16:
+		return int64(t)
+	case int32:
+		return int64(t)
+	case uint:
+		return int64(t)
+	case uint8:
+		return int64(t)
+	case uint16:
+		return int64(t)
+	case uint32:
+		return int64(t)
+	case float32:
+		return float64(t)
+	default:
+		return i
+	}
+}
+
+// This whole function makes assumptions that whatever type
+// dst is, will be compatible with whatever came out of the Valuer.
+// We handle the types that driver.Value could possibly be.
+func assignValue(dst interface{}, val driver.Value) {
+	dstType := reflect.TypeOf(dst).Elem()
+	dstVal := reflect.ValueOf(dst).Elem()
+
+	if val == nil {
+		dstVal.Set(reflect.Zero(dstType))
+		return
+	}
+
+	v := reflect.ValueOf(val)
+
+	switch dstType.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		dstVal.SetInt(v.Int())
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		dstVal.SetInt(int64(v.Uint()))
+	case reflect.Bool:
+		dstVal.SetBool(v.Bool())
+	case reflect.String:
+		dstVal.SetString(v.String())
+	case reflect.Float32, reflect.Float64:
+		dstVal.SetFloat(v.Float())
+	case reflect.Slice:
+		// Assume []byte
+		db, sb := dst.(*[]byte), val.([]byte)
+		*db = make([]byte, len(sb))
+		copy(*db, sb)
+	case reflect.Struct:
+		// Assume time.Time
+		dstVal.Set(v)
+	}
+}
+
+// MustTime retrieves a time value from a valuer.
+func MustTime(val driver.Valuer) time.Time {
+	v, err := val.Value()
+	if err != nil {
+		panic(fmt.Sprintf("attempted to call value on %T to get time but got an error: %+v", val, err))
+	}
+
+	if v == nil {
+		return time.Time{}
+	}
+
+	return v.(time.Time)
+}
+
+// IsValuerNil returns true if the valuer's value is null.
+func IsValuerNil(val driver.Valuer) bool {
+	v, err := val.Value()
+	if err != nil {
+		panic(fmt.Sprintf("attempted to call value on %T but got an error: %+v", val, err))
+	}
+
+	return v == nil
+}
+
+// SetScanner attempts to set a scannable value on a scanner.
+func SetScanner(scanner sql.Scanner, val driver.Value) {
+	if err := scanner.Scan(val); err != nil {
+		panic(fmt.Sprintf("attempted to call Scan on %T with %#v but got an error: %+v", scanner, val, err))
+	}
 }

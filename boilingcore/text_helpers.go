@@ -202,29 +202,23 @@ func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 // fk == table = industry.Industries
 // fk != table = industry.MappedIndustryIndustry
 func txtNameToMany(toMany drivers.ToManyRelationship) (localFn, foreignFn string) {
-	if toMany.ToJoinTable {
-		localFkey := strmangle.Singular(trimSuffixes(toMany.JoinLocalColumn))
-		foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))
-
-		if localFkey != strmangle.Singular(toMany.Table) {
-			foreignFn = strmangle.TitleCase(localFkey)
-		}
-		foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.Table))
-
-		if foreignFkey != strmangle.Singular(toMany.ForeignTable) {
-			localFn = strmangle.TitleCase(foreignFkey)
-		}
-		localFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
-
-		return localFn, foreignFn
+	if !toMany.ToJoinTable {
+		panic(fmt.Sprintf("this method is only for join tables: %s <-> %s, %s", toMany.Table, toMany.ForeignTable, toMany.Name))
 	}
 
-	fkeyName := strmangle.Singular(trimSuffixes(toMany.ForeignColumn))
-	if fkeyName != strmangle.Singular(toMany.Table) {
-		localFn = strmangle.TitleCase(fkeyName)
+	localFkey := strmangle.Singular(trimSuffixes(toMany.JoinLocalColumn))
+	foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))
+
+	if localFkey != strmangle.Singular(toMany.Table) {
+		foreignFn = strmangle.TitleCase(localFkey)
+	}
+	foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.Table))
+
+	if foreignFkey != strmangle.Singular(toMany.ForeignTable) {
+		localFn = strmangle.TitleCase(foreignFkey)
 	}
 	localFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
-	foreignFn = strmangle.TitleCase(strmangle.Singular(fkeyName))
+
 	return localFn, foreignFn
 }
 

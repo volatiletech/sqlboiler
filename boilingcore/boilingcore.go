@@ -28,6 +28,11 @@ const (
 	templatesTestMainDirectory = "templates_test/main_test"
 )
 
+var (
+	// Tags must be in a format like: json, xml, etc.
+	rgxValidTag = regexp.MustCompile(`[a-zA-Z_\.]+`)
+)
+
 // State holds the global data needed by most pieces to run
 type State struct {
 	Config *Config
@@ -69,20 +74,12 @@ func New(config *Config) (*State, error) {
 		return nil, err
 	}
 
-	if s.Config.Debug {
-		b, err := json.Marshal(s.Tables)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to json marshal tables")
-		}
-		fmt.Printf("%s\n", b)
-	}
-
 	err = s.initOutFolder()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize the output folder")
 	}
 
-	err = s.initTemplates()
+	templates, err := s.initTemplates()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -90,6 +87,29 @@ func New(config *Config) (*State, error) {
 	err = s.initTags(config.Tags)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize struct tags")
+	}
+
+	err = s.initAliases(config.Aliases)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to initialize aliases")
+	}
+
+	if s.Config.Debug {
+		debugOut := struct {
+			Config    *Config         `json:"config"`
+			Tables    []drivers.Table `json:"tables"`
+			Templates []lazyTemplate  `json:"templates"`
+		}{
+			Config:    s.Config,
+			Tables:    s.Tables,
+			Templates: templates,
+		}
+
+		b, err := json.Marshal(debugOut)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to json marshal tables")
+		}
+		fmt.Printf("%s\n", b)
 	}
 
 	return s, nil
@@ -100,6 +120,7 @@ func New(config *Config) (*State, error) {
 func (s *State) Run() error {
 	data := &templateData{
 		Tables:           s.Tables,
+		Aliases:          s.Config.Aliases,
 		DriverName:       s.Config.DriverName,
 		PkgName:          s.Config.PkgName,
 		AddGlobal:        s.Config.AddGlobal,
@@ -157,21 +178,23 @@ func (s *State) Cleanup() error {
 }
 
 // initTemplates loads all template folders into the state object.
-func (s *State) initTemplates() error {
+// The only reason it returns lazyTemplates is because we want to debug
+// log it in a single JSON structure.
+func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
 	basePath, err := getBasePath(s.Config.BaseDir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	templates, err := findTemplates(basePath, templatesDirectory)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	testTemplates, err := findTemplates(basePath, templatesTestDirectory)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for k, v := range testTemplates {
@@ -180,7 +203,7 @@ func (s *State) initTemplates() error {
 
 	driverTemplates, err := s.Driver.Templates()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for template, contents := range driverTemplates {
@@ -190,14 +213,14 @@ func (s *State) initTemplates() error {
 	for _, replace := range s.Config.Replacements {
 		splits := strings.Split(replace, ";")
 		if len(splits) != 2 {
-			return errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)
+			return nil, errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)
 		}
 
 		original, replacement := splits[0], splits[1]
 
 		_, ok := templates[original]
 		if !ok {
-			return errors.Errorf("replace can only replace existing templates, %s does not exist", original)
+			return nil, errors.Errorf("replace can only replace existing templates, %s does not exist", original)
 		}
 
 		templates[original] = fileLoader(replacement)
@@ -218,38 +241,29 @@ func (s *State) initTemplates() error {
 		})
 	}
 
-	if s.Config.Debug {
-		b, err := json.Marshal(lazyTemplates)
-		if err != nil {
-			return errors.Wrap(err, "unable to json marshal template list")
-		}
-
-		fmt.Printf("%s\n", b)
-	}
-
 	s.Templates, err = loadTemplates(lazyTemplates, templatesDirectory)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	s.SingletonTemplates, err = loadTemplates(lazyTemplates, templatesSingletonDirectory)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !s.Config.NoTests {
 		s.TestTemplates, err = loadTemplates(lazyTemplates, templatesTestDirectory)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		s.SingletonTestTemplates, err = loadTemplates(lazyTemplates, templatesSingletonTestDirectory)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return lazyTemplates, nil
 }
 
 // findTemplates uses a base path: (/home/user/gopath/src/../sqlboiler/)
@@ -440,8 +454,16 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	return ret
 }
 
-// Tags must be in a format like: json, xml, etc.
-var rgxValidTag = regexp.MustCompile(`[a-zA-Z_\.]+`)
+// initOutFolder creates the folder that will hold the generated output.
+func (s *State) initOutFolder() error {
+	if s.Config.Wipe {
+		if err := os.RemoveAll(s.Config.OutFolder); err != nil {
+			return err
+		}
+	}
+
+	return os.MkdirAll(s.Config.OutFolder, os.ModePerm)
+}
 
 // initTags removes duplicate tags and validates the format
 // of all user tags are simple strings without quotes: [a-zA-Z_\.]+
@@ -456,15 +478,10 @@ func (s *State) initTags(tags []string) error {
 	return nil
 }
 
-// initOutFolder creates the folder that will hold the generated output.
-func (s *State) initOutFolder() error {
-	if s.Config.Wipe {
-		if err := os.RemoveAll(s.Config.OutFolder); err != nil {
-			return err
-		}
-	}
+func (s *State) initAliases(a Aliases) error {
+	FillAliases(&a, s.Tables)
 
-	return os.MkdirAll(s.Config.OutFolder, os.ModePerm)
+	return nil
 }
 
 // checkPKeys ensures every table has a primary key column

@@ -7,35 +7,104 @@ import (
 
 // Config for the running of the commands
 type Config struct {
-	DriverName   string
-	DriverConfig drivers.Config
+	DriverName   string         `toml:"driver_name,omitempty" json:"driver_name,omitempty"`
+	DriverConfig drivers.Config `toml:"driver_config,omitempty" json:"driver_config,omitempty"`
 
-	PkgName          string
-	OutFolder        string
-	BaseDir          string
-	Tags             []string
-	Replacements     []string
-	Debug            bool
-	AddGlobal        bool
-	AddPanic         bool
-	NoContext        bool
-	NoTests          bool
-	NoHooks          bool
-	NoAutoTimestamps bool
-	NoRowsAffected   bool
-	Wipe             bool
-	StructTagCasing  string
+	PkgName          string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
+	OutFolder        string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
+	BaseDir          string   `toml:"base_dir,omitempty" json:"base_dir,omitempty"`
+	Tags             []string `toml:"tags,omitempty" json:"tags,omitempty"`
+	Replacements     []string `toml:"replacements,omitempty" json:"replacements,omitempty"`
+	Debug            bool     `toml:"debug,omitempty" json:"debug,omitempty"`
+	AddGlobal        bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
+	AddPanic         bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
+	NoContext        bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
+	NoTests          bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
+	NoHooks          bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
+	NoAutoTimestamps bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
+	NoRowsAffected   bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
+	Wipe             bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
+	StructTagCasing  string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
 
-	Imports importers.Collection
+	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 
-	TypeReplaces []TypeReplace `toml:"types"`
+	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
+	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
 }
 
 // TypeReplace replaces a column type with something else
 type TypeReplace struct {
-	Match   drivers.Column `toml:"match"`
-	Replace drivers.Column `toml:"replace"`
-	Imports importers.Set  `toml:"imports"`
+	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
+	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
+	Imports importers.Set  `toml:"imports,omitempty" json:"imports,omitempty"`
+}
+
+// ConvertAliases is necessary because viper
+func ConvertAliases(i interface{}) (a Aliases) {
+	if i == nil {
+		return a
+	}
+
+	topLevel := i.(map[string]interface{})
+	tables := topLevel["tables"].(map[string]interface{})
+
+	for name, tIntf := range tables {
+		if a.Tables == nil {
+			a.Tables = make(map[string]TableAlias)
+		}
+
+		t := tIntf.(map[string]interface{})
+
+		var ta TableAlias
+
+		if s := t["up_plural"]; s != nil {
+			ta.UpPlural = s.(string)
+		}
+		if s := t["up_singular"]; s != nil {
+			ta.UpSingular = s.(string)
+		}
+		if s := t["down_plural"]; s != nil {
+			ta.DownPlural = s.(string)
+		}
+		if s := t["down_singular"]; s != nil {
+			ta.DownSingular = s.(string)
+		}
+
+		if colsIntf, ok := t["columns"]; ok {
+			cols := colsIntf.(map[string]interface{})
+			ta.Columns = make(map[string]string)
+			for k, v := range cols {
+				ta.Columns[k] = v.(string)
+			}
+		}
+
+		a.Tables[name] = ta
+	}
+	relationships := topLevel["relationships"].(map[string]interface{})
+
+	for name, rIntf := range relationships {
+		if a.Relationships == nil {
+			a.Relationships = make(map[string]RelationshipAlias)
+		}
+
+		var ra RelationshipAlias
+		rel := rIntf.(map[string]interface{})
+
+		if s := rel["local"]; s != nil {
+			ra.Local = s.(string)
+		}
+		if s := rel["foreign"]; s != nil {
+			ra.Foreign = s.(string)
+		}
+
+		if len(ra.Foreign) == 0 || len(ra.Local) == 0 {
+			panic("when defining a relationship alias, must name both sides of relationship")
+		}
+
+		a.Relationships[name] = ra
+	}
+
+	return a
 }
 
 // ConvertTypeReplace is necessary because viper

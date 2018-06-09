@@ -16,8 +16,9 @@ import (
 
 // templateData for sqlboiler templates
 type templateData struct {
-	Tables []drivers.Table
-	Table  drivers.Table
+	Tables  []drivers.Table
+	Table   drivers.Table
+	Aliases Aliases
 
 	// Controls what names are output
 	PkgName string

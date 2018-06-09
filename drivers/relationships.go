@@ -5,6 +5,8 @@ package drivers
 // local table, that column can also be unique which changes the dynamic into a
 // one-to-one style, not a to-many.
 type ToOneRelationship struct {
+	Name string `json:"name"`
+
 	Table    string `json:"table"`
 	Column   string `json:"column"`
 	Nullable bool   `json:"nullable"`
@@ -20,6 +22,8 @@ type ToOneRelationship struct {
 // local table has no id, and the foreign table has an id that matches a column
 // in the local table.
 type ToManyRelationship struct {
+	Name string `json:"name"`
+
 	Table    string `json:"table"`
 	Column   string `json:"column"`
 	Nullable bool   `json:"nullable"`
@@ -33,10 +37,12 @@ type ToManyRelationship struct {
 	ToJoinTable bool   `json:"to_join_table"`
 	JoinTable   string `json:"join_table"`
 
+	JoinLocalFKeyName       string `json:"join_local_fkey_name"`
 	JoinLocalColumn         string `json:"join_local_column"`
 	JoinLocalColumnNullable bool   `json:"join_local_column_nullable"`
 	JoinLocalColumnUnique   bool   `json:"join_local_column_unique"`
 
+	JoinForeignFKeyName       string `json:"join_foreign_fkey_name"`
 	JoinForeignColumn         string `json:"join_foreign_column"`
 	JoinForeignColumnNullable bool   `json:"join_foreign_column_nullable"`
 	JoinForeignColumnUnique   bool   `json:"join_foreign_column_unique"`
@@ -87,6 +93,7 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 
 func buildToOneRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToOneRelationship {
 	return ToOneRelationship{
+		Name:     foreignKey.Name,
 		Table:    localTable.Name,
 		Column:   foreignKey.ForeignColumn,
 		Nullable: foreignKey.ForeignColumnNullable,
@@ -102,6 +109,7 @@ func buildToOneRelationship(localTable Table, foreignKey ForeignKey, foreignTabl
 func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToManyRelationship {
 	if !foreignTable.IsJoinTable {
 		return ToManyRelationship{
+			Name:                  foreignKey.Name,
 			Table:                 localTable.Name,
 			Column:                foreignKey.ForeignColumn,
 			Nullable:              foreignKey.ForeignColumnNullable,
@@ -123,6 +131,7 @@ func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTab
 		ToJoinTable: true,
 		JoinTable:   foreignTable.Name,
 
+		JoinLocalFKeyName:       foreignKey.Name,
 		JoinLocalColumn:         foreignKey.Column,
 		JoinLocalColumnNullable: foreignKey.Nullable,
 		JoinLocalColumnUnique:   foreignKey.Unique,
@@ -133,6 +142,7 @@ func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTab
 			continue
 		}
 
+		relationship.JoinForeignFKeyName = fk.Name
 		relationship.JoinForeignColumn = fk.Column
 		relationship.JoinForeignColumnNullable = fk.Nullable
 		relationship.JoinForeignColumnUnique = fk.Unique

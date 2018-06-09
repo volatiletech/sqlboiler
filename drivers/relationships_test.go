@@ -54,6 +54,7 @@ func TestToOneRelationships(t *testing.T) {
 
 	expected := []ToOneRelationship{
 		{
+			Name:     "jets_pilot_id_fk",
 			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
@@ -65,6 +66,7 @@ func TestToOneRelationships(t *testing.T) {
 			ForeignColumnUnique:   true,
 		},
 		{
+			Name:     "licenses_pilot_id_fk",
 			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
@@ -138,6 +140,7 @@ func TestToManyRelationships(t *testing.T) {
 
 	expected := []ToManyRelationship{
 		{
+			Name:     "jets_pilot_id_fk",
 			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
@@ -151,6 +154,7 @@ func TestToManyRelationships(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Name:     "licenses_pilot_id_fk",
 			Table:    "pilots",
 			Column:   "id",
 			Nullable: false,
@@ -177,10 +181,12 @@ func TestToManyRelationships(t *testing.T) {
 			ToJoinTable: true,
 			JoinTable:   "pilot_languages",
 
+			JoinLocalFKeyName:       "pilot_id_fk",
 			JoinLocalColumn:         "pilot_id",
 			JoinLocalColumnNullable: false,
 			JoinLocalColumnUnique:   false,
 
+			JoinForeignFKeyName:       "language_id_fk",
 			JoinForeignColumn:         "language_id",
 			JoinForeignColumnNullable: false,
 			JoinForeignColumnUnique:   false,
@@ -250,6 +256,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 
 	expected := []ToManyRelationship{
 		{
+			Name:     "jets_pilot_id_fk",
 			Table:    "pilots",
 			Column:   "id",
 			Nullable: true,
@@ -263,6 +270,7 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			ToJoinTable: false,
 		},
 		{
+			Name:     "licenses_pilot_id_fk",
 			Table:    "pilots",
 			Column:   "id",
 			Nullable: true,
@@ -289,10 +297,12 @@ func TestToManyRelationshipsNull(t *testing.T) {
 			ToJoinTable: true,
 			JoinTable:   "pilot_languages",
 
+			JoinLocalFKeyName:       "pilot_id_fk",
 			JoinLocalColumn:         "pilot_id",
 			JoinLocalColumnNullable: true,
 			JoinLocalColumnUnique:   false,
 
+			JoinForeignFKeyName:       "language_id_fk",
 			JoinForeignColumn:         "language_id",
 			JoinForeignColumnNullable: true,
 			JoinForeignColumnUnique:   false,

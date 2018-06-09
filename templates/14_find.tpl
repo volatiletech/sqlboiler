@@ -1,20 +1,19 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $alias := .Aliases.Table .Table.Name -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
 {{if .AddGlobal -}}
-// Find{{$tableNameSingular}}G retrieves a single record by ID.
-func Find{{$tableNameSingular}}G({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-	return Find{{$tableNameSingular}}({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, {{$pkNames | join ", "}}, selectCols...)
+// Find{{$alias.UpSingular}}G retrieves a single record by ID.
+func Find{{$alias.UpSingular}}G({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}, selectCols ...string) (*{{$alias.UpSingular}}, error) {
+	return Find{{$alias.UpSingular}}({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, {{$pkNames | join ", "}}, selectCols...)
 }
 
 {{end -}}
 
 {{if .AddPanic -}}
-// Find{{$tableNameSingular}}P retrieves a single record by ID with an executor, and panics on error.
-func Find{{$tableNameSingular}}P({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-	retobj, err := Find{{$tableNameSingular}}({{if not .NoContext}}ctx, {{end -}} exec, {{$pkNames | join ", "}}, selectCols...)
+// Find{{$alias.UpSingular}}P retrieves a single record by ID with an executor, and panics on error.
+func Find{{$alias.UpSingular}}P({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}, selectCols ...string) *{{$alias.UpSingular}} {
+	retobj, err := Find{{$alias.UpSingular}}({{if not .NoContext}}ctx, {{end -}} exec, {{$pkNames | join ", "}}, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -25,9 +24,9 @@ func Find{{$tableNameSingular}}P({{if .NoContext}}exec boil.Executor{{else}}ctx 
 {{end -}}
 
 {{if and .AddGlobal .AddPanic -}}
-// Find{{$tableNameSingular}}GP retrieves a single record by ID, and panics on error.
-func Find{{$tableNameSingular}}GP({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}, selectCols ...string) *{{$tableNameSingular}} {
-	retobj, err := Find{{$tableNameSingular}}({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, {{$pkNames | join ", "}}, selectCols...)
+// Find{{$alias.UpSingular}}GP retrieves a single record by ID, and panics on error.
+func Find{{$alias.UpSingular}}GP({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}, selectCols ...string) *{{$alias.UpSingular}} {
+	retobj, err := Find{{$alias.UpSingular}}({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, {{$pkNames | join ", "}}, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -37,10 +36,10 @@ func Find{{$tableNameSingular}}GP({{if not .NoContext}}ctx context.Context, {{en
 
 {{end -}}
 
-// Find{{$tableNameSingular}} retrieves a single record by ID with an executor.
+// Find{{$alias.UpSingular}} retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func Find{{$tableNameSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}, selectCols ...string) (*{{$tableNameSingular}}, error) {
-	{{$varNameSingular}}Obj := &{{$tableNameSingular}}{}
+func Find{{$alias.UpSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}, selectCols ...string) (*{{$alias.UpSingular}}, error) {
+	{{$alias.DownSingular}}Obj := &{{$alias.UpSingular}}{}
 
 	sel := "*"
 	if len(selectCols) > 0 {
@@ -52,7 +51,7 @@ func Find{{$tableNameSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx c
 
 	q := queries.Raw(query, {{$pkNames | join ", "}})
 
-	err := q.Bind({{if not .NoContext}}ctx{{else}}nil{{end}}, exec, {{$varNameSingular}}Obj)
+	err := q.Bind({{if not .NoContext}}ctx{{else}}nil{{end}}, exec, {{$alias.DownSingular}}Obj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
@@ -60,5 +59,5 @@ func Find{{$tableNameSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx c
 		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
 	}
 
-	return {{$varNameSingular}}Obj, nil
+	return {{$alias.DownSingular}}Obj, nil
 }

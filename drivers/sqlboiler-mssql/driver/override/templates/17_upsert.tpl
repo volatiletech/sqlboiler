@@ -1,9 +1,8 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $alias := .Aliases.Table .Table.Name}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateColumns, insertColumns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateColumns, insertColumns boil.Columns) error {
 	return o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateColumns, insertColumns)
 }
 
@@ -11,7 +10,7 @@ func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Contex
 
 {{if and .AddGlobal .AddPanic -}}
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateColumns, insertColumns boil.Columns) {
+func (o *{{$alias.UpSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateColumns, insertColumns boil.Columns) {
 	if err := o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -22,7 +21,7 @@ func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Conte
 {{if .AddPanic -}}
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) {
+func (o *{{$alias.UpSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) {
 	if err := o.Upsert({{if not .NoContext}}ctx, {{end -}} exec, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -31,7 +30,7 @@ func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{el
 {{end -}}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -44,7 +43,7 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	}
 	{{- end}}
 
-	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
@@ -64,22 +63,22 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	{{$varNameSingular}}UpsertCacheMut.RLock()
-	cache, cached := {{$varNameSingular}}UpsertCache[key]
-	{{$varNameSingular}}UpsertCacheMut.RUnlock()
+	{{$alias.DownSingular}}UpsertCacheMut.RLock()
+	cache, cached := {{$alias.DownSingular}}UpsertCache[key]
+	{{$alias.DownSingular}}UpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, ret := insertColumns.InsertColumnSet(
-			{{$varNameSingular}}Columns,
-			{{$varNameSingular}}ColumnsWithDefault,
-			{{$varNameSingular}}ColumnsWithoutDefault,
+			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}ColumnsWithDefault,
+			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
-		insert = strmangle.SetComplement(insert, {{$varNameSingular}}ColumnsWithAuto)
+		insert = strmangle.SetComplement(insert, {{$alias.DownSingular}}ColumnsWithAuto)
 		for i, v := range insert {
-			if strmangle.ContainsAny({{$varNameSingular}}PrimaryKeyColumns, v) && strmangle.ContainsAny({{$varNameSingular}}ColumnsWithDefault, v) {
+			if strmangle.ContainsAny({{$alias.DownSingular}}PrimaryKeyColumns, v) && strmangle.ContainsAny({{$alias.DownSingular}}ColumnsWithDefault, v) {
 				insert = append(insert[:i], insert[i+1:]...)
 			}
 		}
@@ -87,30 +86,30 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build insert column list")
 		}
 
-		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithAuto)
-		ret = strmangle.SetMerge(ret, {{$varNameSingular}}ColumnsWithDefault)
+		ret = strmangle.SetMerge(ret, {{$alias.DownSingular}}ColumnsWithAuto)
+		ret = strmangle.SetMerge(ret, {{$alias.DownSingular}}ColumnsWithDefault)
 
 		update := updateColumns.UpdateColumnSet(
-			{{$varNameSingular}}Columns,
-			{{$varNameSingular}}PrimaryKeyColumns,
+			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
-		update = strmangle.SetComplement(update, {{$varNameSingular}}ColumnsWithAuto)
+		update = strmangle.SetComplement(update, {{$alias.DownSingular}}ColumnsWithAuto)
 
 		if len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
-		cache.query = queries.BuildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$varNameSingular}}PrimaryKeyColumns, update, insert, ret)
+		cache.query = queries.BuildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$alias.DownSingular}}PrimaryKeyColumns, update, insert, ret)
 
-		whitelist = append({{$varNameSingular}}PrimaryKeyColumns, update...)
+		whitelist = append({{$alias.DownSingular}}PrimaryKeyColumns, update...)
 		whitelist = append(whitelist, insert...)
 
-		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, whitelist)
+		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, whitelist)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, ret)
+			cache.retMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, ret)
 			if err != nil {
 				return err
 			}
@@ -150,9 +149,9 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	}
 
 	if !cached {
-		{{$varNameSingular}}UpsertCacheMut.Lock()
-		{{$varNameSingular}}UpsertCache[key] = cache
-		{{$varNameSingular}}UpsertCacheMut.Unlock()
+		{{$alias.DownSingular}}UpsertCacheMut.Lock()
+		{{$alias.DownSingular}}UpsertCache[key] = cache
+		{{$alias.DownSingular}}UpsertCacheMut.Unlock()
 	}
 
 	{{if not .NoHooks -}}

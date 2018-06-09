@@ -1,42 +1,41 @@
 {{if .Table.IsJoinTable -}}
 {{else -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
+{{- $alias := .Aliases.Table .Table.Name -}}
 var (
-	{{$varNameSingular}}Columns               = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+	{{$alias.DownSingular}}Columns               = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
 	{{if .Dialect.UseAutoColumns -}}
-	{{$varNameSingular}}ColumnsWithAuto = []string{{"{"}}{{.Table.Columns | filterColumnsByAuto true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
+	{{$alias.DownSingular}}ColumnsWithAuto = []string{{"{"}}{{.Table.Columns | filterColumnsByAuto true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{end -}}
-	{{$varNameSingular}}ColumnsWithoutDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
-	{{$varNameSingular}}ColumnsWithDefault    = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
-	{{$varNameSingular}}PrimaryKeyColumns     = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+	{{$alias.DownSingular}}ColumnsWithoutDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
+	{{$alias.DownSingular}}ColumnsWithDefault    = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
+	{{$alias.DownSingular}}PrimaryKeyColumns     = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
 )
 
 type (
-	// {{$tableNameSingular}}Slice is an alias for a slice of pointers to {{$tableNameSingular}}.
-	// This should generally be used opposed to []{{$tableNameSingular}}.
-	{{$tableNameSingular}}Slice []*{{$tableNameSingular}}
+	// {{$alias.UpSingular}}Slice is an alias for a slice of pointers to {{$alias.UpSingular}}.
+	// This should generally be used opposed to []{{$alias.UpSingular}}.
+	{{$alias.UpSingular}}Slice []*{{$alias.UpSingular}}
 	{{if not .NoHooks -}}
-	// {{$tableNameSingular}}Hook is the signature for custom {{$tableNameSingular}} hook methods
-	{{$tableNameSingular}}Hook func({{if .NoContext}}boil.Executor{{else}}context.Context, boil.ContextExecutor{{end}}, *{{$tableNameSingular}}) error
+	// {{$alias.UpSingular}}Hook is the signature for custom {{$alias.UpSingular}} hook methods
+	{{$alias.UpSingular}}Hook func({{if .NoContext}}boil.Executor{{else}}context.Context, boil.ContextExecutor{{end}}, *{{$alias.UpSingular}}) error
 	{{- end}}
 
-	{{$varNameSingular}}Query struct {
+	{{$alias.DownSingular}}Query struct {
 		*queries.Query
 	}
 )
 
 // Cache for insert, update and upsert
 var (
-	{{$varNameSingular}}Type = reflect.TypeOf(&{{$tableNameSingular}}{})
-	{{$varNameSingular}}Mapping = queries.MakeStructMapping({{$varNameSingular}}Type)
-	{{$varNameSingular}}PrimaryKeyMapping, _ = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, {{$varNameSingular}}PrimaryKeyColumns)
-	{{$varNameSingular}}InsertCacheMut sync.RWMutex
-	{{$varNameSingular}}InsertCache = make(map[string]insertCache)
-	{{$varNameSingular}}UpdateCacheMut sync.RWMutex
-	{{$varNameSingular}}UpdateCache = make(map[string]updateCache)
-	{{$varNameSingular}}UpsertCacheMut sync.RWMutex
-	{{$varNameSingular}}UpsertCache = make(map[string]insertCache)
+	{{$alias.DownSingular}}Type = reflect.TypeOf(&{{$alias.UpSingular}}{})
+	{{$alias.DownSingular}}Mapping = queries.MakeStructMapping({{$alias.DownSingular}}Type)
+	{{$alias.DownSingular}}PrimaryKeyMapping, _ = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, {{$alias.DownSingular}}PrimaryKeyColumns)
+	{{$alias.DownSingular}}InsertCacheMut sync.RWMutex
+	{{$alias.DownSingular}}InsertCache = make(map[string]insertCache)
+	{{$alias.DownSingular}}UpdateCacheMut sync.RWMutex
+	{{$alias.DownSingular}}UpdateCache = make(map[string]updateCache)
+	{{$alias.DownSingular}}UpsertCacheMut sync.RWMutex
+	{{$alias.DownSingular}}UpsertCache = make(map[string]insertCache)
 )
 
 var (

@@ -1,15 +1,12 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
-{{- $varNamePlural := .Table.Name | plural | camelCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func test{{$tableNamePlural}}Find(t *testing.T) {
+{{- $alias := .Aliases.Table .Table.Name}}
+func test{{$alias.UpPlural}}Find(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, o, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+	o := &{{$alias.UpSingular}}{}
+	if err = randomize.Struct(seed, o, {{$alias.DownSingular}}DBTypes, true, {{$alias.DownSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
@@ -19,12 +16,12 @@ func test{{$tableNamePlural}}Find(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{$varNameSingular}}Found, err := Find{{$tableNameSingular}}({{if not .NoContext}}ctx, {{end -}} tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." "o") | join ", "}})
+	{{$alias.DownSingular}}Found, err := Find{{$alias.UpSingular}}({{if not .NoContext}}ctx, {{end -}} tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." "o") | join ", "}})
 	if err != nil {
 		t.Error(err)
 	}
 
-	if {{$varNameSingular}}Found == nil {
+	if {{$alias.DownSingular}}Found == nil {
 		t.Error("want a record, got nil")
 	}
 }

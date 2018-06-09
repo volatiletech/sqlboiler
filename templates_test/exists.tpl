@@ -1,15 +1,12 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
-{{- $varNamePlural := .Table.Name | plural | camelCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func test{{$tableNamePlural}}Exists(t *testing.T) {
+{{- $alias := .Aliases.Table .Table.Name}}
+func test{{$alias.UpPlural}}Exists(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, o, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+	o := &{{$alias.UpSingular}}{}
+	if err = randomize.Struct(seed, o, {{$alias.DownSingular}}DBTypes, true, {{$alias.DownSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
@@ -20,11 +17,11 @@ func test{{$tableNamePlural}}Exists(t *testing.T) {
 	}
 
 	{{$pkeyArgs := .Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." "o") | join ", " -}}
-	e, err := {{$tableNameSingular}}Exists({{if not .NoContext}}ctx, {{end -}} tx, {{$pkeyArgs}})
+	e, err := {{$alias.UpSingular}}Exists({{if not .NoContext}}ctx, {{end -}} tx, {{$pkeyArgs}})
 	if err != nil {
-		t.Errorf("Unable to check if {{$tableNameSingular}} exists: %s", err)
+		t.Errorf("Unable to check if {{$alias.UpSingular}} exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected {{$tableNameSingular}}ExistsG to return true, but got false.")
+		t.Errorf("Expected {{$alias.UpSingular}}ExistsG to return true, but got false.")
 	}
 }

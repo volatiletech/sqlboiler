@@ -1,7 +1,6 @@
-{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase}}
-// {{$tableNamePlural}} retrieves all the records using an executor.
-func {{$tableNamePlural}}(mods ...qm.QueryMod) {{$varNameSingular}}Query {
+{{- $alias := .Aliases.Table .Table.Name}}
+// {{$alias.UpPlural}} retrieves all the records using an executor.
+func {{$alias.UpPlural}}(mods ...qm.QueryMod) {{$alias.DownSingular}}Query {
 	mods = append(mods, qm.From("{{.Table.Name | .SchemaTable}}"))
-	return {{$varNameSingular}}Query{NewQuery(mods...)}
+	return {{$alias.DownSingular}}Query{NewQuery(mods...)}
 }

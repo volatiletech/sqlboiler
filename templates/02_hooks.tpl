@@ -1,20 +1,20 @@
 {{- if not .NoHooks -}}
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-var {{$varNameSingular}}BeforeInsertHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}BeforeUpdateHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}BeforeDeleteHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}BeforeUpsertHooks []{{$tableNameSingular}}Hook
+{{- $alias := .Aliases.Table .Table.Name}}
 
-var {{$varNameSingular}}AfterInsertHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}AfterSelectHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}AfterUpdateHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}AfterDeleteHooks []{{$tableNameSingular}}Hook
-var {{$varNameSingular}}AfterUpsertHooks []{{$tableNameSingular}}Hook
+var {{$alias.DownSingular}}BeforeInsertHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeUpdateHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeDeleteHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeUpsertHooks []{{$alias.UpSingular}}Hook
+
+var {{$alias.DownSingular}}AfterInsertHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}AfterSelectHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}AfterUpdateHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}AfterDeleteHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}AfterUpsertHooks []{{$alias.UpSingular}}Hook
 
 // doBeforeInsertHooks executes all "before insert" hooks.
-func (o *{{$tableNameSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}BeforeInsertHooks {
+func (o *{{$alias.UpSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}BeforeInsertHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -24,8 +24,8 @@ func (o *{{$tableNameSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.
 }
 
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *{{$tableNameSingular}}) doBeforeUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}BeforeUpdateHooks {
+func (o *{{$alias.UpSingular}}) doBeforeUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}BeforeUpdateHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -35,8 +35,8 @@ func (o *{{$tableNameSingular}}) doBeforeUpdateHooks({{if .NoContext}}exec boil.
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *{{$tableNameSingular}}) doBeforeDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}BeforeDeleteHooks {
+func (o *{{$alias.UpSingular}}) doBeforeDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}BeforeDeleteHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -46,8 +46,8 @@ func (o *{{$tableNameSingular}}) doBeforeDeleteHooks({{if .NoContext}}exec boil.
 }
 
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *{{$tableNameSingular}}) doBeforeUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}BeforeUpsertHooks {
+func (o *{{$alias.UpSingular}}) doBeforeUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}BeforeUpsertHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -57,8 +57,8 @@ func (o *{{$tableNameSingular}}) doBeforeUpsertHooks({{if .NoContext}}exec boil.
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *{{$tableNameSingular}}) doAfterInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}AfterInsertHooks {
+func (o *{{$alias.UpSingular}}) doAfterInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}AfterInsertHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -68,8 +68,8 @@ func (o *{{$tableNameSingular}}) doAfterInsertHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *{{$tableNameSingular}}) doAfterSelectHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}AfterSelectHooks {
+func (o *{{$alias.UpSingular}}) doAfterSelectHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}AfterSelectHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -79,8 +79,8 @@ func (o *{{$tableNameSingular}}) doAfterSelectHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *{{$tableNameSingular}}) doAfterUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}AfterUpdateHooks {
+func (o *{{$alias.UpSingular}}) doAfterUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}AfterUpdateHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -90,8 +90,8 @@ func (o *{{$tableNameSingular}}) doAfterUpdateHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *{{$tableNameSingular}}) doAfterDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}AfterDeleteHooks {
+func (o *{{$alias.UpSingular}}) doAfterDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}AfterDeleteHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -101,8 +101,8 @@ func (o *{{$tableNameSingular}}) doAfterDeleteHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *{{$tableNameSingular}}) doAfterUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	for _, hook := range {{$varNameSingular}}AfterUpsertHooks {
+func (o *{{$alias.UpSingular}}) doAfterUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	for _, hook := range {{$alias.DownSingular}}AfterUpsertHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -111,27 +111,27 @@ func (o *{{$tableNameSingular}}) doAfterUpsertHooks({{if .NoContext}}exec boil.E
 	return nil
 }
 
-// Add{{$tableNameSingular}}Hook registers your hook function for all future operations.
-func Add{{$tableNameSingular}}Hook(hookPoint boil.HookPoint, {{$varNameSingular}}Hook {{$tableNameSingular}}Hook) {
+// Add{{$alias.UpSingular}}Hook registers your hook function for all future operations.
+func Add{{$alias.UpSingular}}Hook(hookPoint boil.HookPoint, {{$alias.DownSingular}}Hook {{$alias.UpSingular}}Hook) {
 	switch hookPoint {
 		case boil.BeforeInsertHook:
-			{{$varNameSingular}}BeforeInsertHooks = append({{$varNameSingular}}BeforeInsertHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}BeforeInsertHooks = append({{$alias.DownSingular}}BeforeInsertHooks, {{$alias.DownSingular}}Hook)
 		case boil.BeforeUpdateHook:
-			{{$varNameSingular}}BeforeUpdateHooks = append({{$varNameSingular}}BeforeUpdateHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}BeforeUpdateHooks = append({{$alias.DownSingular}}BeforeUpdateHooks, {{$alias.DownSingular}}Hook)
 		case boil.BeforeDeleteHook:
-			{{$varNameSingular}}BeforeDeleteHooks = append({{$varNameSingular}}BeforeDeleteHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}BeforeDeleteHooks = append({{$alias.DownSingular}}BeforeDeleteHooks, {{$alias.DownSingular}}Hook)
 		case boil.BeforeUpsertHook:
-			{{$varNameSingular}}BeforeUpsertHooks = append({{$varNameSingular}}BeforeUpsertHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}BeforeUpsertHooks = append({{$alias.DownSingular}}BeforeUpsertHooks, {{$alias.DownSingular}}Hook)
 		case boil.AfterInsertHook:
-			{{$varNameSingular}}AfterInsertHooks = append({{$varNameSingular}}AfterInsertHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}AfterInsertHooks = append({{$alias.DownSingular}}AfterInsertHooks, {{$alias.DownSingular}}Hook)
 		case boil.AfterSelectHook:
-			{{$varNameSingular}}AfterSelectHooks = append({{$varNameSingular}}AfterSelectHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}AfterSelectHooks = append({{$alias.DownSingular}}AfterSelectHooks, {{$alias.DownSingular}}Hook)
 		case boil.AfterUpdateHook:
-			{{$varNameSingular}}AfterUpdateHooks = append({{$varNameSingular}}AfterUpdateHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}AfterUpdateHooks = append({{$alias.DownSingular}}AfterUpdateHooks, {{$alias.DownSingular}}Hook)
 		case boil.AfterDeleteHook:
-			{{$varNameSingular}}AfterDeleteHooks = append({{$varNameSingular}}AfterDeleteHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}AfterDeleteHooks = append({{$alias.DownSingular}}AfterDeleteHooks, {{$alias.DownSingular}}Hook)
 		case boil.AfterUpsertHook:
-			{{$varNameSingular}}AfterUpsertHooks = append({{$varNameSingular}}AfterUpsertHooks, {{$varNameSingular}}Hook)
+			{{$alias.DownSingular}}AfterUpsertHooks = append({{$alias.DownSingular}}AfterUpsertHooks, {{$alias.DownSingular}}Hook)
 	}
 }
 {{- end}}

@@ -1,146 +1,143 @@
 {{- if not .NoHooks -}}
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
-{{- $varNamePlural := .Table.Name | plural | camelCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func {{$varNameSingular}}BeforeInsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+{{- $alias := .Aliases.Table .Table.Name}}
+func {{$alias.DownSingular}}BeforeInsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}AfterInsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}AfterInsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}AfterSelectHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}AfterSelectHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}BeforeUpdateHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}BeforeUpdateHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}AfterUpdateHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}AfterUpdateHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}BeforeDeleteHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}BeforeDeleteHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}AfterDeleteHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}AfterDeleteHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}BeforeUpsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}BeforeUpsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func {{$varNameSingular}}AfterUpsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$tableNameSingular}}) error {
-	*o = {{$tableNameSingular}}{}
+func {{$alias.DownSingular}}AfterUpsertHook({{if .NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, o *{{$alias.UpSingular}}) error {
+	*o = {{$alias.UpSingular}}{}
 	return nil
 }
 
-func test{{$tableNamePlural}}Hooks(t *testing.T) {
+func test{{$alias.UpPlural}}Hooks(t *testing.T) {
 	t.Parallel()
 
 	var err error
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
-	empty := &{{$tableNameSingular}}{}
-	o := &{{$tableNameSingular}}{}
+	empty := &{{$alias.UpSingular}}{}
+	o := &{{$alias.UpSingular}}{}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, o, {{$varNameSingular}}DBTypes, false); err != nil {
-		t.Errorf("Unable to randomize {{$tableNameSingular}} object: %s", err)
+	if err = randomize.Struct(seed, o, {{$alias.DownSingular}}DBTypes, false); err != nil {
+		t.Errorf("Unable to randomize {{$alias.UpSingular}} object: %s", err)
 	}
 
-	Add{{$tableNameSingular}}Hook(boil.BeforeInsertHook, {{$varNameSingular}}BeforeInsertHook)
+	Add{{$alias.UpSingular}}Hook(boil.BeforeInsertHook, {{$alias.DownSingular}}BeforeInsertHook)
 	if err = o.doBeforeInsertHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doBeforeInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeInsertHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}BeforeInsertHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}BeforeInsertHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.AfterInsertHook, {{$varNameSingular}}AfterInsertHook)
+	Add{{$alias.UpSingular}}Hook(boil.AfterInsertHook, {{$alias.DownSingular}}AfterInsertHook)
 	if err = o.doAfterInsertHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doAfterInsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterInsertHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}AfterInsertHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}AfterInsertHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.AfterSelectHook, {{$varNameSingular}}AfterSelectHook)
+	Add{{$alias.UpSingular}}Hook(boil.AfterSelectHook, {{$alias.DownSingular}}AfterSelectHook)
 	if err = o.doAfterSelectHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterSelectHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}AfterSelectHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}AfterSelectHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.BeforeUpdateHook, {{$varNameSingular}}BeforeUpdateHook)
+	Add{{$alias.UpSingular}}Hook(boil.BeforeUpdateHook, {{$alias.DownSingular}}BeforeUpdateHook)
 	if err = o.doBeforeUpdateHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpdateHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}BeforeUpdateHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}BeforeUpdateHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.AfterUpdateHook, {{$varNameSingular}}AfterUpdateHook)
+	Add{{$alias.UpSingular}}Hook(boil.AfterUpdateHook, {{$alias.DownSingular}}AfterUpdateHook)
 	if err = o.doAfterUpdateHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpdateHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpdateHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}AfterUpdateHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}AfterUpdateHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.BeforeDeleteHook, {{$varNameSingular}}BeforeDeleteHook)
+	Add{{$alias.UpSingular}}Hook(boil.BeforeDeleteHook, {{$alias.DownSingular}}BeforeDeleteHook)
 	if err = o.doBeforeDeleteHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doBeforeDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeDeleteHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}BeforeDeleteHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}BeforeDeleteHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.AfterDeleteHook, {{$varNameSingular}}AfterDeleteHook)
+	Add{{$alias.UpSingular}}Hook(boil.AfterDeleteHook, {{$alias.DownSingular}}AfterDeleteHook)
 	if err = o.doAfterDeleteHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doAfterDeleteHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterDeleteHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}AfterDeleteHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}AfterDeleteHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.BeforeUpsertHook, {{$varNameSingular}}BeforeUpsertHook)
+	Add{{$alias.UpSingular}}Hook(boil.BeforeUpsertHook, {{$alias.DownSingular}}BeforeUpsertHook)
 	if err = o.doBeforeUpsertHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doBeforeUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected BeforeUpsertHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}BeforeUpsertHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}BeforeUpsertHooks = []{{$alias.UpSingular}}Hook{}
 
-	Add{{$tableNameSingular}}Hook(boil.AfterUpsertHook, {{$varNameSingular}}AfterUpsertHook)
+	Add{{$alias.UpSingular}}Hook(boil.AfterUpsertHook, {{$alias.DownSingular}}AfterUpsertHook)
 	if err = o.doAfterUpsertHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doAfterUpsertHooks: %s", err)
 	}
 	if !reflect.DeepEqual(o, empty) {
 		t.Errorf("Expected AfterUpsertHook function to empty object, but got: %#v", o)
 	}
-	{{$varNameSingular}}AfterUpsertHooks = []{{$tableNameSingular}}Hook{}
+	{{$alias.DownSingular}}AfterUpsertHooks = []{{$alias.UpSingular}}Hook{}
 }
 {{- end}}

@@ -46,7 +46,13 @@ func ConvertAliases(i interface{}) (a Aliases) {
 	}
 
 	topLevel := i.(map[string]interface{})
-	tables := topLevel["tables"].(map[string]interface{})
+
+	var tables map[string]interface{}
+
+	tablesIntf, ok := topLevel["tables"]
+	if ok {
+		tables = tablesIntf.(map[string]interface{})
+	}
 
 	for name, tIntf := range tables {
 		if a.Tables == nil {
@@ -80,7 +86,12 @@ func ConvertAliases(i interface{}) (a Aliases) {
 
 		a.Tables[name] = ta
 	}
-	relationships := topLevel["relationships"].(map[string]interface{})
+
+	var relationships map[string]interface{}
+	relationshipsIntf, ok := topLevel["relationships"]
+	if ok {
+		relationships = relationshipsIntf.(map[string]interface{})
+	}
 
 	for name, rIntf := range relationships {
 		if a.Relationships == nil {

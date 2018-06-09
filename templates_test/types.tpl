@@ -1,5 +1,5 @@
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $alias := .Aliases.Table .Table.Name}}
 var (
-	{{$varNameSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
+	{{$alias.DownSingular}}DBTypes = map[string]string{{"{"}}{{.Table.Columns | columnDBTypes | makeStringMap}}{{"}"}}
 	_ = bytes.MinRead
 )

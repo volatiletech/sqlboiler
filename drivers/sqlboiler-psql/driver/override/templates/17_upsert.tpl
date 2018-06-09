@@ -1,9 +1,8 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $alias := .Aliases.Table .Table.Name}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	return o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, insertColumns)
 }
 
@@ -11,7 +10,7 @@ func (o *{{$tableNameSingular}}) UpsertG({{if not .NoContext}}ctx context.Contex
 
 {{if and .AddGlobal .AddPanic -}}
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
+func (o *{{$alias.UpSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
 	if err := o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -22,7 +21,7 @@ func (o *{{$tableNameSingular}}) UpsertGP({{if not .NoContext}}ctx context.Conte
 {{if .AddPanic -}}
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
+func (o *{{$alias.UpSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) {
 	if err := o.Upsert({{if not .NoContext}}ctx, {{end -}} exec, updateOnConflict, conflictColumns, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -32,7 +31,7 @@ func (o *{{$tableNameSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{el
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -45,7 +44,7 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	}
 	{{- end}}
 
-	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
@@ -75,22 +74,22 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	{{$varNameSingular}}UpsertCacheMut.RLock()
-	cache, cached := {{$varNameSingular}}UpsertCache[key]
-	{{$varNameSingular}}UpsertCacheMut.RUnlock()
+	{{$alias.DownSingular}}UpsertCacheMut.RLock()
+	cache, cached := {{$alias.DownSingular}}UpsertCache[key]
+	{{$alias.DownSingular}}UpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, ret := insertColumns.InsertColumnSet(
-			{{$varNameSingular}}Columns,
-			{{$varNameSingular}}ColumnsWithDefault,
-			{{$varNameSingular}}ColumnsWithoutDefault,
+			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}ColumnsWithDefault,
+			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
 		update := updateColumns.UpdateColumnSet(
-			{{$varNameSingular}}Columns,
-			{{$varNameSingular}}PrimaryKeyColumns,
+			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
 
 		if len(update) == 0 {
@@ -99,17 +98,17 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 
 		conflict := conflictColumns
 		if len(conflict) == 0 {
-			conflict = make([]string, len({{$varNameSingular}}PrimaryKeyColumns))
-			copy(conflict, {{$varNameSingular}}PrimaryKeyColumns)
+			conflict = make([]string, len({{$alias.DownSingular}}PrimaryKeyColumns))
+			copy(conflict, {{$alias.DownSingular}}PrimaryKeyColumns)
 		}
 		cache.query = buildUpsertQueryPostgres(dialect, "{{$schemaTable}}", updateOnConflict, ret, update, conflict, insert)
 
-		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, insert)
+		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, insert)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, ret)
+			cache.retMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, ret)
 			if err != nil {
 				return err
 			}
@@ -149,9 +148,9 @@ func (o *{{$tableNameSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{els
 	}
 
 	if !cached {
-		{{$varNameSingular}}UpsertCacheMut.Lock()
-		{{$varNameSingular}}UpsertCache[key] = cache
-		{{$varNameSingular}}UpsertCacheMut.Unlock()
+		{{$alias.DownSingular}}UpsertCacheMut.Lock()
+		{{$alias.DownSingular}}UpsertCache[key] = cache
+		{{$alias.DownSingular}}UpsertCacheMut.Unlock()
 	}
 
 	{{if not .NoHooks -}}

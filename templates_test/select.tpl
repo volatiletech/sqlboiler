@@ -1,15 +1,12 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $tableNamePlural := .Table.Name | plural | titleCase -}}
-{{- $varNamePlural := .Table.Name | plural | camelCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
-func test{{$tableNamePlural}}Select(t *testing.T) {
+{{- $alias := .Aliases.Table .Table.Name}}
+func test{{$alias.UpPlural}}Select(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
 	var err error
-	o := &{{$tableNameSingular}}{}
-	if err = randomize.Struct(seed, o, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize {{$tableNameSingular}} struct: %s", err)
+	o := &{{$alias.UpSingular}}{}
+	if err = randomize.Struct(seed, o, {{$alias.DownSingular}}DBTypes, true, {{$alias.DownSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
@@ -19,7 +16,7 @@ func test{{$tableNamePlural}}Select(t *testing.T) {
 		t.Error(err)
 	}
 
-	slice, err := {{$tableNamePlural}}().All({{if not .NoContext}}ctx, {{end -}} tx)
+	slice, err := {{$alias.UpPlural}}().All({{if not .NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}

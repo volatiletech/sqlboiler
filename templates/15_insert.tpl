@@ -1,9 +1,8 @@
-{{- $tableNameSingular := .Table.Name | singular | titleCase -}}
-{{- $varNameSingular := .Table.Name | singular | camelCase -}}
+{{- $alias := .Aliases.Table .Table.Name}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // InsertG a single record. See Insert for whitelist behavior description.
-func (o *{{$tableNameSingular}}) InsertG({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) InsertG({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) error {
 	return o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns)
 }
 
@@ -12,7 +11,7 @@ func (o *{{$tableNameSingular}}) InsertG({{if not .NoContext}}ctx context.Contex
 {{if .AddPanic -}}
 // InsertP a single record using an executor, and panics on error. See Insert
 // for whitelist behavior description.
-func (o *{{$tableNameSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {
+func (o *{{$alias.UpSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {
 	if err := o.Insert({{if not .NoContext}}ctx, {{end -}} exec, columns); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -23,7 +22,7 @@ func (o *{{$tableNameSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{el
 {{if and .AddGlobal .AddPanic -}}
 // InsertGP a single record, and panics on error. See Insert for whitelist
 // behavior description.
-func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) {
+func (o *{{$alias.UpSingular}}) InsertGP({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) {
 	if err := o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -33,7 +32,7 @@ func (o *{{$tableNameSingular}}) InsertGP({{if not .NoContext}}ctx context.Conte
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
 	}
@@ -47,26 +46,26 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 	}
 	{{- end}}
 
-	nzDefaults := queries.NonZeroDefaultSet({{$varNameSingular}}ColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
 
 	key := makeCacheKey(columns, nzDefaults)
-	{{$varNameSingular}}InsertCacheMut.RLock()
-	cache, cached := {{$varNameSingular}}InsertCache[key]
-	{{$varNameSingular}}InsertCacheMut.RUnlock()
+	{{$alias.DownSingular}}InsertCacheMut.RLock()
+	cache, cached := {{$alias.DownSingular}}InsertCache[key]
+	{{$alias.DownSingular}}InsertCacheMut.RUnlock()
 
 	if !cached {
 		wl, returnColumns := columns.InsertColumnSet(
-			{{$varNameSingular}}Columns,
-			{{$varNameSingular}}ColumnsWithDefault,
-			{{$varNameSingular}}ColumnsWithoutDefault,
+			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}ColumnsWithDefault,
+			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
 
-		cache.valueMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, wl)
+		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = queries.BindMapping({{$varNameSingular}}Type, {{$varNameSingular}}Mapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, returnColumns)
 		if err != nil {
 			return err
 		}
@@ -84,7 +83,7 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 
 		if len(cache.retMapping) != 0 {
 			{{if .Dialect.UseLastInsertID -}}
-			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$varNameSingular}}PrimaryKeyColumns))
+			cache.retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE %s", strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"), strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns))
 			{{else -}}
 				{{if .Dialect.UseOutputClause -}}
 			queryOutput = fmt.Sprintf("OUTPUT INSERTED.{{.LQ}}%s{{.RQ}} ", strings.Join(returnColumns, "{{.RQ}},INSERTED.{{.LQ}}"))
@@ -143,7 +142,7 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 	{{- $col := .Table.GetColumn $colName -}}
 	{{- $colTitled := $colName | titleCase}}
 	o.{{$colTitled}} = {{$col.Type}}(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$varNameSingular}}Mapping["{{$colTitled}}"] {
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$alias.DownSingular}}Mapping["{{$colTitled}}"] {
 		goto CacheNoHooks
 	}
 	{{- end}}
@@ -191,9 +190,9 @@ func (o *{{$tableNameSingular}}) Insert({{if .NoContext}}exec boil.Executor{{els
 CacheNoHooks:
 {{- end}}
 	if !cached {
-		{{$varNameSingular}}InsertCacheMut.Lock()
-		{{$varNameSingular}}InsertCache[key] = cache
-		{{$varNameSingular}}InsertCacheMut.Unlock()
+		{{$alias.DownSingular}}InsertCacheMut.Lock()
+		{{$alias.DownSingular}}InsertCache[key] = cache
+		{{$alias.DownSingular}}InsertCacheMut.Unlock()
 	}
 
 	{{if not .NoHooks -}}

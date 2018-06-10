@@ -3,7 +3,7 @@
 // {{$alias.UpSingular}} is an object representing the database table.
 type {{$alias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
-	{{- $colAlias := $.Aliases.Column $.Table.Name $column.Name -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
 	{{- if eq $.StructTagCasing "camel"}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{- else -}}
@@ -19,12 +19,12 @@ type {{$alias.UpSingular}} struct {
 
 var {{$alias.UpSingular}}Columns = struct {
 	{{range $column := .Table.Columns -}}
-	{{- $colAlias := $.Aliases.Column $.Table.Name $column.Name -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
 	{{$colAlias}} string
 	{{end -}}
 }{
 	{{range $column := .Table.Columns -}}
-	{{- $colAlias := $.Aliases.Column $.Table.Name $column.Name -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
 	{{$colAlias}}: "{{$column.Name}}",
 	{{end -}}
 }
@@ -34,18 +34,21 @@ var {{$alias.UpSingular}}Columns = struct {
 // {{$alias.DownSingular}}R is where relationships are stored.
 type {{$alias.DownSingular}}R struct {
 	{{range .Table.FKeys -}}
-	{{- $txt := txtsFromFKey $.Tables $.Table . -}}
-	{{$txt.Function.Name}} *{{$txt.ForeignTable.NameGo}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $.Aliases.Relationship .Name -}}
+	{{$relAlias.Foreign}} *{{$ftable.UpSingular}}
 	{{end -}}
 
 	{{range .Table.ToOneRelationships -}}
-	{{- $txt := txtsFromOneToOne $.Tables $.Table . -}}
-	{{$txt.Function.Name}} *{{$txt.ForeignTable.NameGo}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $.Aliases.Relationship .Name -}}
+	{{$relAlias.Local}} *{{$ftable.UpSingular}}
 	{{end -}}
 
 	{{range .Table.ToManyRelationships -}}
-	{{- $txt := txtsFromToMany $.Tables $.Table . -}}
-	{{$txt.Function.Name}} {{$txt.ForeignTable.Slice}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $.Aliases.ManyRelationship .Name .JoinForeignFKeyName -}}
+	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}}
 	{{end -}}{{/* range tomany */}}
 }
 

@@ -1,31 +1,31 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- $table := .Table -}}
-	{{- range .Table.ToManyRelationships -}}
-		{{- $varNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $txt := txtsFromToMany $.Tables $table . -}}
-		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
-// {{$txt.Function.Name}} retrieves all the {{.ForeignTable | singular}}'s {{$txt.ForeignTable.NameHumanReadable}} with an executor
-{{- if not (eq $txt.Function.Name $txt.ForeignTable.NamePluralGo)}} via {{.ForeignColumn}} column{{- end}}.
-func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(mods ...qm.QueryMod) {{$varNameSingular}}Query {
+	{{- range $rel := .Table.ToManyRelationships -}}
+		{{- $ltable := $.Aliases.Table $rel.Table -}}
+		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+		{{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable }}
+// {{$relAlias.Local}} retrieves all the {{.ForeignTable | singular}}'s {{$ftable.UpPlural}} with an executor
+{{- if not (eq $relAlias.Local $ftable.UpPlural)}} via {{$rel.ForeignColumn}} column{{- end}}.
+func (o *{{$ltable.UpSingular}}) {{$relAlias.Local}}(mods ...qm.QueryMod) {{$ftable.DownSingular}}Query {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
-		{{if .ToJoinTable -}}
+		{{if $rel.ToJoinTable -}}
 	queryMods = append(queryMods,
-		{{$schemaJoinTable := .JoinTable | $.SchemaTable -}}
-		qm.InnerJoin("{{$schemaJoinTable}} on {{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}} = {{$schemaJoinTable}}.{{.JoinForeignColumn | $.Quotes}}"),
-		qm.Where("{{$schemaJoinTable}}.{{.JoinLocalColumn | $.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		{{$schemaJoinTable := $rel.JoinTable | $.SchemaTable -}}
+		qm.InnerJoin("{{$schemaJoinTable}} on {{$schemaForeignTable}}.{{$rel.ForeignColumn | $.Quotes}} = {{$schemaJoinTable}}.{{$rel.JoinForeignColumn | $.Quotes}}"),
+		qm.Where("{{$schemaJoinTable}}.{{$rel.JoinLocalColumn | $.Quotes}}=?", o.{{$ltable.Column $rel.Column}}),
 	)
 		{{else -}}
 	queryMods = append(queryMods,
-		qm.Where("{{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		qm.Where("{{$schemaForeignTable}}.{{$rel.ForeignColumn | $.Quotes}}=?", o.{{$ltable.Column $rel.Column}}),
 	)
 		{{end}}
 
-	query := {{$txt.ForeignTable.NamePluralGo}}(queryMods...)
+	query := {{$ftable.UpPlural}}(queryMods...)
 	queries.SetFrom(query.Query, "{{$schemaForeignTable}}")
 
 	if len(queries.GetSelect(query.Query)) == 0 {

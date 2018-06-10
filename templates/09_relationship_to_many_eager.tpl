@@ -1,41 +1,44 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- range .Table.ToManyRelationships -}}
-		{{- $varNameSingular := .Table | singular | camelCase -}}
-		{{- $foreignNameSingular := .ForeignTable | singular | camelCase -}}
-		{{- $txt := txtsFromToMany $.Tables $.Table . -}}
-		{{- $arg := printf "maybe%s" $txt.LocalTable.NameGo -}}
-		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable}}
-// Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
+	{{- range $rel := .Table.ToManyRelationships -}}
+		{{- $ltable := $.Aliases.Table $rel.Table -}}
+		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+		{{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+		{{- $col := $ltable.Column $rel.Column -}}
+		{{- $fcol := $ftable.Column $rel.ForeignColumn -}}
+		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}
+		{{- $arg := printf "maybe%s" $ltable.UpSingular -}}
+		{{- $schemaForeignTable := $rel.ForeignTable | $.SchemaTable}}
+// Load{{$relAlias.Local}} allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
-	var slice []*{{$txt.LocalTable.NameGo}}
-	var object *{{$txt.LocalTable.NameGo}}
+func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
+	var slice []*{{$ltable.UpSingular}}
+	var object *{{$ltable.UpSingular}}
 
 	if singular {
-		object = {{$arg}}.(*{{$txt.LocalTable.NameGo}})
+		object = {{$arg}}.(*{{$ltable.UpSingular}})
 	} else {
-		slice = *{{$arg}}.(*[]*{{$txt.LocalTable.NameGo}})
+		slice = *{{$arg}}.(*[]*{{$ltable.UpSingular}})
 	}
 
 	args := make([]interface{}, 0, 1)
 	if singular {
 		if object.R == nil {
-			object.R = &{{$varNameSingular}}R{}
+			object.R = &{{$ltable.DownSingular}}R{}
 		}
 		args = append(args, object.{{.Column | titleCase}})
 	} else {
 		Outer:
 		for _, obj := range slice {
 			if obj.R == nil {
-				obj.R = &{{$varNameSingular}}R{}
+				obj.R = &{{$ltable.DownSingular}}R{}
 			}
 
 			for _, a := range args {
-				{{if $txt.Function.UsesPrimitives -}}
-				if a == obj.{{$txt.LocalTable.ColumnNameGo}} {
+				{{if $usesPrimitives -}}
+				if a == obj.{{$col}} {
 				{{else -}}
-				if queries.Equal(a, obj.{{$txt.LocalTable.ColumnNameGo}}) {
+				if queries.Equal(a, obj.{{$col}}) {
 				{{end -}}
 					continue Outer
 				}
@@ -70,14 +73,14 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	}
 	defer results.Close()
 
-	var resultSlice []*{{$txt.ForeignTable.NameGo}}
+	var resultSlice []*{{$ftable.UpSingular}}
 	{{if .ToJoinTable -}}
 	{{- $foreignTable := getTable $.Tables .ForeignTable -}}
 	{{- $joinTable := getTable $.Tables .JoinTable -}}
 	{{- $localCol := $joinTable.GetColumn .JoinLocalColumn}}
 	var localJoinCols []{{$localCol.Type}}
 	for results.Next() {
-		one := new({{$txt.ForeignTable.NameGo}})
+		one := new({{$ftable.UpSingular}})
 		var localJoinCol {{$localCol.Type}}
 
 		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
@@ -112,15 +115,15 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 
 	{{- end}}
 	if singular {
-		object.R.{{$txt.Function.Name}} = resultSlice
+		object.R.{{$relAlias.Local}} = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &{{$foreignNameSingular}}R{}
+				foreign.R = &{{$ftable.DownSingular}}R{}
 			}
 			{{if .ToJoinTable -}}
-			foreign.R.{{$txt.Function.ForeignName}} = append(foreign.R.{{$txt.Function.ForeignName}}, object)
+			foreign.R.{{$relAlias.Foreign}} = append(foreign.R.{{$relAlias.Foreign}}, object)
 			{{else -}}
-			foreign.R.{{$txt.Function.ForeignName}} = object
+			foreign.R.{{$relAlias.Foreign}} = object
 			{{end -}}
 		}
 		return nil
@@ -130,16 +133,16 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	for i, foreign := range resultSlice {
 		localJoinCol := localJoinCols[i]
 		for _, local := range slice {
-			{{if $txt.Function.UsesPrimitives -}}
-			if local.{{$txt.LocalTable.ColumnNameGo}} == localJoinCol {
+			{{if $usesPrimitives -}}
+			if local.{{$col}} == localJoinCol {
 			{{else -}}
-			if queries.Equal(local.{{$txt.LocalTable.ColumnNameGo}}, localJoinCol) {
+			if queries.Equal(local.{{$col}}, localJoinCol) {
 			{{end -}}
-				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
+				local.R.{{$relAlias.Local}} = append(local.R.{{$relAlias.Local}}, foreign)
 				if foreign.R == nil {
-					foreign.R = &{{$foreignNameSingular}}R{}
+					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
-				foreign.R.{{$txt.Function.ForeignName}} = append(foreign.R.{{$txt.Function.ForeignName}}, local)
+				foreign.R.{{$relAlias.Foreign}} = append(foreign.R.{{$relAlias.Foreign}}, local)
 				break
 			}
 		}
@@ -147,16 +150,16 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}({{if $.NoContext}}e boil
 	{{else -}}
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			{{if $txt.Function.UsesPrimitives -}}
-			if local.{{$txt.LocalTable.ColumnNameGo}} == foreign.{{$txt.ForeignTable.ColumnNameGo}} {
+			{{if $usesPrimitives -}}
+			if local.{{$col}} == foreign.{{$fcol}} {
 			{{else -}}
-			if queries.Equal(local.{{$txt.LocalTable.ColumnNameGo}}, foreign.{{$txt.ForeignTable.ColumnNameGo}}) {
+			if queries.Equal(local.{{$col}}, foreign.{{$fcol}}) {
 			{{end -}}
-				local.R.{{$txt.Function.Name}} = append(local.R.{{$txt.Function.Name}}, foreign)
+				local.R.{{$relAlias.Local}} = append(local.R.{{$relAlias.Local}}, foreign)
 				if foreign.R == nil {
-					foreign.R = &{{$foreignNameSingular}}R{}
+					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
-				foreign.R.{{$txt.Function.ForeignName}} = local
+				foreign.R.{{$relAlias.Foreign}} = local
 				break
 			}
 		}

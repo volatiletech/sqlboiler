@@ -1,17 +1,18 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- range .Table.FKeys -}}
-		{{- $txt := txtsFromFKey $.Tables $.Table . -}}
-		{{- $varNameSingular := .ForeignTable | singular | camelCase}}
-// {{$txt.Function.Name}} pointed to by the foreign key.
-func (o *{{$txt.LocalTable.NameGo}}) {{$txt.Function.Name}}(mods ...qm.QueryMod) ({{$varNameSingular}}Query) {
+	{{- range $fkey := .Table.FKeys -}}
+		{{- $ltable := $.Aliases.Table $fkey.Table -}}
+		{{- $ftable := $.Aliases.Table $fkey.ForeignTable -}}
+		{{- $rel := $.Aliases.Relationship $fkey.Name }}
+// {{$rel.Foreign}} pointed to by the foreign key.
+func (o *{{$ltable.UpSingular}}) {{$rel.Foreign}}(mods ...qm.QueryMod) ({{$ftable.DownSingular}}Query) {
 	queryMods := []qm.QueryMod{
-		qm.Where("{{$txt.ForeignTable.ColumnName}}=?", o.{{$txt.LocalTable.ColumnNameGo}}),
+		qm.Where("{{$fkey.ForeignColumn}}=?", o.{{$ltable.Column $fkey.Column}}),
 	}
 
 	queryMods = append(queryMods, mods...)
 
-	query := {{$txt.ForeignTable.NamePluralGo}}(queryMods...)
+	query := {{$ftable.UpPlural}}(queryMods...)
 	queries.SetFrom(query.Query, "{{.ForeignTable | $.SchemaTable}}")
 
 	return query

@@ -1,28 +1,31 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
-	{{- range .Table.ToOneRelationships -}}
-		{{- $txt := txtsFromOneToOne $.Tables $.Table .}}
-{{- $varNameSingular := .Table | singular | camelCase -}}
-{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns}}
-func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
+	{{- range $rel := .Table.ToOneRelationships -}}
+		{{- $ltable := $.Aliases.Table $rel.Table -}}
+		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+		{{- $relAlias := $.Aliases.Relationship $rel.Name -}}
+		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn }}
+		{{- $colField := $ltable.Column $rel.Column -}}
+		{{- $fcolField := $ftable.Column $rel.ForeignColumn -}}
+		{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns}}
+func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
-	var a {{$txt.LocalTable.NameGo}}
-	var b, c {{$txt.ForeignTable.NameGo}}
+	var a {{$ltable.UpSingular}}
+	var b, c {{$ftable.UpSingular}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$ltable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ltable.DownSingular}}PrimaryKeyColumns, {{$ltable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -33,48 +36,48 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		t.Fatal(err)
 	}
 
-	for i, x := range []*{{$txt.ForeignTable.NameGo}}{&b, &c} {
-		err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x)
+	for i, x := range []*{{$ftable.UpSingular}}{&b, &c} {
+		err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.{{$txt.Function.Name}} != x {
+		if a.R.{{$relAlias.Local}} != x {
 			t.Error("relationship struct not set to correct value")
 		}
-		if x.R.{{$txt.Function.ForeignName}} != &a {
+		if x.R.{{$relAlias.Foreign}} != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
 
-		{{if $txt.Function.UsesPrimitives -}}
-		if a.{{$txt.LocalTable.ColumnNameGo}} != x.{{$txt.ForeignTable.ColumnNameGo}} {
+		{{if $usesPrimitives -}}
+		if a.{{$colField}} != x.{{$fcolField}} {
 		{{else -}}
-		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, x.{{$txt.ForeignTable.ColumnNameGo}}) {
+		if !queries.Equal(a.{{$colField}}, x.{{$fcolField}}) {
 		{{end -}}
-			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}})
+			t.Error("foreign key was wrong value", a.{{$colField}})
 		}
 
 		{{if setInclude .ForeignColumn $foreignPKeyCols -}}
-		if exists, err := {{$txt.ForeignTable.NameGo}}Exists({{if not $.NoContext}}ctx, {{end -}} tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
+		if exists, err := {{$ftable.UpSingular}}Exists({{if not $.NoContext}}ctx, {{end -}} tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
 			t.Fatal(err)
 		} else if !exists {
 			t.Error("want 'x' to exist")
 		}
 		{{else -}}
-		zero := reflect.Zero(reflect.TypeOf(x.{{$txt.ForeignTable.ColumnNameGo}}))
-		reflect.Indirect(reflect.ValueOf(&x.{{$txt.ForeignTable.ColumnNameGo}})).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(x.{{$fcolField}}))
+		reflect.Indirect(reflect.ValueOf(&x.{{$fcolField}})).Set(zero)
 
 		if err = x.Reload({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 		{{- end}}
 
-		{{if $txt.Function.UsesPrimitives -}}
-		if a.{{$txt.LocalTable.ColumnNameGo}} != x.{{$txt.ForeignTable.ColumnNameGo}} {
+		{{if $usesPrimitives -}}
+		if a.{{$colField}} != x.{{$fcolField}} {
 		{{else -}}
-		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, x.{{$txt.ForeignTable.ColumnNameGo}}) {
+		if !queries.Equal(a.{{$colField}}, x.{{$fcolField}}) {
 		{{end -}}
-			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, x.{{$txt.ForeignTable.ColumnNameGo}})
+			t.Error("foreign key was wrong value", a.{{$colField}}, x.{{$fcolField}})
 		}
 
 		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
@@ -82,23 +85,23 @@ func test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Usin
 		}
 	}
 }
-{{- if .ForeignColumnNullable}}
+{{- if $rel.ForeignColumnNullable}}
 
-func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}(t *testing.T) {
+func test{{$ltable.UpSingular}}OneToOneRemoveOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
-	var a {{$txt.LocalTable.NameGo}}
-	var b {{$txt.ForeignTable.NameGo}}
+	var a {{$ltable.UpSingular}}
+	var b {{$ftable.UpSingular}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$ltable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ltable.DownSingular}}PrimaryKeyColumns, {{$ltable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -106,15 +109,15 @@ func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}U
 		t.Fatal(err)
 	}
 
-	if err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &b); err != nil {
+	if err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.Remove{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, &b); err != nil {
+	if err = a.Remove{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -122,15 +125,15 @@ func test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}U
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.{{$txt.Function.Name}} != nil {
+	if a.R.{{$relAlias.Local}} != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(b.{{$txt.ForeignTable.ColumnNameGo}}) {
+	if !queries.IsValuerNil(b.{{$fcolField}}) {
 		t.Error("foreign key column should be nil")
 	}
 
-	if b.R.{{$txt.Function.ForeignName}} != nil {
+	if b.R.{{$relAlias.Foreign}} != nil {
 		t.Error("failed to remove a from b's relationships")
 	}
 }

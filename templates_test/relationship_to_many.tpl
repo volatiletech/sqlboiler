@@ -1,38 +1,42 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $table := .Table }}
-	{{- range .Table.ToManyRelationships -}}
-	{{- $txt := txtsFromToMany $.Tables $table .}}
-	{{- $varNameSingular := .Table | singular | camelCase -}}
-	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
+	{{- range $rel := .Table.ToManyRelationships -}}
+		{{- $ltable := $.Aliases.Table $rel.Table -}}
+		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+		{{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+		{{- $colField := $ltable.Column $rel.Column -}}
+		{{- $fcolField := $ftable.Column $rel.ForeignColumn -}}
+		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}
+		{{- $schemaForeignTable := .ForeignTable | $.SchemaTable }}
+func test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}}(t *testing.T) {
 	var err error
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
-	var a {{$txt.LocalTable.NameGo}}
-	var b, c {{$txt.ForeignTable.NameGo}}
+	var a {{$ltable.UpSingular}}
+	var b, c {{$ftable.UpSingular}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, true, {{$varNameSingular}}ColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize {{$txt.LocalTable.NameGo}} struct: %s", err)
+	if err = randomize.Struct(seed, &a, {{$ltable.DownSingular}}DBTypes, true, {{$ltable.DownSingular}}ColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize {{$ltable.UpSingular}} struct: %s", err)
 	}
 
 	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}ColumnsWithDefault...)
-	randomize.Struct(seed, &c, {{$foreignVarNameSingular}}DBTypes, false, {{$foreignVarNameSingular}}ColumnsWithDefault...)
+	randomize.Struct(seed, &b, {{$ftable.DownSingular}}DBTypes, false, {{$ftable.DownSingular}}ColumnsWithDefault...)
+	randomize.Struct(seed, &c, {{$ftable.DownSingular}}DBTypes, false, {{$ftable.DownSingular}}ColumnsWithDefault...)
 
 	{{if not .ToJoinTable -}}
-		{{if $txt.Function.UsesPrimitives}}
-	b.{{$txt.ForeignTable.ColumnNameGo}} = a.{{$txt.LocalTable.ColumnNameGo}}
-	c.{{$txt.ForeignTable.ColumnNameGo}} = a.{{$txt.LocalTable.ColumnNameGo}}
+		{{if $usesPrimitives}}
+	b.{{$fcolField}} = a.{{$colField}}
+	c.{{$fcolField}} = a.{{$colField}}
 		{{else -}}
-	queries.Assign(&b.{{$txt.ForeignTable.ColumnNameGo}}, a.{{$txt.LocalTable.ColumnNameGo}})
-	queries.Assign(&c.{{$txt.ForeignTable.ColumnNameGo}}, a.{{$txt.LocalTable.ColumnNameGo}})
+	queries.Assign(&b.{{$fcolField}}, a.{{$colField}})
+	queries.Assign(&c.{{$fcolField}}, a.{{$colField}})
 		{{- end}}
 	{{- end}}
 	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
@@ -43,36 +47,36 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 	}
 
 	{{if .ToJoinTable -}}
-	_, err = tx.Exec("insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$txt.LocalTable.ColumnNameGo}}, b.{{$txt.ForeignTable.ColumnNameGo}})
+	_, err = tx.Exec("insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$colField}}, b.{{$fcolField}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = tx.Exec("insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$txt.LocalTable.ColumnNameGo}}, c.{{$txt.ForeignTable.ColumnNameGo}})
+	_, err = tx.Exec("insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", a.{{$colField}}, c.{{$fcolField}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	{{end}}
 
 	{{$varname := .ForeignTable | singular | camelCase -}}
-	{{$varname}}, err := a.{{$txt.Function.Name}}().All({{if not $.NoContext}}ctx, {{end -}} tx)
+	{{$varname}}, err := a.{{$relAlias.Local}}().All({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range {{$varname}} {
-		{{if $txt.Function.UsesPrimitives -}}
-		if v.{{$txt.ForeignTable.ColumnNameGo}} == b.{{$txt.ForeignTable.ColumnNameGo}} {
+		{{if $usesPrimitives -}}
+		if v.{{$fcolField}} == b.{{$fcolField}} {
 			bFound = true
 		}
-		if v.{{$txt.ForeignTable.ColumnNameGo}} == c.{{$txt.ForeignTable.ColumnNameGo}} {
+		if v.{{$fcolField}} == c.{{$fcolField}} {
 			cFound = true
 		}
 		{{else -}}
-		if queries.Equal(v.{{$txt.ForeignTable.ColumnNameGo}}, b.{{$txt.ForeignTable.ColumnNameGo}}) {
+		if queries.Equal(v.{{$fcolField}}, b.{{$fcolField}}) {
 			bFound = true
 		}
-		if queries.Equal(v.{{$txt.ForeignTable.ColumnNameGo}}, c.{{$txt.ForeignTable.ColumnNameGo}}) {
+		if queries.Equal(v.{{$fcolField}}, c.{{$fcolField}}) {
 			cFound = true
 		}
 		{{end -}}
@@ -85,19 +89,19 @@ func test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}}(t *testing.T) {
 		t.Error("expected to find c")
 	}
 
-	slice := {{$txt.LocalTable.NameGo}}Slice{&a}
-	if err = a.L.Load{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, false, (*[]*{{$txt.LocalTable.NameGo}})(&slice), nil); err != nil {
+	slice := {{$ltable.UpSingular}}Slice{&a}
+	if err = a.L.Load{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, false, (*[]*{{$ltable.UpSingular}})(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.{{$txt.Function.Name}}); got != 2 {
+	if got := len(a.R.{{$relAlias.Local}}); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.{{$txt.Function.Name}} = nil
-	if err = a.L.Load{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &a, nil); err != nil {
+	a.R.{{$relAlias.Local}} = nil
+	if err = a.L.Load{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.{{$txt.Function.Name}}); got != 2 {
+	if got := len(a.R.{{$relAlias.Local}}); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 

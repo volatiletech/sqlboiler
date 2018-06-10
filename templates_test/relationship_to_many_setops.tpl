@@ -1,27 +1,30 @@
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- $table := .Table -}}
-	{{- range .Table.ToManyRelationships -}}
-	{{- $varNameSingular := .Table | singular | camelCase -}}
-	{{- $foreignVarNameSingular := .ForeignTable | singular | camelCase -}}
-	{{- $txt := txtsFromToMany $.Tables $table .}}
-func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.T) {
+	{{- range $rel := .Table.ToManyRelationships -}}
+		{{- $ltable := $.Aliases.Table $rel.Table -}}
+		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+		{{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}
+		{{- $colField := $ltable.Column $rel.Column -}}
+		{{- $fcolField := $ftable.Column $rel.ForeignColumn }}
+func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
-	var a {{$txt.LocalTable.NameGo}}
-	var b, c, d, e {{$txt.ForeignTable.NameGo}}
+	var a {{$ltable.UpSingular}}
+	var b, c, d, e {{$ftable.UpSingular}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$ltable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ltable.DownSingular}}PrimaryKeyColumns, {{$ltable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*{{$txt.ForeignTable.NameGo}}{&b, &c, &d, &e}
+	foreigners := []*{{$ftable.UpSingular}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -36,13 +39,13 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*{{$txt.ForeignTable.NameGo}}{
+	foreignersSplitByInsertion := [][]*{{$ftable.UpSingular}}{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.Add{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x...)
+		err = a.Add{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -51,46 +54,46 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 		second := x[1]
 		{{- if .ToJoinTable}}
 
-		if first.R.{{$txt.Function.ForeignName}}[0] != &a {
+		if first.R.{{$relAlias.Foreign}}[0] != &a {
 			t.Error("relationship was not added properly to the slice")
 		}
-		if second.R.{{$txt.Function.ForeignName}}[0] != &a {
+		if second.R.{{$relAlias.Foreign}}[0] != &a {
 			t.Error("relationship was not added properly to the slice")
 		}
 		{{- else}}
 
-		{{if $txt.Function.UsesPrimitives -}}
-		if a.{{$txt.LocalTable.ColumnNameGo}} != first.{{$txt.ForeignTable.ColumnNameGo}} {
-			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, first.{{$txt.ForeignTable.ColumnNameGo}})
+		{{if $usesPrimitives -}}
+		if a.{{$colField}} != first.{{$fcolField}} {
+			t.Error("foreign key was wrong value", a.{{$colField}}, first.{{$fcolField}})
 		}
-		if a.{{$txt.LocalTable.ColumnNameGo}} != second.{{$txt.ForeignTable.ColumnNameGo}} {
-			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, second.{{$txt.ForeignTable.ColumnNameGo}})
+		if a.{{$colField}} != second.{{$fcolField}} {
+			t.Error("foreign key was wrong value", a.{{$colField}}, second.{{$fcolField}})
 		}
 		{{else -}}
-		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, first.{{$txt.ForeignTable.ColumnNameGo}}) {
-			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, first.{{$txt.ForeignTable.ColumnNameGo}})
+		if !queries.Equal(a.{{$colField}}, first.{{$fcolField}}) {
+			t.Error("foreign key was wrong value", a.{{$colField}}, first.{{$fcolField}})
 		}
-		if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, second.{{$txt.ForeignTable.ColumnNameGo}}) {
-			t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, second.{{$txt.ForeignTable.ColumnNameGo}})
-		}
-		{{- end}}
-
-		if first.R.{{$txt.Function.ForeignName}} != &a {
-			t.Error("relationship was not added properly to the foreign slice")
-		}
-		if second.R.{{$txt.Function.ForeignName}} != &a {
-			t.Error("relationship was not added properly to the foreign slice")
+		if !queries.Equal(a.{{$colField}}, second.{{$fcolField}}) {
+			t.Error("foreign key was wrong value", a.{{$colField}}, second.{{$fcolField}})
 		}
 		{{- end}}
 
-		if a.R.{{$txt.Function.Name}}[i*2] != first {
+		if first.R.{{$relAlias.Foreign}} != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.{{$relAlias.Foreign}} != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		{{- end}}
+
+		if a.R.{{$relAlias.Local}}[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.{{$txt.Function.Name}}[i*2+1] != second {
+		if a.R.{{$relAlias.Local}}[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+		count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -99,25 +102,25 @@ func test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}}(t *testing.
 		}
 	}
 }
-{{- if (or .ForeignColumnNullable .ToJoinTable)}}
+{{- if (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
 
-func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.T) {
+func test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
-	var a {{$txt.LocalTable.NameGo}}
-	var b, c, d, e {{$txt.ForeignTable.NameGo}}
+	var a {{$ltable.UpSingular}}
+	var b, c, d, e {{$ftable.UpSingular}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$ltable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ltable.DownSingular}}PrimaryKeyColumns, {{$ltable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*{{$txt.ForeignTable.NameGo}}{&b, &c, &d, &e}
+	foreigners := []*{{$ftable.UpSingular}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -132,12 +135,12 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 		t.Fatal(err)
 	}
 
-	err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, false, &b, &c)
+	err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,12 +148,12 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.Set{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &d, &e)
+	err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &d, &e)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err = a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,81 +167,81 @@ func test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}}(t *testing.
 	// to these when we call Set(). Leaving them here as wishful thinking
 	// and to let people know there's dragons.
 	//
-	// if len(b.R.{{$txt.Function.ForeignName}}) != 0 {
+	// if len(b.R.{{$relAlias.Foreign}}) != 0 {
 	// 	t.Error("relationship was not removed properly from the slice")
 	// }
-	// if len(c.R.{{$txt.Function.ForeignName}}) != 0 {
+	// if len(c.R.{{$relAlias.Foreign}}) != 0 {
 	// 	t.Error("relationship was not removed properly from the slice")
 	// }
-	if d.R.{{$txt.Function.ForeignName}}[0] != &a {
+	if d.R.{{$relAlias.Foreign}}[0] != &a {
 		t.Error("relationship was not added properly to the slice")
 	}
-	if e.R.{{$txt.Function.ForeignName}}[0] != &a {
+	if e.R.{{$relAlias.Foreign}}[0] != &a {
 		t.Error("relationship was not added properly to the slice")
 	}
 	{{- else}}
 
-	if !queries.IsValuerNil(b.{{$txt.ForeignTable.ColumnNameGo}}) {
+	if !queries.IsValuerNil(b.{{$fcolField}}) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.{{$txt.ForeignTable.ColumnNameGo}}) {
+	if !queries.IsValuerNil(c.{{$fcolField}}) {
 		t.Error("want c's foreign key value to be nil")
 	}
-	{{if $txt.Function.UsesPrimitives -}}
-	if a.{{$txt.LocalTable.ColumnNameGo}} != d.{{$txt.ForeignTable.ColumnNameGo}} {
-		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, d.{{$txt.ForeignTable.ColumnNameGo}})
+	{{if $usesPrimitives -}}
+	if a.{{$colField}} != d.{{$fcolField}} {
+		t.Error("foreign key was wrong value", a.{{$colField}}, d.{{$fcolField}})
 	}
-	if a.{{$txt.LocalTable.ColumnNameGo}} != e.{{$txt.ForeignTable.ColumnNameGo}} {
-		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, e.{{$txt.ForeignTable.ColumnNameGo}})
+	if a.{{$colField}} != e.{{$fcolField}} {
+		t.Error("foreign key was wrong value", a.{{$colField}}, e.{{$fcolField}})
 	}
 	{{else -}}
-	if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, d.{{$txt.ForeignTable.ColumnNameGo}}) {
-		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, d.{{$txt.ForeignTable.ColumnNameGo}})
+	if !queries.Equal(a.{{$colField}}, d.{{$fcolField}}) {
+		t.Error("foreign key was wrong value", a.{{$colField}}, d.{{$fcolField}})
 	}
-	if !queries.Equal(a.{{$txt.LocalTable.ColumnNameGo}}, e.{{$txt.ForeignTable.ColumnNameGo}}) {
-		t.Error("foreign key was wrong value", a.{{$txt.LocalTable.ColumnNameGo}}, e.{{$txt.ForeignTable.ColumnNameGo}})
-	}
-	{{- end}}
-
-	if b.R.{{$txt.Function.ForeignName}} != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.{{$txt.Function.ForeignName}} != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.{{$txt.Function.ForeignName}} != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.{{$txt.Function.ForeignName}} != &a {
-		t.Error("relationship was not added properly to the foreign struct")
+	if !queries.Equal(a.{{$colField}}, e.{{$fcolField}}) {
+		t.Error("foreign key was wrong value", a.{{$colField}}, e.{{$fcolField}})
 	}
 	{{- end}}
 
-	if a.R.{{$txt.Function.Name}}[0] != &d {
+	if b.R.{{$relAlias.Foreign}} != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.{{$relAlias.Foreign}} != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.{{$relAlias.Foreign}} != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.{{$relAlias.Foreign}} != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	{{- end}}
+
+	if a.R.{{$relAlias.Local}}[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.{{$txt.Function.Name}}[1] != &e {
+	if a.R.{{$relAlias.Local}}[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testing.T) {
+func test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
 	defer tx.Rollback()
 
-	var a {{$txt.LocalTable.NameGo}}
-	var b, c, d, e {{$txt.ForeignTable.NameGo}}
+	var a {{$ltable.UpSingular}}
+	var b, c, d, e {{$ftable.UpSingular}}
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, {{$varNameSingular}}DBTypes, false, strmangle.SetComplement({{$varNameSingular}}PrimaryKeyColumns, {{$varNameSingular}}ColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &a, {{$ltable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ltable.DownSingular}}PrimaryKeyColumns, {{$ltable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*{{$txt.ForeignTable.NameGo}}{&b, &c, &d, &e}
+	foreigners := []*{{$ftable.UpSingular}}{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, {{$foreignVarNameSingular}}DBTypes, false, strmangle.SetComplement({{$foreignVarNameSingular}}PrimaryKeyColumns, {{$foreignVarNameSingular}}ColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -247,12 +250,12 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 		t.Fatal(err)
 	}
 
-	err = a.Add{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, true, foreigners...)
+	err = a.Add{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,12 +263,12 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.Remove{{$txt.Function.Name}}({{if not $.NoContext}}ctx, {{end -}} tx, foreigners[:2]...)
+	err = a.Remove{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.{{$txt.Function.Name}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err = a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,50 +278,50 @@ func test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}}(t *testi
 
 	{{- if .ToJoinTable}}
 
-	if len(b.R.{{$txt.Function.ForeignName}}) != 0 {
+	if len(b.R.{{$relAlias.Foreign}}) != 0 {
 		t.Error("relationship was not removed properly from the slice")
 	}
-	if len(c.R.{{$txt.Function.ForeignName}}) != 0 {
+	if len(c.R.{{$relAlias.Foreign}}) != 0 {
 		t.Error("relationship was not removed properly from the slice")
 	}
-	if d.R.{{$txt.Function.ForeignName}}[0] != &a {
+	if d.R.{{$relAlias.Foreign}}[0] != &a {
 		t.Error("relationship was not added properly to the foreign struct")
 	}
-	if e.R.{{$txt.Function.ForeignName}}[0] != &a {
+	if e.R.{{$relAlias.Foreign}}[0] != &a {
 		t.Error("relationship was not added properly to the foreign struct")
 	}
 	{{- else}}
 
-	if !queries.IsValuerNil(b.{{$txt.ForeignTable.ColumnNameGo}}) {
+	if !queries.IsValuerNil(b.{{$fcolField}}) {
 		t.Error("want b's foreign key value to be nil")
 	}
-	if !queries.IsValuerNil(c.{{$txt.ForeignTable.ColumnNameGo}}) {
+	if !queries.IsValuerNil(c.{{$fcolField}}) {
 		t.Error("want c's foreign key value to be nil")
 	}
 
-	if b.R.{{$txt.Function.ForeignName}} != nil {
+	if b.R.{{$relAlias.Foreign}} != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if c.R.{{$txt.Function.ForeignName}} != nil {
+	if c.R.{{$relAlias.Foreign}} != nil {
 		t.Error("relationship was not removed properly from the foreign struct")
 	}
-	if d.R.{{$txt.Function.ForeignName}} != &a {
+	if d.R.{{$relAlias.Foreign}} != &a {
 		t.Error("relationship to a should have been preserved")
 	}
-	if e.R.{{$txt.Function.ForeignName}} != &a {
+	if e.R.{{$relAlias.Foreign}} != &a {
 		t.Error("relationship to a should have been preserved")
 	}
 	{{- end}}
 
-	if len(a.R.{{$txt.Function.Name}}) != 2 {
+	if len(a.R.{{$relAlias.Local}}) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.{{$txt.Function.Name}}[1] != &d {
+	if a.R.{{$relAlias.Local}}[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.{{$txt.Function.Name}}[0] != &e {
+	if a.R.{{$relAlias.Local}}[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }

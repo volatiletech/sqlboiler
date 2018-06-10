@@ -133,9 +133,11 @@ func TestToOne(t *testing.T) {
 {{- range .Tables}}
   {{- if .IsJoinTable -}}
   {{- else -}}
-    {{- range $i, $rel := .FKeys -}}
-      {{- $txt := txtsFromFKey $.Tables $rel -}}
-  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+    {{- range $fkey := .FKeys -}}
+      {{- $ltable := $.Aliases.Table $fkey.Table -}}
+      {{- $ftable := $.Aliases.Table $fkey.ForeignTable -}}
+      {{- $relAlias := $.Aliases.Relationship $fkey.Name -}}
+  t.Run("{{$ltable.UpSingular}}To{{$ftable.UpSingular}}Using{{$relAlias.Foreign}}", test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$relAlias.Foreign}})
     {{end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
 {{- end -}}{{- /* tables range */ -}}
@@ -147,9 +149,11 @@ func TestOneToOne(t *testing.T) {
   {{- range .Tables}}
 	{{- if .IsJoinTable -}}
 	{{- else -}}
-	  {{- range $i, $rel := .ToOneRelationships -}}
-		{{- $txt := txtsFromOneToOne $.Tables . $rel -}}
-  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOne{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+	  {{- range $rel := .ToOneRelationships -}}
+      {{- $ltable := $.Aliases.Table $rel.Table -}}
+      {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+      {{- $relAlias := $.Aliases.Relationship $rel.Name -}}
+	t.Run("{{$ltable.UpSingular}}To{{$ftable.UpSingular}}Using{{$relAlias.Local}}", test{{$ltable.UpSingular}}OneToOne{{$ftable.UpSingular}}Using{{$relAlias.Local}})
 	  {{end -}}{{- /* range */ -}}
 	{{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -161,9 +165,11 @@ func TestToMany(t *testing.T) {
   {{- range .Tables}}
     {{- if .IsJoinTable -}}
     {{- else -}}
-      {{- range $i, $rel := .ToManyRelationships -}}
-        {{- $txt := txtsFromToMany $.Tables . $rel -}}
-  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToMany{{$txt.Function.Name}})
+      {{- range $rel := .ToManyRelationships -}}
+        {{- $ltable := $.Aliases.Table $rel.Table -}}
+        {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+        {{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+  t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}})
       {{end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -175,9 +181,11 @@ func TestToOneSet(t *testing.T) {
 {{- range .Tables}}
   {{- if .IsJoinTable -}}
   {{- else -}}
-    {{- range $i, $fkey := .FKeys -}}
-      {{- $txt := txtsFromFKey $.Tables . $fkey -}}
-  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+    {{- range $fkey := .FKeys -}}
+      {{- $ltable := $.Aliases.Table $fkey.Table -}}
+      {{- $ftable := $.Aliases.Table $fkey.ForeignTable -}}
+      {{- $relAlias := $.Aliases.Relationship $fkey.Name -}}
+  t.Run("{{$ltable.UpSingular}}To{{$ftable.UpSingular}}Using{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Foreign}})
     {{end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
 {{- end -}}{{- /* tables range */ -}}
@@ -189,10 +197,12 @@ func TestToOneRemove(t *testing.T) {
 {{- range .Tables}}
   {{- if .IsJoinTable -}}
   {{- else -}}
-    {{- range $i, $fkey := .FKeys -}}
-      {{- $txt := txtsFromFKey $.Tables . $fkey -}}
-      {{- if $txt.ForeignKey.Nullable -}}
-  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+    {{- range $fkey := .FKeys -}}
+      {{- if $fkey.Nullable -}}
+        {{- $ltable := $.Aliases.Table $fkey.Table -}}
+        {{- $ftable := $.Aliases.Table $fkey.ForeignTable -}}
+        {{- $relAlias := $.Aliases.Relationship $fkey.Name -}}
+  t.Run("{{$ltable.UpSingular}}To{{$ftable.UpSingular}}Using{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToOneRemoveOp{{$ftable.UpSingular}}Using{{$relAlias.Foreign}})
       {{end -}}{{- /* if foreign key nullable */ -}}
     {{- end -}}{{- /* fkey range */ -}}
   {{- end -}}{{- /* if join table */ -}}
@@ -205,9 +215,11 @@ func TestOneToOneSet(t *testing.T) {
   {{- range .Tables}}
 	{{- if .IsJoinTable -}}
 	{{- else -}}
-	  {{- range $i, $rel := .ToOneRelationships -}}
-		  {{- $txt := txtsFromOneToOne $.Tables . $rel -}}
-	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneSetOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+	  {{- range $rel := .ToOneRelationships -}}
+      {{- $ltable := $.Aliases.Table $rel.Table -}}
+      {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+      {{- $relAlias := $.Aliases.Relationship $rel.Name -}}
+	t.Run("{{$ltable.UpSingular}}To{{$ftable.UpSingular}}Using{{$relAlias.Local}}", test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Local}})
 	  {{end -}}{{- /* range to one relationships */ -}}
 	{{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -219,10 +231,12 @@ func TestOneToOneRemove(t *testing.T) {
   {{- range .Tables}}
 	{{- if .IsJoinTable -}}
 	{{- else -}}
-	  {{- range $i, $rel := .ToOneRelationships -}}
+	  {{- range $rel := .ToOneRelationships -}}
 		{{- if $rel.ForeignColumnNullable -}}
-		  {{- $txt := txtsFromOneToOne $.Tables . $rel -}}
-	t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}OneToOneRemoveOp{{$txt.ForeignTable.NameGo}}Using{{$txt.Function.Name}})
+      {{- $ltable := $.Aliases.Table $rel.Table -}}
+      {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+      {{- $relAlias := $.Aliases.Relationship $rel.Name -}}
+	t.Run("{{$ltable.UpSingular}}To{{$ftable.UpSingular}}Using{{$relAlias.Local}}", test{{$ltable.UpSingular}}OneToOneRemoveOp{{$ftable.UpSingular}}Using{{$relAlias.Local}})
 		{{end -}}{{- /* if foreign column nullable */ -}}
 	  {{- end -}}{{- /* range */ -}}
 	{{- end -}}{{- /* outer if join table */ -}}
@@ -235,9 +249,11 @@ func TestToManyAdd(t *testing.T) {
   {{- range .Tables}}
     {{- if .IsJoinTable -}}
     {{- else -}}
-      {{- range $i, $rel := .ToManyRelationships -}}
-        {{- $txt := txtsFromToMany $.Tables . $rel -}}
-  t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManyAddOp{{$txt.Function.Name}})
+      {{- range $rel := .ToManyRelationships -}}
+        {{- $ltable := $.Aliases.Table $rel.Table -}}
+        {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+        {{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+  t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}})
       {{end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
   {{- end -}}{{- /* outer tables range */ -}}
@@ -249,11 +265,13 @@ func TestToManySet(t *testing.T) {
   {{- range .Tables}}
     {{- if .IsJoinTable -}}
     {{- else -}}
-      {{- range $i, $rel := .ToManyRelationships -}}
+      {{- range $rel := .ToManyRelationships -}}
         {{- if not (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
         {{- else -}}
-          {{- $txt := txtsFromToMany $.Tables . $rel -}}
-    t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManySetOp{{$txt.Function.Name}})
+          {{- $ltable := $.Aliases.Table $rel.Table -}}
+          {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+          {{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+  t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}})
         {{end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
@@ -266,11 +284,13 @@ func TestToManyRemove(t *testing.T) {
   {{- range .Tables}}
     {{- if .IsJoinTable -}}
     {{- else -}}
-      {{- range $i, $rel := .ToManyRelationships -}}
+      {{- range $rel := .ToManyRelationships -}}
         {{- if not (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
         {{- else -}}
-          {{- $txt := txtsFromToMany $.Tables . $rel -}}
-    t.Run("{{$txt.LocalTable.NameGo}}To{{$txt.Function.Name}}", test{{$txt.LocalTable.NameGo}}ToManyRemoveOp{{$txt.Function.Name}})
+          {{- $ltable := $.Aliases.Table $rel.Table -}}
+          {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
+          {{- $relAlias := $.Aliases.ManyRelationship $rel.Name $rel.JoinForeignFKeyName -}}
+  t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}})
         {{end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}

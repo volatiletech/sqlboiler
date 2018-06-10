@@ -53,6 +53,7 @@ Table of Contents
         * [Initial Generation](#initial-generation)
         * [Regeneration](#regeneration)
         * [Controlling Generation](#controlling-generation)
+          * [Names](#names)
           * [Types](#types)
           * [Imports](#imports)
         * [Extending Generated Models](#extending-generated-models)
@@ -397,6 +398,64 @@ features are turned on or off.
 
 In addition to the command line flags there are two features that are only
 available via the config file and can use some explanation.
+
+##### Names
+
+In sqlboiler, names are automatically generated for you. If you name your database
+nice things you will likely have nice names in the end. However in the case where your
+names in your database are bad AND unchangeable, or sqlboiler's inference doesn't understand
+the names you do have (even though they are good and correct) you can use aliases to
+change the name of your tables, columns and relationships in the generated Go code.
+
+Note: It is not required to provide all parts of all names. Anything left out will be
+inferred as it was in the past.
+
+```toml
+# Although team_names works fine without configuration, we use it here for illustrative purposes
+[aliases.tables.team_names]
+up_plural     = "TeamNames"
+up_singular   = "TeamName"
+down_plural   = "teamNames"
+down_singular = "teamName"
+
+  # Columns can also be aliased.
+  [aliases.tables.team_names.columns]
+  team_name = "OurTeamName"
+
+[aliases.relationships.fk_video_user_id]
+local   = "PublishedVideos"
+foreign = "Publisher"
+```
+
+When creating aliases for relationships, it's important to know how the concept of local/foreign
+map to what is used for generation. First off, everything is renamed using the foreign key as a
+unique identifier (namespaced to the table). If you don't know your foreign key names, it's likely
+you have not been naming them manually and it's possible they change suddenly for whatever reason.
+If you're going to rename relationships it's recommended that you use manually named foreign keys
+for stability.
+
+In terms of how to understand what local and foreign are in the context of renaming relationships,
+it simply means "where is the foreign key". For example in a `users <-> videos` relationship
+where we have a `user_id` on the user, the foreign key is on the `videos` table, and therefore
+the `local` key refers to how we refer to the `videos` side of the relationship, in the example
+below we're using `PublishedVideos`. The table foreign to the foreign key is the `users` table
+and as such we've renamed it `Publisher` as there is only one of them, and that is the relationship.
+
+In a many-to-many relationship it's a bit more complicated. In an example where `videos <-> tags`
+with a join table in the middle. Imagine if the join table didn't exist, and instead both of the
+id columns in the join table were slapped on to the tables themselves. You'd have `videos.tag_id`
+and `tags.video_id`. Using the exact same method above (where is the foreign key) we can rename
+the relationships as seen by these foreign keys. To change `Videos.Tags` to `Videos.Rags` we could
+do the following:
+
+```toml
+[aliases.relationships.fk_video_tags.video_id]
+local   = "Rags"
+foreign = "Videos"
+```
+
+Keep in mind that naming ONE side of the many-to-many relationship is sufficient as the other
+side will be automatically mirrored, though you can specify both if you so choose.
 
 ##### Types
 

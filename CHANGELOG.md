@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add ability to rename tables, columns, and relationships.
 - Add support for rows affected to Update/Delete calls.
 - Add support for geotypes for psql (thanks @saulortega)
 - Add a flag to set the config file (thanks @l4u)

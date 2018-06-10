@@ -103,10 +103,6 @@ func ConvertAliases(i interface{}) (a Aliases) {
 					ra.Foreign = s.(string)
 				}
 
-				if len(ra.Foreign) == 0 || len(ra.Local) == 0 {
-					panic("when defining a relationship alias, must name both sides of relationship")
-				}
-
 				ta.Relationships[name] = ra
 			}
 		}

@@ -3,11 +3,11 @@
 	{{- range $rel := .Table.ToOneRelationships -}}
 		{{- $ltable := $.Aliases.Table $rel.Table -}}
 		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-		{{- $relAlias := $.Aliases.Relationship $rel.Name -}}
-		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn }}
+		{{- $relAlias := $ftable.Relationship $rel.Name -}}
+		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}
 		{{- $colField := $ltable.Column $rel.Column -}}
 		{{- $fcolField := $ftable.Column $rel.ForeignColumn -}}
-		{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns}}
+		{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns }}
 func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 

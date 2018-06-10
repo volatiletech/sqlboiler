@@ -9,8 +9,7 @@ import (
 
 // Aliases defines aliases for the generation run
 type Aliases struct {
-	Tables        map[string]TableAlias        `toml:"tables,omitempty" json:"tables,omitempty"`
-	Relationships map[string]RelationshipAlias `toml:"relationships,omitempty" json:"relationships,omitempty"`
+	Tables map[string]TableAlias `toml:"tables,omitempty" json:"tables,omitempty"`
 }
 
 // TableAlias defines the spellings for a table name in Go
@@ -20,7 +19,8 @@ type TableAlias struct {
 	DownPlural   string `toml:"down_plural,omitempty" json:"down_plural,omitempty"`
 	DownSingular string `toml:"down_singular,omitempty" json:"down_singular,omitempty"`
 
-	Columns map[string]string `toml:"columns,omitempty" json:"columns,omitempty"`
+	Columns       map[string]string            `toml:"columns,omitempty" json:"columns,omitempty"`
+	Relationships map[string]RelationshipAlias `toml:"relationships,omitempty" json:"relationships,omitempty"`
 }
 
 // RelationshipAlias defines the naming for both sides of
@@ -38,9 +38,6 @@ type RelationshipAlias struct {
 func FillAliases(a *Aliases, tables []drivers.Table) {
 	if a.Tables == nil {
 		a.Tables = make(map[string]TableAlias)
-	}
-	if a.Relationships == nil {
-		a.Relationships = make(map[string]RelationshipAlias)
 	}
 
 	for _, t := range tables {
@@ -66,6 +63,9 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 		if table.Columns == nil {
 			table.Columns = make(map[string]string)
 		}
+		if table.Relationships == nil {
+			table.Relationships = make(map[string]RelationshipAlias)
+		}
 
 		for _, c := range t.Columns {
 			if _, ok := table.Columns[c.Name]; !ok {
@@ -76,7 +76,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 		a.Tables[t.Name] = table
 
 		for _, k := range t.FKeys {
-			r := a.Relationships[k.Name]
+			r := table.Relationships[k.Name]
 			if len(r.Local) != 0 && len(r.Foreign) != 0 {
 				continue
 			}
@@ -89,33 +89,31 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 				r.Foreign = foreign
 			}
 
-			a.Relationships[k.Name] = r
+			table.Relationships[k.Name] = r
 		}
 
+	}
+
+	for _, t := range tables {
 		for _, rel := range t.ToManyRelationships {
 			if !rel.ToJoinTable {
 				continue
 			}
 
-			localFacingAlias, okLocal := a.Relationships[rel.JoinLocalFKeyName]
-			foreignFacingAlias, okForeign := a.Relationships[rel.JoinForeignFKeyName]
+			// In the ToManyRelationship struct, "local" is considered
+			// the table on which the relationship exists, not the fkey
+			// which means it will always be the reverse of the definition
+			// of local and foreign compared to aliases.
+			ltable := a.Tables[rel.ForeignTable]
+			ftable := a.Tables[rel.Table]
+
+			localFacingAlias, okLocal := ltable.Relationships[rel.JoinLocalFKeyName]
+			foreignFacingAlias, okForeign := ftable.Relationships[rel.JoinForeignFKeyName]
 
 			if okLocal && okForeign {
 				continue
 			}
 
-			// When we create to-many relationships that are join tables, the local and foreign
-			// are in an order we don't like.
-			// In a typical circumstance "local" means "the side the foreign key is on",
-			// to give an example in: user (id), videos (user_id) sort of scenario, when we look
-			// up the alias for the fkey: Local = Videos, Foreign = User
-			//
-			// In order to maintain consistency and avoid conditionals everywhere, we pretend like
-			// the foreign table in the relationship owns the foreign key.
-			//
-			// In an example that might look like: video_tags (video_id, tag_id), tags (id), videos (id)
-			// When we look up the video_id fkey, the Local = Tags, Foreign = Videos, because we pretend
-			// like the tags table has video_id on it as if it were a normal many-to-many relationship.
 			local, foreign := txtNameToMany(rel)
 
 			switch {
@@ -146,8 +144,8 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 				localFacingAlias.Local = foreignFacingAlias.Foreign
 			}
 
-			a.Relationships[rel.JoinLocalFKeyName] = localFacingAlias
-			a.Relationships[rel.JoinForeignFKeyName] = foreignFacingAlias
+			ltable.Relationships[rel.JoinLocalFKeyName] = localFacingAlias
+			ftable.Relationships[rel.JoinForeignFKeyName] = foreignFacingAlias
 		}
 	}
 }
@@ -173,10 +171,10 @@ func (t TableAlias) Column(column string) string {
 }
 
 // Relationship looks up a relationship, panics if not found.
-func (a Aliases) Relationship(fkey string) RelationshipAlias {
-	r, ok := a.Relationships[fkey]
+func (t TableAlias) Relationship(fkey string) RelationshipAlias {
+	r, ok := t.Relationships[fkey]
 	if !ok {
-		panic(fmt.Sprintf("could not find relationship alias for: %s", fkey))
+		panic(fmt.Sprintf("could not find relationship alias for: %s.%s", t.UpSingular, fkey))
 	}
 
 	return r
@@ -187,7 +185,7 @@ func (a Aliases) Relationship(fkey string) RelationshipAlias {
 // provided, if it's length is 0 it will try the foreign key.
 //
 // This allows us to skip additional conditionals in the templates.
-func (a Aliases) ManyRelationship(fkey, joinTableFkey string) RelationshipAlias {
+func (t TableAlias) ManyRelationship(fkey, joinTableFkey string) RelationshipAlias {
 	var lookup string
 	if len(joinTableFkey) != 0 {
 		lookup = joinTableFkey
@@ -195,5 +193,5 @@ func (a Aliases) ManyRelationship(fkey, joinTableFkey string) RelationshipAlias 
 		lookup = fkey
 	}
 
-	return a.Relationship(lookup)
+	return t.Relationship(lookup)
 }

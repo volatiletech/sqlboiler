@@ -3,7 +3,7 @@
 	{{- range $rel := .Table.ToOneRelationships -}}
 		{{- $ltable := $.Aliases.Table $rel.Table -}}
 		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-		{{- $relAlias := $.Aliases.Relationship $rel.Name }}
+		{{- $relAlias := $ftable.Relationship $rel.Name }}
 // {{$relAlias.Local}} pointed to by the foreign key.
 func (o *{{$ltable.UpSingular}}) {{$relAlias.Local}}(mods ...qm.QueryMod) ({{$ftable.DownSingular}}Query) {
 	queryMods := []qm.QueryMod{

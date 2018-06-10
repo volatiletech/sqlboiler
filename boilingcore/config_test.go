@@ -3,6 +3,7 @@ package boilingcore
 import (
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/volatiletech/sqlboiler/drivers"
 )
 
@@ -20,12 +21,12 @@ func TestConvertAliases(t *testing.T) {
 				"columns": map[string]interface{}{
 					"a": "b",
 				},
-			},
-		},
-		"relationships": map[string]interface{}{
-			"ib_fk_1": map[string]interface{}{
-				"local":   "a",
-				"foreign": "b",
+				"relationships": map[string]interface{}{
+					"ib_fk_1": map[string]interface{}{
+						"local":   "a",
+						"foreign": "b",
+					},
+				},
 			},
 		},
 	}
@@ -33,6 +34,7 @@ func TestConvertAliases(t *testing.T) {
 	aliases := ConvertAliases(intf)
 
 	if len(aliases.Tables) != 1 {
+		spew.Dump(aliases.Tables)
 		t.Fatal("should have one table alias")
 	}
 
@@ -62,7 +64,7 @@ func TestConvertAliases(t *testing.T) {
 		t.Fatal("should have one relationship alias")
 	}
 
-	rel := aliases.Relationships["ib_fk_1"]
+	rel := table.Relationships["ib_fk_1"]
 	if rel.Local != "a" {
 		t.Error("value was wrong:", rel.Local)
 	}

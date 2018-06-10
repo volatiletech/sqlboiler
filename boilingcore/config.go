@@ -84,35 +84,34 @@ func ConvertAliases(i interface{}) (a Aliases) {
 			}
 		}
 
+		var relationships map[string]interface{}
+		relationshipsIntf, ok := t["relationships"]
+		if ok {
+			relationships = relationshipsIntf.(map[string]interface{})
+			for name, rIntf := range relationships {
+				if ta.Relationships == nil {
+					ta.Relationships = make(map[string]RelationshipAlias)
+				}
+
+				var ra RelationshipAlias
+				rel := rIntf.(map[string]interface{})
+
+				if s := rel["local"]; s != nil {
+					ra.Local = s.(string)
+				}
+				if s := rel["foreign"]; s != nil {
+					ra.Foreign = s.(string)
+				}
+
+				if len(ra.Foreign) == 0 || len(ra.Local) == 0 {
+					panic("when defining a relationship alias, must name both sides of relationship")
+				}
+
+				ta.Relationships[name] = ra
+			}
+		}
+
 		a.Tables[name] = ta
-	}
-
-	var relationships map[string]interface{}
-	relationshipsIntf, ok := topLevel["relationships"]
-	if ok {
-		relationships = relationshipsIntf.(map[string]interface{})
-	}
-
-	for name, rIntf := range relationships {
-		if a.Relationships == nil {
-			a.Relationships = make(map[string]RelationshipAlias)
-		}
-
-		var ra RelationshipAlias
-		rel := rIntf.(map[string]interface{})
-
-		if s := rel["local"]; s != nil {
-			ra.Local = s.(string)
-		}
-		if s := rel["foreign"]; s != nil {
-			ra.Foreign = s.(string)
-		}
-
-		if len(ra.Foreign) == 0 || len(ra.Local) == 0 {
-			panic("when defining a relationship alias, must name both sides of relationship")
-		}
-
-		a.Relationships[name] = ra
 	}
 
 	return a

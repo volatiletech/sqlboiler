@@ -30,6 +30,7 @@ func TestAliasesTables(t *testing.T) {
 				"id":   "ID",
 				"name": "Name",
 			},
+			Relationships: make(map[string]RelationshipAlias),
 		}
 
 		a := Aliases{}
@@ -50,6 +51,7 @@ func TestAliasesTables(t *testing.T) {
 				"id":   "NotID",
 				"name": "NotName",
 			},
+			Relationships: make(map[string]RelationshipAlias),
 		}
 
 		a := Aliases{}
@@ -116,13 +118,14 @@ func TestAliasesRelationships(t *testing.T) {
 		a := Aliases{}
 		FillAliases(&a, tables)
 
-		if got := a.Relationships["fkey_1"]; !reflect.DeepEqual(expect1, got) {
+		table := a.Tables["videos"]
+		if got := table.Relationships["fkey_1"]; !reflect.DeepEqual(expect1, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := a.Relationships["fkey_2"]; !reflect.DeepEqual(expect2, got) {
+		if got := table.Relationships["fkey_2"]; !reflect.DeepEqual(expect2, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := a.Relationships["fkey_3"]; !reflect.DeepEqual(expect3, got) {
+		if got := table.Relationships["fkey_3"]; !reflect.DeepEqual(expect3, got) {
 			t.Errorf("bad values: %#v", got)
 		}
 	})
@@ -142,21 +145,26 @@ func TestAliasesRelationships(t *testing.T) {
 		}
 
 		a := Aliases{
-			Relationships: map[string]RelationshipAlias{
-				"fkey_1": {Foreign: "TheUser"},
-				"fkey_2": {Local: "PublishedVideos"},
-				"fkey_3": {Local: "AwesomeOneVideo", Foreign: "TheOne"},
+			Tables: map[string]TableAlias{
+				"videos": {
+					Relationships: map[string]RelationshipAlias{
+						"fkey_1": {Foreign: "TheUser"},
+						"fkey_2": {Local: "PublishedVideos"},
+						"fkey_3": {Local: "AwesomeOneVideo", Foreign: "TheOne"},
+					},
+				},
 			},
 		}
 		FillAliases(&a, tables)
 
-		if got := a.Relationships["fkey_1"]; !reflect.DeepEqual(expect1, got) {
+		table := a.Tables["videos"]
+		if got := table.Relationships["fkey_1"]; !reflect.DeepEqual(expect1, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := a.Relationships["fkey_2"]; !reflect.DeepEqual(expect2, got) {
+		if got := table.Relationships["fkey_2"]; !reflect.DeepEqual(expect2, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := a.Relationships["fkey_3"]; !reflect.DeepEqual(expect3, got) {
+		if got := table.Relationships["fkey_3"]; !reflect.DeepEqual(expect3, got) {
 			t.Errorf("bad values: %#v", got)
 		}
 	})
@@ -185,6 +193,9 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "tags",
+		},
 	}
 
 	t.Run("Automatic", func(t *testing.T) {
@@ -200,10 +211,12 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 		a := Aliases{}
 		FillAliases(&a, tables)
 
-		if got := a.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
+		ltable := a.Tables["videos"]
+		ftable := a.Tables["tags"]
+		if got := ltable.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := a.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
+		if got := ftable.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
 			t.Errorf("bad values: %#v", got)
 		}
 	})
@@ -219,16 +232,22 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 		}
 
 		a := Aliases{
-			Relationships: map[string]RelationshipAlias{
-				"fk_video_id": {Local: "NotTags", Foreign: "NotVideos"},
+			Tables: map[string]TableAlias{
+				"tags": {
+					Relationships: map[string]RelationshipAlias{
+						"fk_video_id": {Local: "NotTags", Foreign: "NotVideos"},
+					},
+				},
 			},
 		}
 		FillAliases(&a, tables)
 
-		if got := a.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
+		ltable := a.Tables["videos"]
+		ftable := a.Tables["tags"]
+		if got := ltable.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := a.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
+		if got := ftable.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
 			t.Errorf("bad values: %#v", got)
 		}
 	})

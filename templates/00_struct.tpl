@@ -35,19 +35,19 @@ var {{$alias.UpSingular}}Columns = struct {
 type {{$alias.DownSingular}}R struct {
 	{{range .Table.FKeys -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
-	{{- $relAlias := $.Aliases.Relationship .Name -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
 	{{$relAlias.Foreign}} *{{$ftable.UpSingular}}
 	{{end -}}
 
 	{{range .Table.ToOneRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
-	{{- $relAlias := $.Aliases.Relationship .Name -}}
+	{{- $relAlias := $ftable.Relationship .Name -}}
 	{{$relAlias.Local}} *{{$ftable.UpSingular}}
 	{{end -}}
 
 	{{range .Table.ToManyRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
-	{{- $relAlias := $.Aliases.ManyRelationship .Name .JoinForeignFKeyName -}}
+	{{- $relAlias := $ftable.ManyRelationship .Name .JoinLocalFKeyName -}}
 	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}}
 	{{end -}}{{/* range tomany */}}
 }

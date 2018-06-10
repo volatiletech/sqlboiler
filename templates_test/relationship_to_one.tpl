@@ -3,7 +3,7 @@
 	{{- range $fkey := .Table.FKeys -}}
 		{{- $ltable := $.Aliases.Table $fkey.Table -}}
 		{{- $ftable := $.Aliases.Table $fkey.ForeignTable -}}
-		{{- $rel := $.Aliases.Relationship $fkey.Name -}}
+		{{- $rel := $ltable.Relationship $fkey.Name -}}
 		{{- $colField := $ltable.Column $fkey.Column -}}
 		{{- $fcolField := $ftable.Column $fkey.ForeignColumn -}}
 		{{- $usesPrimitives := usesPrimitives $.Tables $fkey.Table $fkey.Column $fkey.ForeignTable $fkey.ForeignColumn }}

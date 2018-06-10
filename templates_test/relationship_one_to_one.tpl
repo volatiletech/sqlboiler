@@ -3,10 +3,10 @@
 	{{- range $rel := .Table.ToOneRelationships -}}
 		{{- $ltable := $.Aliases.Table $rel.Table -}}
 		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-		{{- $relAlias := $.Aliases.Relationship $rel.Name}}
-		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn }}
+		{{- $relAlias := $ftable.Relationship $rel.Name -}}
+		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}
 		{{- $colField := $ltable.Column $rel.Column -}}
-		{{- $fcolField := $ftable.Column $rel.ForeignColumn -}}
+		{{- $fcolField := $ftable.Column $rel.ForeignColumn }}
 func test{{$ltable.UpSingular}}OneToOne{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})

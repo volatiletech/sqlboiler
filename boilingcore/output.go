@@ -204,7 +204,13 @@ func writeFile(outFolder string, fileName string, input *bytes.Buffer) error {
 
 // executeTemplate takes a template and returns the output of the template
 // execution.
-func executeTemplate(buf *bytes.Buffer, t *template.Template, name string, data *templateData) error {
+func executeTemplate(buf *bytes.Buffer, t *template.Template, name string, data *templateData) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Errorf("failed to execute template: %s\npanic: %+v\n", name, r)
+		}
+	}()
+
 	if err := t.ExecuteTemplate(buf, name, data); err != nil {
 		return errors.Wrapf(err, "failed to execute template: %s", name)
 	}

@@ -421,10 +421,6 @@ down_singular = "teamName"
   # Columns can also be aliased.
   [aliases.tables.team_names.columns]
   team_name = "OurTeamName"
-
-[aliases.relationships.fk_video_user_id]
-local   = "PublishedVideos"
-foreign = "Publisher"
 ```
 
 When creating aliases for relationships, it's important to know how the concept of local/foreign
@@ -432,30 +428,41 @@ map to what is used for generation. First off, everything is renamed using the f
 unique identifier (namespaced to the table). If you don't know your foreign key names, it's likely
 you have not been naming them manually and it's possible they change suddenly for whatever reason.
 If you're going to rename relationships it's recommended that you use manually named foreign keys
-for stability.
+for stability. Therefore to rename a relationship based on a foreign key on the `videos` table
+you would use the key `[aliases.tables.videos.relationships.fk_name]`.
 
 In terms of how to understand what local and foreign are in the context of renaming relationships,
-it simply means "where is the foreign key". For example in a `users <-> videos` relationship
-where we have a `user_id` on the user, the foreign key is on the `videos` table, and therefore
-the `local` key refers to how we refer to the `videos` side of the relationship, in the example
-below we're using `PublishedVideos`. The table foreign to the foreign key is the `users` table
-and as such we've renamed it `Publisher` as there is only one of them, and that is the relationship.
+local simply means "the side with the foreign key". For example in a `users <-> videos` relationship
+where we have a `author_id` on the video that refers to the id of the `users` table, the foreign key
+is on the `videos` table itself, so the `local` key refers to how we refer to the `videos` side 
+of the relationship. In the example below we're naming the local side (how we refer to the videos) 
+`AuthoredVideos`. The table foreign to the foreign key is the `users` table and we want to
+refer to that side of the relationship as the `Author`.
+
+```toml
+[aliases.tables.videos.relationships.videos_author_id_fkey]
+# The local side would originally be inferred as AuthorVideos, which
+# is probably good enough to not want to mess around with this feature, avoid it where possible.
+local   = "AuthoredVideos"
+# Even if left unspecified, the foreign side would have been inferred correctly
+# due to the proper naming of the foreign key column.
+foreign = "Author"
+```
 
 In a many-to-many relationship it's a bit more complicated. In an example where `videos <-> tags`
 with a join table in the middle. Imagine if the join table didn't exist, and instead both of the
 id columns in the join table were slapped on to the tables themselves. You'd have `videos.tag_id`
-and `tags.video_id`. Using the exact same method above (where is the foreign key) we can rename
-the relationships as seen by these foreign keys. To change `Videos.Tags` to `Videos.Rags` we could
-do the following:
-
-```toml
-[aliases.relationships.fk_video_tags.video_id]
-local   = "Rags"
-foreign = "Videos"
-```
+and `tags.video_id`. Using the exact same method above (the side with the foreign key) we can rename
+the relationships. To change `Videos.Tags` to `Videos.Rags` we can use the example below.
 
 Keep in mind that naming ONE side of the many-to-many relationship is sufficient as the other
 side will be automatically mirrored, though you can specify both if you so choose.
+
+```toml
+[aliases.tables.tags.relationships.fk_video_tags_video_id]
+local   = "Rags"
+foreign = "Videos"
+```
 
 ##### Types
 

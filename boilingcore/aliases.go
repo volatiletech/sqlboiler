@@ -36,13 +36,16 @@ type RelationshipAlias struct {
 // This leaves us with a complete list of Go names for all tables,
 // columns, and relationships.
 func FillAliases(a *Aliases, tables []drivers.Table) {
+	if a.Tables == nil {
+		a.Tables = make(map[string]TableAlias)
+	}
+	if a.Relationships == nil {
+		a.Relationships = make(map[string]RelationshipAlias)
+	}
+
 	for _, t := range tables {
 		if t.IsJoinTable {
 			continue
-		}
-
-		if a.Tables == nil {
-			a.Tables = make(map[string]TableAlias)
 		}
 
 		table := a.Tables[t.Name]
@@ -72,10 +75,6 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 
 		a.Tables[t.Name] = table
 
-		if a.Relationships == nil {
-			a.Relationships = make(map[string]RelationshipAlias)
-		}
-
 		for _, k := range t.FKeys {
 			r := a.Relationships[k.Name]
 			if len(r.Local) != 0 && len(r.Foreign) != 0 {
@@ -94,6 +93,10 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 		}
 
 		for _, rel := range t.ToManyRelationships {
+			if !rel.ToJoinTable {
+				continue
+			}
+
 			localFacingAlias, okLocal := a.Relationships[rel.JoinLocalFKeyName]
 			foreignFacingAlias, okForeign := a.Relationships[rel.JoinForeignFKeyName]
 
@@ -101,6 +104,18 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 				continue
 			}
 
+			// When we create to-many relationships that are join tables, the local and foreign
+			// are in an order we don't like.
+			// In a typical circumstance "local" means "the side the foreign key is on",
+			// to give an example in: user (id), videos (user_id) sort of scenario, when we look
+			// up the alias for the fkey: Local = Videos, Foreign = User
+			//
+			// In order to maintain consistency and avoid conditionals everywhere, we pretend like
+			// the foreign table in the relationship owns the foreign key.
+			//
+			// In an example that might look like: video_tags (video_id, tag_id), tags (id), videos (id)
+			// When we look up the video_id fkey, the Local = Tags, Foreign = Videos, because we pretend
+			// like the tags table has video_id on it as if it were a normal many-to-many relationship.
 			local, foreign := txtNameToMany(rel)
 
 			switch {
@@ -147,14 +162,38 @@ func (a Aliases) Table(table string) TableAlias {
 	return t
 }
 
-// Column gets a column's aliased name, panics if not found.
-func (a Aliases) Column(table, column string) string {
-	t := a.Table(table)
-
+// Column get's a column's aliased name, panics if not found.
+func (t TableAlias) Column(column string) string {
 	c, ok := t.Columns[column]
 	if !ok {
-		panic(fmt.Sprintf("could not find column alias for: %s.%s", table, column))
+		panic(fmt.Sprintf("could not find column alias for: %s.%s", t.UpSingular, column))
 	}
 
 	return c
+}
+
+// Relationship looks up a relationship, panics if not found.
+func (a Aliases) Relationship(fkey string) RelationshipAlias {
+	r, ok := a.Relationships[fkey]
+	if !ok {
+		panic(fmt.Sprintf("could not find relationship alias for: %s", fkey))
+	}
+
+	return r
+}
+
+// ManyRelationship looks up a relationship alias, panics if not found.
+// At first it will try the second parameter (the fkey of a join table) if
+// provided, if it's length is 0 it will try the foreign key.
+//
+// This allows us to skip additional conditionals in the templates.
+func (a Aliases) ManyRelationship(fkey, joinTableFkey string) RelationshipAlias {
+	var lookup string
+	if len(joinTableFkey) != 0 {
+		lookup = joinTableFkey
+	} else {
+		lookup = fkey
+	}
+
+	return a.Relationship(lookup)
 }

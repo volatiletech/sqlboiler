@@ -101,16 +101,16 @@ func TestAliasesRelationships(t *testing.T) {
 
 	t.Run("Automatic", func(t *testing.T) {
 		expect1 := RelationshipAlias{
-			Local:   "User",
-			Foreign: "Videos",
+			Local:   "Videos",
+			Foreign: "User",
 		}
 		expect2 := RelationshipAlias{
-			Local:   "Publisher",
-			Foreign: "PublisherVideos",
+			Local:   "PublisherVideos",
+			Foreign: "Publisher",
 		}
 		expect3 := RelationshipAlias{
-			Local:   "One",
-			Foreign: "Video",
+			Local:   "Video",
+			Foreign: "One",
 		}
 
 		a := Aliases{}
@@ -129,23 +129,23 @@ func TestAliasesRelationships(t *testing.T) {
 
 	t.Run("UserOverride", func(t *testing.T) {
 		expect1 := RelationshipAlias{
-			Local:   "TheUser",
-			Foreign: "Videos",
+			Local:   "Videos",
+			Foreign: "TheUser",
 		}
 		expect2 := RelationshipAlias{
-			Local:   "Publisher",
-			Foreign: "PublishedVideos",
+			Local:   "PublishedVideos",
+			Foreign: "Publisher",
 		}
 		expect3 := RelationshipAlias{
-			Local:   "TheOne",
-			Foreign: "AwesomeOneVideo",
+			Local:   "AwesomeOneVideo",
+			Foreign: "TheOne",
 		}
 
 		a := Aliases{
 			Relationships: map[string]RelationshipAlias{
-				"fkey_1": {Local: "TheUser"},
-				"fkey_2": {Foreign: "PublishedVideos"},
-				"fkey_3": {Local: "TheOne", Foreign: "AwesomeOneVideo"},
+				"fkey_1": {Foreign: "TheUser"},
+				"fkey_2": {Local: "PublishedVideos"},
+				"fkey_3": {Local: "AwesomeOneVideo", Foreign: "TheOne"},
 			},
 		}
 		FillAliases(&a, tables)
@@ -189,12 +189,12 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 
 	t.Run("Automatic", func(t *testing.T) {
 		expect1 := RelationshipAlias{
-			Local:   "Tags",
-			Foreign: "Videos",
-		}
-		expect2 := RelationshipAlias{
 			Local:   "Videos",
 			Foreign: "Tags",
+		}
+		expect2 := RelationshipAlias{
+			Local:   "Tags",
+			Foreign: "Videos",
 		}
 
 		a := Aliases{}

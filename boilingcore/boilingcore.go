@@ -89,7 +89,7 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to initialize struct tags")
 	}
 
-	err = s.initAliases(config.Aliases)
+	err = s.initAliases(&config.Aliases)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize aliases")
 	}
@@ -478,9 +478,8 @@ func (s *State) initTags(tags []string) error {
 	return nil
 }
 
-func (s *State) initAliases(a Aliases) error {
-	FillAliases(&a, s.Tables)
-
+func (s *State) initAliases(a *Aliases) error {
+	FillAliases(a, s.Tables)
 	return nil
 }
 

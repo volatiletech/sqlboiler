@@ -136,7 +136,8 @@ func txtsFromToMany(tables []drivers.Table, table drivers.Table, rel drivers.ToM
 }
 
 // txtNameToOne creates the local and foreign function names for
-// one-to-many and one-to-one relationships, where local == lhs (one).
+// one-to-many and one-to-one relationships, where local is the side with
+// the foreign key.
 //
 // = many-to-one
 // users - videos : user_id
@@ -164,34 +165,52 @@ func txtsFromToMany(tables []drivers.Table, table drivers.Table, rel drivers.ToM
 // fk == table = industry.Industry | industry.Industry
 // fk != table = industry.ParentIndustry | industry.Industry
 func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
-	localFn = strmangle.Singular(trimSuffixes(fk.Column))
-	fkeyIsTableName := localFn != strmangle.Singular(fk.ForeignTable)
-	localFn = strmangle.TitleCase(localFn)
+	foreignFn = strmangle.Singular(trimSuffixes(fk.Column))
+	fkeyNotTableName := foreignFn != strmangle.Singular(fk.ForeignTable)
+	foreignFn = strmangle.TitleCase(foreignFn)
 
-	if fkeyIsTableName {
-		foreignFn = localFn
+	if fkeyNotTableName {
+		localFn = foreignFn
 	}
 
 	plurality := strmangle.Plural
 	if fk.Unique {
 		plurality = strmangle.Singular
 	}
-	foreignFn += strmangle.TitleCase(plurality(fk.Table))
+	localFn += strmangle.TitleCase(plurality(fk.Table))
 
 	return localFn, foreignFn
 }
 
 // txtNameToMany creates the local and foreign function names for
-// many-to-one and many-to-many relationship, where local == lhs (many)
+// many-to-many relationships, where local refers to the table
+// who would have the foreign key if it weren't for the join table.
+//
+// That's to say: If we had tags and videos, ordinarily if it were a
+// one to many, tags would have the video_id, and so for the video_id
+// fkey local means "tags", and foreign means "videos".
+//
+//   | tags |  | tags_videos      |  | videos |
+//   | id   |  | tag_id, video_id |  | id     |
+//
+// In this setup, if we were able to not have a join table, it would look
+// like this:
+//
+//   | tags     |  | videos |
+//   | id       |  | id     |
+//   | video_id |  | tag_id |
+//
+// Hence when looking from the perspective of the "video_id" foreign key
+// local = tags, foreign = videos.
 //
 // cases:
 // = many-to-many
-// sponsors - constests
+// sponsors - contests
 // sponsor_id contest_id
 // fk == table = sponsor.Contests | contest.Sponsors
 //
 // = many-to-many
-// sponsors - constests
+// sponsors - contests
 // wiggle_id jiggle_id
 // fk != table = sponsor.JiggleSponsors | contest.WiggleContests
 //
@@ -210,28 +229,16 @@ func txtNameToMany(toMany drivers.ToManyRelationship) (localFn, foreignFn string
 	foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))
 
 	if localFkey != strmangle.Singular(toMany.Table) {
-		foreignFn = strmangle.TitleCase(localFkey)
+		localFn = strmangle.TitleCase(localFkey)
 	}
-	foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.Table))
+	localFn += strmangle.TitleCase(strmangle.Plural(toMany.Table))
 
 	if foreignFkey != strmangle.Singular(toMany.ForeignTable) {
-		localFn = strmangle.TitleCase(foreignFkey)
+		foreignFn = strmangle.TitleCase(foreignFkey)
 	}
-	localFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
+	foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
 
 	return localFn, foreignFn
-}
-
-// mkFunctionName checks to see if the foreign key name is the same as the local table name (minus _id suffix)
-// Simple case: yes - we can name the function the same as the plural table name
-// Not simple case: We have to name the function based off the foreign key and the foreign table name
-func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, toJoinTable bool) string {
-	colName := trimSuffixes(fkeyColumn)
-	if toJoinTable || fkeyTableSingular == colName {
-		return foreignTablePluralGo
-	}
-
-	return strmangle.TitleCase(colName) + foreignTablePluralGo
 }
 
 var identifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid"}

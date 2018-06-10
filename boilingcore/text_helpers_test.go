@@ -1,160 +1,10 @@
 package boilingcore
 
 import (
-	"reflect"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/drivers/mocks"
 )
-
-func TestTxtsFromOne(t *testing.T) {
-	t.Parallel()
-
-	tables, err := drivers.Tables(&mocks.MockDriver{}, "public", nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	jets := drivers.GetTable(tables, "jets")
-	texts := txtsFromFKey(tables, jets, jets.FKeys[0])
-	expect := TxtToOne{}
-
-	expect.ForeignKey = jets.FKeys[0]
-
-	expect.LocalTable.NameGo = "Jet"
-	expect.LocalTable.ColumnNameGo = "PilotID"
-
-	expect.ForeignTable.NameGo = "Pilot"
-	expect.ForeignTable.NamePluralGo = "Pilots"
-	expect.ForeignTable.ColumnName = "id"
-	expect.ForeignTable.ColumnNameGo = "ID"
-
-	expect.Function.Name = "Pilot"
-	expect.Function.ForeignName = "Jet"
-	expect.Function.UsesPrimitives = false
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-
-	texts = txtsFromFKey(tables, jets, jets.FKeys[1])
-	expect = TxtToOne{}
-	expect.ForeignKey = jets.FKeys[1]
-
-	expect.LocalTable.NameGo = "Jet"
-	expect.LocalTable.ColumnNameGo = "AirportID"
-
-	expect.ForeignTable.NameGo = "Airport"
-	expect.ForeignTable.NamePluralGo = "Airports"
-	expect.ForeignTable.ColumnName = "id"
-	expect.ForeignTable.ColumnNameGo = "ID"
-
-	expect.Function.Name = "Airport"
-	expect.Function.ForeignName = "Jets"
-	expect.Function.UsesPrimitives = true
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-}
-
-func TestTxtsFromOneToOne(t *testing.T) {
-	t.Parallel()
-
-	tables, err := drivers.Tables(&mocks.MockDriver{}, "public", nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pilots := drivers.GetTable(tables, "pilots")
-	texts := txtsFromOneToOne(tables, pilots, pilots.ToOneRelationships[0])
-	expect := TxtToOne{}
-
-	expect.ForeignKey = drivers.ForeignKey{
-		Name: "none",
-
-		Table:    "jets",
-		Column:   "pilot_id",
-		Nullable: true,
-		Unique:   true,
-
-		ForeignTable:          "pilots",
-		ForeignColumn:         "id",
-		ForeignColumnNullable: false,
-		ForeignColumnUnique:   false,
-	}
-
-	expect.LocalTable.NameGo = "Pilot"
-	expect.LocalTable.ColumnNameGo = "ID"
-
-	expect.ForeignTable.NameGo = "Jet"
-	expect.ForeignTable.NamePluralGo = "Jets"
-	expect.ForeignTable.ColumnName = "pilot_id"
-	expect.ForeignTable.ColumnNameGo = "PilotID"
-
-	expect.Function.Name = "Jet"
-	expect.Function.ForeignName = "Pilot"
-	expect.Function.UsesPrimitives = false
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-}
-
-/*func TestTxtsFromMany(t *testing.T) {
-	t.Parallel()
-
-	tables, err := drivers.Tables(&mocks.MockDriver{}, "public", nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pilots := drivers.GetTable(tables, "pilots")
-	texts := txtsFromToMany(tables, pilots, pilots.ToManyRelationships[0])
-	expect := TxtToMany{}
-	expect.LocalTable.NameGo = "Pilot"
-	expect.LocalTable.ColumnNameGo = "ID"
-
-	expect.ForeignTable.NameGo = "License"
-	expect.ForeignTable.NamePluralGo = "Licenses"
-	expect.ForeignTable.NameHumanReadable = "licenses"
-	expect.ForeignTable.ColumnNameGo = "PilotID"
-	expect.ForeignTable.Slice = "LicenseSlice"
-
-	expect.Function.Name = "Licenses"
-	expect.Function.ForeignName = "Pilot"
-	expect.Function.UsesPrimitives = true
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-
-	texts = txtsFromToMany(tables, pilots, pilots.ToManyRelationships[1])
-	expect = TxtToMany{}
-	expect.LocalTable.NameGo = "Pilot"
-	expect.LocalTable.ColumnNameGo = "ID"
-
-	expect.ForeignTable.NameGo = "Language"
-	expect.ForeignTable.NamePluralGo = "Languages"
-	expect.ForeignTable.NameHumanReadable = "languages"
-	expect.ForeignTable.ColumnNameGo = "ID"
-	expect.ForeignTable.Slice = "LanguageSlice"
-
-	expect.Function.Name = "Languages"
-	expect.Function.ForeignName = "Pilots"
-	expect.Function.UsesPrimitives = true
-
-	if !reflect.DeepEqual(expect, texts) {
-		t.Errorf("Want:\n%s\nGot:\n%s\n", spew.Sdump(expect), spew.Sdump(texts))
-	}
-}
-*/
 
 func TestTxtNameToOne(t *testing.T) {
 	t.Parallel()
@@ -170,21 +20,21 @@ func TestTxtNameToOne(t *testing.T) {
 		LocalFn   string
 		ForeignFn string
 	}{
-		{"jets", "airport_id", false, "airports", "id", true, "Airport", "Jets"},
-		{"jets", "airport_id", true, "airports", "id", true, "Airport", "Jet"},
+		{"jets", "airport_id", false, "airports", "id", true, "Jets", "Airport"},
+		{"jets", "airport_id", true, "airports", "id", true, "Jet", "Airport"},
 
-		{"jets", "holiday_id", false, "airports", "id", true, "Holiday", "HolidayJets"},
-		{"jets", "holiday_id", true, "airports", "id", true, "Holiday", "HolidayJet"},
+		{"jets", "holiday_id", false, "airports", "id", true, "HolidayJets", "Holiday"},
+		{"jets", "holiday_id", true, "airports", "id", true, "HolidayJet", "Holiday"},
 
-		{"jets", "holiday_airport_id", false, "airports", "id", true, "HolidayAirport", "HolidayAirportJets"},
-		{"jets", "holiday_airport_id", true, "airports", "id", true, "HolidayAirport", "HolidayAirportJet"},
+		{"jets", "holiday_airport_id", false, "airports", "id", true, "HolidayAirportJets", "HolidayAirport"},
+		{"jets", "holiday_airport_id", true, "airports", "id", true, "HolidayAirportJet", "HolidayAirport"},
 
-		{"jets", "jet_id", false, "jets", "id", true, "Jet", "Jets"},
+		{"jets", "jet_id", false, "jets", "id", true, "Jets", "Jet"},
 		{"jets", "jet_id", true, "jets", "id", true, "Jet", "Jet"},
-		{"jets", "plane_id", false, "jets", "id", true, "Plane", "PlaneJets"},
-		{"jets", "plane_id", true, "jets", "id", true, "Plane", "PlaneJet"},
+		{"jets", "plane_id", false, "jets", "id", true, "PlaneJets", "Plane"},
+		{"jets", "plane_id", true, "jets", "id", true, "PlaneJet", "Plane"},
 
-		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "Result", "ResultRaceResultScratchings"},
+		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "ResultRaceResultScratchings", "Result"},
 	}
 
 	for i, test := range tests {
@@ -220,19 +70,15 @@ func TestTxtNameToMany(t *testing.T) {
 		LocalFn   string
 		ForeignFn string
 	}{
-		/*{"airports", "id", "jets", "airport_id", false, "", "", "Jets", "Airport"},
-		{"airports", "id", "jets", "holiday_airport_id", false, "", "", "HolidayAirportJets", "HolidayAirport"},
+		{"pilots", "id", "languages", "id", true, "pilot_id", "language_id", "Pilots", "Languages"},
+		{"pilots", "id", "languages", "id", true, "captain_id", "lingo_id", "CaptainPilots", "LingoLanguages"},
 
-		{"jets", "id", "jets", "jet_id", false, "", "", "Jets", "Jet"},
-		{"jets", "id", "jets", "plane_id", false, "", "", "PlaneJets", "Plane"},
-		{"race_results", "id", "race_result_scratchings", "results_id", false, "", "", "ResultRaceResultScratchings", "Result"},*/
+		{"pilots", "id", "pilots", "id", true, "pilot_id", "mentor_id", "Pilots", "MentorPilots"},
+		{"pilots", "id", "pilots", "id", true, "mentor_id", "pilot_id", "MentorPilots", "Pilots"},
+		{"pilots", "id", "pilots", "id", true, "captain_id", "mentor_id", "CaptainPilots", "MentorPilots"},
 
-		{"pilots", "id", "languages", "id", true, "pilot_id", "language_id", "Languages", "Pilots"},
-		{"pilots", "id", "languages", "id", true, "captain_id", "lingo_id", "LingoLanguages", "CaptainPilots"},
-
-		{"pilots", "id", "pilots", "id", true, "pilot_id", "mentor_id", "MentorPilots", "Pilots"},
-		{"pilots", "id", "pilots", "id", true, "mentor_id", "pilot_id", "Pilots", "MentorPilots"},
-		{"pilots", "id", "pilots", "id", true, "captain_id", "mentor_id", "MentorPilots", "CaptainPilots"},
+		{"videos", "id", "tags", "id", true, "video_id", "tag_id", "Videos", "Tags"},
+		{"tags", "id", "videos", "id", true, "tag_id", "video_id", "Tags", "Videos"},
 	}
 
 	for i, test := range tests {

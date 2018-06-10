@@ -236,10 +236,7 @@ var templateFunctions = template.FuncMap{
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
 
-	// Relationship text helpers
-	"txtsFromFKey":     txtsFromFKey,
-	"txtsFromOneToOne": txtsFromOneToOne,
-	"txtsFromToMany":   txtsFromToMany,
+	"usesPrimitives": usesPrimitives,
 
 	// dbdrivers ops
 	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,

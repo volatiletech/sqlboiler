@@ -8,133 +8,6 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
-// TxtToOne contains text that will be used by templates for a one-to-many or
-// a one-to-one relationship.
-type TxtToOne struct {
-	ForeignKey drivers.ForeignKey
-
-	LocalTable struct {
-		NameGo       string
-		ColumnNameGo string
-	}
-
-	ForeignTable struct {
-		NameGo       string
-		NamePluralGo string
-		ColumnNameGo string
-		ColumnName   string
-	}
-
-	Function struct {
-		Name        string
-		ForeignName string
-
-		UsesPrimitives bool
-	}
-}
-
-func txtsFromFKey(tables []drivers.Table, table drivers.Table, fkey drivers.ForeignKey) TxtToOne {
-	r := TxtToOne{}
-
-	r.ForeignKey = fkey
-
-	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
-	r.LocalTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.Column))
-
-	r.ForeignTable.NameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignTable))
-	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(fkey.ForeignTable))
-	r.ForeignTable.ColumnName = fkey.ForeignColumn
-	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(strmangle.Singular(fkey.ForeignColumn))
-
-	r.Function.Name, r.Function.ForeignName = txtNameToOne(fkey)
-
-	localColumn := table.GetColumn(fkey.Column)
-	foreignTable := drivers.GetTable(tables, fkey.ForeignTable)
-	foreignColumn := foreignTable.GetColumn(fkey.ForeignColumn)
-
-	r.Function.UsesPrimitives = isPrimitive(localColumn.Type) && isPrimitive(foreignColumn.Type)
-
-	return r
-}
-
-func txtsFromOneToOne(tables []drivers.Table, table drivers.Table, oneToOne drivers.ToOneRelationship) TxtToOne {
-	fkey := drivers.ForeignKey{
-		Table:    oneToOne.Table,
-		Name:     "none",
-		Column:   oneToOne.Column,
-		Nullable: oneToOne.Nullable,
-		Unique:   oneToOne.Unique,
-
-		ForeignTable:          oneToOne.ForeignTable,
-		ForeignColumn:         oneToOne.ForeignColumn,
-		ForeignColumnNullable: oneToOne.ForeignColumnNullable,
-		ForeignColumnUnique:   oneToOne.ForeignColumnUnique,
-	}
-
-	rel := txtsFromFKey(tables, table, fkey)
-
-	// Reverse foreign key
-	rel.ForeignKey.Table, rel.ForeignKey.ForeignTable = rel.ForeignKey.ForeignTable, rel.ForeignKey.Table
-	rel.ForeignKey.Column, rel.ForeignKey.ForeignColumn = rel.ForeignKey.ForeignColumn, rel.ForeignKey.Column
-	rel.ForeignKey.Nullable, rel.ForeignKey.ForeignColumnNullable = rel.ForeignKey.ForeignColumnNullable, rel.ForeignKey.Nullable
-	rel.ForeignKey.Unique, rel.ForeignKey.ForeignColumnUnique = rel.ForeignKey.ForeignColumnUnique, rel.ForeignKey.Unique
-	rel.Function.ForeignName, rel.Function.Name = txtNameToOne(drivers.ForeignKey{
-		Table:         oneToOne.ForeignTable,
-		Column:        oneToOne.ForeignColumn,
-		Unique:        true,
-		ForeignTable:  oneToOne.Table,
-		ForeignColumn: oneToOne.Column,
-	})
-	return rel
-}
-
-// TxtToMany contains text that will be used by many-to-one relationships.
-type TxtToMany struct {
-	LocalTable struct {
-		NameGo       string
-		ColumnNameGo string
-	}
-
-	ForeignTable struct {
-		NameGo            string
-		NamePluralGo      string
-		NameHumanReadable string
-		ColumnNameGo      string
-		Slice             string
-	}
-
-	Function struct {
-		Name        string
-		ForeignName string
-
-		UsesPrimitives bool
-	}
-}
-
-// txtsFromToMany creates a struct that does a lot of the text
-// transformation in advance for a given relationship.
-func txtsFromToMany(tables []drivers.Table, table drivers.Table, rel drivers.ToManyRelationship) TxtToMany {
-	r := TxtToMany{}
-	r.LocalTable.NameGo = strmangle.TitleCase(strmangle.Singular(table.Name))
-	r.LocalTable.ColumnNameGo = strmangle.TitleCase(rel.Column)
-
-	foreignNameSingular := strmangle.Singular(rel.ForeignTable)
-	r.ForeignTable.NamePluralGo = strmangle.TitleCase(strmangle.Plural(rel.ForeignTable))
-	r.ForeignTable.NameGo = strmangle.TitleCase(foreignNameSingular)
-	r.ForeignTable.ColumnNameGo = strmangle.TitleCase(rel.ForeignColumn)
-	r.ForeignTable.Slice = fmt.Sprintf("%sSlice", strmangle.TitleCase(foreignNameSingular))
-	r.ForeignTable.NameHumanReadable = strings.Replace(rel.ForeignTable, "_", " ", -1)
-
-	r.Function.Name, r.Function.ForeignName = txtNameToMany(rel)
-
-	col := table.GetColumn(rel.Column)
-	foreignTable := drivers.GetTable(tables, rel.ForeignTable)
-	foreignCol := foreignTable.GetColumn(rel.ForeignColumn)
-	r.Function.UsesPrimitives = isPrimitive(col.Type) && isPrimitive(foreignCol.Type)
-
-	return r
-}
-
 // txtNameToOne creates the local and foreign function names for
 // one-to-many and one-to-one relationships, where local is the side with
 // the foreign key.
@@ -239,6 +112,16 @@ func txtNameToMany(toMany drivers.ToManyRelationship) (localFn, foreignFn string
 	foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
 
 	return localFn, foreignFn
+}
+
+func usesPrimitives(tables []drivers.Table, table, column, foreignTable, foreignColumn string) bool {
+	local := drivers.GetTable(tables, table)
+	foreign := drivers.GetTable(tables, foreignTable)
+
+	col := local.GetColumn(column)
+	foreignCol := foreign.GetColumn(foreignColumn)
+
+	return isPrimitive(col.Type) && isPrimitive(foreignCol.Type)
 }
 
 var identifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid"}

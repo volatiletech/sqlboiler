@@ -45,6 +45,16 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	{{- end}}
 
 	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
+	nzUniques := queries.NonZeroDefaultSet(
+		[]string{
+		{{- range $i, $col := .Table.Columns -}}
+			{{- if $col.Unique}}
+			"{{$col.Name}}",
+			{{- end -}}
+		{{- end}}
+		},
+		o,
+	)
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
@@ -59,6 +69,10 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	}
 	buf.WriteByte('.')
 	for _, c := range nzDefaults {
+		buf.WriteString(c)
+	}
+	buf.WriteByte('.')
+	for _, c := range nzUniques {
 		buf.WriteString(c)
 	}
 	key := buf.String()
@@ -86,10 +100,12 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
+		ret = strmangle.SetComplement(ret, nzUniques)
 		cache.query = buildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
 		cache.retQuery = fmt.Sprintf(
-			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE {{whereClause .LQ .RQ 0 .Table.PKey.Columns}}",
+			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE %s",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),
+			strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", 0, nzUniques),
 		)
 
 		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, insert)
@@ -137,7 +153,8 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	{{if $canLastInsertID -}}
 	var lastID int64
 	{{- end}}
-	var identifierCols []interface{}
+	var uniqueMap []uint64
+	var nzUniqueCols []interface{}
 
 	if len(cache.retMapping) == 0 {
 		goto CacheNoHooks
@@ -158,21 +175,21 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	}
 	{{- end}}
 
-	identifierCols = []interface{}{
-		{{range .Table.PKey.Columns -}}
-		o.{{. | titleCase}},
-		{{end -}}
-	}
+	uniqueMap, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, nzUniques)
+	if err != nil {
+		return errors.Wrap(err, "{{.PkgName}}: unable to retrieve unique values for {{.Table.Name}}")
+ 	}
+	nzUniqueCols = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uniqueMap)
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, identifierCols...)
+		fmt.Fprintln(boil.DebugWriter, nzUniqueCols...)
 	}
 
 	{{if .NoContext -}}
-	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(returns...)
+	err = exec.QueryRow(cache.retQuery, nzUniqueCols...).Scan(returns...)
 	{{else -}}
-	err = exec.QueryRowContext(ctx, cache.retQuery, identifierCols...).Scan(returns...)
+	err = exec.QueryRowContext(ctx, cache.retQuery, nzUniqueCols...).Scan(returns...)
 	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")

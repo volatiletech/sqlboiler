@@ -29,6 +29,14 @@ func (o *{{$alias.UpSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{els
 
 {{end -}}
 
+var mySQL{{$alias.UpSingular}}UniqueColumns = []string{
+{{- range $i, $col := .Table.Columns -}}
+	{{- if $col.Unique}}
+	"{{$col.Name}}",
+	{{- end -}}
+{{- end}}
+}
+
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
 func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) error {
@@ -45,16 +53,11 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	{{- end}}
 
 	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
-	nzUniques := queries.NonZeroDefaultSet(
-		[]string{
-		{{- range $i, $col := .Table.Columns -}}
-			{{- if $col.Unique}}
-			"{{$col.Name}}",
-			{{- end -}}
-		{{- end}}
-		},
-		o,
-	)
+	nzUniques := queries.NonZeroDefaultSet(mySQL{{$alias.UpSingular}}UniqueColumns, o)
+
+	if len(nzUniques) == 0 {
+		return errors.New("cannot upsert with a table that cannot conflict on a unique column")
+	}
 
 	// Build cache key in-line uglily - mysql vs psql problems
 	buf := strmangle.GetBuffer()
@@ -168,9 +171,9 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 
 	{{$colName := index .Table.PKey.Columns 0 -}}
 	{{- $col := .Table.GetColumn $colName -}}
-	{{- $colTitled := $colName | titleCase}}
+	{{- $colTitled := $alias.Column $colName}}
 	o.{{$colTitled}} = {{$col.Type}}(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$alias.DownSingular}}Mapping["{{$colTitled}}"] {
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$alias.DownSingular}}Mapping["{{$colName}}"] {
 		goto CacheNoHooks
 	}
 	{{- end}}

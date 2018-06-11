@@ -5,12 +5,15 @@ func test{{$alias.UpPlural}}Upsert(t *testing.T) {
 	if len({{$alias.DownSingular}}Columns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
+	if len(mySQL{{$alias.UpSingular}}UniqueColumns) == 0 {
+		t.Skip("Skipping table with no unique columns to conflict on")
+	}
 
 	seed := randomize.NewSeed()
 	var err error
 	// Attempt the INSERT side of an UPSERT
 	o := {{$alias.UpSingular}}{}
-	if err = randomize.Struct(seed, &o, {{$alias.DownSingular}}DBTypes, true); err != nil {
+	if err = randomize.Struct(seed, &o, {{$alias.DownSingular}}DBTypes, false); err != nil {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 

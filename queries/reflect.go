@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -288,14 +289,13 @@ func BindMapping(typ reflect.Type, mapping map[string]uint64, cols []string) ([]
 
 ColLoop:
 	for i, c := range cols {
-		name := strmangle.TitleCaseIdentifier(c)
-		ptrMap, ok := mapping[name]
+		ptrMap, ok := mapping[c]
 		if ok {
 			ptrs[i] = ptrMap
 			continue
 		}
 
-		suffix := "." + name
+		suffix := "." + c
 		for maybeMatch, mapping := range mapping {
 			if strings.HasSuffix(maybeMatch, suffix) {
 				ptrs[i] = mapping
@@ -376,7 +376,7 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 
 		tag, recurse := getBoilTag(f)
 		if len(tag) == 0 {
-			tag = f.Name
+			tag = unTitleCase(f.Name)
 		} else if tag[0] == '-' {
 			continue
 		}
@@ -396,21 +396,20 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 
 func getBoilTag(field reflect.StructField) (name string, recurse bool) {
 	tag := field.Tag.Get("boil")
-	name = field.Name
 
 	if len(tag) == 0 {
-		return name, false
+		return "", false
 	}
 
 	ind := strings.IndexByte(tag, ',')
 	if ind == -1 {
-		return strmangle.TitleCase(tag), false
+		return tag, false
 	} else if ind == 0 {
-		return name, true
+		return "", true
 	}
 
 	nameFragment := tag[:ind]
-	return strmangle.TitleCase(nameFragment), true
+	return nameFragment, true
 }
 
 func makeCacheKey(typ string, cols []string) string {
@@ -629,4 +628,92 @@ func SetScanner(scanner sql.Scanner, val driver.Value) {
 	if err := scanner.Scan(val); err != nil {
 		panic(fmt.Sprintf("attempted to call Scan on %T with %#v but got an error: %+v", scanner, val, err))
 	}
+}
+
+// These are sorted by size so that the biggest thing
+// gets replaced first (think guid/id). This list is copied
+// from strmangle.uppercaseWords and should hopefully be kept
+// in sync.
+var specialWordReplacer = strings.NewReplacer(
+	"ASCII", "Ascii",
+	"GUID", "Guid",
+	"JSON", "Json",
+	"UUID", "Uuid",
+	"UTF8", "Utf8",
+	"ACL", "Acl",
+	"API", "Api",
+	"CPU", "Cpu",
+	"EOF", "Eof",
+	"RAM", "Ram",
+	"SLA", "Sla",
+	"UDP", "Udp",
+	"UID", "Uid",
+	"URI", "Uri",
+	"URL", "Url",
+	"ID", "Id",
+	"IP", "Ip",
+	"UI", "Ui",
+)
+
+// unTitleCase attempts to undo a title-cased string.
+//
+// DO NOT USE THIS METHOD IF YOU CAN AVOID IT
+//
+// Normally this would be easy but we have to deal with uppercased words
+// of varying lengths. We almost never use this function so it
+// can be as badly performing as we want. If people don't want to incur
+// it's cost they should be able to use the `boil` struct tag to avoid it.
+//
+// We did not put this in strmangle because we don't want it being part
+// of any public API as it's loaded with corner cases and sad performance.
+func unTitleCase(n string) string {
+	if len(n) == 0 {
+		return ""
+	}
+
+	// Make our words no longer special case
+	n = specialWordReplacer.Replace(n)
+
+	buf := strmangle.GetBuffer()
+
+	first := true
+
+	writeIt := func(s string) {
+		if first {
+			first = false
+		} else {
+			buf.WriteByte('_')
+		}
+		buf.WriteString(strings.ToLower(s))
+	}
+
+	lastUp := true
+	start := 0
+	for i, r := range n {
+		currentUp := unicode.IsUpper(r)
+		isDigit := unicode.IsDigit(r)
+
+		if !isDigit && !lastUp && currentUp {
+			fragment := n[start:i]
+			writeIt(fragment)
+			start = i
+		}
+
+		if !isDigit && lastUp && !currentUp && i-1-start > 1 {
+			fragment := n[start : i-1]
+			writeIt(fragment)
+			start = i - 1
+		}
+
+		lastUp = currentUp
+	}
+
+	remaining := n[start:]
+	if len(remaining) > 0 {
+		writeIt(remaining)
+	}
+
+	ret := buf.String()
+	strmangle.PutBuffer(buf)
+	return ret
 }

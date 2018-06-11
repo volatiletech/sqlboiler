@@ -18,10 +18,10 @@ func TestNonZeroDefaultSet(t *testing.T) {
 	t.Parallel()
 
 	type Anything struct {
-		ID        int
-		Name      string
-		CreatedAt *time.Time
-		UpdatedAt null.Time
+		ID        int        `boil:"id"`
+		Name      string     `boil:"name"`
+		CreatedAt *time.Time `boil:"created_at"`
+		UpdatedAt null.Time  `boil:"updated_at"`
 	}
 
 	now := time.Now()

@@ -213,13 +213,13 @@ func TestMakeStructMapping(t *testing.T) {
 	got := MakeStructMapping(reflect.TypeOf(testStruct))
 
 	expectMap := map[string]uint64{
-		"Different":           testMakeMapping(0),
-		"AwesomeName":         testMakeMapping(1),
-		"Nose":                testMakeMapping(3),
-		"Nested.Different":    testMakeMapping(4, 0),
-		"Nested.AwesomeName":  testMakeMapping(4, 1),
-		"Nested.Nose":         testMakeMapping(4, 3),
-		"Nested.Nested2.Nose": testMakeMapping(4, 4, 0),
+		"different":           testMakeMapping(0),
+		"awesome_name":        testMakeMapping(1),
+		"nose":                testMakeMapping(3),
+		"nested.different":    testMakeMapping(4, 0),
+		"nested.awesome_name": testMakeMapping(4, 1),
+		"nested.nose":         testMakeMapping(4, 3),
+		"nested.nested2.nose": testMakeMapping(4, 4, 0),
 	}
 
 	for expName, expVal := range expectMap {
@@ -376,13 +376,13 @@ func TestGetBoilTag(t *testing.T) {
 		Name    string
 		Recurse bool
 	}{
-		{"TestOne", true},
-		{"TestTwo", false},
-		{"MiddleName", true},
-		{"AwesomeName", false},
-		{"Age", true},
+		{"test_one", true},
+		{"test_two", false},
+		{"middle_name", true},
+		{"awesome_name", false},
+		{"", true},
 		{"-", false},
-		{"Nose", false},
+		{"", false},
 	}
 	for i, s := range structFields {
 		name, recurse := getBoilTag(s)
@@ -842,4 +842,44 @@ func TestSetScannerPanic(t *testing.T) {
 
 	var ns nullTime
 	SetScanner(&ns, "hello")
+}
+
+func TestUnTitleCase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		In  string
+		Out string
+	}{
+		{"HelloThere", "hello_there"},
+		{"", ""},
+		{"AA", "aa"},
+		{"FunID", "fun_id"},
+		{"UID", "uid"},
+		{"GUID", "guid"},
+		{"UID", "uid"},
+		{"UUID", "uuid"},
+		{"SSN", "ssn"},
+		{"TZ", "tz"},
+		{"ThingGUID", "thing_guid"},
+		{"GUIDThing", "guid_thing"},
+		{"ThingGUIDThing", "thing_guid_thing"},
+		{"ID", "id"},
+		{"GVZXC", "gvzxc"},
+		{"IDTRGBID", "id_trgb_id"},
+		{"ThingZXCStuffVXZ", "thing_zxc_stuff_vxz"},
+		{"ZXCThingVXZStuff", "zxc_thing_vxz_stuff"},
+		{"ZXCVDF9C9Hello9", "zxcvdf9_c9_hello9"},
+		{"ID9UID911GUID9E9", "id9_uid911_guid9_e9"},
+		{"ZXCVDF0C0Hello0", "zxcvdf0_c0_hello0"},
+		{"ID0UID000GUID0E0", "id0_uid000_guid0_e0"},
+		{"Ab5ZXC5D5", "ab5_zxc5_d5"},
+		{"Identifier", "identifier"},
+	}
+
+	for i, test := range tests {
+		if out := unTitleCase(test.In); out != test.Out {
+			t.Errorf("[%d] (%s) Out was wrong: %q, want: %q", i, test.In, out, test.Out)
+		}
+	}
 }

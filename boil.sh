@@ -187,24 +187,25 @@ driver_test_db() {
 # ====================================
 
 go_generate() {
-    if test -z "${1}"; then
+    if test -n "${1}"; then
         run="${1}"
     else
         run="psql mysql mssql"
     fi
 
-    for i in psql mysql mssql; do
-        run_go_generate "${i}"
+    cwd="${PWD}"
+    for i in $run; do
+        run_go_generate "${cwd}" "${i}"
     done
 }
 
 run_go_generate() {
-    path=$1
-    cwd="${PWD}"
+    baseDir="${1}"
+    driver="${2}"
     set -o xtrace
-    cd "drivers/sqlboiler-${path}/driver"
+    cd "${baseDir}/drivers/sqlboiler-${driver}/driver"
     go generate
-    cd "${cwd}"
+    set +o xtrace
 }
 
 # ====================================

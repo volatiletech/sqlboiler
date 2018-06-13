@@ -1014,6 +1014,69 @@ func (a *StringArray) Randomize(seed *randomize.Seed, fieldType string, shouldBe
 	*a = strs
 }
 
+// DecimalArray represents a one-dimensional array of the decimal type.
+type DecimalArray []Decimal
+
+// Scan implements the sql.Scanner interface.
+func (a *DecimalArray) Scan(src interface{}) error {
+	switch src := src.(type) {
+	case []byte:
+		return a.scanBytes(src)
+	case string:
+		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
+	}
+
+	return fmt.Errorf("boil: cannot convert %T to DecimalArray", src)
+}
+
+func (a *DecimalArray) scanBytes(src []byte) error {
+	elems, err := scanLinearArray(src, []byte{','}, "DecimalArray")
+	if err != nil {
+		return err
+	}
+	if *a != nil && len(elems) == 0 {
+		*a = (*a)[:0]
+	} else {
+		b := make(DecimalArray, len(elems))
+		for i, v := range elems {
+			var success bool
+			b[i].Big, success = b[i].SetString(string(v))
+			if !success {
+				return fmt.Errorf("boil: parsing decimal element index as decimal %d: %s", i, v)
+			}
+		}
+		*a = b
+	}
+	return nil
+}
+
+// Value implements the driver.Valuer interface.
+func (a DecimalArray) Value() (driver.Value, error) {
+	if a == nil {
+		return nil, nil
+	} else if len(a) == 0 {
+		return "{}", nil
+	}
+
+	strs := make([]string, len(a))
+	for i, d := range a {
+		strs[i] = d.String()
+	}
+
+	return "{" + strings.Join(strs, ",") + "}", nil
+}
+
+// Randomize for sqlboiler
+func (a *DecimalArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+	var d1, d2 Decimal
+	d1.SetString(fmt.Sprintf("%d.%d", seed.NextInt(), seed.NextInt()))
+	d2.SetString(fmt.Sprintf("%d.%d", seed.NextInt(), seed.NextInt()))
+	*a = DecimalArray{d1, d2}
+}
+
 // appendArray appends rv to the buffer, returning the extended buffer and
 // the delimiter used between elements.
 //

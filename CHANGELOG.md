@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   using the syntax tablename.columnname in the driver's whitelist/blacklist
   config setting.
 - Add way to create a relationship struct: `modelName.R.NewStruct()`
+- MySQL numeric, fixed, dec types now generate using the new types.(Null)Decimal
 
 ### Changed
 
@@ -89,6 +90,9 @@ difference.
   imposed by the main/testing of sqlboiler itself.
 - Replace templates (hidden flag) now use the `;` separator not `:` for windows
   compatibility.
+- Postgres numeric, fixed, decimal types now generate using the new
+  types.(Null)Decimal instead of float64, this is a breaking change,
+  but a very correct and important one.
 
 ### Removed
 

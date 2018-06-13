@@ -7,3 +7,5 @@ sqlboiler.toml
 models/
 testschema.sql
 .cover
+*.sqlite3
+issue*.sql

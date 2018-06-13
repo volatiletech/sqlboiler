@@ -13,21 +13,21 @@ DRIVER_DB="sqlboiler_driver_test"
 # ====================================
 
 build() {
-    subcommand=$1
+    driver=$1
 
-    case "${subcommand}" in
-        psql)  driver=1; shift ;;
-        mysql) driver=1; shift ;;
-        mssql) driver=1; shift ;;
+    buildPath=github.com/volatiletech/sqlboiler
+    case "${driver}" in
+        all)   drivers="psql mysql mssql"; shift ;;
+        psql)  drivers="psql"; shift ;;
+        mysql) drivers="mysql"; shift ;;
+        mssql) drivers="mssql"; shift ;;
+        *) set -o xtrace; go build "$@" "${buildPath}"; set +o xtrace; return ;;
     esac
 
-    path=github.com/volatiletech/sqlboiler
-    if test "${driver}"; then
-        path="${path}/drivers/sqlboiler-${subcommand}"
-    fi
-
-    set -o xtrace
-    go build "$@" ${path}
+    for d in $drivers; do
+        set -o xtrace
+        go build "$@" ${buildPath}/drivers/sqlboiler-"${d}"
+    done
 }
 
 # ====================================
@@ -245,7 +245,7 @@ case "${command}" in
         echo "Helpers to build, test and develop on sqlboiler"
         echo
         echo "Commands:"
-        echo "  build [driver]              - builds the driver, or sqlboiler if driver omitted"
+        echo "  build [all|driver]          - builds the driver (or all drivers if all), or sqlboiler if omitted"
         echo "  gen <driver> [args]         - generates models for driver, passing args along to sqlboiler"
         echo "  test [args]                 - runs model tests, passing args to the test binary"
         echo "  test-user <driver>          - creates a user for the tests (superuser)"

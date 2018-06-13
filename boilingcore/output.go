@@ -26,7 +26,7 @@ var (
 	// concurrency, address it then.
 	templateByteBuffer = &bytes.Buffer{}
 
-	rgxRemoveNumberedPrefix = regexp.MustCompile(`[0-9]+_`)
+	rgxRemoveNumberedPrefix = regexp.MustCompile(`^[0-9]+_`)
 	rgxSyntaxError          = regexp.MustCompile(`(\d+):\d+: `)
 
 	testHarnessWriteFile = ioutil.WriteFile

@@ -394,6 +394,8 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "uniqueidentifier":
 			c.Type = "null.String"
 			c.DBType = "uuid"
+		case "numeric", "decimal", "dec":
+			c.Type = "types.NullDecimal"
 		default:
 			c.Type = "null.String"
 		}
@@ -426,6 +428,8 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "uniqueidentifier":
 			c.Type = "string"
 			c.DBType = "uuid"
+		case "numeric", "decimal", "dec":
+			c.Type = "types.Decimal"
 		default:
 			c.Type = "string"
 		}
@@ -531,6 +535,12 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 		},
 		"time.Time": {
 			Standard: importers.List{`"time"`},
+		},
+		"types.Decimal": {
+			Standard: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+		},
+		"types.NullDecimal": {
+			Standard: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
 	}
 	return col, err

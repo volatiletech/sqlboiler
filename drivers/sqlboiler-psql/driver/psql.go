@@ -400,7 +400,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "smallint", "smallserial":
 			c.Type = "null.Int16"
 		case "decimal", "numeric", "double precision":
-			c.Type = "null.Float64"
+			c.Type = "types.NullDecimal"
 		case "real":
 			c.Type = "null.Float32"
 		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
@@ -459,7 +459,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "smallint", "smallserial":
 			c.Type = "int16"
 		case "decimal", "numeric", "double precision":
-			c.Type = "float64"
+			c.Type = "types.Decimal"
 		case "real":
 			c.Type = "float32"
 		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
@@ -523,7 +523,7 @@ func getArrayType(c drivers.Column) string {
 	case "boolean":
 		return "types.BoolArray"
 	case "decimal", "numeric", "double precision", "real":
-		return "types.Float64Array"
+		return "types.DecimalArray"
 	default:
 		return "types.StringArray"
 	}
@@ -636,6 +636,9 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 		"types.JSON": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
+		"types.Decimal": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+		},
 		"types.BytesArray": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
@@ -649,6 +652,9 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
 		"types.StringArray": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+		},
+		"types.DecimalArray": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
 		"types.Hstore": {
@@ -671,6 +677,9 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 		},
 		"pgeo.Polygon": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},
+		},
+		"types.NullDecimal": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
 		"pgeo.Circle": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types/pgeo"`},

@@ -390,6 +390,8 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "null.Bytes"
+		case "numeric", "decimal", "dec", "fixed":
+			c.Type = "types.NullDecimal"
 		case "json":
 			c.Type = "types.JSON"
 		default:
@@ -440,6 +442,8 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "time.Time"
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "[]byte"
+		case "numeric", "decimal", "dec", "fixed":
+			c.Type = "types.Decimal"
 		case "json":
 			c.Type = "types.JSON"
 		default:
@@ -553,10 +557,13 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 		"time.Time": {
 			Standard: importers.List{`"time"`},
 		},
-		"null.JSON": {
-			ThirdParty: importers.List{`"gopkg.in/volatiletech/null.v7"`},
-		},
 		"types.JSON": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+		},
+		"types.Decimal": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+		},
+		"types.NullDecimal": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
 	}

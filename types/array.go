@@ -33,6 +33,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/lib/pq/oid"
 	"github.com/volatiletech/sqlboiler/randomize"
 )
@@ -1043,7 +1044,7 @@ func (a *DecimalArray) scanBytes(src []byte) error {
 		b := make(DecimalArray, len(elems))
 		for i, v := range elems {
 			var success bool
-			b[i].Big, success = b[i].SetString(string(v))
+			b[i].Big, success = new(decimal.Big).SetString(string(v))
 			if !success {
 				return fmt.Errorf("boil: parsing decimal element index as decimal %d: %s", i, v)
 			}
@@ -1071,9 +1072,9 @@ func (a DecimalArray) Value() (driver.Value, error) {
 
 // Randomize for sqlboiler
 func (a *DecimalArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	var d1, d2 Decimal
-	d1.SetString(fmt.Sprintf("%d.%d", seed.NextInt(), seed.NextInt()))
-	d2.SetString(fmt.Sprintf("%d.%d", seed.NextInt(), seed.NextInt()))
+	d1, d2 := NewDecimal(new(decimal.Big)), NewDecimal(new(decimal.Big))
+	d1.SetString(fmt.Sprintf("%d.%d", seed.NextInt()%10, seed.NextInt()%10))
+	d2.SetString(fmt.Sprintf("%d.%d", seed.NextInt()%10, seed.NextInt()%10))
 	*a = DecimalArray{d1, d2}
 }
 

@@ -29,6 +29,16 @@ type NullDecimal struct {
 	*decimal.Big
 }
 
+// NewDecimal creates a new decimal from a decimal
+func NewDecimal(d *decimal.Big) Decimal {
+	return Decimal{Big: d}
+}
+
+// NewNullDecimal creates a new null decimal from a decimal
+func NewNullDecimal(d *decimal.Big) NullDecimal {
+	return NullDecimal{Big: d}
+}
+
 // Value implements driver.Valuer.
 func (d Decimal) Value() (driver.Value, error) {
 	return decimalValue(d.Big, false)
@@ -76,7 +86,7 @@ func randomDecimal(s *randomize.Seed, fieldType string, shouldBeNull bool) *deci
 		return nil
 	}
 
-	randVal := fmt.Sprintf("%d.%d", s.NextInt(), s.NextInt())
+	randVal := fmt.Sprintf("%d.%d", s.NextInt()%10, s.NextInt()%10)
 	random, success := new(decimal.Big).SetString(randVal)
 	if !success {
 		panic("randVal could not be turned into a decimal")
@@ -87,7 +97,7 @@ func randomDecimal(s *randomize.Seed, fieldType string, shouldBeNull bool) *deci
 
 func decimalValue(d *decimal.Big, canNull bool) (driver.Value, error) {
 	if canNull && d == nil {
-		return "null", nil
+		return nil, nil
 	}
 
 	if d.IsNaN(0) {
@@ -114,6 +124,9 @@ func decimalScan(d *decimal.Big, val interface{}, canNull bool) (*decimal.Big, e
 	}
 
 	switch t := val.(type) {
+	case float64:
+		d.SetFloat64(t)
+		return d, nil
 	case string:
 		if _, ok := d.SetString(t); !ok {
 			if err := d.Context.Err(); err != nil {

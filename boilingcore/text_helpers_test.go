@@ -57,44 +57,42 @@ func TestTxtNameToMany(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		Table  string
-		Column string
+		LHSTable  string
+		LHSColumn string
 
-		ForeignTable  string
-		ForeignColumn string
+		RHSTable  string
+		RHSColumn string
 
-		ToJoinTable       bool
-		JoinLocalColumn   string
-		JoinForeignColumn string
-
-		LocalFn   string
-		ForeignFn string
+		LHSFn string
+		RHSFn string
 	}{
-		{"pilots", "id", "languages", "id", true, "pilot_id", "language_id", "Pilots", "Languages"},
-		{"pilots", "id", "languages", "id", true, "captain_id", "lingo_id", "CaptainPilots", "LingoLanguages"},
+		{"pilots", "pilot_id", "languages", "language_id", "Pilots", "Languages"},
+		{"pilots", "captain_id", "languages", "lingo_id", "CaptainPilots", "LingoLanguages"},
 
-		{"pilots", "id", "pilots", "id", true, "pilot_id", "mentor_id", "Pilots", "MentorPilots"},
-		{"pilots", "id", "pilots", "id", true, "mentor_id", "pilot_id", "MentorPilots", "Pilots"},
-		{"pilots", "id", "pilots", "id", true, "captain_id", "mentor_id", "CaptainPilots", "MentorPilots"},
+		{"pilots", "pilot_id", "pilots", "mentor_id", "Pilots", "MentorPilots"},
+		{"pilots", "mentor_id", "pilots", "pilot_id", "MentorPilots", "Pilots"},
+		{"pilots", "captain_id", "pilots", "mentor_id", "CaptainPilots", "MentorPilots"},
 
-		{"videos", "id", "tags", "id", true, "video_id", "tag_id", "Videos", "Tags"},
-		{"tags", "id", "videos", "id", true, "tag_id", "video_id", "Tags", "Videos"},
+		{"videos", "video_id", "tags", "tag_id", "Videos", "Tags"},
+		{"tags", "tag_id", "videos", "video_id", "Tags", "Videos"},
 	}
 
 	for i, test := range tests {
-		fk := drivers.ToManyRelationship{
-			Table: test.Table, Column: test.Column,
-			ForeignTable: test.ForeignTable, ForeignColumn: test.ForeignColumn,
-			ToJoinTable:     test.ToJoinTable,
-			JoinLocalColumn: test.JoinLocalColumn, JoinForeignColumn: test.JoinForeignColumn,
+		lhsFk := drivers.ForeignKey{
+			ForeignTable: test.LHSTable,
+			Column:       test.LHSColumn,
+		}
+		rhsFk := drivers.ForeignKey{
+			ForeignTable: test.RHSTable,
+			Column:       test.RHSColumn,
 		}
 
-		local, foreign := txtNameToMany(fk)
-		if local != test.LocalFn {
-			t.Error(i, "local wrong:", local, "want:", test.LocalFn)
+		lhs, rhs := txtNameToMany(lhsFk, rhsFk)
+		if lhs != test.LHSFn {
+			t.Error(i, "local wrong:", lhs, "want:", test.LHSFn)
 		}
-		if foreign != test.ForeignFn {
-			t.Error(i, "foreign wrong:", foreign, "want:", test.ForeignFn)
+		if rhs != test.RHSFn {
+			t.Error(i, "foreign wrong:", rhs, "want:", test.RHSFn)
 		}
 	}
 }

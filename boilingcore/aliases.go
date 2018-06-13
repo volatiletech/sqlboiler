@@ -42,6 +42,9 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 
 	for _, t := range tables {
 		if t.IsJoinTable {
+			if _, ok := a.Tables[t.Name]; !ok {
+				a.Tables[t.Name] = TableAlias{Relationships: make(map[string]RelationshipAlias)}
+			}
 			continue
 		}
 
@@ -95,58 +98,61 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 	}
 
 	for _, t := range tables {
-		for _, rel := range t.ToManyRelationships {
-			if !rel.ToJoinTable {
-				continue
-			}
-
-			// In the ToManyRelationship struct, "local" is considered
-			// the table on which the relationship exists, not the fkey
-			// which means it will always be the reverse of the definition
-			// of local and foreign compared to aliases.
-			ltable := a.Tables[rel.ForeignTable]
-			ftable := a.Tables[rel.Table]
-
-			localFacingAlias, okLocal := ltable.Relationships[rel.JoinLocalFKeyName]
-			foreignFacingAlias, okForeign := ftable.Relationships[rel.JoinForeignFKeyName]
-
-			if okLocal && okForeign {
-				continue
-			}
-
-			local, foreign := txtNameToMany(rel)
-
-			switch {
-			case !okLocal && !okForeign:
-				localFacingAlias.Local = local
-				localFacingAlias.Foreign = foreign
-				foreignFacingAlias.Local = foreign
-				foreignFacingAlias.Foreign = local
-			case okLocal:
-				if len(localFacingAlias.Local) == 0 {
-					localFacingAlias.Local = local
-				}
-				if len(localFacingAlias.Foreign) == 0 {
-					localFacingAlias.Foreign = foreign
-				}
-
-				foreignFacingAlias.Local = localFacingAlias.Foreign
-				foreignFacingAlias.Foreign = localFacingAlias.Local
-			case okForeign:
-				if len(foreignFacingAlias.Local) == 0 {
-					foreignFacingAlias.Local = foreign
-				}
-				if len(foreignFacingAlias.Foreign) == 0 {
-					foreignFacingAlias.Foreign = local
-				}
-
-				localFacingAlias.Foreign = foreignFacingAlias.Local
-				localFacingAlias.Local = foreignFacingAlias.Foreign
-			}
-
-			ltable.Relationships[rel.JoinLocalFKeyName] = localFacingAlias
-			ftable.Relationships[rel.JoinForeignFKeyName] = foreignFacingAlias
+		if !t.IsJoinTable {
+			continue
 		}
+
+		table := a.Tables[t.Name]
+
+		lhs := t.FKeys[0]
+		rhs := t.FKeys[1]
+
+		lhsAlias, lhsOK := table.Relationships[lhs.Name]
+		rhsAlias, rhsOK := table.Relationships[rhs.Name]
+
+		if lhsOK && len(lhsAlias.Local) != 0 && len(lhsAlias.Foreign) != 0 &&
+			rhsOK && len(rhsAlias.Local) != 0 && len(rhsAlias.Foreign) != 0 {
+			continue
+		}
+
+		// Here we actually reverse the meaning of local/foreign to be
+		// consistent with the way normal one-to-many relationships are done.
+		// That's to say local = the side with the foreign key. Now in a many-to-many
+		// if we were able to not have a join table our foreign key say "videos_id"
+		// would be on the tags table. Hence the relationships should look like:
+		// videos_tags.relationships.fk_video_id.local   = "Tags"
+		// videos_tags.relationships.fk_video_id.foreign = "Videos"
+		// Consistent, yes. Confusing? Also yes.
+
+		lhsName, rhsName := txtNameToMany(lhs, rhs)
+
+		if len(lhsAlias.Local) != 0 {
+			rhsName = lhsAlias.Local
+		} else if len(rhsAlias.Local) != 0 {
+			lhsName = rhsAlias.Local
+		}
+
+		if len(lhsAlias.Foreign) != 0 {
+			lhsName = lhsAlias.Foreign
+		} else if len(rhsAlias.Foreign) != 0 {
+			rhsName = rhsAlias.Foreign
+		}
+
+		if len(lhsAlias.Local) == 0 {
+			lhsAlias.Local = rhsName
+		}
+		if len(lhsAlias.Foreign) == 0 {
+			lhsAlias.Foreign = lhsName
+		}
+		if len(rhsAlias.Local) == 0 {
+			rhsAlias.Local = lhsName
+		}
+		if len(rhsAlias.Foreign) == 0 {
+			rhsAlias.Foreign = rhsName
+		}
+
+		table.Relationships[lhs.Name] = lhsAlias
+		table.Relationships[rhs.Name] = rhsAlias
 	}
 }
 
@@ -181,17 +187,19 @@ func (t TableAlias) Relationship(fkey string) RelationshipAlias {
 }
 
 // ManyRelationship looks up a relationship alias, panics if not found.
-// At first it will try the second parameter (the fkey of a join table) if
-// provided, if it's length is 0 it will try the foreign key.
+// It will first try to look up a join table relationship, then it will
+// try a normal one-to-many relationship. That's to say joinTable/joinTableFKey
+// are used if they're not empty.
 //
 // This allows us to skip additional conditionals in the templates.
-func (t TableAlias) ManyRelationship(fkey, joinTableFkey string) RelationshipAlias {
-	var lookup string
-	if len(joinTableFkey) != 0 {
-		lookup = joinTableFkey
+func (a Aliases) ManyRelationship(table, fkey, joinTable, joinTableFKey string) RelationshipAlias {
+	var lookupTable, lookupFKey string
+	if len(joinTable) != 0 {
+		lookupTable, lookupFKey = joinTable, joinTableFKey
 	} else {
-		lookup = fkey
+		lookupTable, lookupFKey = table, fkey
 	}
 
-	return t.Relationship(lookup)
+	t := a.Table(lookupTable)
+	return t.Relationship(lookupFKey)
 }

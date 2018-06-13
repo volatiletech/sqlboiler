@@ -452,14 +452,14 @@ foreign = "Author"
 In a many-to-many relationship it's a bit more complicated. In an example where `videos <-> tags`
 with a join table in the middle. Imagine if the join table didn't exist, and instead both of the
 id columns in the join table were slapped on to the tables themselves. You'd have `videos.tag_id`
-and `tags.video_id`. Using the exact same method above (the side with the foreign key) we can rename
+and `tags.video_id`. Using a similar method to the above (the side with the foreign key) we can rename
 the relationships. To change `Videos.Tags` to `Videos.Rags` we can use the example below.
 
 Keep in mind that naming ONE side of the many-to-many relationship is sufficient as the other
 side will be automatically mirrored, though you can specify both if you so choose.
 
 ```toml
-[aliases.tables.tags.relationships.fk_video_tags_video_id]
+[aliases.tables.video_tags.relationships.fk_video_id]
 local   = "Rags"
 foreign = "Videos"
 ```

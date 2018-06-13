@@ -167,8 +167,7 @@ func TestToMany(t *testing.T) {
     {{- else -}}
       {{- range $rel := .ToManyRelationships -}}
         {{- $ltable := $.Aliases.Table $rel.Table -}}
-        {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-        {{- $relAlias := $ftable.ManyRelationship $rel.Name $rel.JoinLocalFKeyName -}}
+        {{- $relAlias := $.Aliases.ManyRelationship $rel.ForeignTable $rel.Name $rel.JoinTable $rel.JoinLocalFKeyName -}}
   t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}})
       {{end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
@@ -251,8 +250,7 @@ func TestToManyAdd(t *testing.T) {
     {{- else -}}
       {{- range $rel := .ToManyRelationships -}}
         {{- $ltable := $.Aliases.Table $rel.Table -}}
-        {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-        {{- $relAlias := $ftable.ManyRelationship $rel.Name $rel.JoinLocalFKeyName -}}
+        {{- $relAlias := $.Aliases.ManyRelationship $rel.ForeignTable $rel.Name $rel.JoinTable $rel.JoinLocalFKeyName -}}
   t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}})
       {{end -}}{{- /* range */ -}}
     {{- end -}}{{- /* outer if join table */ -}}
@@ -269,8 +267,7 @@ func TestToManySet(t *testing.T) {
         {{- if not (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
         {{- else -}}
           {{- $ltable := $.Aliases.Table $rel.Table -}}
-          {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-          {{- $relAlias := $ftable.ManyRelationship $rel.Name $rel.JoinLocalFKeyName -}}
+          {{- $relAlias := $.Aliases.ManyRelationship $rel.ForeignTable $rel.Name $rel.JoinTable $rel.JoinLocalFKeyName -}}
   t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}})
         {{end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}
@@ -288,8 +285,7 @@ func TestToManyRemove(t *testing.T) {
         {{- if not (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
         {{- else -}}
           {{- $ltable := $.Aliases.Table $rel.Table -}}
-          {{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-          {{- $relAlias := $ftable.ManyRelationship $rel.Name $rel.JoinLocalFKeyName -}}
+          {{- $relAlias := $.Aliases.ManyRelationship $rel.ForeignTable $rel.Name $rel.JoinTable $rel.JoinLocalFKeyName -}}
   t.Run("{{$ltable.UpSingular}}To{{$relAlias.Local}}", test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}})
         {{end -}}{{- /* if foreign column nullable */ -}}
       {{- end -}}{{- /* range */ -}}

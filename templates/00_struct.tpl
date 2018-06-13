@@ -47,7 +47,7 @@ type {{$alias.DownSingular}}R struct {
 
 	{{range .Table.ToManyRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
-	{{- $relAlias := $ftable.ManyRelationship .Name .JoinLocalFKeyName -}}
+	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
 	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}}
 	{{end -}}{{/* range tomany */}}
 }

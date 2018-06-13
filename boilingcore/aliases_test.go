@@ -176,47 +176,50 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 	tables := []drivers.Table{
 		{
 			Name: "videos",
-			ToManyRelationships: []drivers.ToManyRelationship{
-				{
-					Table:         "videos",
-					ForeignTable:  "tags",
-					Column:        "id",
-					ForeignColumn: "id",
-
-					ToJoinTable: true,
-					JoinTable:   "video_tags",
-
-					JoinLocalFKeyName:   "fk_video_id",
-					JoinLocalColumn:     "video_id",
-					JoinForeignFKeyName: "fk_tag_id",
-					JoinForeignColumn:   "tag_id",
-				},
-			},
 		},
 		{
 			Name: "tags",
+		},
+		{
+			Name:        "video_tags",
+			IsJoinTable: true,
+			FKeys: []drivers.ForeignKey{
+				{
+					Name:          "fk_video_id",
+					Table:         "video_tags",
+					Column:        "video_id",
+					ForeignTable:  "videos",
+					ForeignColumn: "id",
+				},
+				{
+					Name:          "fk_tag_id",
+					Table:         "video_tags",
+					Column:        "tags_id",
+					ForeignTable:  "tags",
+					ForeignColumn: "id",
+				},
+			},
 		},
 	}
 
 	t.Run("Automatic", func(t *testing.T) {
 		expect1 := RelationshipAlias{
-			Local:   "Videos",
-			Foreign: "Tags",
-		}
-		expect2 := RelationshipAlias{
 			Local:   "Tags",
 			Foreign: "Videos",
+		}
+		expect2 := RelationshipAlias{
+			Local:   "Videos",
+			Foreign: "Tags",
 		}
 
 		a := Aliases{}
 		FillAliases(&a, tables)
 
-		ltable := a.Tables["videos"]
-		ftable := a.Tables["tags"]
-		if got := ltable.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
+		table := a.Tables["video_tags"]
+		if got := table.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := ftable.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
+		if got := table.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
 			t.Errorf("bad values: %#v", got)
 		}
 	})
@@ -233,7 +236,7 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 
 		a := Aliases{
 			Tables: map[string]TableAlias{
-				"tags": {
+				"video_tags": {
 					Relationships: map[string]RelationshipAlias{
 						"fk_video_id": {Local: "NotTags", Foreign: "NotVideos"},
 					},
@@ -242,13 +245,53 @@ func TestAliasesRelationshipsJoinTable(t *testing.T) {
 		}
 		FillAliases(&a, tables)
 
-		ltable := a.Tables["videos"]
-		ftable := a.Tables["tags"]
-		if got := ltable.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
+		table := a.Tables["video_tags"]
+		if got := table.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
 			t.Errorf("bad values: %#v", got)
 		}
-		if got := ftable.Relationships["fk_video_id"]; !reflect.DeepEqual(expect1, got) {
+		if got := table.Relationships["fk_tag_id"]; !reflect.DeepEqual(expect2, got) {
 			t.Errorf("bad values: %#v", got)
 		}
 	})
+}
+
+func TestAliasHelpers(t *testing.T) {
+	t.Parallel()
+
+	a := Aliases{
+		Tables: map[string]TableAlias{
+			"videos": {
+				UpPlural: "Videos",
+				Columns: map[string]string{
+					"id": "NotID",
+				},
+				Relationships: map[string]RelationshipAlias{
+					"fk_user_id": {Local: "Videos", Foreign: "User"},
+				},
+			},
+			"video_tags": {
+				Relationships: map[string]RelationshipAlias{
+					"fk_video_id": {Local: "NotTags", Foreign: "NotVideos"},
+				},
+			},
+		},
+	}
+
+	if got := a.Table("videos").UpPlural; got != "Videos" {
+		t.Error("videos upPlural wrong:", got)
+	}
+
+	if got := a.Table("videos").Relationship("fk_user_id"); got.Local != "Videos" {
+		t.Error("videos relationship wrong:", got)
+	}
+
+	got := a.ManyRelationship("videos", "fk_user_id", "video_tags", "fk_video_id")
+	if got.Foreign != "NotVideos" {
+		t.Error("relationship wrong:", got)
+	}
+
+	got = a.ManyRelationship("videos", "fk_user_id", "", "")
+	if got.Foreign != "Videos" {
+		t.Error("relationship wrong:", got)
+	}
 }

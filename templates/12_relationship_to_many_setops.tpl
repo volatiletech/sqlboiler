@@ -4,7 +4,7 @@
 	{{- range $rel := .Table.ToManyRelationships -}}
 		{{- $ltable := $.Aliases.Table $rel.Table -}}
 		{{- $ftable := $.Aliases.Table $rel.ForeignTable -}}
-		{{- $relAlias := $ftable.ManyRelationship $rel.Name $rel.JoinLocalFKeyName -}}
+		{{- $relAlias := $.Aliases.ManyRelationship $rel.ForeignTable $rel.Name $rel.JoinTable $rel.JoinLocalFKeyName -}}
 		{{- $col := $ltable.Column $rel.Column -}}
 		{{- $fcol := $ftable.Column $rel.ForeignColumn -}}
 		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}

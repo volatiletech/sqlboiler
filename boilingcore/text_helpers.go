@@ -1,7 +1,6 @@
 package boilingcore
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/volatiletech/sqlboiler/drivers"
@@ -56,64 +55,50 @@ func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 }
 
 // txtNameToMany creates the local and foreign function names for
-// many-to-many relationships, where local refers to the table
-// who would have the foreign key if it weren't for the join table.
+// many-to-many relationships where there are two foreign keys involved.
 //
-// That's to say: If we had tags and videos, ordinarily if it were a
-// one to many, tags would have the video_id, and so for the video_id
-// fkey local means "tags", and foreign means "videos".
+// The output of the foreign key is the name for that side of the relationship.
 //
 //   | tags |  | tags_videos      |  | videos |
 //   | id   |  | tag_id, video_id |  | id     |
 //
-// In this setup, if we were able to not have a join table, it would look
-// like this:
-//
-//   | tags     |  | videos |
-//   | id       |  | id     |
-//   | video_id |  | tag_id |
-//
-// Hence when looking from the perspective of the "video_id" foreign key
-// local = tags, foreign = videos.
+// In this setup the lhs is the tag_id foreign key, and so the lhsFn will
+// refer to "how to name the lhs" which in this case should be tags. And
+// videos for the rhs.
 //
 // cases:
-// = many-to-many
 // sponsors - contests
 // sponsor_id contest_id
 // fk == table = sponsor.Contests | contest.Sponsors
 //
-// = many-to-many
 // sponsors - contests
 // wiggle_id jiggle_id
 // fk != table = sponsor.JiggleSponsors | contest.WiggleContests
 //
-// = many-to-many
 // industries - industries
 // industry_id  mapped_industry_id
-//
 // fk == table = industry.Industries
 // fk != table = industry.MappedIndustryIndustry
-func txtNameToMany(toMany drivers.ToManyRelationship) (localFn, foreignFn string) {
-	if !toMany.ToJoinTable {
-		panic(fmt.Sprintf("this method is only for join tables: %s <-> %s, %s", toMany.Table, toMany.ForeignTable, toMany.Name))
+func txtNameToMany(lhs, rhs drivers.ForeignKey) (lhsFn, rhsFn string) {
+	lhsKey := strmangle.Singular(trimSuffixes(lhs.Column))
+	rhsKey := strmangle.Singular(trimSuffixes(rhs.Column))
+
+	if lhsKey != strmangle.Singular(lhs.ForeignTable) {
+		lhsFn = strmangle.TitleCase(lhsKey)
 	}
+	lhsFn += strmangle.TitleCase(strmangle.Plural(lhs.ForeignTable))
 
-	localFkey := strmangle.Singular(trimSuffixes(toMany.JoinLocalColumn))
-	foreignFkey := strmangle.Singular(trimSuffixes(toMany.JoinForeignColumn))
-
-	if localFkey != strmangle.Singular(toMany.Table) {
-		localFn = strmangle.TitleCase(localFkey)
+	if rhsKey != strmangle.Singular(rhs.ForeignTable) {
+		rhsFn = strmangle.TitleCase(rhsKey)
 	}
-	localFn += strmangle.TitleCase(strmangle.Plural(toMany.Table))
+	rhsFn += strmangle.TitleCase(strmangle.Plural(rhs.ForeignTable))
 
-	if foreignFkey != strmangle.Singular(toMany.ForeignTable) {
-		foreignFn = strmangle.TitleCase(foreignFkey)
-	}
-	foreignFn += strmangle.TitleCase(strmangle.Plural(toMany.ForeignTable))
-
-	return localFn, foreignFn
+	return lhsFn, rhsFn
 }
 
+// usesPrimitives checks to see if relationship between two models (ie the foreign key column
+// and referred to column) both are primitive Go types we can compare or assign with == and =
+// in a template.
 func usesPrimitives(tables []drivers.Table, table, column, foreignTable, foreignColumn string) bool {
 	local := drivers.GetTable(tables, table)
 	foreign := drivers.GetTable(tables, foreignTable)

@@ -87,7 +87,7 @@ func templates17_upsertTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/17_upsert.tpl", size: 5563, mode: os.FileMode(420), modTime: time.Unix(1528524897, 0)}
+	info := bindataFileInfo{name: "templates/17_upsert.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -107,7 +107,7 @@ func templatesSingletonPsql_upsertTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/singleton/psql_upsert.tpl", size: 1317, mode: os.FileMode(420), modTime: time.Unix(1528415503, 0)}
+	info := bindataFileInfo{name: "templates/singleton/psql_upsert.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -127,7 +127,7 @@ func templates_testSingletonPsql_main_testTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/singleton/psql_main_test.tpl", size: 4495, mode: os.FileMode(420), modTime: time.Unix(1528388322, 0)}
+	info := bindataFileInfo{name: "templates_test/singleton/psql_main_test.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -147,7 +147,7 @@ func templates_testSingletonPsql_suites_testTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/singleton/psql_suites_test.tpl", size: 255, mode: os.FileMode(420), modTime: time.Unix(1528525627, 0)}
+	info := bindataFileInfo{name: "templates_test/singleton/psql_suites_test.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -167,7 +167,7 @@ func templates_testUpsertTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/upsert.tpl", size: 1726, mode: os.FileMode(420), modTime: time.Unix(1528525232, 0)}
+	info := bindataFileInfo{name: "templates_test/upsert.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

@@ -187,10 +187,17 @@ driver_test_db() {
 # ====================================
 
 go_generate() {
-    if test -n "${1}"; then
-        run="${1}"
-    else
+    if test -z "${1}"; then
+        set -o xtrace
+        go generate
+        set +o xtrace
+        return
+    fi
+
+    if test "all" = "${1}"; then
         run="psql mysql mssql"
+    else
+        run="${1}"
     fi
 
     cwd="${PWD}"
@@ -253,5 +260,5 @@ case "${command}" in
         echo "  driver-test <driver> [args] - runs tests for the driver"
         echo "  driver-test-db <driver>     - create driver db (run before driver-test-user)"
         echo "  driver-test-user <driver>   - creates a user for the driver tests (unprivileged)"
-        echo "  go-generate [driver]        - runs go generate on driver packages (omit driver for all)"
+        echo "  go-generate [all|driver]    - runs go generate on packages, omit arg for sqlboiler itself"
 esac

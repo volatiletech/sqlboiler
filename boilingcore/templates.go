@@ -1,6 +1,8 @@
 package boilingcore
 
 import (
+	"crypto/sha256"
+	"encoding"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/templatebin"
 )
 
 // templateData for sqlboiler templates
@@ -135,6 +138,7 @@ type lazyTemplate struct {
 }
 
 type templateLoader interface {
+	encoding.TextMarshaler
 	Load() ([]byte, error)
 }
 
@@ -149,6 +153,14 @@ func (f fileLoader) Load() ([]byte, error) {
 	return b, nil
 }
 
+func (f fileLoader) MarshalText() ([]byte, error) {
+	return []byte(f.String()), nil
+}
+
+func (f fileLoader) String() string {
+	return "file:" + string(f)
+}
+
 type base64Loader string
 
 func (b base64Loader) Load() ([]byte, error) {
@@ -157,6 +169,33 @@ func (b base64Loader) Load() ([]byte, error) {
 		return nil, errors.Wrap(err, "failed to decode driver's template, should be base64)")
 	}
 	return byt, nil
+}
+
+func (b base64Loader) MarshalText() ([]byte, error) {
+	return []byte(b.String()), nil
+}
+
+func (b base64Loader) String() string {
+	byt, err := base64.StdEncoding.DecodeString(string(b))
+	if err != nil {
+		panic("trying to debug output base64 loader, but was not proper base64!")
+	}
+	sha := sha256.Sum256(byt)
+	return fmt.Sprintf("base64:(sha256 of content): %x", sha)
+}
+
+type assetLoader string
+
+func (a assetLoader) Load() ([]byte, error) {
+	return templatebin.Asset(string(a))
+}
+
+func (a assetLoader) MarshalText() ([]byte, error) {
+	return []byte(a.String()), nil
+}
+
+func (a assetLoader) String() string {
+	return "asset:" + string(a)
 }
 
 // set is to stop duplication from named enums, allowing a template loop

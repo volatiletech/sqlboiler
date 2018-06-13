@@ -19,7 +19,7 @@ func init() {
 	drivers.RegisterFromInit("mssql", &MSSQLDriver{})
 }
 
-//go:generate go-bindata -pkg driver -prefix override override/...
+//go:generate go-bindata -nometadata -pkg driver -prefix override override/...
 
 // Assemble is more useful for calling into the library so you don't
 // have to instantiate an empty type.

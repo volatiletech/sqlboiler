@@ -5,7 +5,6 @@ package boilingcore
 import (
 	"encoding/json"
 	"fmt"
-	"go/build"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -16,6 +15,7 @@ import (
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/importers"
 	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/templatebin"
 )
 
 const (
@@ -183,18 +183,26 @@ func (s *State) Cleanup() error {
 func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
-	basePath, err := getBasePath(s.Config.BaseDir)
-	if err != nil {
-		return nil, err
-	}
-
-	templates, err := findTemplates(basePath, templatesDirectory)
-	if err != nil {
-		return nil, err
-	}
-	testTemplates, err := findTemplates(basePath, templatesTestDirectory)
-	if err != nil {
-		return nil, err
+	var templates, testTemplates map[string]templateLoader
+	if len(s.Config.BaseDir) > 0 {
+		templates, err = findTemplates(s.Config.BaseDir, templatesDirectory)
+		if err != nil {
+			return nil, err
+		}
+		testTemplates, err = findTemplates(s.Config.BaseDir, templatesTestDirectory)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		templates = make(map[string]templateLoader)
+		testTemplates = make(map[string]templateLoader)
+		for _, a := range templatebin.AssetNames() {
+			if strings.HasPrefix(a, "templates_test") {
+				testTemplates[a] = assetLoader(a)
+			} else {
+				templates[a] = assetLoader(a)
+			}
+		}
 	}
 
 	for k, v := range testTemplates {
@@ -296,21 +304,6 @@ func findTemplates(base, root string) (map[string]templateLoader, error) {
 	}
 
 	return templates, nil
-}
-
-var basePackage = "github.com/volatiletech/sqlboiler"
-
-func getBasePath(baseDirConfig string) (string, error) {
-	if len(baseDirConfig) > 0 {
-		return baseDirConfig, nil
-	}
-
-	p, _ := build.Default.Import(basePackage, "", build.FindOnly)
-	if p != nil && len(p.Dir) > 0 {
-		return p.Dir, nil
-	}
-
-	return os.Getwd()
 }
 
 // initDBInfo retrieves information about the database

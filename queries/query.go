@@ -96,7 +96,7 @@ func RawG(query string, args ...interface{}) *Query {
 
 // Exec executes a query that does not need a row returned
 func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
-	qs, args := buildQuery(q)
+	qs, args := BuildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
@@ -106,7 +106,7 @@ func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
 
 // QueryRow executes the query for the One finisher and returns a row
 func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
-	qs, args := buildQuery(q)
+	qs, args := BuildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
@@ -116,7 +116,7 @@ func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
 
 // Query executes the query for the All finisher and returns multiple rows
 func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
-	qs, args := buildQuery(q)
+	qs, args := BuildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
@@ -126,7 +126,7 @@ func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
 
 // ExecContext executes a query that does not need a row returned
 func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql.Result, error) {
-	qs, args := buildQuery(q)
+	qs, args := BuildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
@@ -136,7 +136,7 @@ func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql
 
 // QueryRowContext executes the query for the One finisher and returns a row
 func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) *sql.Row {
-	qs, args := buildQuery(q)
+	qs, args := BuildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
@@ -146,7 +146,7 @@ func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) 
 
 // QueryContext executes the query for the All finisher and returns multiple rows
 func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*sql.Rows, error) {
-	qs, args := buildQuery(q)
+	qs, args := BuildQuery(q)
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)

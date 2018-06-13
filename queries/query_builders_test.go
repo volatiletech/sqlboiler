@@ -99,7 +99,7 @@ func TestBuildQuery(t *testing.T) {
 	for i, test := range tests {
 		filename := filepath.Join("_fixtures", fmt.Sprintf("%02d.sql", i))
 		test.q.dialect = &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true}
-		out, args := buildQuery(test.q)
+		out, args := BuildQuery(test.q)
 
 		if *writeGoldenFiles {
 			err := ioutil.WriteFile(filename, []byte(out), 0664)

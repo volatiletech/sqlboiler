@@ -15,7 +15,10 @@ var (
 	rgxInClause   = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
 )
 
-func buildQuery(q *Query) (string, []interface{}) {
+// BuildQuery builds a query object into the query string
+// and it's accompanying arguments. Using this method
+// allows query building without immediate execution.
+func BuildQuery(q *Query) (string, []interface{}) {
 	var buf *bytes.Buffer
 	var args []interface{}
 

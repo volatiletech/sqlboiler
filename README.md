@@ -53,7 +53,7 @@ Table of Contents
         * [Initial Generation](#initial-generation)
         * [Regeneration](#regeneration)
         * [Controlling Generation](#controlling-generation)
-          * [Names](#names)
+          * [Aliases](#aliases)
           * [Types](#types)
           * [Imports](#imports)
         * [Extending Generated Models](#extending-generated-models)
@@ -94,6 +94,7 @@ Table of Contents
 - Extremely fast code generation
 - High performance through generation & intelligent caching
 - Uses boil.Executor (simple interface, sql.DB, sqlx.DB etc. compatible)
+- Uses context.Context
 - Easy workflow (models can always be regenerated, full auto-complete)
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
@@ -106,19 +107,23 @@ Table of Contents
 - Raw SQL fallback
 - Compatibility tests (Run against your own DB schema)
 - Debug logging
-- Schemas support
+- Basic multiple schema support (no cross-schema support)
 - 1d arrays, json, hstore & more
 - Enum types
+- Out of band driver support
 
 ### Supported Databases
 
-- PostgreSQL
-- MySQL
-- Microsoft SQL Server
+| Database          | Driver Location |
+| ----------------- | --------------- |
+| PostgreSQL        | https://github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+| MySQL             | https://github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
+| MSSQLServer 2012+ | https://github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql
+| SQLite3           | https://github.com/volatiletech/sqlboiler-sqlite3
 
-*Note: Seeking contributors for other database engines.*
+**Note:** SQLBoiler supports out of band driver support so you can make your own
 
-*Microsoft SQL Server: Limit with offset support only for SQL Server 2012 and above.*
+We are seeking contributors for other database engines.
 
 ### A Small Taste
 
@@ -289,28 +294,31 @@ not to pass them through the command line or environment variables:
 Example:
 
 ```toml
-blacklist=["migrations", "other"]
-schema="myschema"
 [psql]
-  dbname="dbname"
-  host="localhost"
-  port=5432
-  user="dbusername"
-  pass="dbpassword"
+  dbname = "dbname"
+  host   = "localhost"
+  port   = 5432
+  user   = "dbusername"
+  pass   = "dbpassword"
+  schema = "myschema"
+  blacklist = ["migrations", "other"]
+
 [mysql]
-  dbname="dbname"
-  host="localhost"
-  port=3306
-  user="dbusername"
-  pass="dbpassword"
-  sslmode="false"
+  dbname  = "dbname"
+  host    = "localhost"
+  port    = 3306
+  user    = "dbusername"
+  pass    = "dbpassword"
+  sslmode = "false"
+
 [mssql]
-  dbname="dbname"
-  host="localhost"
-  port=1433
-  user="dbusername"
-  pass="dbpassword"
-  sslmode="disable"
+  dbname  = "dbname"
+  host    = "localhost"
+  port    = 1433
+  user    = "dbusername"
+  pass    = "dbpassword"
+  sslmode = "disable"
+  schema  = "notdbo"
 ```
 
 #### Initial Generation
@@ -356,7 +364,10 @@ with SQLBoiler. If you find there are some failing tests, please check the
 
 ```sh
 # Generate our models and exclude the migrations table
-sqlboiler -b goose_migrations psql
+# When passing 'psql' here, it looks for a binary called
+# 'sqlboiler-psql' in your CWD and PATH. You can also pass
+# an absolute path to a driver if you desire.
+sqlboiler psql
 
 # Run the generated tests
 go test ./models
@@ -396,10 +407,10 @@ The templates get executed in a specific way each time. There's a variety of
 configuration options on the command line/config file that can control what
 features are turned on or off.
 
-In addition to the command line flags there are two features that are only
+In addition to the command line flags there are a few features that are only
 available via the config file and can use some explanation.
 
-##### Names
+##### Aliases
 
 In sqlboiler, names are automatically generated for you. If you name your database
 nice things you will likely have nice names in the end. However in the case where your
@@ -407,8 +418,8 @@ names in your database are bad AND unchangeable, or sqlboiler's inference doesn'
 the names you do have (even though they are good and correct) you can use aliases to
 change the name of your tables, columns and relationships in the generated Go code.
 
-Note: It is not required to provide all parts of all names. Anything left out will be
-inferred as it was in the past.
+*Note: It is not required to provide all parts of all names. Anything left out will be
+inferred as it was in the past.*
 
 ```toml
 # Although team_names works fine without configuration, we use it here for illustrative purposes
@@ -466,16 +477,17 @@ foreign = "Videos"
 
 ##### Types
 
-There exists the ability to override types that the driver has suggested
-or found. The way to accomplish this is through the config file.
+There exists the ability to override types that the driver has inferred.
+The way to accomplish this is through the config file.
 
 ```toml
 [[types]]
   # The match is a drivers.Column struct, and matches on almost all fields.
-  # Notable exceptions the unique bool. Matches are done
-  # with logical and, it must match all specified matchers. Boolean values
+  # Notable exception for the unique bool. Matches are done
+  # with "logical and" meaning it must match all specified matchers. Boolean values
   # are only checked if all the string specifiers match first, and they
   # must always match.
+  # Not shown here: db_type is the database type and a very useful matcher
   [types.match]
     type = "null.String"
     nullable = true
@@ -491,7 +503,7 @@ or found. The way to accomplish this is through the config file.
   # In the above example it would add an entry for mynull.String, if we did not
   # change the type in our replacement, it would overwrite the null.String entry.
   [types.imports]
-    third_party = ['"gihub.com/me/mynull"']
+    third_party = ['"github.com/me/mynull"']
 ```
 
 ##### Imports
@@ -541,7 +553,7 @@ extend the models, the first way is the most desirable:
 package modext
 
 // UserFirstTimeSetup is an extension of the user model.
-func UserFirstTimeSetup(ctx, context.Context, db *sql.DB, u *models.User) error { ... }
+func UserFirstTimeSetup(ctx context.Context, db *sql.DB, u *models.User) error { ... }
 ```
 
 Code organization is accomplished by using multiple files, and everything
@@ -573,7 +585,7 @@ type users struct {}
 var Users = users{}
 
 // FirstTimeSetup is an extension of the user model.
-func (u users) FirstTimeSetup(ctx context.Context, db *sql.DB, u *models.User) error { ... }
+func (users) FirstTimeSetup(ctx context.Context, db *sql.DB, u *models.User) error { ... }
 ```
 
 Calling code then looks a little bit different:
@@ -626,6 +638,8 @@ The most common causes of problems and panics are:
 - A nil or closed database handle. Ensure your passed in `boil.Executor` is not nil.
   - If you decide to use the `G` variant of functions instead, make sure you've initialized your
     global database handle using `boil.SetDB()`.
+- Naming collisions, if the code fails to compile because there are naming collisions, look at the
+  [aliasing](#aliases) feature.
 
 For errors with other causes, it may be simple to debug yourself by looking at the generated code.
 Setting `boil.DebugMode` to `true` can help with this. You can change the output using `boil.DebugWriter` (defaults to `os.Stdout`).
@@ -1283,14 +1297,14 @@ for more details.
 // Find a pilot and update his name
 pilot, _ := models.FindPilot(ctx, db, 1)
 pilot.Name = "Neo"
-err := pilot.Update(ctx, db)
+rowsAff, err := pilot.Update(ctx, db)
 
 // Update a slice of pilots to have the name "Smith"
 pilots, _ := models.Pilots().All(ctx, db)
-err := pilots.UpdateAll(ctx, db, models.M{"name": "Smith"})
+rowsAff, err := pilots.UpdateAll(ctx, db, models.M{"name": "Smith"})
 
 // Update all pilots in the database to to have the name "Smith"
-err := models.Pilots().UpdateAll(ctx, db, models.M{"name": "Smith"})
+rowsAff, err := models.Pilots().UpdateAll(ctx, db, models.M{"name": "Smith"})
 ```
 
 ### Delete
@@ -1300,14 +1314,14 @@ Delete a single object, a slice of objects or specific objects through [Query Bu
 ```go
 pilot, _ := models.FindPilot(db, 1)
 // Delete the pilot from the database
-err := pilot.Delete(ctx, db)
+rowsAff, err := pilot.Delete(ctx, db)
 
 // Delete all pilots from the database
-err := models.Pilots().DeleteAll(ctx, db)
+rowsAff, err := models.Pilots().DeleteAll(ctx, db)
 
 // Delete a slice of pilots from the database
 pilots, _ := models.Pilots().All(ctx, db)
-err := pilots.DeleteAll(ctx, db)
+rowsAff, err := pilots.DeleteAll(ctx, db)
 ```
 
 ### Upsert

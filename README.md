@@ -56,6 +56,7 @@ Table of Contents
           * [Aliases](#aliases)
           * [Types](#types)
           * [Imports](#imports)
+          * [Templates](#templates)
         * [Extending Generated Models](#extending-generated-models)
     * [Diagnosing Problems](#diagnosing-problems)
     * [Features &amp; Examples](#features--examples)
@@ -278,7 +279,6 @@ not to pass them through the command line or environment variables:
 
 | Name                | Defaults  |
 | ------------------- | --------- |
-| basedir             | none      |
 | pkgname             | "models"  |
 | output              | "models"  |
 | tag                 | []        |
@@ -339,7 +339,6 @@ sqlboiler psql
 Flags:
       --add-global-variants        Enable generation for global variants
       --add-panic-variants         Enable generation for panic variants
-      --basedir string             The base directory has the templates and templates_test folders
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler
@@ -352,6 +351,7 @@ Flags:
   -p, --pkgname string             The name you wish to assign to your generated package (default "models")
       --struct-tag-casing string   Decides the casing for go structure tag names. camel or snake (default snake) (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
+      --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
       --version                    Print the version
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
 ```
@@ -537,6 +537,61 @@ will be merged in to what is provided here.
   third_party = ['"github.com/my/package"']
 ```
 
+##### Templates
+
+In advanced scenarios it may be desirable to generate additional files that are not go code.
+You can accomplish this by using the `--templates` flag to specify **all** the directories you
+wish to generate code for. With this flag you specify root directories, that is top-level container
+directories.
+
+If root directories have a `_test` suffix in the name, this folder is considered a folder
+full of templates for testing only and will be ommitted when `--no-tests` is specified and
+its templates will be generated into files with a `_test` suffix.
+
+Each root directory is recursively walked. Each template found will be merged into table_name.ext
+where ext is defined by the shared extension of the templates. The directory structure is preserved
+with the exception of singletons.
+
+For files that should not be generated for each model, you can use a `singleton` directory inside
+the directory where the singleton file should be generated. This will make sure that the file is
+only generated once.
+
+Here's an example:
+
+```text
+templates/
+├── 00_struct.go.tpl               # Merged into output_dir/table_name.go
+├── 00_struct.js.tpl               # Merged into output_dir/table_name.js
+├── singleton
+│   └── boil_queries.go.tpl        # Rendered as output_dir/boil_queries.go
+└── js
+    ├── jsmodel.js.tpl             # Merged into output_dir/js/table_name.js
+    └── singleton
+        └── jssingle.js.tpl        # Merged into output_dir/js/jssingle.js
+```
+
+The output files of which would be:
+```
+output_dir/
+├── boil_queries.go
+├── table_name.go
+├── table_name.js
+└── js
+    ├── table_name.js
+    └── jssingle.js
+```
+
+**Note**: Because the `--templates` flag overrides the internal bindata of `sqlboiler`, if you still
+wish to generate the default templates it's recommended that you include the path to sqlboiler's templates
+as well. 
+
+```toml
+templates = [
+  "/path/to/sqlboiler/templates",
+  "/path/to/sqlboiler/templates_test"
+  "/path/to/your_project/more_templates"
+]
+```
 
 #### Extending generated models
 

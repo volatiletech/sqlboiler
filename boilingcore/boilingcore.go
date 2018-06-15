@@ -42,10 +42,8 @@ type State struct {
 	Tables  []drivers.Table
 	Dialect drivers.Dialect
 
-	Templates              *templateList
-	TestTemplates          *templateList
-	SingletonTemplates     *templateList
-	SingletonTestTemplates *templateList
+	Templates     *templateList
+	TestTemplates *templateList
 }
 
 // New creates a new state based off of the config
@@ -74,14 +72,14 @@ func New(config *Config) (*State, error) {
 		return nil, err
 	}
 
-	err = s.initOutFolder()
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to initialize the output folder")
-	}
-
 	templates, err := s.initTemplates()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
+	}
+
+	err = s.initOutFolders(templates)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to initialize the output folders")
 	}
 
 	err = s.initTags(config.Tags)
@@ -148,6 +146,12 @@ func (s *State) Run() error {
 		}
 	}
 
+	var regularDirExtMap, testDirExtMap dirExtMap
+	regularDirExtMap = groupTemplates(s.Templates)
+	if !s.Config.NoTests {
+		testDirExtMap = groupTemplates(s.TestTemplates)
+	}
+
 	for _, table := range s.Tables {
 		if table.IsJoinTable {
 			continue
@@ -156,13 +160,13 @@ func (s *State) Run() error {
 		data.Table = table
 
 		// Generate the regular templates
-		if err := generateOutput(s, data); err != nil {
+		if err := generateOutput(s, regularDirExtMap, data); err != nil {
 			return errors.Wrap(err, "unable to generate output")
 		}
 
 		// Generate the test templates
 		if !s.Config.NoTests {
-			if err := generateTestOutput(s, data); err != nil {
+			if err := generateTestOutput(s, testDirExtMap, data); err != nil {
 				return errors.Wrap(err, "unable to generate test output")
 			}
 		}
@@ -178,35 +182,32 @@ func (s *State) Cleanup() error {
 }
 
 // initTemplates loads all template folders into the state object.
-// The only reason it returns lazyTemplates is because we want to debug
-// log it in a single JSON structure.
 func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
-	var templates, testTemplates map[string]templateLoader
-	if len(s.Config.BaseDir) > 0 {
-		templates, err = findTemplates(s.Config.BaseDir, templatesDirectory)
-		if err != nil {
-			return nil, err
-		}
-		testTemplates, err = findTemplates(s.Config.BaseDir, templatesTestDirectory)
-		if err != nil {
-			return nil, err
+	templates := make(map[string]templateLoader)
+	if len(s.Config.TemplateDirs) != 0 {
+		for _, dir := range s.Config.TemplateDirs {
+			abs, err := filepath.Abs(dir)
+			if err != nil {
+				return nil, errors.Wrap(err, "could not find abs dir of templates directory")
+			}
+
+			base := filepath.Base(abs)
+			root := filepath.Dir(abs)
+			tpls, err := findTemplates(root, base)
+			if err != nil {
+				return nil, err
+			}
+
+			mergeTemplates(templates, tpls)
 		}
 	} else {
-		templates = make(map[string]templateLoader)
-		testTemplates = make(map[string]templateLoader)
 		for _, a := range templatebin.AssetNames() {
-			if strings.HasPrefix(a, "templates_test") {
-				testTemplates[a] = assetLoader(a)
-			} else {
+			if strings.HasSuffix(a, ".tpl") {
 				templates[a] = assetLoader(a)
 			}
 		}
-	}
-
-	for k, v := range testTemplates {
-		templates[k] = v
 	}
 
 	driverTemplates, err := s.Driver.Templates()
@@ -249,23 +250,13 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 		})
 	}
 
-	s.Templates, err = loadTemplates(lazyTemplates, templatesDirectory)
-	if err != nil {
-		return nil, err
-	}
-
-	s.SingletonTemplates, err = loadTemplates(lazyTemplates, templatesSingletonDirectory)
+	s.Templates, err = loadTemplates(lazyTemplates, false)
 	if err != nil {
 		return nil, err
 	}
 
 	if !s.Config.NoTests {
-		s.TestTemplates, err = loadTemplates(lazyTemplates, templatesTestDirectory)
-		if err != nil {
-			return nil, err
-		}
-
-		s.SingletonTestTemplates, err = loadTemplates(lazyTemplates, templatesSingletonTestDirectory)
+		s.TestTemplates, err = loadTemplates(lazyTemplates, true)
 		if err != nil {
 			return nil, err
 		}
@@ -274,28 +265,64 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 	return lazyTemplates, nil
 }
 
-// findTemplates uses a base path: (/home/user/gopath/src/../sqlboiler/)
-// and a root path: /templates
+type dirExtMap map[string]map[string][]string
+
+// groupTemplates takes templates and groups them according to their output directory
+// and file extension.
+func groupTemplates(templates *templateList) dirExtMap {
+	tplNames := templates.Templates()
+	dirs := make(map[string]map[string][]string)
+	for _, tplName := range tplNames {
+		normalized, isSingleton, _, _ := outputFilenameParts(tplName)
+		if isSingleton {
+			continue
+		}
+
+		dir := filepath.Dir(normalized)
+		if dir == "." {
+			dir = ""
+		}
+
+		extensions, ok := dirs[dir]
+		if !ok {
+			extensions = make(map[string][]string)
+			dirs[dir] = extensions
+		}
+
+		ext := getLongExt(tplName)
+		ext = strings.TrimSuffix(ext, ".tpl")
+		slice := extensions[ext]
+		extensions[ext] = append(slice, tplName)
+	}
+
+	return dirs
+}
+
+// findTemplates uses a root path: (/home/user/gopath/src/../sqlboiler/)
+// and a base path: /templates
 // to create a bunch of file loaders of the form:
 // templates/00_struct.tpl -> /absolute/path/to/that/file
 // Note the missing leading slash, this is important for the --replace argument
-func findTemplates(base, root string) (map[string]templateLoader, error) {
+func findTemplates(root, base string) (map[string]templateLoader, error) {
 	templates := make(map[string]templateLoader)
-	baseRoot := filepath.Join(base, root)
-	err := filepath.Walk(baseRoot, func(path string, fi os.FileInfo, err error) error {
+	rootBase := filepath.Join(root, base)
+	err := filepath.Walk(rootBase, func(path string, fi os.FileInfo, err error) error {
 		if fi.IsDir() {
 			return nil
 		}
 
-		if ext := filepath.Ext(path); ext == ".tpl" {
-			relative, err := filepath.Rel(base, path)
-			if err != nil {
-				return errors.Wrapf(err, "could not find relative path to base root: %s", baseRoot)
-			}
-			relative = strings.TrimLeft(relative, string(os.PathSeparator))
-			templates[relative] = fileLoader(path)
+		ext := filepath.Ext(path)
+		if ext != ".tpl" {
+			return nil
 		}
 
+		relative, err := filepath.Rel(root, path)
+		if err != nil {
+			return errors.Wrapf(err, "could not find relative path to base root: %s", rootBase)
+		}
+
+		relative = strings.TrimLeft(relative, string(os.PathSeparator))
+		templates[relative] = fileLoader(path)
 		return nil
 	})
 
@@ -447,15 +474,45 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	return ret
 }
 
-// initOutFolder creates the folder that will hold the generated output.
-func (s *State) initOutFolder() error {
+// initOutFolders creates the folders that will hold the generated output.
+func (s *State) initOutFolders(lazyTemplates []lazyTemplate) error {
 	if s.Config.Wipe {
 		if err := os.RemoveAll(s.Config.OutFolder); err != nil {
 			return err
 		}
 	}
 
-	return os.MkdirAll(s.Config.OutFolder, os.ModePerm)
+	newDirs := make(map[string]struct{})
+	for _, t := range lazyTemplates {
+		// templates/js/00_struct.js.tpl
+		// templates/js/singleton/00_struct.js.tpl
+		// we want the js part only
+		fragments := strings.Split(t.Name, string(os.PathSeparator))
+
+		// Throw away the root dir and filename
+		fragments = fragments[1 : len(fragments)-1]
+		if len(fragments) != 0 && fragments[len(fragments)-1] == "singleton" {
+			fragments = fragments[:len(fragments)-1]
+		}
+
+		if len(fragments) == 0 {
+			continue
+		}
+
+		newDirs[strings.Join(fragments, string(os.PathSeparator))] = struct{}{}
+	}
+
+	if err := os.MkdirAll(s.Config.OutFolder, os.ModePerm); err != nil {
+		return err
+	}
+
+	for d := range newDirs {
+		if err := os.MkdirAll(filepath.Join(s.Config.OutFolder, d), os.ModePerm); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // initTags removes duplicate tags and validates the format
@@ -490,4 +547,10 @@ func checkPKeys(tables []drivers.Table) error {
 	}
 
 	return nil
+}
+
+func mergeTemplates(dst, src map[string]templateLoader) {
+	for k, v := range src {
+		dst[k] = v
+	}
 }

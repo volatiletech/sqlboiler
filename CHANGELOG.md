@@ -29,7 +29,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - MySQL numeric, fixed, dec types now generate using the new types.(Null)Decimal
 - Use bindata as the default method of accessing templates, this prevents many
   bug reports we've had in the past. During development or to otherwise opt out
-  the --basedir flag will not load from bindata (driver's are the exception).
+  the --templates flag will not load from bindata (drivers are the exception).
+- Add the ability to generate non-go files. The new --templates flag allows you to override
+  the default bindata templates/ and templates_test/ directory that ship with sqlboiler.
 - Export the queries.BuildQuery method for public use. This allows building
   queries without executing.
 

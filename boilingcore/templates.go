@@ -110,11 +110,13 @@ func (t templateList) Templates() []string {
 	return ret
 }
 
-func loadTemplates(lazyTemplates []lazyTemplate, filterPrefix string) (*templateList, error) {
+func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateList, error) {
 	tpl := template.New("")
 
 	for _, t := range lazyTemplates {
-		if filepath.Dir(t.Name) != filterPrefix {
+		firstDir := strings.Split(t.Name, string(filepath.Separator))[0]
+		isTest := strings.HasSuffix(firstDir, "_test")
+		if testTemplates && !isTest || !testTemplates && isTest {
 			continue
 		}
 
@@ -123,7 +125,7 @@ func loadTemplates(lazyTemplates []lazyTemplate, filterPrefix string) (*template
 			return nil, errors.Wrapf(err, "failed to load template: %s", t.Name)
 		}
 
-		_, err = tpl.New(filepath.Base(t.Name)).Funcs(templateFunctions).Parse(string(byt))
+		_, err = tpl.New(t.Name).Funcs(templateFunctions).Parse(string(byt))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse template: %s", t.Name)
 		}

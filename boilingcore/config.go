@@ -12,7 +12,7 @@ type Config struct {
 
 	PkgName          string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
 	OutFolder        string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
-	BaseDir          string   `toml:"base_dir,omitempty" json:"base_dir,omitempty"`
+	TemplateDirs     []string `toml:"template_dirs,omitempty" json:"template_dirs,omitempty"`
 	Tags             []string `toml:"tags,omitempty" json:"tags,omitempty"`
 	Replacements     []string `toml:"replacements,omitempty" json:"replacements,omitempty"`
 	Debug            bool     `toml:"debug,omitempty" json:"debug,omitempty"`

@@ -291,7 +291,7 @@ func TestAliasHelpers(t *testing.T) {
 	}
 
 	got = a.ManyRelationship("videos", "fk_user_id", "", "")
-	if got.Foreign != "Videos" {
+	if got.Foreign != "User" {
 		t.Error("relationship wrong:", got)
 	}
 }

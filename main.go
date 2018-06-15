@@ -92,7 +92,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
-	rootCmd.PersistentFlags().StringP("basedir", "", "", "The base directory has the templates and templates_test folders")
+	rootCmd.PersistentFlags().StringSliceP("templates", "", nil, "A templates directory, overrides the bindata'd template folders in sqlboiler")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
@@ -163,7 +163,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		DriverName:       driverName,
 		OutFolder:        viper.GetString("output"),
 		PkgName:          viper.GetString("pkgname"),
-		BaseDir:          viper.GetString("basedir"),
 		Debug:            viper.GetBool("debug"),
 		AddGlobal:        viper.GetBool("add-global-variants"),
 		AddPanic:         viper.GetBool("add-panic-variants"),
@@ -174,6 +173,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
 		Wipe:             viper.GetBool("wipe"),
 		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake
+		TemplateDirs:     viper.GetStringSlice("templates"),
 		Tags:             viper.GetStringSlice("tag"),
 		Replacements:     viper.GetStringSlice("replace"),
 		Aliases:          boilingcore.ConvertAliases(viper.Get("aliases")),

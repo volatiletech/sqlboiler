@@ -521,13 +521,13 @@ func (a *BoolArray) scanBytes(src []byte) error {
 	} else {
 		b := make(BoolArray, len(elems))
 		for i, v := range elems {
-			if len(v) != 1 {
+			if len(v) < 1 {
 				return fmt.Errorf("boil: could not parse boolean array index %d: invalid boolean %q", i, v)
 			}
-			switch v[0] {
-			case 't':
+			switch v[:1][0] {
+			case 't', 'T':
 				b[i] = true
-			case 'f':
+			case 'f', 'F':
 				b[i] = false
 			default:
 				return fmt.Errorf("boil: could not parse boolean array index %d: invalid boolean %q", i, v)

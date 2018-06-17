@@ -52,6 +52,30 @@ func New(config *Config) (*State, error) {
 		Config: config,
 	}
 
+	var templates []lazyTemplate
+
+	defer func() {
+		if s.Config.Debug {
+			debugOut := struct {
+				Config       *Config         `json:"config"`
+				DriverConfig drivers.Config  `json:"driver_config"`
+				Tables       []drivers.Table `json:"tables"`
+				Templates    []lazyTemplate  `json:"templates"`
+			}{
+				Config:       s.Config,
+				DriverConfig: s.Config.DriverConfig,
+				Tables:       s.Tables,
+				Templates:    templates,
+			}
+
+			b, err := json.Marshal(debugOut)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%s\n", b)
+		}
+	}()
+
 	s.Driver = drivers.GetDriver(config.DriverName)
 
 	err := s.initDBInfo(config.DriverConfig)
@@ -72,7 +96,7 @@ func New(config *Config) (*State, error) {
 		return nil, err
 	}
 
-	templates, err := s.initTemplates()
+	templates, err = s.initTemplates()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -90,24 +114,6 @@ func New(config *Config) (*State, error) {
 	err = s.initAliases(&config.Aliases)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize aliases")
-	}
-
-	if s.Config.Debug {
-		debugOut := struct {
-			Config    *Config         `json:"config"`
-			Tables    []drivers.Table `json:"tables"`
-			Templates []lazyTemplate  `json:"templates"`
-		}{
-			Config:    s.Config,
-			Tables:    s.Tables,
-			Templates: templates,
-		}
-
-		b, err := json.Marshal(debugOut)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to json marshal tables")
-		}
-		fmt.Printf("%s\n", b)
 	}
 
 	return s, nil

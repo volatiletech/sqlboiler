@@ -445,7 +445,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 				c.Type = "null.String"
 			default:
 				c.Type = "string"
-				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
+				_, _ = fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
 			c.Type = "null.String"
@@ -501,7 +501,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 				c.Type = "string"
 			default:
 				c.Type = "string"
-				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
+				_, _ = fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
 			c.Type = "string"

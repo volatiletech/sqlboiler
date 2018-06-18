@@ -130,23 +130,23 @@ func (p *pgTester) makePGPassFile() error {
 		return errors.Wrap(err, "failed to create option file")
 	}
 
-	fmt.Fprintf(tmp, "%s:%d:postgres:%s", p.host, p.port, p.user)
+	_, _ = fmt.Fprintf(tmp, "%s:%d:postgres:%s", p.host, p.port, p.user)
 	if len(p.pass) != 0 {
-		fmt.Fprintf(tmp, ":%s", p.pass)
+		_, _ = fmt.Fprintf(tmp, ":%s", p.pass)
 	}
-	fmt.Fprintln(tmp)
+	_, _ = fmt.Fprintln(tmp)
 
-	fmt.Fprintf(tmp, "%s:%d:%s:%s", p.host, p.port, p.dbName, p.user)
+	_, _ = fmt.Fprintf(tmp, "%s:%d:%s:%s", p.host, p.port, p.dbName, p.user)
 	if len(p.pass) != 0 {
-		fmt.Fprintf(tmp, ":%s", p.pass)
+		_, _ = fmt.Fprintf(tmp, ":%s", p.pass)
 	}
-	fmt.Fprintln(tmp)
+	_, _ = fmt.Fprintln(tmp)
 
-	fmt.Fprintf(tmp, "%s:%d:%s:%s", p.host, p.port, p.testDBName, p.user)
+	_, _ = fmt.Fprintf(tmp, "%s:%d:%s:%s", p.host, p.port, p.testDBName, p.user)
 	if len(p.pass) != 0 {
-		fmt.Fprintf(tmp, ":%s", p.pass)
+		_, _ = fmt.Fprintf(tmp, ":%s", p.pass)
 	}
-	fmt.Fprintln(tmp)
+	_, _ = fmt.Fprintln(tmp)
 
 	p.pgPassFile = tmp.Name()
 	return tmp.Close()

@@ -51,7 +51,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	if q.dialect.UseTopClause {
 		if q.limit != 0 && q.offset == 0 {
-			fmt.Fprintf(buf, " TOP (%d) ", q.limit)
+			_, _ = fmt.Fprintf(buf, " TOP (%d) ", q.limit)
 		}
 	}
 
@@ -79,7 +79,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteByte(')')
 	}
 
-	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
+	_, _ = fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
 
 	if len(q.joins) > 0 {
 		argsLen := len(args)
@@ -88,7 +88,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			if j.kind != JoinInner {
 				panic("only inner joins are supported")
 			}
-			fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
+			_, _ = fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
 			args = append(args, j.args...)
 		}
 		var resp string
@@ -97,7 +97,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		} else {
 			resp = joinBuf.String()
 		}
-		fmt.Fprintf(buf, resp)
+		_, _ = fmt.Fprintf(buf, resp)
 		strmangle.PutBuffer(joinBuf)
 	}
 
@@ -171,7 +171,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	for index, col := range cols {
 		setSlice[index] = fmt.Sprintf("%s = %s", col, strmangle.Placeholders(q.dialect.UseIndexPlaceholders, 1, index+1, 1))
 	}
-	fmt.Fprintf(buf, " SET %s", strings.Join(setSlice, ", "))
+	_, _ = fmt.Fprintf(buf, " SET %s", strings.Join(setSlice, ", "))
 
 	where, whereArgs := whereClause(q, len(args)+1)
 	if len(whereArgs) != 0 {
@@ -194,18 +194,18 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if len(q.groupBy) != 0 {
-		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
+		_, _ = fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
 	}
 
 	if len(q.having) != 0 {
 		argsLen := len(*args)
 		havingBuf := strmangle.GetBuffer()
-		fmt.Fprintf(havingBuf, " HAVING ")
+		_, _ = fmt.Fprintf(havingBuf, " HAVING ")
 		for i, j := range q.having {
 			if i > 0 {
-				fmt.Fprintf(havingBuf, " AND ")
+				_, _ = fmt.Fprintf(havingBuf, " AND ")
 			}
-			fmt.Fprintf(havingBuf, j.clause)
+			_, _ = fmt.Fprintf(havingBuf, j.clause)
 			*args = append(*args, j.args...)
 		}
 		var resp string
@@ -214,7 +214,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 		} else {
 			resp = havingBuf.String()
 		}
-		fmt.Fprintf(buf, resp)
+		_, _ = fmt.Fprintf(buf, resp)
 		strmangle.PutBuffer(havingBuf)
 	}
 
@@ -225,11 +225,11 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 
 	if !q.dialect.UseTopClause {
 		if q.limit != 0 {
-			fmt.Fprintf(buf, " LIMIT %d", q.limit)
+			_, _ = fmt.Fprintf(buf, " LIMIT %d", q.limit)
 		}
 
 		if q.offset != 0 {
-			fmt.Fprintf(buf, " OFFSET %d", q.offset)
+			_, _ = fmt.Fprintf(buf, " OFFSET %d", q.offset)
 		}
 	} else {
 		// From MS SQL 2012 and above: https://technet.microsoft.com/en-us/library/ms188385(v=sql.110).aspx
@@ -247,16 +247,16 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 				buf.WriteString(" ORDER BY (SELECT NULL)")
 			}
 
-			fmt.Fprintf(buf, " OFFSET %d", q.offset)
+			_, _ = fmt.Fprintf(buf, " OFFSET %d", q.offset)
 
 			if q.limit != 0 {
-				fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", q.limit)
+				_, _ = fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", q.limit)
 			}
 		}
 	}
 
 	if len(q.forlock) != 0 {
-		fmt.Fprintf(buf, " FOR %s", q.forlock)
+		_, _ = fmt.Fprintf(buf, " FOR %s", q.forlock)
 	}
 }
 

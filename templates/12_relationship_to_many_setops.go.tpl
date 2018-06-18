@@ -78,8 +78,8 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 			values := []interface{}{o.{{$col}}, rel.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", rel."}}{{"}"}}
 
 			if boil.DebugMode {
-				fmt.Fprintln(boil.DebugWriter, updateQuery)
-				fmt.Fprintln(boil.DebugWriter, values)
+				_, _ = fmt.Fprintln(boil.DebugWriter, updateQuery)
+				_, _ = fmt.Fprintln(boil.DebugWriter, values)
 			}
 
 			{{if $.NoContext -}}
@@ -104,8 +104,8 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 		values := []interface{}{{"{"}}o.{{$col}}, rel.{{$fcol}}}
 
 		if boil.DebugMode {
-			fmt.Fprintln(boil.DebugWriter, query)
-			fmt.Fprintln(boil.DebugWriter, values)
+			_, _ = fmt.Fprintln(boil.DebugWriter, query)
+			_, _ = fmt.Fprintln(boil.DebugWriter, values)
 		}
 
 		{{if $.NoContext -}}
@@ -214,8 +214,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 	values := []interface{}{{"{"}}o.{{$col}}}
 	{{end -}}
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, values)
+		_, _ = fmt.Fprintln(boil.DebugWriter, query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, values)
 	}
 
 	{{if $.NoContext -}}
@@ -303,8 +303,8 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, query)
-		fmt.Fprintln(boil.DebugWriter, values)
+		_, _ = fmt.Fprintln(boil.DebugWriter, query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, values)
 	}
 
 	{{if $.NoContext -}}

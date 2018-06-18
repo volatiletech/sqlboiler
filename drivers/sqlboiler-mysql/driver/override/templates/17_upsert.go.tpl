@@ -131,8 +131,8 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, vals)
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	{{$canLastInsertID := .Table.CanLastInsertID -}}
@@ -185,8 +185,8 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	nzUniqueCols = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uniqueMap)
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, nzUniqueCols...)
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.retQuery)
+		_, _ = fmt.Fprintln(boil.DebugWriter, nzUniqueCols...)
 	}
 
 	{{if .NoContext -}}

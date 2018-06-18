@@ -16,7 +16,7 @@ func test{{$alias.UpPlural}}Upsert(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}{{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}}{{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = o.Upsert({{if not .NoContext}}ctx, {{end -}} tx, false, nil, boil.Infer(), boil.Infer()); err != nil {
 		t.Errorf("Unable to upsert {{$alias.UpSingular}}: %s", err)
 	}

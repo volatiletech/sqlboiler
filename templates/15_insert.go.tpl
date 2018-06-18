@@ -100,8 +100,8 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, vals)
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, vals)
 	}
 
 	{{if .Dialect.UseLastInsertID -}}
@@ -154,8 +154,8 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, identifierCols...)
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.retQuery)
+		_, _ = fmt.Fprintln(boil.DebugWriter, identifierCols...)
 	}
 
 	{{if .NoContext -}}

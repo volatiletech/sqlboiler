@@ -71,8 +71,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 		values := []interface{}{o.{{$col}}, related.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", related."}}{{"}"}}
 
 		if boil.DebugMode {
-			fmt.Fprintln(boil.DebugWriter, updateQuery)
-			fmt.Fprintln(boil.DebugWriter, values)
+			_, _ = fmt.Fprintln(boil.DebugWriter, updateQuery)
+			_, _ = fmt.Fprintln(boil.DebugWriter, values)
 		}
 
 		{{if $.NoContext -}}

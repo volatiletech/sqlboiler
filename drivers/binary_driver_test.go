@@ -35,7 +35,7 @@ func TestBinaryDriver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Fprint(bin, testBinaryDriver)
+	_, _ = fmt.Fprint(bin, testBinaryDriver)
 	if err := bin.Chmod(0774); err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestBinaryWarningDriver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Fprint(bin, testWarningBinaryDriver)
+	_, _ = fmt.Fprint(bin, testWarningBinaryDriver)
 	if err := bin.Chmod(0774); err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +91,7 @@ func TestBinaryBadDriver(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Fprint(bin, testBadBinaryDriver)
+	_, _ = fmt.Fprint(bin, testBadBinaryDriver)
 	if err := bin.Chmod(0774); err != nil {
 		t.Fatal(err)
 	}

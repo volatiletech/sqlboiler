@@ -89,8 +89,8 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 	values := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), cache.valueMapping)
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, values)
+		_, _ = fmt.Fprintln(boil.DebugWriter, cache.query)
+		_, _ = fmt.Fprintln(boil.DebugWriter, values)
 	}
 
 	{{if .NoRowsAffected -}}
@@ -249,8 +249,8 @@ func (o {{$alias.UpSingular}}Slice) UpdateAll({{if .NoContext}}exec boil.Executo
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}len(colNames)+1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)))
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, args...)
+		_, _ = fmt.Fprintln(boil.DebugWriter, sql)
+		_, _ = fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
 	{{if .NoRowsAffected -}}

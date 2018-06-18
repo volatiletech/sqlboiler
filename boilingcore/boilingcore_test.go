@@ -92,7 +92,7 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 			continue
 		}
 
-		fmt.Fprintf(lineBuf, "%s\n", bufLines[i])
+		_, _ = fmt.Fprintf(lineBuf, "%s\n", bufLines[i])
 
 		splits := bytes.Split(bufLines[i], []byte{':'})
 		lineNum, err := strconv.Atoi(string(splits[1]))
@@ -109,7 +109,7 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 			if !rgxHasSpaces.Match(bufLines[y]) {
 				break
 			}
-			fmt.Fprintf(lineBuf, "%s\n", bufLines[y])
+			_, _ = fmt.Fprintf(lineBuf, "%s\n", bufLines[y])
 			i++
 		}
 

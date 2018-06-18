@@ -60,8 +60,8 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 	sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, args...)
+		_, _ = fmt.Fprintln(boil.DebugWriter, sql)
+		_, _ = fmt.Fprintln(boil.DebugWriter, args...)
 	}
 
 	{{if .NoRowsAffected -}}
@@ -217,8 +217,8 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, args)
+		_, _ = fmt.Fprintln(boil.DebugWriter, sql)
+		_, _ = fmt.Fprintln(boil.DebugWriter, args)
 	}
 
 	{{if .NoRowsAffected -}}

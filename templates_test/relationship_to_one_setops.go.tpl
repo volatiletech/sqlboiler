@@ -12,7 +12,7 @@ func test{{$ltable.UpSingular}}ToOneSetOp{{$ftable.UpSingular}}Using{{$rel.Forei
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
 	var b, c {{$ftable.UpSingular}}
@@ -94,7 +94,7 @@ func test{{$ltable.UpSingular}}ToOneRemoveOp{{$ftable.UpSingular}}Using{{$rel.Fo
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
 	var b {{$ftable.UpSingular}}

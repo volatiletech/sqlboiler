@@ -11,7 +11,7 @@ func test{{$alias.UpPlural}}Bind(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
@@ -33,7 +33,7 @@ func test{{$alias.UpPlural}}One(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
@@ -61,7 +61,7 @@ func test{{$alias.UpPlural}}All(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = {{$alias.DownSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
@@ -95,7 +95,7 @@ func test{{$alias.UpPlural}}Count(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = {{$alias.DownSingular}}One.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}

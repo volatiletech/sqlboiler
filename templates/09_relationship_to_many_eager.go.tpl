@@ -71,7 +71,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
 	}
-	defer results.Close()
+	defer func() { _ = results.Close() }()
 
 	var resultSlice []*{{$ftable.UpSingular}}
 	{{if .ToJoinTable -}}
@@ -83,7 +83,10 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		one := new({{$ftable.UpSingular}})
 		var localJoinCol {{$localCol.Type}}
 
-		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
+		if err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol); err != nil {
+			return errors.Wrap(err, "failed to scan when plebian-binding eager loaded slice {{.ForeignTable}}")
+		}
+
 		if err = results.Err(); err != nil {
 			return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
 		}

@@ -47,8 +47,8 @@ func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx 
 	{{- end}}
 
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
+		_, _ = fmt.Fprintln(boil.DebugWriter, sql)
+		_, _ = fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
 	}
 
 	{{if .NoContext -}}

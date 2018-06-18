@@ -10,7 +10,7 @@
 func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(t *testing.T) {
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var local {{$ltable.UpSingular}}
 	var foreign {{$ftable.UpSingular}}

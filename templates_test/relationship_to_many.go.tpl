@@ -13,7 +13,7 @@ func test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}}(t *testing.T) {
 	var err error
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
 	var b, c {{$ftable.UpSingular}}
@@ -27,8 +27,12 @@ func test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}}(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	randomize.Struct(seed, &b, {{$ftable.DownSingular}}DBTypes, false, {{$ftable.DownSingular}}ColumnsWithDefault...)
-	randomize.Struct(seed, &c, {{$ftable.DownSingular}}DBTypes, false, {{$ftable.DownSingular}}ColumnsWithDefault...)
+	if err = randomize.Struct(seed, &b, {{$ftable.DownSingular}}DBTypes, false, {{$ftable.DownSingular}}ColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, {{$ftable.DownSingular}}DBTypes, false, {{$ftable.DownSingular}}ColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
 
 	{{if not .ToJoinTable -}}
 		{{if $usesPrimitives}}

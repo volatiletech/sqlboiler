@@ -13,7 +13,7 @@ func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
 	var b, c, d, e {{$ftable.UpSingular}}
@@ -109,7 +109,7 @@ func test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}}(t *testing.T) {
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
 	var b, c, d, e {{$ftable.UpSingular}}
@@ -230,7 +230,7 @@ func test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}}(t *testing.T) {
 
 	{{if not $.NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
 	var b, c, d, e {{$ftable.UpSingular}}

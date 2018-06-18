@@ -83,7 +83,7 @@ func (p *pgTester) setup() error {
 		return errors.Wrap(err, "failed to wait for pg_dump command")
 	}
 
-	w.Close() // After dumpCmd is done, close the write end of the pipe
+	_ = w.Close() // After dumpCmd is done, close the write end of the pipe
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)

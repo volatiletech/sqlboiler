@@ -77,7 +77,7 @@ func (m *mysqlTester) setup() error {
 		return errors.Wrap(err, "failed to wait for mysqldump command")
 	}
 
-	w.Close() // After dumpCmd is done, close the write end of the pipe
+	_ = w.Close() // After dumpCmd is done, close the write end of the pipe
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
@@ -153,7 +153,7 @@ func (m *mysqlTester) dropTestDB() error {
 
 func (m *mysqlTester) teardown() error {
 	if m.dbConn != nil {
-		m.dbConn.Close()
+		return m.dbConn.Close()
 	}
 
 	if err := m.dropTestDB(); err != nil {

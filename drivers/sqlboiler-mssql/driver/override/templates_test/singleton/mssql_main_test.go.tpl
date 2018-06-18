@@ -58,7 +58,7 @@ func (m *mssqlTester) setup() error {
 		return errors.Wrap(err, "failed to open tables_schema.sql file")
 	}
 
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
 

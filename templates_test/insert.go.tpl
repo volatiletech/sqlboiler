@@ -11,7 +11,7 @@ func test{{$alias.UpPlural}}Insert(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
@@ -38,7 +38,7 @@ func test{{$alias.UpPlural}}InsertWhitelist(t *testing.T) {
 
 	{{if not .NoContext}}ctx := context.Background(){{end}}
 	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Whitelist({{$alias.DownSingular}}ColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}

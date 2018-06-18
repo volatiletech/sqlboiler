@@ -181,7 +181,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if cmdConfig.Debug {
-		fmt.Fprintln(os.Stderr, "using driver:", driverPath)
+		_, _ = fmt.Fprintln(os.Stderr, "using driver:", driverPath)
 	}
 
 	// Configure the driver

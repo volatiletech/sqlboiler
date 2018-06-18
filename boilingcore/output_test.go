@@ -39,7 +39,7 @@ func TestWriteFile(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 	writePackageName(buf, "pkg")
-	fmt.Fprintf(buf, "func hello() {}\n\n\nfunc world() {\nreturn\n}\n\n\n\n")
+	_, _ = fmt.Fprintf(buf, "func hello() {}\n\n\nfunc world() {\nreturn\n}\n\n\n\n")
 
 	if err := writeFile("", "", buf, true); err != nil {
 		t.Error(err)
@@ -55,7 +55,7 @@ func TestFormatBuffer(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 
-	fmt.Fprintf(buf, "package pkg\n\nfunc() {a}\n")
+	_, _ = fmt.Fprintf(buf, "package pkg\n\nfunc() {a}\n")
 
 	// Only test error case - happy case is taken care of by template test
 	_, err := formatBuffer(buf)

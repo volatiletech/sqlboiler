@@ -278,7 +278,7 @@ func formatBuffer(buf *bytes.Buffer) ([]byte, error) {
 		if line == lineNum {
 			errBuf.WriteString(">>>> ")
 		} else {
-			fmt.Fprintf(errBuf, "% 4d ", line)
+			_, _ = fmt.Fprintf(errBuf, "% 4d ", line)
 		}
 		errBuf.Write(scanner.Bytes())
 		errBuf.WriteByte('\n')

@@ -14,7 +14,7 @@ func buildUpsertQueryPostgres(dia drivers.Dialect, tableName string, updateOnCon
 			strmangle.Placeholders(dia.UseIndexPlaceholders, len(whitelist), 1, 1))
 	}
 
-	fmt.Fprintf(
+	_, _ = fmt.Fprintf(
 		buf,
 		"INSERT INTO %s %s ON CONFLICT ",
 		tableName,

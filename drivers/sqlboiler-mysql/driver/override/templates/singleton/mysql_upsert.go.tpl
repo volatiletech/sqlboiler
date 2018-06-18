@@ -11,7 +11,7 @@ func buildUpsertQueryMySQL(dia drivers.Dialect, tableName string, update, whitel
 	}
 
 	if len(update) == 0 {
-		fmt.Fprintf(
+		_, _ = fmt.Fprintf(
 			buf,
 			"INSERT IGNORE INTO %s (%s) VALUES (%s)",
 			tableName,
@@ -21,7 +21,7 @@ func buildUpsertQueryMySQL(dia drivers.Dialect, tableName string, update, whitel
 		return buf.String()
 	}
 
-	fmt.Fprintf(
+	_, _ = fmt.Fprintf(
 		buf,
 		"INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE ",
 		tableName,

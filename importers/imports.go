@@ -51,13 +51,13 @@ func (s Set) Format() []byte {
 	buf := &bytes.Buffer{}
 	buf.WriteString("import (")
 	for _, std := range s.Standard {
-		fmt.Fprintf(buf, "\n\t%s", std)
+		_, _ = fmt.Fprintf(buf, "\n\t%s", std)
 	}
 	if stdlen != 0 && thirdlen != 0 {
 		buf.WriteString("\n")
 	}
 	for _, third := range s.ThirdParty {
-		fmt.Fprintf(buf, "\n\t%s", third)
+		_, _ = fmt.Fprintf(buf, "\n\t%s", third)
 	}
 	buf.WriteString("\n)\n")
 

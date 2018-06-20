@@ -188,6 +188,15 @@ func (s *State) Cleanup() error {
 }
 
 // initTemplates loads all template folders into the state object.
+//
+// If TemplateDirs is set it uses those, else it pulls from assets.
+// Then it allows drivers to override, followed by replacements.
+//
+// Because there's the chance for windows paths to jumped in
+// all paths are converted to the native OS's slash style.
+//
+// Later, in order to properly look up imports the paths will
+// be forced back to linux style paths.
 func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
@@ -566,5 +575,11 @@ func mergeTemplates(dst, src map[string]templateLoader) {
 func normalizeSlashes(path string) string {
 	path = strings.Replace(path, `/`, string(os.PathSeparator), -1)
 	path = strings.Replace(path, `\`, string(os.PathSeparator), -1)
+	return path
+}
+
+// denormalizeSlashes takes any backslashes and converts them to linux style slashes
+func denormalizeSlashes(path string) string {
+	path = strings.Replace(path, `\`, `/`, -1)
 	return path
 }

@@ -174,8 +174,8 @@ func executeSingletonTemplates(e executeTemplateData) error {
 
 		if isGo {
 			imps := importers.Set{
-				Standard:   e.importNamedSet[fName].Standard,
-				ThirdParty: e.importNamedSet[fName].ThirdParty,
+				Standard:   e.importNamedSet[denormalizeSlashes(fName)].Standard,
+				ThirdParty: e.importNamedSet[denormalizeSlashes(fName)].ThirdParty,
 			}
 
 			pkgName := e.state.Config.PkgName

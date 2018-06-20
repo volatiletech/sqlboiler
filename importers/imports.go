@@ -112,6 +112,8 @@ func SetFromInterface(intf interface{}) (Set, error) {
 }
 
 // Map of file/type -> imports
+// Map's consumers do not understand windows paths. Always specify paths
+// using forward slash (/).
 type Map map[string]Set
 
 // MapFromInterface creates a Map from a theoretical map[string]interface{}.

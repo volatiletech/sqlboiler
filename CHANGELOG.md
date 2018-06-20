@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0-rc5]
+
+### Fixed
+
+- Fix generation failure on windows due to path manipulation issues (#314)
+
 ## [v3.0.0-rc4]
 
 ### Fixed

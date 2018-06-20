@@ -211,7 +211,7 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 	} else {
 		for _, a := range templatebin.AssetNames() {
 			if strings.HasSuffix(a, ".tpl") {
-				templates[a] = assetLoader(a)
+				templates[normalizeSlashes(a)] = assetLoader(a)
 			}
 		}
 	}
@@ -222,7 +222,7 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 	}
 
 	for template, contents := range driverTemplates {
-		templates[template] = base64Loader(contents)
+		templates[normalizeSlashes(template)] = base64Loader(contents)
 	}
 
 	for _, replace := range s.Config.Replacements {
@@ -231,7 +231,7 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			return nil, errors.Errorf("replace parameters must have 2 arguments, given: %s", replace)
 		}
 
-		original, replacement := splits[0], splits[1]
+		original, replacement := normalizeSlashes(splits[0]), splits[1]
 
 		_, ok := templates[original]
 		if !ok {
@@ -559,4 +559,12 @@ func mergeTemplates(dst, src map[string]templateLoader) {
 	for k, v := range src {
 		dst[k] = v
 	}
+}
+
+// normalizeSlashes takes a path that was made on linux or windows and converts it
+// to a native path.
+func normalizeSlashes(path string) string {
+	path = strings.Replace(path, `/`, string(os.PathSeparator), -1)
+	path = strings.Replace(path, `\`, string(os.PathSeparator), -1)
+	return path
 }

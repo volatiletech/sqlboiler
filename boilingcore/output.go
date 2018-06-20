@@ -296,7 +296,7 @@ func getLongExt(filename string) string {
 // templates/singleton/hello.go.tpl
 // templates_test/js/hello.js.tpl
 func outputFilenameParts(filename string) (normalized string, isSingleton, isGo, usePkg bool) {
-	fragments := strings.Split(filename, string(filepath.Separator))
+	fragments := strings.Split(filename, string(os.PathSeparator))
 	isSingleton = fragments[len(fragments)-2] == "singleton"
 
 	var remainingFragments []string

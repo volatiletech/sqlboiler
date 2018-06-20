@@ -127,7 +127,7 @@ func templates00_structGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/00_struct.go.tpl", size: 2499, mode: os.FileMode(420), modTime: time.Unix(1528925347, 0)}
+	info := bindataFileInfo{name: "templates/00_struct.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -147,7 +147,7 @@ func templates01_typesGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/01_types.go.tpl", size: 2357, mode: os.FileMode(420), modTime: time.Unix(1528524266, 0)}
+	info := bindataFileInfo{name: "templates/01_types.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -167,7 +167,7 @@ func templates02_hooksGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/02_hooks.go.tpl", size: 5922, mode: os.FileMode(420), modTime: time.Unix(1528524390, 0)}
+	info := bindataFileInfo{name: "templates/02_hooks.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -187,7 +187,7 @@ func templates03_finishersGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/03_finishers.go.tpl", size: 7265, mode: os.FileMode(420), modTime: time.Unix(1528524455, 0)}
+	info := bindataFileInfo{name: "templates/03_finishers.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -207,7 +207,7 @@ func templates04_relationship_to_oneGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/04_relationship_to_one.go.tpl", size: 693, mode: os.FileMode(420), modTime: time.Unix(1528649346, 0)}
+	info := bindataFileInfo{name: "templates/04_relationship_to_one.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -227,7 +227,7 @@ func templates05_relationship_one_to_oneGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/05_relationship_one_to_one.go.tpl", size: 711, mode: os.FileMode(420), modTime: time.Unix(1528649375, 0)}
+	info := bindataFileInfo{name: "templates/05_relationship_one_to_one.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -247,7 +247,7 @@ func templates06_relationship_to_manyGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/06_relationship_to_many.go.tpl", size: 1664, mode: os.FileMode(420), modTime: time.Unix(1528910721, 0)}
+	info := bindataFileInfo{name: "templates/06_relationship_to_many.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -267,7 +267,7 @@ func templates07_relationship_to_one_eagerGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/07_relationship_to_one_eager.go.tpl", size: 3658, mode: os.FileMode(420), modTime: time.Unix(1528649369, 0)}
+	info := bindataFileInfo{name: "templates/07_relationship_to_one_eager.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -287,7 +287,7 @@ func templates08_relationship_one_to_one_eagerGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/08_relationship_one_to_one_eager.go.tpl", size: 3433, mode: os.FileMode(420), modTime: time.Unix(1528649397, 0)}
+	info := bindataFileInfo{name: "templates/08_relationship_one_to_one_eager.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -307,7 +307,7 @@ func templates09_relationship_to_many_eagerGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/09_relationship_to_many_eager.go.tpl", size: 5726, mode: os.FileMode(420), modTime: time.Unix(1529331882, 0)}
+	info := bindataFileInfo{name: "templates/09_relationship_to_many_eager.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -327,7 +327,7 @@ func templates10_relationship_to_one_setopsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/10_relationship_to_one_setops.go.tpl", size: 7374, mode: os.FileMode(420), modTime: time.Unix(1528649358, 0)}
+	info := bindataFileInfo{name: "templates/10_relationship_to_one_setops.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -347,7 +347,7 @@ func templates11_relationship_one_to_one_setopsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/11_relationship_one_to_one_setops.go.tpl", size: 6905, mode: os.FileMode(420), modTime: time.Unix(1528649411, 0)}
+	info := bindataFileInfo{name: "templates/11_relationship_one_to_one_setops.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -367,7 +367,7 @@ func templates12_relationship_to_many_setopsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/12_relationship_to_many_setops.go.tpl", size: 15064, mode: os.FileMode(420), modTime: time.Unix(1528910721, 0)}
+	info := bindataFileInfo{name: "templates/12_relationship_to_many_setops.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -387,7 +387,7 @@ func templates13_allGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/13_all.go.tpl", size: 310, mode: os.FileMode(420), modTime: time.Unix(1528524559, 0)}
+	info := bindataFileInfo{name: "templates/13_all.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -407,7 +407,7 @@ func templates14_findGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/14_find.go.tpl", size: 2818, mode: os.FileMode(420), modTime: time.Unix(1528524950, 0)}
+	info := bindataFileInfo{name: "templates/14_find.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -427,7 +427,7 @@ func templates15_insertGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/15_insert.go.tpl", size: 6814, mode: os.FileMode(420), modTime: time.Unix(1528524674, 0)}
+	info := bindataFileInfo{name: "templates/15_insert.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -447,7 +447,7 @@ func templates16_updateGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/16_update.go.tpl", size: 10202, mode: os.FileMode(420), modTime: time.Unix(1528524715, 0)}
+	info := bindataFileInfo{name: "templates/16_update.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -467,7 +467,7 @@ func templates18_deleteGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/18_delete.go.tpl", size: 8962, mode: os.FileMode(420), modTime: time.Unix(1528524711, 0)}
+	info := bindataFileInfo{name: "templates/18_delete.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -487,7 +487,7 @@ func templates19_reloadGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/19_reload.go.tpl", size: 4163, mode: os.FileMode(420), modTime: time.Unix(1528524758, 0)}
+	info := bindataFileInfo{name: "templates/19_reload.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -507,12 +507,12 @@ func templates20_existsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/20_exists.go.tpl", size: 2824, mode: os.FileMode(420), modTime: time.Unix(1528524962, 0)}
+	info := bindataFileInfo{name: "templates/20_exists.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
-var _templates21_auto_timestampsGoTpl = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xec\x54\x4b\x6b\xc2\x40\x10\x3e\x27\xbf\x62\x08\x52\x12\xd0\xfd\x01\x05\x0f\xe2\xa1\x08\xad\x17\xed\xa5\x17\x59\x93\x49\xbb\x90\xcc\xc6\xdd\x0d\x45\xd2\xfc\xf7\xb2\x89\x89\xf1\x51\xea\x03\xaa\x87\xde\x76\x99\xef\x9b\xc7\x37\x8f\xa2\x18\x40\x84\xb1\x20\x04\xcf\x88\x14\xb5\xe1\x69\xb6\x10\xa4\x51\x99\xc5\x07\x26\x19\x2a\x0f\x06\x65\xe9\x3a\x16\x29\x62\x20\x69\x80\x4d\xe5\x28\x37\x72\xde\xe0\xf5\x16\xd1\x0b\x65\x32\xe5\x29\x6a\x78\x1c\x02\x9b\xf3\x65\x82\x6c\x2c\x93\x3c\x25\x0d\x5f\x10\x56\xaf\xda\xbe\xa1\x88\x18\x42\x49\x86\x0b\xd2\x23\x5a\x77\xf8\x5e\xa8\x90\x1b\x8c\x16\xdc\x78\xe0\xe5\x59\xd4\x7c\x2c\x2f\xcc\x95\xb2\xe1\x6d\x14\x9b\x36\x9b\xca\x4f\x3f\x60\x13\xf2\x97\x52\x24\xec\x09\xcd\xb3\x0c\xb9\x11\x92\xfc\x20\x70\x1d\xa7\x28\x14\xa7\x77\x84\x9e\xa0\xa8\x5f\x05\x39\xcc\xcf\xfa\x75\x9a\x32\x71\x55\xa1\x98\xcd\x65\x37\x95\x41\x8d\xdb\x07\xce\xd7\xd9\x46\x42\x66\x13\xf3\xc0\xc2\x44\x0c\x92\x8d\x6b\xf2\xc8\xb0\x89\x7e\x43\x25\xfd\x00\x0a\xd7\x71\x3a\x06\x18\x42\x53\x90\xeb\x6c\xbd\x63\xa2\x71\xe3\x65\x95\xa3\x12\xa8\xd9\x4b\xae\x8d\x85\xf9\x1d\x76\xed\xae\x41\xcc\xd0\xcc\x42\x4e\x84\xca\x7f\xe8\x80\xfa\x6d\x84\x60\x27\x04\x45\x4d\x41\x47\xbe\x07\x3a\x74\xba\x70\xaa\x0e\xad\x0c\xaf\x35\xf7\x50\x86\xd6\x70\x91\x0c\x2d\x3b\xd8\xf5\x7b\x5c\x8f\x16\x7d\xae\x1e\x45\x81\x14\xd5\x13\xdb\x3e\x2a\x7b\x59\xba\x5d\xe4\xf1\x7d\xaa\x75\xbb\xf1\x3e\xdd\x76\x85\x2e\x1c\x9d\x9f\xc6\x63\x6f\x36\xce\xe9\xf6\x75\xad\xfe\xad\xd1\xff\x87\xf3\xca\xc3\xf9\x77\x77\xb3\x8a\x77\xca\xd5\xb8\x8f\x2b\x7a\xb7\xab\xf0\x1d\x00\x00\xff\xff\x66\x2e\x22\x32\x44\x08\x00\x00")
+var _templates21_auto_timestampsGoTpl = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xec\x54\xc9\x8a\xe3\x30\x10\x3d\xdb\x5f\x51\x98\x30\xd8\x90\xe8\x03\x06\x72\x08\x39\x0c\x81\x99\x5c\x92\xb9\xf4\x25\x28\x76\xb9\x5b\x60\x97\x1c\x49\xa6\x09\x6a\xff\x7b\x23\x3b\x76\x9c\xa5\xe9\x2c\x87\xd0\x90\x9b\x44\xbd\x57\xcb\xab\xc5\xda\x11\x24\x98\x0a\x42\x08\x8c\xc8\x51\x1b\x9e\x17\x2b\x41\x1a\x95\x59\xbd\x61\x56\xa0\x0a\x60\x54\x55\xbe\xe7\x90\x22\x05\x92\x06\xd8\x5c\x4e\x4a\x23\x97\x2d\x5e\xef\x11\x83\x58\x66\x73\x9e\xa3\x86\xdf\x63\x60\x4b\xbe\xce\x90\x4d\x65\x56\xe6\xa4\xe1\x03\xe2\xfa\xd5\xd8\x77\x14\x91\x42\x2c\xc9\x70\x41\x7a\x42\xdb\x1e\x3f\x88\x15\x72\x83\xc9\x8a\x9b\x00\x82\xb2\x48\xda\x8f\xe3\xc5\xa5\x52\x2e\xbc\x8b\xe2\xd2\x66\x73\xf9\x1e\x46\x6c\x46\xe1\x5a\x8a\x8c\xfd\x41\xf3\x57\xc6\xdc\x08\x49\x61\x14\xf9\x9e\x67\xad\xe2\xf4\x8a\x30\x10\x94\x0c\xeb\x20\xa7\xf9\x39\xbf\x5e\x5b\x26\x6e\x6a\x14\x73\xb9\x1c\xa6\x32\x6a\x70\xc7\xc0\xe5\xb6\xd8\x49\xc8\x5c\x62\x01\x38\x98\x48\x41\xb2\x69\x43\x9e\x18\x36\xd3\x2f\xa8\x64\x18\x81\xf5\x3d\xaf\x67\x80\x31\xb4\x05\xf9\xde\xde\x3b\x66\x1a\x77\x5e\x36\x25\x2a\x81\x9a\xfd\x2b\xb5\x71\xb0\xb0\xc7\x8e\x0e\xfd\xb6\xd0\x05\x9a\x45\xcc\x89\x50\x85\xbf\x7a\xe8\x61\x17\x2a\x3a\x88\x45\x49\x5b\xd9\x99\xef\x89\x20\xbd\x76\x5c\x2a\x48\xa7\xc7\xff\x86\x7b\xaa\x47\x67\xb8\x49\x8f\x8e\x7d\x91\x1e\x1d\xfa\x5a\x3d\xac\x45\x4a\x9a\xd1\xed\x1e\xb5\xbd\xaa\xfc\x3e\xf2\xfc\x62\x35\xba\x3d\x78\xb1\x1e\xbb\x4b\x37\x8e\xce\x57\xe3\x71\x34\x1b\xd7\x74\xfb\xbe\x56\x7f\xd7\xe8\xe7\x05\xbd\xf3\x82\x3e\x0f\xe8\x0f\xda\x82\xcf\x00\x00\x00\xff\xff\xfc\xac\xe9\x3f\x48\x08\x00\x00")
 
 func templates21_auto_timestampsGoTplBytes() ([]byte, error) {
 	return bindataRead(
@@ -527,7 +527,7 @@ func templates21_auto_timestampsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/21_auto_timestamps.go.tpl", size: 2116, mode: os.FileMode(436), modTime: time.Unix(1528421130, 0)}
+	info := bindataFileInfo{name: "templates/21_auto_timestamps.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -547,7 +547,7 @@ func templatesSingletonBoil_queriesGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/singleton/boil_queries.go.tpl", size: 769, mode: os.FileMode(420), modTime: time.Unix(1528388322, 0)}
+	info := bindataFileInfo{name: "templates/singleton/boil_queries.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -567,7 +567,7 @@ func templatesSingletonBoil_table_namesGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/singleton/boil_table_names.go.tpl", size: 196, mode: os.FileMode(436), modTime: time.Unix(1510447131, 0)}
+	info := bindataFileInfo{name: "templates/singleton/boil_table_names.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -587,7 +587,7 @@ func templatesSingletonBoil_typesGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/singleton/boil_types.go.tpl", size: 2958, mode: os.FileMode(420), modTime: time.Unix(1528396525, 0)}
+	info := bindataFileInfo{name: "templates/singleton/boil_types.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -607,7 +607,7 @@ func templates_test00_typesGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/00_types.go.tpl", size: 173, mode: os.FileMode(420), modTime: time.Unix(1528418824, 0)}
+	info := bindataFileInfo{name: "templates_test/00_types.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -627,7 +627,7 @@ func templates_testAllGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/all.go.tpl", size: 211, mode: os.FileMode(420), modTime: time.Unix(1528525010, 0)}
+	info := bindataFileInfo{name: "templates_test/all.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -647,7 +647,7 @@ func templates_testDeleteGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/delete.go.tpl", size: 3651, mode: os.FileMode(420), modTime: time.Unix(1529331337, 0)}
+	info := bindataFileInfo{name: "templates_test/delete.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -667,7 +667,7 @@ func templates_testExistsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/exists.go.tpl", size: 1085, mode: os.FileMode(420), modTime: time.Unix(1529331346, 0)}
+	info := bindataFileInfo{name: "templates_test/exists.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -687,7 +687,7 @@ func templates_testFindGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/find.go.tpl", size: 1009, mode: os.FileMode(420), modTime: time.Unix(1529331363, 0)}
+	info := bindataFileInfo{name: "templates_test/find.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -707,7 +707,7 @@ func templates_testFinishersGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/finishers.go.tpl", size: 4239, mode: os.FileMode(420), modTime: time.Unix(1529331382, 0)}
+	info := bindataFileInfo{name: "templates_test/finishers.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -727,7 +727,7 @@ func templates_testHooksGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/hooks.go.tpl", size: 6346, mode: os.FileMode(420), modTime: time.Unix(1528525141, 0)}
+	info := bindataFileInfo{name: "templates_test/hooks.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -747,7 +747,7 @@ func templates_testInsertGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/insert.go.tpl", size: 1692, mode: os.FileMode(420), modTime: time.Unix(1529331402, 0)}
+	info := bindataFileInfo{name: "templates_test/insert.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -767,7 +767,7 @@ func templates_testRelationship_one_to_oneGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/relationship_one_to_one.go.tpl", size: 2676, mode: os.FileMode(420), modTime: time.Unix(1529332222, 0)}
+	info := bindataFileInfo{name: "templates_test/relationship_one_to_one.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -787,7 +787,7 @@ func templates_testRelationship_one_to_one_setopsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/relationship_one_to_one_setops.go.tpl", size: 5232, mode: os.FileMode(420), modTime: time.Unix(1529331434, 0)}
+	info := bindataFileInfo{name: "templates_test/relationship_one_to_one_setops.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -807,7 +807,7 @@ func templates_testRelationship_to_manyGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/relationship_to_many.go.tpl", size: 4091, mode: os.FileMode(420), modTime: time.Unix(1529331481, 0)}
+	info := bindataFileInfo{name: "templates_test/relationship_to_many.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -827,7 +827,7 @@ func templates_testRelationship_to_many_setopsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/relationship_to_many_setops.go.tpl", size: 10967, mode: os.FileMode(420), modTime: time.Unix(1529331503, 0)}
+	info := bindataFileInfo{name: "templates_test/relationship_to_many_setops.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -847,7 +847,7 @@ func templates_testRelationship_to_oneGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/relationship_to_one.go.tpl", size: 2739, mode: os.FileMode(420), modTime: time.Unix(1529331513, 0)}
+	info := bindataFileInfo{name: "templates_test/relationship_to_one.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -867,7 +867,7 @@ func templates_testRelationship_to_one_setopsGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/relationship_to_one_setops.go.tpl", size: 5225, mode: os.FileMode(420), modTime: time.Unix(1529331528, 0)}
+	info := bindataFileInfo{name: "templates_test/relationship_to_one_setops.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -887,7 +887,7 @@ func templates_testReloadGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/reload.go.tpl", size: 1561, mode: os.FileMode(420), modTime: time.Unix(1529331539, 0)}
+	info := bindataFileInfo{name: "templates_test/reload.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -907,7 +907,7 @@ func templates_testSelectGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/select.go.tpl", size: 868, mode: os.FileMode(420), modTime: time.Unix(1529331553, 0)}
+	info := bindataFileInfo{name: "templates_test/select.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -927,7 +927,7 @@ func templates_testTypesGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/types.go.tpl", size: 186, mode: os.FileMode(436), modTime: time.Unix(1528525187, 0)}
+	info := bindataFileInfo{name: "templates_test/types.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -947,7 +947,7 @@ func templates_testUpdateGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/update.go.tpl", size: 4102, mode: os.FileMode(420), modTime: time.Unix(1529331562, 0)}
+	info := bindataFileInfo{name: "templates_test/update.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -967,7 +967,7 @@ func templates_testSingletonBoil_main_testGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/singleton/boil_main_test.go.tpl", size: 1970, mode: os.FileMode(420), modTime: time.Unix(1528388322, 0)}
+	info := bindataFileInfo{name: "templates_test/singleton/boil_main_test.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -987,7 +987,7 @@ func templates_testSingletonBoil_queries_testGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/singleton/boil_queries_test.go.tpl", size: 975, mode: os.FileMode(420), modTime: time.Unix(1528388322, 0)}
+	info := bindataFileInfo{name: "templates_test/singleton/boil_queries_test.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1007,7 +1007,7 @@ func templates_testSingletonBoil_suites_testGoTpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates_test/singleton/boil_suites_test.go.tpl", size: 11514, mode: os.FileMode(420), modTime: time.Unix(1528910721, 0)}
+	info := bindataFileInfo{name: "templates_test/singleton/boil_suites_test.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

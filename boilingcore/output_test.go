@@ -88,11 +88,8 @@ func TestOutputFilenameParts(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		firstDir, normalized, isSingleton, isGo, usePkg := outputFilenameParts(test.Filename)
+		normalized, isSingleton, isGo, usePkg := outputFilenameParts(test.Filename)
 
-		if firstDir != test.FirstDir {
-			t.Errorf("%d) first dir wrong, want: %s, got: %s", i, test.FirstDir, firstDir)
-		}
 		if normalized != test.Normalized {
 			t.Errorf("%d) normalized wrong, want: %s, got: %s", i, test.Normalized, normalized)
 		}

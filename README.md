@@ -1,4 +1,4 @@
-![sqlboiler logo](http://i.imgur.com/ilkv0r9.png)
+![sqlboiler logo](https://i.imgur.com/lMXUTPE.png)
 
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/volatiletech/sqlboiler/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/volatiletech/sqlboiler?status.svg)](https://godoc.org/github.com/volatiletech/sqlboiler)
@@ -48,6 +48,7 @@ Table of Contents
       * [Requirements](#requirements)
       * [Pro Tips](#pro-tips)
     * [Getting started](#getting-started)
+        * [Videos](#videos)
         * [Download](#download)
         * [Configuration](#configuration)
         * [Initial Generation](#initial-generation)
@@ -224,7 +225,18 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ## Getting started
 
-[SQLBoiler Screencast #1: How to get started](https://www.youtube.com/watch?v=fKmRemtmi0Y)
+#### Videos
+
+If you like learning via a video medium, sqlboiler has a number of screencasts
+available.
+
+[SQLBoiler: Getting Started](https://www.youtube.com/watch?v=y5utRS9axfg)
+
+[SQLBoiler: What's New in v3](https://www.youtube.com/watch?v=-B-OPsYRZJA)
+
+[SQLBoiler: Advanced Queries and Relationships](https://www.youtube.com/watch?v=iiJuM9NR8No)
+
+[Old (v2): SQLBoiler Screencast #1: How to get started](https://www.youtube.com/watch?v=fKmRemtmi0Y)
 
 #### Download
 

@@ -43,7 +43,7 @@ func initConfig() {
 	homePath := os.Getenv("HOME")
 	wd, err := os.Getwd()
 	if err != nil {
-		wd = "./"
+		wd = "."
 	}
 
 	configPaths := []string{wd}
@@ -146,6 +146,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	if strings.ContainsRune(driverName, os.PathSeparator) {
 		driverName = strings.Replace(filepath.Base(driverName), "sqlboiler-", "", 1)
+		driverName = strings.Replace(driverName, ".exe", "", 1)
 	} else {
 		driverPath = "sqlboiler-" + driverPath
 		if p, err := exec.LookPath(driverPath); err == nil {

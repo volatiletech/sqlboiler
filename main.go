@@ -16,7 +16,7 @@ import (
 	"github.com/volatiletech/sqlboiler/importers"
 )
 
-//go:generate go-bindata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
+//go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
 
 const sqlBoilerVersion = "3.0.0-rc2"
 

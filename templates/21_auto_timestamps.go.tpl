@@ -10,7 +10,7 @@
 		o.CreatedAt = currTime
 	}
 				{{- else}}
-	if queries.MustTime(o.CreatedAt) {
+	if queries.MustTime(o.CreatedAt).IsZero() {
 		queries.SetScanner(&o.CreatedAt, currTime)
 	}
 				{{- end -}}
@@ -59,7 +59,7 @@
 		o.CreatedAt = currTime
 	}
 				{{- else}}
-	if queries.MustTime(o.CreatedAt).Time.IsZero() {
+	if queries.MustTime(o.CreatedAt).IsZero() {
 		queries.SetScanner(&o.CreatedAt, currTime)
 	}
 				{{- end -}}

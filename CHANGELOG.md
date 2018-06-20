@@ -3,7 +3,28 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.0.0-rc4]
+
+### Fixed
+
+- Fix an issue in mysql driver where the null json field was getting the wrong type (#311)
+- Fix compilation failures when using a nullable created_at column (#313)
+
+## [v3.0.0-rc3]
+
+### Added
+
+- Add CockroachDB out of band driver link to readme (thanks @glerchundi)
+
+### Fixed
+
+- Fix an issue in psql driver where if you had a primary key with the same name
+  in two different tables, it could possibly get the wrong one (#308)
+- Allow errcheck to run successfully (exclude fmt.Fprint(|ln|f) function) on models
+- Fix an issue where debug output wouldn't output on crash (exactly when you want it)
+- Fix issue with boolean values 'true' and 'false' not being accepted (thanks @glerchundi)
+
+## [v3.0.0-rc2]
 
 ### Added
 

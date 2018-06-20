@@ -319,7 +319,7 @@ func (m *MySQLDriver) TranslateColumnType(c bdb.Column) bdb.Column {
 		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
 			c.Type = "null.Bytes"
 		case "json":
-			c.Type = "types.JSON"
+			c.Type = "null.JSON"
 		default:
 			c.Type = "null.String"
 		}

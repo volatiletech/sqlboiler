@@ -59,11 +59,15 @@ func New(config *Config) (*State, error) {
 			debugOut := struct {
 				Config       *Config         `json:"config"`
 				DriverConfig drivers.Config  `json:"driver_config"`
+				Schema       string          `json:"schema"`
+				Dialect      drivers.Dialect `json:"dialect"`
 				Tables       []drivers.Table `json:"tables"`
 				Templates    []lazyTemplate  `json:"templates"`
 			}{
 				Config:       s.Config,
 				DriverConfig: s.Config.DriverConfig,
+				Schema:       s.Schema,
+				Dialect:      s.Dialect,
 				Tables:       s.Tables,
 				Templates:    templates,
 			}
@@ -136,6 +140,7 @@ func (s *State) Run() error {
 		StructTagCasing:  s.Config.StructTagCasing,
 		Tags:             s.Config.Tags,
 		Dialect:          s.Dialect,
+		Schema:           s.Schema,
 		LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
 		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
 

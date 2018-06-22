@@ -99,9 +99,11 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
-		cache.query = queries.BuildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$alias.DownSingular}}PrimaryKeyColumns, update, insert, ret)
+		cache.query = buildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$alias.DownSingular}}PrimaryKeyColumns, update, insert, ret)
 
-		whitelist = append({{$alias.DownSingular}}PrimaryKeyColumns, update...)
+		whitelist := make([]string, len({{$alias.DownSingular}}PrimaryKeyColumns))
+		copy(whitelist, {{$alias.DownSingular}}PrimaryKeyColumns)
+		whitelist = append(whitelist, update...)
 		whitelist = append(whitelist, insert...)
 
 		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, whitelist)
@@ -135,7 +137,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
 		{{end -}}
 		if err == sql.ErrNoRows {
-			err = nil // Postgres doesn't return anything when there's no update
+			err = nil // MSSQL doesn't return anything when there's no update
 		}
 	} else {
 		{{if .NoContext -}}
@@ -155,7 +157,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	}
 
 	{{if not .NoHooks -}}
-	return o.doAfterUpsertHooks({{if not .NoContext}}ctx context.Context, {{end -}} exec)
+	return o.doAfterUpsertHooks({{if not .NoContext}}ctx, {{end -}} exec)
 	{{- else -}}
 	return nil
 	{{- end}}

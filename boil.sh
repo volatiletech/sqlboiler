@@ -73,6 +73,11 @@ test_user() {
             sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "create login ${DB_USER} with password = '${MSSQLPASS}';"
             sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "alter server role sysadmin add member ${DB_USER};"
             ;;
+        mssql-docker)
+            set -o xtrace
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "create login ${DB_USER} with password = '${MSSQLPASS}';"
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "alter server role sysadmin add member ${DB_USER};"
+            ;;
         *)
             echo "unknown driver"
             ;;
@@ -104,6 +109,12 @@ test_db() {
             sqlcmd -S localhost -U ${DB_USER} -P ${MSSQLPASS} -Q "drop database if exists ${DB_NAME}";
             sqlcmd -S localhost -U ${DB_USER} -P ${MSSQLPASS} -Q "create database ${DB_NAME}";
             sqlcmd -S localhost -U ${DB_USER} -P ${MSSQLPASS} -d ${DB_NAME} -i testdata/mssql_test_schema.sql
+            ;;
+        mssql-docker)
+            set -o xtrace
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U ${DB_USER} -P ${MSSQLPASS} -Q "drop database if exists ${DB_NAME}";
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U ${DB_USER} -P ${MSSQLPASS} -Q "create database ${DB_NAME}";
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U ${DB_USER} -P ${MSSQLPASS} -d ${DB_NAME} -i testdata/mssql_test_schema.sql
             ;;
         *)
             echo "unknown driver"
@@ -147,6 +158,11 @@ driver_test_user() {
             sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "create user ${DRIVER_USER} with password = '${MSSQLPASS}'";
             sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "grant alter, control to ${DRIVER_USER}";
             ;;
+        mssql-docker)
+            set -o xtrace
+            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "create user ${DRIVER_USER} with password = '${MSSQLPASS}'";
+            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "grant alter, control to ${DRIVER_USER}";
+            ;;
         *)
             echo "unknown driver"
             ;;
@@ -175,6 +191,13 @@ driver_test_db() {
             sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "exec sp_configure 'contained database authentication', 1;"
             sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "reconfigure"
             sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "alter database ${DRIVER_DB} set containment = partial;"
+            ;;
+        mssql-docker)
+            set -o xtrace
+            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -Q "create database ${DRIVER_DB};"
+            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "exec sp_configure 'contained database authentication', 1;"
+            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "reconfigure"
+            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "alter database ${DRIVER_DB} set containment = partial;"
             ;;
         *)
             echo "unknown driver"
@@ -216,6 +239,37 @@ run_go_generate() {
 }
 
 # ====================================
+# MSSQL stuff
+# ====================================
+
+mssql_run() {
+    if test "attach" = "${1}"; then
+        args="--interactive --tty"
+    else
+        args="--detach"
+    fi
+
+    set -o xtrace
+
+    docker run $args --rm \
+        --env 'ACCEPT_EULA=Y' --env "SA_PASSWORD=${MSSQLPASS}" \
+        --publish 1433:1433 \
+        --volume "${PWD}/testdata/mssql_test_schema.sql:/testdata/mssql_test_schema.sql" \
+        --name mssql \
+        microsoft/mssql-server-linux:2017-latest
+}
+
+mssql_stop() {
+    set -o xtrace
+    docker stop mssql
+}
+
+mssql_sqlcmd() {
+    set -o xtrace
+    docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "@$"
+}
+
+# ====================================
 # Clean
 # ====================================
 
@@ -246,6 +300,10 @@ case "${command}" in
 
     go-generate) go_generate "$@" ;;
 
+    mssql-run)    mssql_run "$@" ;;
+    mssql-stop)   mssql_stop "$@" ;;
+    mssql-sqlcmd) mssql_sqlcmd "$@" ;;
+
     clean) clean ;;
     *)
         echo "./boil.sh command [args]"
@@ -261,4 +319,7 @@ case "${command}" in
         echo "  driver-test-db <driver>     - create driver db (run before driver-test-user)"
         echo "  driver-test-user <driver>   - creates a user for the driver tests (unprivileged)"
         echo "  go-generate [all|driver]    - runs go generate on packages, omit arg for sqlboiler itself"
+        echo "  mssql-run [attach]          - run mssql docker container, if attach is present will not daemonize"
+        echo "  mssql-stop                  - stop mssql docker container"
+        echo "  mssql-sqlcmd [args...]      - run sql query using sqlcmd in docker container"
 esac

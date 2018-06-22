@@ -3,6 +3,15 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0-rc6]
+
+### Fixed
+
+- Fix a badly templated value in the mssql upsert template when using context
+- Fix a bug where the database schema name was not properly being
+  given to the templates. This broke explicit schemas where implicit schemas
+  like in mysql, psql public etc. would still work.
+
 ## [v3.0.0-rc5]
 
 ### Fixed

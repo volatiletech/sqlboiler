@@ -155,13 +155,13 @@ driver_test_user() {
             ;;
         mssql)
             set -o xtrace
-            sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "create user ${DRIVER_USER} with password = '${MSSQLPASS}'";
-            sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "grant alter, control to ${DRIVER_USER}";
+            sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "create user ${DRIVER_USER} with password = '${MSSQLPASS}'";
+            sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "grant alter, control to ${DRIVER_USER}";
             ;;
         mssql-docker)
             set -o xtrace
-            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "create user ${DRIVER_USER} with password = '${MSSQLPASS}'";
-            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "grant alter, control to ${DRIVER_USER}";
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "create user ${DRIVER_USER} with password = '${MSSQLPASS}'";
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "grant alter, control to ${DRIVER_USER}";
             ;;
         *)
             echo "unknown driver"
@@ -187,17 +187,17 @@ driver_test_db() {
             ;;
         mssql)
             set -o xtrace
-            sqlcmd -S localhost -U sa -P ${MSSQLPASS} -Q "create database ${DRIVER_DB};"
-            sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "exec sp_configure 'contained database authentication', 1;"
-            sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "reconfigure"
-            sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "alter database ${DRIVER_DB} set containment = partial;"
+            sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "create database ${DRIVER_DB};"
+            sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "exec sp_configure 'contained database authentication', 1;"
+            sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "reconfigure"
+            sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "alter database ${DRIVER_DB} set containment = partial;"
             ;;
         mssql-docker)
             set -o xtrace
-            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -Q "create database ${DRIVER_DB};"
-            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "exec sp_configure 'contained database authentication', 1;"
-            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "reconfigure"
-            docker exec -it /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQLPASS} -d ${DRIVER_DB} -Q "alter database ${DRIVER_DB} set containment = partial;"
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "create database ${DRIVER_DB};"
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "exec sp_configure 'contained database authentication', 1;"
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "reconfigure"
+            docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -d "${DRIVER_DB}" -Q "alter database ${DRIVER_DB} set containment = partial;"
             ;;
         *)
             echo "unknown driver"
@@ -266,7 +266,7 @@ mssql_stop() {
 
 mssql_sqlcmd() {
     set -o xtrace
-    docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "@$"
+    docker exec --interactive --tty mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${MSSQLPASS}" -Q "$@"
 }
 
 # ====================================

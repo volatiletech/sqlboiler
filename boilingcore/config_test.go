@@ -3,7 +3,6 @@ package boilingcore
 import (
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/volatiletech/sqlboiler/drivers"
 )
 
@@ -34,8 +33,7 @@ func TestConvertAliases(t *testing.T) {
 	aliases := ConvertAliases(intf)
 
 	if len(aliases.Tables) != 1 {
-		spew.Dump(aliases.Tables)
-		t.Fatal("should have one table alias")
+		t.Fatalf("should have one table alias: %#v", aliases.Tables)
 	}
 
 	table := aliases.Tables["table_name"]

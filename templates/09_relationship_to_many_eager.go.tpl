@@ -64,7 +64,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	}
 
 	{{if $.NoContext -}}
-	results, err := query.Query(query, e)
+	results, err := query.Query(e)
 	{{else -}}
 	results, err := query.QueryContext(ctx, e)
 	{{end -}}
@@ -107,7 +107,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	}
 
 	{{if not $.NoHooks -}}
-	if len({{.ForeignTable | singular | camelCase}}AfterSelectHooks) != 0 {
+	if len({{$ftable.DownSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks({{if $.NoContext}}e{{else}}ctx, e{{end -}}); err != nil {
 				return err

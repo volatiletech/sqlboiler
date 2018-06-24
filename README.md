@@ -488,6 +488,29 @@ local   = "Rags"
 foreign = "Videos"
 ```
 
+There is an alternative syntax available for those who are challenged by the key syntax of
+toml or challenged by viper lowercasing all of your keys. Instead of using a regular table
+in toml, use an array of tables, and add a name field to each object. The only one that changes
+past that is columns, which now has to have a new field called `alias`.
+
+```toml
+[[aliases.tables]]
+name          = "team_names"
+up_plural     = "TeamNames"
+up_singular   = "TeamName"
+down_plural   = "teamNames"
+down_singular = "teamName"
+
+  [[aliases.tables.columns]]
+  name  = "team_name"
+  alias = "OurTeamName"
+
+  [[aliases.tables.video_tags.relationships]]
+  name    = "fk_video_id"
+  local   = "Rags"
+  foreign = "Videos"
+```
+
 ##### Types
 
 There exists the ability to override types that the driver has inferred.

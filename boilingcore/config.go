@@ -40,6 +40,30 @@ type TypeReplace struct {
 }
 
 // ConvertAliases is necessary because viper
+//
+// It also supports two different syntaxes, because of viper:
+//
+//   [aliases.tables.table_name]
+//   fields... = "values"
+//     [aliases.tables.columns]
+//     colname = "alias"
+//     [aliases.tables.relationships.fkey_name]
+//     local   = "x"
+//     foreign = "y"
+//
+// Or alternatively (when toml key names or viper's
+// lowercasing of key names gets in the way):
+//
+//   [[aliases.tables]]
+//   name = "table_name"
+//   fields... = "values"
+//     [[aliases.tables.columns]]
+//     name  = "colname"
+//     alias = "alias"
+//     [[aliases.tables.relationships]]
+//     name    = "fkey_name"
+//     local   = "x"
+//     foreign = "y"
 func ConvertAliases(i interface{}) (a Aliases) {
 	if i == nil {
 		return a
@@ -47,14 +71,9 @@ func ConvertAliases(i interface{}) (a Aliases) {
 
 	topLevel := i.(map[string]interface{})
 
-	var tables map[string]interface{}
+	tablesIntf := topLevel["tables"]
 
-	tablesIntf, ok := topLevel["tables"]
-	if ok {
-		tables = tablesIntf.(map[string]interface{})
-	}
-
-	for name, tIntf := range tables {
+	iterateMapOrSlice(tablesIntf, func(name string, tIntf interface{}) {
 		if a.Tables == nil {
 			a.Tables = make(map[string]TableAlias)
 		}
@@ -77,18 +96,23 @@ func ConvertAliases(i interface{}) (a Aliases) {
 		}
 
 		if colsIntf, ok := t["columns"]; ok {
-			cols := colsIntf.(map[string]interface{})
 			ta.Columns = make(map[string]string)
-			for k, v := range cols {
-				ta.Columns[k] = v.(string)
-			}
+
+			iterateMapOrSlice(colsIntf, func(name string, colIntf interface{}) {
+				var alias string
+				switch col := colIntf.(type) {
+				case map[string]interface{}:
+					alias = col["alias"].(string)
+				case string:
+					alias = col
+				}
+				ta.Columns[name] = alias
+			})
 		}
 
-		var relationships map[string]interface{}
 		relationshipsIntf, ok := t["relationships"]
 		if ok {
-			relationships = relationshipsIntf.(map[string]interface{})
-			for name, rIntf := range relationships {
+			iterateMapOrSlice(relationshipsIntf, func(name string, rIntf interface{}) {
 				if ta.Relationships == nil {
 					ta.Relationships = make(map[string]RelationshipAlias)
 				}
@@ -104,13 +128,28 @@ func ConvertAliases(i interface{}) (a Aliases) {
 				}
 
 				ta.Relationships[name] = ra
-			}
+			})
 		}
 
 		a.Tables[name] = ta
-	}
+	})
 
 	return a
+}
+
+func iterateMapOrSlice(mapOrSlice interface{}, fn func(name string, obj interface{})) {
+	switch t := mapOrSlice.(type) {
+	case map[string]interface{}:
+		for name, table := range t {
+			fn(name, table)
+		}
+	case []interface{}:
+		for _, intf := range t {
+			obj := intf.(map[string]interface{})
+			name := obj["name"].(string)
+			fn(name, intf)
+		}
+	}
 }
 
 // ConvertTypeReplace is necessary because viper

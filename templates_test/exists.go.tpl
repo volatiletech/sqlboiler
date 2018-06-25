@@ -22,6 +22,6 @@ func test{{$alias.UpPlural}}Exists(t *testing.T) {
 		t.Errorf("Unable to check if {{$alias.UpSingular}} exists: %s", err)
 	}
 	if !e {
-		t.Errorf("Expected {{$alias.UpSingular}}ExistsG to return true, but got false.")
+		t.Errorf("Expected {{$alias.UpSingular}}Exists to return true, but got false.")
 	}
 }

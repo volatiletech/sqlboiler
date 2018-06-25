@@ -3,13 +3,21 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.0.0-rc8]
 
 ### Added
 
 - Add alternative syntax that's case-sensitive for defining aliases. This is
   particularly useful if toml key syntax is not good enough or viper keeps
   lowercasing all your keys (and you have uppercase names in say mssql).
+- Added `aliasCols`, a template helper that can be used in conjunction with
+  stringMap to transform a slice of column names into their aliased names.
+
+### Fixed
+
+- Fix several places that referenced primary keys in the templates that were
+  not alias aware.
+- Fix strmangle's CamelCase such that it forces the first char to be lowercase.
 
 ## [v3.0.0-rc7]
 

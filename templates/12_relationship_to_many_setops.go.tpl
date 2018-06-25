@@ -75,7 +75,7 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 				strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.ForeignColumn}}"{{"}"}}),
 				strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$ftable.DownSingular}}PrimaryKeyColumns),
 			)
-			values := []interface{}{o.{{$col}}, rel.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", rel."}}{{"}"}}
+			values := []interface{}{o.{{$col}}, rel.{{$foreignPKeyCols | stringMap (aliasCols $ftable) | join ", rel."}}{{"}"}}
 
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)

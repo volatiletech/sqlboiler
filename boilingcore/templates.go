@@ -277,6 +277,8 @@ var templateFunctions = template.FuncMap{
 	// Database related mangling
 	"whereClause": strmangle.WhereClause,
 
+	// Alias and text helping
+	"aliasCols":      func(ta TableAlias) func(string) string { return func(s string) string { return ta.Column(s) } },
 	"usesPrimitives": usesPrimitives,
 
 	// dbdrivers ops

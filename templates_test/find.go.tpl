@@ -16,7 +16,7 @@ func test{{$alias.UpPlural}}Find(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{$alias.DownSingular}}Found, err := Find{{$alias.UpSingular}}({{if not .NoContext}}ctx, {{end -}} tx, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." "o") | join ", "}})
+	{{$alias.DownSingular}}Found, err := Find{{$alias.UpSingular}}({{if not .NoContext}}ctx, {{end -}} tx, {{.Table.PKey.Columns | stringMap (aliasCols $alias) | prefixStringSlice (printf "%s." "o") | join ", "}})
 	if err != nil {
 		t.Error(err)
 	}

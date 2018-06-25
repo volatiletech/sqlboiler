@@ -250,6 +250,9 @@ func TestCamelCase(t *testing.T) {
 		{"thing_guid", "thingGUID"},
 		{"guid_thing", "guidThing"},
 		{"thing_guid_thing", "thingGUIDThing"},
+		{"Some_upperCase___thing", "someUpperCaseThing"},
+		{"A", "a"},
+		{"A_a", "aA"},
 	}
 
 	for i, test := range tests {

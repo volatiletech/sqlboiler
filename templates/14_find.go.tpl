@@ -1,6 +1,6 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
-{{- $pkNames := $colDefs.Names | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
+{{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
 {{if .AddGlobal -}}
 // Find{{$alias.UpSingular}}G retrieves a single record by ID.

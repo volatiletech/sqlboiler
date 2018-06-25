@@ -35,7 +35,7 @@ func (o *{{$alias.UpSingular}}) ReloadGP({{if not .NoContext}}ctx context.Contex
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *{{$alias.UpSingular}}) Reload({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) error {
-	ret, err := Find{{$alias.UpSingular}}({{if not .NoContext}}ctx, {{end -}} exec, {{.Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice "o." | join ", "}})
+	ret, err := Find{{$alias.UpSingular}}({{if not .NoContext}}ctx, {{end -}} exec, {{.Table.PKey.Columns | stringMap (aliasCols $alias) | prefixStringSlice "o." | join ", "}})
 	if err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ func test{{$alias.UpPlural}}Exists(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{$pkeyArgs := .Table.PKey.Columns | stringMap .StringFuncs.titleCase | prefixStringSlice (printf "%s." "o") | join ", " -}}
+	{{$pkeyArgs := .Table.PKey.Columns | stringMap (aliasCols $alias) | prefixStringSlice (printf "%s." "o") | join ", " -}}
 	e, err := {{$alias.UpSingular}}Exists({{if not .NoContext}}ctx, {{end -}} tx, {{$pkeyArgs}})
 	if err != nil {
 		t.Errorf("Unable to check if {{$alias.UpSingular}} exists: %s", err)

@@ -149,7 +149,7 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 
 	identifierCols = []interface{}{
 		{{range .Table.PKey.Columns -}}
-		o.{{. | titleCase}},
+		o.{{$alias.Column .}},
 		{{end -}}
 	}
 

@@ -64,7 +64,7 @@ func test{{$ltable.UpSingular}}ToOneSetOp{{$ftable.UpSingular}}Using{{$rel.Forei
 		}
 
 		{{if setInclude $fkey.Column $.Table.PKey.Columns -}}
-		if exists, err := {{$ltable.UpSingular}}Exists({{if not $.NoContext}}ctx, {{end -}} tx, a.{{$.Table.PKey.Columns | stringMap $.StringFuncs.titleCase | join ", a."}}); err != nil {
+		if exists, err := {{$ltable.UpSingular}}Exists({{if not $.NoContext}}ctx, {{end -}} tx, a.{{$.Table.PKey.Columns | stringMap (aliasCols $ltable) | join ", a."}}); err != nil {
 			t.Fatal(err)
 		} else if !exists {
 			t.Error("want 'a' to exist")

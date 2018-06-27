@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fix a bug where rows may not be closed when bind failed in some way
 - Fix aliasing of primary key column names in exist template
 
 ## [v3.0.0-rc8]

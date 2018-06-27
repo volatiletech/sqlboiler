@@ -52,7 +52,9 @@ func (q *Query) BindP(ctx context.Context, exec boil.Executor, obj interface{}) 
 }
 
 // Bind executes the query and inserts the
-// result into the passed in object pointer
+// result into the passed in object pointer.
+//
+// The caller is responsible for closing the rows.
 //
 // Bind rules:
 //   - Struct tags control bind, in the form of: `boil:"name,bind"`
@@ -98,7 +100,7 @@ func Bind(rows *sql.Rows, obj interface{}) error {
 }
 
 // Bind executes the query and inserts the
-// result into the passed in object pointer
+// result into the passed in object pointer.
 //
 // If Context is non-nil it will upgrade the
 // Executor to a ContextExecutor and query with the passed context.
@@ -121,14 +123,18 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
-	if res := bind(rows, obj, structType, sliceType, bkind); res != nil {
-		return res
+	if err = bind(rows, obj, structType, sliceType, bkind); err != nil {
+		if innerErr := rows.Close(); innerErr != nil {
+			return errors.Wrapf(err, "error on rows.Close after bind error: %+v", innerErr)
+		}
+
+		return err
 	}
 	if err = rows.Close(); err != nil {
-		return err
+		return errors.Wrap(err, "failed to clean up rows in bind")
 	}
 	if err = rows.Err(); err != nil {
-		return err
+		return errors.Wrap(err, "error from rows in bind")
 	}
 
 	if len(q.load) != 0 {

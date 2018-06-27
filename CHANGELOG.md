@@ -3,12 +3,18 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.0.0-rc9]
 
 ### Fixed
 
 - Fix a bug where rows may not be closed when bind failed in some way
 - Fix aliasing of primary key column names in exist template
+- Fix a bug in the psql driver where `double precision` was converted into
+  a decimal type when it indeed should be float64.
+- Fix a bug in the psql driver where `double precision` and `real` arrays were
+  converted into decimal arrays, now they are converted into float64 arrays.
+  For `real` this may not be ideal but it's a better fix for now since we don't
+  have a float32 array.
 
 ## [v3.0.0-rc8]
 

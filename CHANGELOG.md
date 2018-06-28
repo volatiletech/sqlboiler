@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add a new syntax for import maps in the config file. This allows us to
+  sidestep viper's constant downcasing of config keys. This is the
+  exact same fix as happened with aliases previously.
+
 ## [v3.0.0-rc9]
 
 ### Fixed

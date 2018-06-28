@@ -568,9 +568,22 @@ will be merged in to what is provided here.
 [imports.test_singleton]
 
 # Changes imports when a model contains null.Int32
-[imports.based_on_type."null.Int32"]
+[imports.based_on_type.string]
   standard = ['"context"']
   third_party = ['"github.com/my/package"']
+```
+
+When defining maps it's possible to use an alternative syntax since
+viper automatically lowercases all configuration keys (same as aliases).
+
+```toml
+[[imports.singleton]]
+  name = "boil_queries"
+  third_party = ['"github.com/my/package"']
+
+[[imports.based_on_type]]
+  name = "null.Int64"
+  third_party = ['"github.com/my/int64"']
 ```
 
 ##### Templates

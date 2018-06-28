@@ -116,23 +116,47 @@ func SetFromInterface(intf interface{}) (Set, error) {
 // using forward slash (/).
 type Map map[string]Set
 
-// MapFromInterface creates a Map from a theoretical map[string]interface{}.
+// MapFromInterface creates a Map from a theoretical map[string]interface{}
+// or []map[string]interface{}
 // This is to load from a loosely defined configuration file.
 func MapFromInterface(intf interface{}) (Map, error) {
 	m := Map{}
 
-	mapIntf, ok := intf.(map[string]interface{})
-	if !ok {
-		return m, errors.New("import map should be map[string]interface{}")
-	}
-
-	for k, v := range mapIntf {
-		s, err := SetFromInterface(v)
-		if err != nil {
-			return nil, err
+	iter := func(i interface{}, fn func(string, interface{}) error) error {
+		switch toIter := intf.(type) {
+		case []interface{}:
+			for _, intf := range toIter {
+				obj := intf.(map[string]interface{})
+				name := obj["name"].(string)
+				if err := fn(name, intf); err != nil {
+					return err
+				}
+			}
+		case map[string]interface{}:
+			for k, v := range toIter {
+				if err := fn(k, v); err != nil {
+					return err
+				}
+			}
+		default:
+			panic("import map should be map[string]interface or []map[string]interface{}")
 		}
 
-		m[k] = s
+		return nil
+	}
+
+	err := iter(intf, func(name string, value interface{}) error {
+		s, err := SetFromInterface(value)
+		if err != nil {
+			return err
+		}
+
+		m[name] = s
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return m, nil

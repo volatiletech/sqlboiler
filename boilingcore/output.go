@@ -118,14 +118,13 @@ func executeTemplates(e executeTemplateData) error {
 			out := templateByteBuffer
 			out.Reset()
 
-			writeFileDisclaimer(out)
-
 			isGo := filepath.Ext(ext) == ".go"
 			if isGo {
 				pkgName := e.state.Config.PkgName
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
+				writeFileDisclaimer(out)
 				writePackageName(out, pkgName)
 				writeImports(out, imps)
 			}
@@ -170,7 +169,6 @@ func executeSingletonTemplates(e executeTemplateData) error {
 		fName = fName[:strings.IndexByte(fName, '.')]
 
 		out.Reset()
-		writeFileDisclaimer(out)
 
 		if isGo {
 			imps := importers.Set{
@@ -182,6 +180,7 @@ func executeSingletonTemplates(e executeTemplateData) error {
 			if !usePkg {
 				pkgName = filepath.Base(dir)
 			}
+			writeFileDisclaimer(out)
 			writePackageName(out, pkgName)
 			writeImports(out, imps)
 		}

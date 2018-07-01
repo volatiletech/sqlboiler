@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   sidestep viper's constant downcasing of config keys. This is the
   exact same fix as happened with aliases previously.
 
+### Fixed
+
+- Remove generation disclaimer for non-go files which prevents proper parsing
+  of languages like html
+
 ## [v3.0.0-rc9]
 
 ### Fixed

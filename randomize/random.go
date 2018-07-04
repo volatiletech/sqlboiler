@@ -58,6 +58,8 @@ func FormattedString(s *Seed, fieldType string) (string, bool) {
 		return randTxID(s), true
 	case "money":
 		return randMoney(s), true
+	case "time"
+		return randTime(), true
 	}
 
 	return "", false
@@ -154,6 +156,10 @@ func randTxID(s *Seed) string {
 
 func randMoney(s *Seed) string {
 	return fmt.Sprintf("%d.00", s.NextInt())
+}
+
+func randTime() string {
+	return fmt.Sprintf("%d:%d:%d", rand.Intn(24), rand.Intn(60), rand.Intn(60))
 }
 
 // StableDBName takes a database name in, and generates

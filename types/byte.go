@@ -4,8 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Byte is an alias for byte.
@@ -63,10 +61,10 @@ func (b *Byte) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (b *Byte) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (b *Byte) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		*b = Byte(65) // Can't deal with a true 0-value
 	}
 
-	*b = Byte(seed.NextInt()%60 + 65) // Can't deal with non-ascii characters in some databases
+	*b = Byte(nextInt()%60 + 65) // Can't deal with non-ascii characters in some databases
 }

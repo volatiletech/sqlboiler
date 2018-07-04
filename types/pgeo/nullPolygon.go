@@ -2,8 +2,6 @@ package pgeo
 
 import (
 	"database/sql/driver"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // NullPolygon allows polygon to be null
@@ -33,12 +31,12 @@ func (p *NullPolygon) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (p *NullPolygon) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (p *NullPolygon) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		p.Valid = false
 		return
 	}
 
 	p.Valid = true
-	p.Polygon = randPolygon(seed)
+	p.Polygon = randPolygon(nextInt)
 }

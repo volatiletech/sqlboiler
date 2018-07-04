@@ -568,8 +568,8 @@ func (a BoolArray) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (a *BoolArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*a = BoolArray{seed.NextInt()%2 == 0, seed.NextInt()%2 == 0, seed.NextInt()%2 == 0}
+func (a *BoolArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = BoolArray{nextInt()%2 == 0, nextInt()%2 == 0, nextInt()%2 == 0}
 }
 
 // BytesArray represents a one-dimensional array of the PostgreSQL bytea type.
@@ -644,8 +644,8 @@ func (a BytesArray) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (a *BytesArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*a = BytesArray{randomize.ByteSlice(seed, 4), randomize.ByteSlice(seed, 4), randomize.ByteSlice(seed, 4)}
+func (a *BytesArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = BytesArray{randomize.ByteSlice(nextInt, 4), randomize.ByteSlice(nextInt, 4), randomize.ByteSlice(nextInt, 4)}
 }
 
 // Float64Array represents a one-dimensional array of the PostgreSQL double
@@ -711,8 +711,8 @@ func (a Float64Array) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (a *Float64Array) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*a = Float64Array{float64(seed.NextInt()), float64(seed.NextInt())}
+func (a *Float64Array) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = Float64Array{float64(nextInt()), float64(nextInt())}
 }
 
 // GenericArray implements the driver.Valuer and sql.Scanner interfaces for
@@ -932,8 +932,8 @@ func (a Int64Array) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (a *Int64Array) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*a = Int64Array{int64(seed.NextInt()), int64(seed.NextInt())}
+func (a *Int64Array) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = Int64Array{int64(nextInt()), int64(nextInt())}
 }
 
 // StringArray represents a one-dimensional array of the PostgreSQL character types.
@@ -998,18 +998,18 @@ func (a StringArray) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (a *StringArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (a *StringArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	strs := make([]string, 2)
 	fieldType = strings.TrimPrefix(fieldType, "ARRAY")
 
 	for i := range strs {
-		val, ok := randomize.FormattedString(seed, fieldType)
+		val, ok := randomize.FormattedString(nextInt, fieldType)
 		if ok {
 			strs[i] = val
 			continue
 		}
 
-		strs[i] = randomize.Str(seed, 1)
+		strs[i] = randomize.Str(nextInt, 1)
 	}
 
 	*a = strs
@@ -1071,10 +1071,10 @@ func (a DecimalArray) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (a *DecimalArray) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (a *DecimalArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	d1, d2 := NewDecimal(new(decimal.Big)), NewDecimal(new(decimal.Big))
-	d1.SetString(fmt.Sprintf("%d.%d", seed.NextInt()%10, seed.NextInt()%10))
-	d2.SetString(fmt.Sprintf("%d.%d", seed.NextInt()%10, seed.NextInt()%10))
+	d1.SetString(fmt.Sprintf("%d.%d", nextInt()%10, nextInt()%10))
+	d2.SetString(fmt.Sprintf("%d.%d", nextInt()%10, nextInt()%10))
 	*a = DecimalArray{d1, d2}
 }
 

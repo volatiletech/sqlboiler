@@ -2,8 +2,6 @@ package pgeo
 
 import (
 	"database/sql/driver"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // NullCircle allows circle to be null
@@ -33,12 +31,12 @@ func (c *NullCircle) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (c *NullCircle) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (c *NullCircle) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		c.Valid = false
 		return
 	}
 
 	c.Valid = true
-	c.Circle = randCircle(seed)
+	c.Circle = randCircle(nextInt)
 }

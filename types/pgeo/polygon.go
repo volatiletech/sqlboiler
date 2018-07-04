@@ -4,8 +4,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Polygon is represented by lists of points (the vertexes of the polygon).
@@ -43,11 +41,11 @@ func scanPolygon(p *Polygon, src interface{}) error {
 	return nil
 }
 
-func randPolygon(seed *randomize.Seed) Polygon {
-	return Polygon(randPoints(seed, 3))
+func randPolygon(nextInt func() int64) Polygon {
+	return Polygon(randPoints(nextInt, 3))
 }
 
 // Randomize for sqlboiler
-func (p *Polygon) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*p = randPolygon(seed)
+func (p *Polygon) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*p = randPolygon(nextInt)
 }

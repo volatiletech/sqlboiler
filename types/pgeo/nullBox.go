@@ -2,8 +2,6 @@ package pgeo
 
 import (
 	"database/sql/driver"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // NullBox allows a box to be null
@@ -33,12 +31,12 @@ func (b *NullBox) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (b *NullBox) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (b *NullBox) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		b.Valid = false
 		return
 	}
 
 	b.Valid = true
-	b.Box = randBox(seed)
+	b.Box = randBox(nextInt)
 }

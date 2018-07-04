@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Line represents a infinite line with the linear equation Ax + By + C = 0, where A and B are not both zero.
@@ -56,11 +54,11 @@ func scanLine(l *Line, src interface{}) error {
 	return nil
 }
 
-func randLine(seed *randomize.Seed) Line {
-	return Line{newRandNum(seed), newRandNum(seed), 0}
+func randLine(nextInt func() int64) Line {
+	return Line{newRandNum(nextInt), newRandNum(nextInt), 0}
 }
 
 // Randomize for sqlboiler
-func (l *Line) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*l = randLine(seed)
+func (l *Line) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*l = randLine(nextInt)
 }

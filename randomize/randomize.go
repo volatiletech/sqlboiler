@@ -16,10 +16,18 @@ import (
 // Randomizer allows a field to be randomized
 type Randomizer interface {
 	// Randomize should panic if there's no ability to randomize with the current parameters.
+	//
+	// nextInt can be called to create "random" sequential integers. This is done to avoid collisions in unique columns
+	// for the tests.
+	//
+	// fieldType is used in the cases where the actual type (string, null string etc.) can actually be multiple
+	// types of things that have specific randomization requirements, like a uuid for example is a normal null.String
+	// but when randomizing that null string it must create a valid uuid or the database will reject it.
+	//
 	// shouldBeNull is a suggestion that a field should be null in this instance. The randomize implementation
 	// can ignore this if the field cannot be null either because the type doesn't support it or there
 	// is no ability for a field of this type to be null.
-	Randomize(s *Seed, fieldType string, shouldBeNull bool)
+	Randomize(nextInt func() int64, fieldType string, shouldBeNull bool)
 }
 
 var (
@@ -40,8 +48,8 @@ func NewSeed() *Seed {
 }
 
 // NextInt retrives an integer in order
-func (s *Seed) NextInt() int {
-	return int(atomic.AddInt64((*int64)(s), 1) % math.MaxInt32)
+func (s *Seed) NextInt() int64 {
+	return atomic.AddInt64((*int64)(s), 1)
 }
 
 // Struct gets its fields filled with random data based on the seed.
@@ -125,7 +133,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 	// The struct and it's fields should always be addressable
 	ptrToField := field.Addr()
 	if r, ok := ptrToField.Interface().(Randomizer); ok {
-		r.Randomize(s, fieldType, shouldBeNull)
+		r.Randomize(s.NextInt, fieldType, shouldBeNull)
 		return nil
 	}
 
@@ -161,7 +169,7 @@ func getStructNullValue(s *Seed, fieldType string, typ reflect.Type) interface{}
 	switch typ {
 	case typeTime:
 		// MySQL does not support 0 value time.Time, so use rand
-		return Date(s)
+		return Date(s.NextInt)
 	}
 
 	return nil
@@ -173,7 +181,7 @@ func getStructNullValue(s *Seed, fieldType string, typ reflect.Type) interface{}
 func getStructRandValue(s *Seed, fieldType string, typ reflect.Type) interface{} {
 	switch typ {
 	case typeTime:
-		return Date(s)
+		return Date(s.NextInt)
 	}
 
 	return nil
@@ -211,7 +219,7 @@ func getVariableZeroValue(s *Seed, fieldType string, kind reflect.Kind, typ refl
 	case reflect.String:
 		// Some of these formatted strings cannot tolerate 0 values, so
 		// we ignore the request for a null value.
-		str, ok := FormattedString(s, fieldType)
+		str, ok := FormattedString(s.NextInt, fieldType)
 		if ok {
 			return str
 		}
@@ -233,13 +241,13 @@ func getVariableRandValue(s *Seed, fieldType string, kind reflect.Kind, typ refl
 	case reflect.Float64:
 		return float64(float64(s.NextInt()%10)/10.0 + float64(s.NextInt()%10))
 	case reflect.Int:
-		return s.NextInt()
+		return int(s.NextInt())
 	case reflect.Int8:
 		return int8(s.NextInt() % math.MaxInt8)
 	case reflect.Int16:
 		return int16(s.NextInt() % math.MaxInt16)
 	case reflect.Int32:
-		val, ok := MediumInt(s, fieldType)
+		val, ok := MediumInt(s.NextInt, fieldType)
 		if ok {
 			return val
 		}
@@ -259,17 +267,17 @@ func getVariableRandValue(s *Seed, fieldType string, kind reflect.Kind, typ refl
 	case reflect.Bool:
 		return true
 	case reflect.String:
-		str, ok := FormattedString(s, fieldType)
+		str, ok := FormattedString(s.NextInt, fieldType)
 		if ok {
 			return str
 		}
-		return Str(s, 1)
+		return Str(s.NextInt, 1)
 	case reflect.Slice:
 		sliceVal := typ.Elem()
 		if sliceVal.Kind() != reflect.Uint8 {
 			return errors.Errorf("unsupported slice type: %T, was expecting byte slice.", typ.String())
 		}
-		return ByteSlice(s, 1)
+		return ByteSlice(s.NextInt, 1)
 	}
 
 	return nil

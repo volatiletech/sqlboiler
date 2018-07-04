@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/ericlagergren/decimal"
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Decimal is a DECIMAL in sql. Its zero value is valid for use with both
@@ -56,8 +55,8 @@ func (d *Decimal) Scan(val interface{}) error {
 }
 
 // Randomize implements sqlboiler's randomize interface
-func (d *Decimal) Randomize(s *randomize.Seed, fieldType string, shouldBeNull bool) {
-	d.Big = randomDecimal(s, fieldType, false)
+func (d *Decimal) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	d.Big = randomDecimal(nextInt, fieldType, false)
 }
 
 // Value implements driver.Valuer.
@@ -77,16 +76,16 @@ func (n *NullDecimal) Scan(val interface{}) error {
 }
 
 // Randomize implements sqlboiler's randomize interface
-func (n *NullDecimal) Randomize(s *randomize.Seed, fieldType string, shouldBeNull bool) {
-	n.Big = randomDecimal(s, fieldType, shouldBeNull)
+func (n *NullDecimal) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	n.Big = randomDecimal(nextInt, fieldType, shouldBeNull)
 }
 
-func randomDecimal(s *randomize.Seed, fieldType string, shouldBeNull bool) *decimal.Big {
+func randomDecimal(nextInt func() int64, fieldType string, shouldBeNull bool) *decimal.Big {
 	if shouldBeNull {
 		return nil
 	}
 
-	randVal := fmt.Sprintf("%d.%d", s.NextInt()%10, s.NextInt()%10)
+	randVal := fmt.Sprintf("%d.%d", nextInt()%10, nextInt()%10)
 	random, success := new(decimal.Big).SetString(randVal)
 	if !success {
 		panic("randVal could not be turned into a decimal")

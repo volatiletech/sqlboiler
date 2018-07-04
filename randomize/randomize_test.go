@@ -11,8 +11,8 @@ type MagicType struct {
 	Randomized bool
 }
 
-func (m *MagicType) Randomize(seed *Seed, fieldType string, shouldBeNull bool) {
-	m.Value = seed.NextInt()
+func (m *MagicType) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	m.Value = int(nextInt())
 	m.Randomized = true
 }
 
@@ -132,7 +132,7 @@ func TestEnumValue(t *testing.T) {
 	enum2 := "enum('monday','tuesday')"
 	enum3 := "enum('monday')"
 
-	r1, err := EnumValue(s, enum1)
+	r1, err := EnumValue(s.NextInt, enum1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -141,7 +141,7 @@ func TestEnumValue(t *testing.T) {
 		t.Errorf("Expected monday or tuesday, got: %q", r1)
 	}
 
-	r2, err := EnumValue(s, enum2)
+	r2, err := EnumValue(s.NextInt, enum2)
 	if err != nil {
 		t.Error(err)
 	}
@@ -150,7 +150,7 @@ func TestEnumValue(t *testing.T) {
 		t.Errorf("Expected monday or tuesday, got: %q", r2)
 	}
 
-	r3, err := EnumValue(s, enum3)
+	r3, err := EnumValue(s.NextInt, enum3)
 	if err != nil {
 		t.Error(err)
 	}

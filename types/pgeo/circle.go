@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Circle is represented by a center point and radius.
@@ -62,11 +60,11 @@ func scanCircle(c *Circle, src interface{}) error {
 	return nil
 }
 
-func randCircle(seed *randomize.Seed) Circle {
-	return Circle{randPoint(seed), newRandNum(seed)}
+func randCircle(nextInt func() int64) Circle {
+	return Circle{randPoint(nextInt), newRandNum(nextInt)}
 }
 
 // Randomize for sqlboiler
-func (c *Circle) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*c = randCircle(seed)
+func (c *Circle) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*c = randCircle(nextInt)
 }

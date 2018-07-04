@@ -4,8 +4,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Box is represented by pairs of points that are opposite corners of the box.
@@ -45,11 +43,11 @@ func scanBox(b *Box, src interface{}) error {
 	return nil
 }
 
-func randBox(seed *randomize.Seed) Box {
-	return Box([2]Point{randPoint(seed), randPoint(seed)})
+func randBox(nextInt func() int64) Box {
+	return Box([2]Point{randPoint(nextInt), randPoint(nextInt)})
 }
 
 // Randomize for sqlboiler
-func (b *Box) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*b = randBox(seed)
+func (b *Box) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*b = randBox(nextInt)
 }

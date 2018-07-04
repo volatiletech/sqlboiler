@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 func iToS(src interface{}) (string, error) {
@@ -98,6 +96,6 @@ func parsePointsSrc(src interface{}) ([]Point, error) {
 	return parsePoints(val)
 }
 
-func newRandNum(s *randomize.Seed) float64 {
-	return float64(s.NextInt())
+func newRandNum(nextInt func() int64) float64 {
+	return float64(nextInt())
 }

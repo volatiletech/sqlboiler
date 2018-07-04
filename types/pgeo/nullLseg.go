@@ -2,8 +2,6 @@ package pgeo
 
 import (
 	"database/sql/driver"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // NullLseg allows line segment to be null
@@ -33,12 +31,12 @@ func (l *NullLseg) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (l *NullLseg) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (l *NullLseg) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		l.Valid = false
 		return
 	}
 
 	l.Valid = true
-	l.Lseg = randLseg(seed)
+	l.Lseg = randLseg(nextInt)
 }

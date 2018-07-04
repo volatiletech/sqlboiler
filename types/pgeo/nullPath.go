@@ -2,8 +2,6 @@ package pgeo
 
 import (
 	"database/sql/driver"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // NullPath allows path to be null
@@ -33,12 +31,12 @@ func (p *NullPath) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (p *NullPath) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (p *NullPath) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		p.Valid = false
 		return
 	}
 
 	p.Valid = true
-	p.Path = randPath(seed)
+	p.Path = randPath(nextInt)
 }

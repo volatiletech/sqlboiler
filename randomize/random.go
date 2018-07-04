@@ -16,10 +16,10 @@ const alphabetAll = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 const alphabetLowerAlpha = "abcdefghijklmnopqrstuvwxyz"
 
 // Str creates a randomized string from printable characters in the alphabet
-func Str(s *Seed, ln int) string {
+func Str(nextInt func() int64, ln int) string {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(alphabetAll[s.NextInt()%len(alphabetAll)])
+		str[i] = byte(alphabetAll[nextInt()%int64(len(alphabetAll))])
 	}
 
 	return string(str)
@@ -27,9 +27,9 @@ func Str(s *Seed, ln int) string {
 
 // FormattedString checks a field type to see if it's in a range of special
 // values and if so returns a randomized string for it.
-func FormattedString(s *Seed, fieldType string) (string, bool) {
+func FormattedString(nextInt func() int64, fieldType string) (string, bool) {
 	if strings.HasPrefix(fieldType, "enum") {
-		enum, err := EnumValue(s, fieldType)
+		enum, err := EnumValue(nextInt, fieldType)
 		if err != nil {
 			panic(err)
 		}
@@ -39,9 +39,9 @@ func FormattedString(s *Seed, fieldType string) (string, bool) {
 
 	switch fieldType {
 	case "json", "jsonb":
-		return `"` + Str(s, 1) + `"`, true
+		return `"` + Str(nextInt, 1) + `"`, true
 	case "interval":
-		return strconv.Itoa((s.NextInt()%26)+2) + " days", true
+		return strconv.Itoa((int(nextInt())%26)+2) + " days", true
 	case "uuid":
 		randomUUID, err := uuid.NewV4()
 		if err != nil {
@@ -49,15 +49,15 @@ func FormattedString(s *Seed, fieldType string) (string, bool) {
 		}
 		return randomUUID.String(), true
 	case "cidr", "inet":
-		return randNetAddr(s), true
+		return randNetAddr(nextInt), true
 	case "macaddr":
-		return randMacAddr(s), true
+		return randMacAddr(nextInt), true
 	case "pg_lsn":
-		return randLsn(s), true
+		return randLsn(nextInt), true
 	case "txid_snapshot":
-		return randTxID(s), true
+		return randTxID(nextInt), true
 	case "money":
-		return randMoney(s), true
+		return randMoney(nextInt), true
 	}
 
 	return "", false
@@ -66,9 +66,9 @@ func FormattedString(s *Seed, fieldType string) (string, bool) {
 // MediumInt is a special case in mysql (thanks for that -_-)
 // this function checks if the fieldtype matches and if so returns
 // a random value in the proper range.
-func MediumInt(s *Seed, fieldType string) (int32, bool) {
+func MediumInt(nextInt func() int64, fieldType string) (int32, bool) {
 	if fieldType == "mediumint" {
-		return int32(s.NextInt()) % 8388607, true
+		return int32(nextInt()) % 8388607, true
 	}
 
 	return 0, false
@@ -77,11 +77,11 @@ func MediumInt(s *Seed, fieldType string) (int32, bool) {
 // Date generates a random time.Time between 1850 and 2050.
 // Only the Day/Month/Year columns are set so that Dates and DateTimes do
 // not cause mismatches in the test data comparisons.
-func Date(s *Seed) time.Time {
+func Date(nextInt func() int64) time.Time {
 	t := time.Date(
-		1972+s.NextInt()%60,
-		time.Month(1+(s.NextInt()%12)),
-		1+(s.NextInt()%25),
+		int(1972+nextInt()%60),
+		time.Month(1+(nextInt()%12)),
+		int(1+(nextInt()%25)),
 		0,
 		0,
 		0,
@@ -94,39 +94,39 @@ func Date(s *Seed) time.Time {
 
 // EnumValue takes an enum field type, parses it's definition
 // to figure out valid values, and selects a random one from within them.
-func EnumValue(s *Seed, enum string) (string, error) {
+func EnumValue(nextInt func() int64, enum string) (string, error) {
 	vals := strmangle.ParseEnumVals(enum)
 	if vals == nil || len(vals) == 0 {
 		return "", fmt.Errorf("unable to parse enum string: %s", enum)
 	}
 
-	return vals[s.NextInt()%len(vals)], nil
+	return vals[int(nextInt())%len(vals)], nil
 }
 
 // ByteSlice creates a random set of bytes (non-printables included)
-func ByteSlice(s *Seed, ln int) []byte {
+func ByteSlice(nextInt func() int64, ln int) []byte {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(s.NextInt() % 256)
+		str[i] = byte(nextInt() % 256)
 	}
 
 	return str
 }
 
-func randNetAddr(s *Seed) string {
+func randNetAddr(nextInt func() int64) string {
 	return fmt.Sprintf(
 		"%d.%d.%d.%d",
-		s.NextInt()%254+1,
-		s.NextInt()%254+1,
-		s.NextInt()%254+1,
-		s.NextInt()%254+1,
+		nextInt()%254+1,
+		nextInt()%254+1,
+		nextInt()%254+1,
+		nextInt()%254+1,
 	)
 }
 
-func randMacAddr(s *Seed) string {
+func randMacAddr(nextInt func() int64) string {
 	buf := make([]byte, 6)
 	for i := range buf {
-		buf[i] = byte(s.NextInt())
+		buf[i] = byte(nextInt())
 	}
 
 	// Set the local bit
@@ -137,23 +137,23 @@ func randMacAddr(s *Seed) string {
 	)
 }
 
-func randLsn(s *Seed) string {
-	a := s.NextInt() % 9000000
-	b := s.NextInt() % 9000000
+func randLsn(nextInt func() int64) string {
+	a := nextInt() % 9000000
+	b := nextInt() % 9000000
 	return fmt.Sprintf("%d/%d", a, b)
 }
 
-func randTxID(s *Seed) string {
+func randTxID(nextInt func() int64) string {
 	// Order of integers is relevant
-	a := s.NextInt()%200 + 100
+	a := nextInt()%200 + 100
 	b := a + 100
 	c := a
 	d := a + 50
 	return fmt.Sprintf("%d:%d:%d,%d", a, b, c, d)
 }
 
-func randMoney(s *Seed) string {
-	return fmt.Sprintf("%d.00", s.NextInt())
+func randMoney(nextInt func() int64) string {
+	return fmt.Sprintf("%d.00", nextInt()%100000)
 }
 
 // StableDBName takes a database name in, and generates

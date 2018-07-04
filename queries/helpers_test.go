@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	null "gopkg.in/volatiletech/null.v7"
+	"github.com/volatiletech/null"
 )
 
 type testObj struct {

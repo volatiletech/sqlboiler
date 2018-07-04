@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // Path is represented by lists of connected points.
@@ -61,11 +59,11 @@ func scanPath(p *Path, src interface{}) error {
 	return nil
 }
 
-func randPath(seed *randomize.Seed) Path {
-	return Path{randPoints(seed, 3), newRandNum(seed) < 40}
+func randPath(nextInt func() int64) Path {
+	return Path{randPoints(nextInt, 3), newRandNum(nextInt) < 40}
 }
 
 // Randomize for sqlboiler
-func (p *Path) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*p = randPath(seed)
+func (p *Path) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*p = randPath(nextInt)
 }

@@ -137,13 +137,13 @@ func (h HStore) Value() (driver.Value, error) {
 }
 
 // Randomize for sqlboiler
-func (h *HStore) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (h *HStore) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		*h = nil
 		return
 	}
 
 	*h = make(map[string]sql.NullString)
-	(*h)[randomize.Str(seed, 3)] = sql.NullString{String: randomize.Str(seed, 3), Valid: seed.NextInt()%3 == 0}
-	(*h)[randomize.Str(seed, 3)] = sql.NullString{String: randomize.Str(seed, 3), Valid: seed.NextInt()%3 == 0}
+	(*h)[randomize.Str(nextInt, 3)] = sql.NullString{String: randomize.Str(nextInt, 3), Valid: nextInt()%3 == 0}
+	(*h)[randomize.Str(nextInt, 3)] = sql.NullString{String: randomize.Str(nextInt, 3), Valid: nextInt()%3 == 0}
 }

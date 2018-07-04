@@ -79,6 +79,6 @@ func (j *JSON) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (j *JSON) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
-	*j = []byte(`"` + randomize.Str(seed, 1) + `"`)
+func (j *JSON) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*j = []byte(`"` + randomize.Str(nextInt, 1) + `"`)
 }

@@ -2,8 +2,6 @@ package pgeo
 
 import (
 	"database/sql/driver"
-
-	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // NullPoint allows point to be null
@@ -33,12 +31,12 @@ func (p *NullPoint) Scan(src interface{}) error {
 }
 
 // Randomize for sqlboiler
-func (p *NullPoint) Randomize(seed *randomize.Seed, fieldType string, shouldBeNull bool) {
+func (p *NullPoint) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	if shouldBeNull {
 		p.Valid = false
 		return
 	}
 
 	p.Valid = true
-	p.Point = randPoint(seed)
+	p.Point = randPoint(nextInt)
 }

@@ -272,12 +272,12 @@ func mkFunctionName(fkeyTableSingular, foreignTablePluralGo, fkeyColumn string, 
 	return strmangle.TitleCase(colName) + foreignTablePluralGo
 }
 
-var identifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid"}
+var IdentifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid"}
 
 // trimSuffixes from the identifier
 func trimSuffixes(str string) string {
 	ln := len(str)
-	for _, s := range identifierSuffixes {
+	for _, s := range IdentifierSuffixes {
 		str = strings.TrimSuffix(str, s)
 		if len(str) != ln {
 			break

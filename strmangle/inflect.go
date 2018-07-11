@@ -2,7 +2,16 @@ package strmangle
 
 import "github.com/volatiletech/inflect"
 
-var boilRuleset *inflect.Ruleset
+var inflectRuleset *inflect.Ruleset
+
+func init() {
+	// Our Boil inflection Ruleset does not include uncountable inflections.
+	// This way, people using words like Sheep will not have
+	// collisions with their model name (Sheep) and their
+	// function name (Sheep()). Instead, it will
+	// use the regular inflection rules: Sheep, Sheeps().
+	inflectRuleset = newBoilRuleset()
+}
 
 // create a new ruleset and load it with the default
 // set of common English pluralization rules

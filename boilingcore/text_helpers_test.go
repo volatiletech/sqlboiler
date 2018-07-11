@@ -264,7 +264,7 @@ func TestTxtNameToMany(t *testing.T) {
 func TestTrimSuffixes(t *testing.T) {
 	t.Parallel()
 
-	for _, s := range identifierSuffixes {
+	for _, s := range IdentifierSuffixes {
 		a := "hello" + s
 
 		if z := trimSuffixes(a); z != "hello" {

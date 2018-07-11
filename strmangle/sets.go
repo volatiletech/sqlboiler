@@ -4,7 +4,7 @@ package strmangle
 // if a whitelist is supplied, it's returned
 // if a whitelist is missing then we begin with all columns
 // then we remove the primary key columns
-func UpdateColumnSet(allColumns, pkeyCols, whitelist []string) []string {
+func (m *defaultMangler) UpdateColumnSet(allColumns, pkeyCols, whitelist []string) []string {
 	if len(whitelist) != 0 {
 		return whitelist
 	}
@@ -22,7 +22,7 @@ func UpdateColumnSet(allColumns, pkeyCols, whitelist []string) []string {
 // - start with columns without a default as these always need to be inserted
 // - add all columns that have a default in the database but that are non-zero in the struct
 // - the return columns are the result of (columns with default values - the previous set)
-func InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults, whitelist []string) ([]string, []string) {
+func (m *defaultMangler) InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults, whitelist []string) ([]string, []string) {
 	if len(whitelist) > 0 {
 		return whitelist, SetComplement(defaults, whitelist)
 	}
@@ -39,7 +39,7 @@ func InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults, whitelist []st
 }
 
 // SetInclude checks to see if the string is found in the string slice
-func SetInclude(str string, slice []string) bool {
+func (m *defaultMangler) SetInclude(str string, slice []string) bool {
 	for _, s := range slice {
 		if str == s {
 			return true
@@ -50,7 +50,7 @@ func SetInclude(str string, slice []string) bool {
 }
 
 // SetComplement subtracts the elements in b from a
-func SetComplement(a []string, b []string) []string {
+func (m *defaultMangler) SetComplement(a []string, b []string) []string {
 	c := make([]string, 0, len(a))
 
 	for _, aVal := range a {
@@ -70,7 +70,7 @@ func SetComplement(a []string, b []string) []string {
 }
 
 // SetMerge will return a merged slice without duplicates
-func SetMerge(a []string, b []string) []string {
+func (m *defaultMangler) SetMerge(a []string, b []string) []string {
 	var x, merged []string
 
 	x = append(x, a...)
@@ -90,7 +90,7 @@ func SetMerge(a []string, b []string) []string {
 }
 
 // SortByKeys returns a new ordered slice based on the keys ordering
-func SortByKeys(keys []string, strs []string) []string {
+func (m *defaultMangler) SortByKeys(keys []string, strs []string) []string {
 	c := make([]string, len(strs))
 
 	index := 0

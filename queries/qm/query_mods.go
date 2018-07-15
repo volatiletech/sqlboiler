@@ -4,17 +4,17 @@ import "github.com/volatiletech/sqlboiler/queries"
 
 // QueryMod modifies a query object.
 type QueryMod interface {
-	Mod(q *queries.Query)
+	Apply(q *queries.Query)
 }
 
-// The QueryModFunc type is an adapter to allow the use of
-// ordinary functions query modifies. If f is a function
-// with the appropriate signature, QueryModFunc(f) is a
-// QueryMod that calls f.
+// The QueryModFunc type is an adapter to allow the use
+// of ordinary functions for query modifying. If f is a
+// function with the appropriate signature,
+// QueryModFunc(f) is a QueryMod that calls f.
 type QueryModFunc func(q *queries.Query)
 
 // Mod calls f(q).
-func (f QueryModFunc) Mod(q *queries.Query) {
+func (f QueryModFunc) Apply(q *queries.Query) {
 	f(q)
 }
 
@@ -33,7 +33,7 @@ func (m queryMods) Apply(q *queries.Query) {
 // Apply the query mods to the Query object
 func Apply(q *queries.Query, mods ...QueryMod) {
 	for _, mod := range mods {
-		mod.Mod(q)
+		mod.Apply(q)
 	}
 }
 
@@ -42,14 +42,14 @@ type sqlQueryMod struct {
 	args []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *sqlQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm sqlQueryMod) Apply(q *queries.Query) {
 	queries.SetSQL(q, qm.sql, qm.args...)
 }
 
 // SQL allows you to execute a plain SQL statement
 func SQL(sql string, args ...interface{}) QueryMod {
-	return &sqlQueryMod{
+	return sqlQueryMod{
 		sql:  sql,
 		args: args,
 	}
@@ -60,8 +60,8 @@ type loadQueryMod struct {
 	mods         []QueryMod
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *loadQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm loadQueryMod) Apply(q *queries.Query) {
 	queries.AppendLoad(q, qm.relationship)
 
 	if len(qm.mods) != 0 {
@@ -94,7 +94,7 @@ func (qm *loadQueryMod) Mod(q *queries.Query) {
 //     qm.Load("Videos.Tags", Where("deleted = ?", isDeleted))
 //   )
 func Load(relationship string, mods ...QueryMod) QueryMod {
-	return &loadQueryMod{
+	return loadQueryMod{
 		relationship: relationship,
 		mods:         mods,
 	}
@@ -105,14 +105,14 @@ type innerJoinQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *innerJoinQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm innerJoinQueryMod) Apply(q *queries.Query) {
 	queries.AppendInnerJoin(q, qm.clause, qm.args...)
 }
 
 // InnerJoin on another table
 func InnerJoin(clause string, args ...interface{}) QueryMod {
-	return &innerJoinQueryMod{
+	return innerJoinQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -122,14 +122,14 @@ type selectQueryMod struct {
 	columns []string
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *selectQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm selectQueryMod) Apply(q *queries.Query) {
 	queries.AppendSelect(q, qm.columns...)
 }
 
 // Select specific columns opposed to all columns
 func Select(columns ...string) QueryMod {
-	return &selectQueryMod{
+	return selectQueryMod{
 		columns: columns,
 	}
 }
@@ -139,14 +139,14 @@ type whereQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *whereQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm whereQueryMod) Apply(q *queries.Query) {
 	queries.AppendWhere(q, qm.clause, qm.args...)
 }
 
 // Where allows you to specify a where clause for your statement
 func Where(clause string, args ...interface{}) QueryMod {
-	return &whereQueryMod{
+	return whereQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -157,8 +157,8 @@ type andQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *andQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm andQueryMod) Apply(q *queries.Query) {
 	queries.AppendWhere(q, qm.clause, qm.args...)
 }
 
@@ -166,7 +166,7 @@ func (qm *andQueryMod) Mod(q *queries.Query) {
 // And is a duplicate of the Where function, but allows for more natural looking
 // query mod chains, for example: (Where("a=?"), And("b=?"), Or("c=?")))
 func And(clause string, args ...interface{}) QueryMod {
-	return &andQueryMod{
+	return andQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -177,34 +177,34 @@ type orQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *orQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm orQueryMod) Apply(q *queries.Query) {
 	queries.AppendWhere(q, qm.clause, qm.args...)
 	queries.SetLastWhereAsOr(q)
 }
 
 // Or allows you to specify a where clause separated by an OR for your statement
 func Or(clause string, args ...interface{}) QueryMod {
-	return &orQueryMod{
+	return orQueryMod{
 		clause: clause,
 		args:   args,
 	}
 }
 
-// Mod implements QueryMod.Mod.
+// Apply implements QueryMod.Apply.
 type whereInQueryMod struct {
 	clause string
 	args   []interface{}
 }
 
-func (qm *whereInQueryMod) Mod(q *queries.Query) {
+func (qm whereInQueryMod) Apply(q *queries.Query) {
 	queries.AppendIn(q, qm.clause, qm.args...)
 }
 
 // WhereIn allows you to specify a "x IN (set)" clause for your where statement
 // Example clauses: "column in ?", "(column1,column2) in ?"
 func WhereIn(clause string, args ...interface{}) QueryMod {
-	return &whereInQueryMod{
+	return whereInQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -215,8 +215,8 @@ type andInQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *andInQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm andInQueryMod) Apply(q *queries.Query) {
 	queries.AppendIn(q, qm.clause, qm.args...)
 }
 
@@ -225,7 +225,7 @@ func (qm *andInQueryMod) Mod(q *queries.Query) {
 // allows for more natural looking query mod chains, for example:
 // (WhereIn("column1 in ?"), AndIn("column2 in ?"), OrIn("column3 in ?"))
 func AndIn(clause string, args ...interface{}) QueryMod {
-	return &andInQueryMod{
+	return andInQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -236,8 +236,8 @@ type orInQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *orInQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm orInQueryMod) Apply(q *queries.Query) {
 	queries.AppendIn(q, qm.clause, qm.args...)
 	queries.SetLastInAsOr(q)
 }
@@ -245,7 +245,7 @@ func (qm *orInQueryMod) Mod(q *queries.Query) {
 // OrIn allows you to specify an IN clause separated by
 // an OR for your where statement
 func OrIn(clause string, args ...interface{}) QueryMod {
-	return &orInQueryMod{
+	return orInQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -255,14 +255,14 @@ type groupByQueryMod struct {
 	clause string
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *groupByQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm groupByQueryMod) Apply(q *queries.Query) {
 	queries.AppendGroupBy(q, qm.clause)
 }
 
 // GroupBy allows you to specify a group by clause for your statement
 func GroupBy(clause string) QueryMod {
-	return &groupByQueryMod{
+	return groupByQueryMod{
 		clause: clause,
 	}
 }
@@ -271,14 +271,14 @@ type orderByQueryMod struct {
 	clause string
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *orderByQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm orderByQueryMod) Apply(q *queries.Query) {
 	queries.AppendOrderBy(q, qm.clause)
 }
 
 // OrderBy allows you to specify a order by clause for your statement
 func OrderBy(clause string) QueryMod {
-	return &orderByQueryMod{
+	return orderByQueryMod{
 		clause: clause,
 	}
 }
@@ -288,14 +288,14 @@ type havingQueryMod struct {
 	args   []interface{}
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *havingQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm havingQueryMod) Apply(q *queries.Query) {
 	queries.AppendHaving(q, qm.clause, qm.args...)
 }
 
 // Having allows you to specify a having clause for your statement
 func Having(clause string, args ...interface{}) QueryMod {
-	return &havingQueryMod{
+	return havingQueryMod{
 		clause: clause,
 		args:   args,
 	}
@@ -305,14 +305,14 @@ type fromQueryMod struct {
 	from string
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *fromQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm fromQueryMod) Apply(q *queries.Query) {
 	queries.AppendFrom(q, qm.from)
 }
 
 // From allows to specify the table for your statement
 func From(from string) QueryMod {
-	return &fromQueryMod{
+	return fromQueryMod{
 		from: from,
 	}
 }
@@ -321,14 +321,14 @@ type limitQueryMod struct {
 	limit int
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *limitQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm limitQueryMod) Apply(q *queries.Query) {
 	queries.SetLimit(q, qm.limit)
 }
 
 // Limit the number of returned rows
 func Limit(limit int) QueryMod {
-	return &limitQueryMod{
+	return limitQueryMod{
 		limit: limit,
 	}
 }
@@ -337,14 +337,14 @@ type offsetQueryMod struct {
 	offset int
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *offsetQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm offsetQueryMod) Apply(q *queries.Query) {
 	queries.SetOffset(q, qm.offset)
 }
 
 // Offset into the results
 func Offset(offset int) QueryMod {
-	return &offsetQueryMod{
+	return offsetQueryMod{
 		offset: offset,
 	}
 }
@@ -353,14 +353,14 @@ type forQueryMod struct {
 	clause string
 }
 
-// Mod implements QueryMod.Mod.
-func (qm *forQueryMod) Mod(q *queries.Query) {
+// Apply implements QueryMod.Apply.
+func (qm forQueryMod) Apply(q *queries.Query) {
 	queries.SetFor(q, qm.clause)
 }
 
 // For inserts a concurrency locking clause at the end of your statement
 func For(clause string) QueryMod {
-	return &forQueryMod{
+	return forQueryMod{
 		clause: clause,
 	}
 }

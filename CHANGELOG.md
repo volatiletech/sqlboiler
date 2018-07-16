@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.0.0-rc10]
 
 ### Added
 
@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Change querymods to an interface much like the http.Handler interface. This
+  is a breaking change but facilitates being able to actually test querymods
+  as well as a more flexible method of being able to create them. For compatibility
+  with older querymods you've created, use the `qm.QueryModFunc` to convert them
+  to a function type that implements the interface, just like `http.HandlerFunc`
+  (thanks @glerchundi)
 - Change the `seed` parameter to a `func () int64` function that when called
   safely produces a new thread-safe pseudorandom sequential integer. This was
   done to remove the dependency on `sqlboiler` code.
@@ -20,11 +26,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   have null package v8.0.0 or higher after this change.
 - MySQL driver was erroneously using time.Time for the `time` type but the
   most prolific driver does not support this, use string instead. This change
-  was PR'd to v2 but never to v3.
+  was PR'd to v2 but never to v3. (thanks @ceshihao)
 
 ### Fixed
 
-- menus now singularizes correctly
+- menus now singularizes correctly (thanks @jonas747)
 - Randomize the time as a string for mysql
 - Remove generation disclaimer for non-go files which prevents proper parsing
   of languages like html

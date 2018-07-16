@@ -90,6 +90,10 @@ func randMoney(s *Seed) string {
 	return fmt.Sprintf("%d.00", s.nextInt())
 }
 
+func randTime() string {
+	return fmt.Sprintf("%d:%d:%d", rand.Intn(24), rand.Intn(60), rand.Intn(60))
+}
+
 // StableDBName takes a database name in, and generates
 // a random string using the database name as the rand Seed.
 // getDBNameHash is used to generate unique test database names.

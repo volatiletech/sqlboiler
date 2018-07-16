@@ -55,7 +55,7 @@ var (
 		"inet", "line", "uuid", "interval", "mediumint",
 		"json", "jsonb", "box", "cidr", "circle",
 		"lseg", "macaddr", "path", "pg_lsn", "point",
-		"polygon", "txid_snapshot", "money", "hstore",
+		"polygon", "txid_snapshot", "money", "time", "hstore",
 	}
 )
 
@@ -244,6 +244,11 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}
+				if fieldType == "time" {
+					value = null.NewString(randTime(), true)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
 			case typeNullInt32:
 				if fieldType == "mediumint" {
 					// 8388607 is the max for 3 byte int
@@ -317,6 +322,11 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 				}
 				if fieldType == "money" {
 					value = randMoney(s)
+					field.Set(reflect.ValueOf(value))
+					return nil
+				}
+				if fieldType == "time" {
+					value = randTime()
 					field.Set(reflect.ValueOf(value))
 					return nil
 				}

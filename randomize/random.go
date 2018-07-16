@@ -58,6 +58,8 @@ func FormattedString(nextInt func() int64, fieldType string) (string, bool) {
 		return randTxID(nextInt), true
 	case "money":
 		return randMoney(nextInt), true
+	case "time":
+		return randTime(nextInt), true
 	}
 
 	return "", false
@@ -154,6 +156,10 @@ func randTxID(nextInt func() int64) string {
 
 func randMoney(nextInt func() int64) string {
 	return fmt.Sprintf("%d.00", nextInt()%100000)
+}
+
+func randTime(nextInt func() int64) string {
+	return fmt.Sprintf("%d:%d:%d", nextInt()%24, nextInt()%60, nextInt()%60)
 }
 
 // StableDBName takes a database name in, and generates

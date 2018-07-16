@@ -18,10 +18,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   done to remove the dependency on `sqlboiler` code.
 - Stop using gopkg.in for versioning for the null package. Please ensure you
   have null package v8.0.0 or higher after this change.
+- MySQL driver was erroneously using time.Time for the `time` type but the
+  most prolific driver does not support this, use string instead. This change
+  was PR'd to v2 but never to v3.
 
 ### Fixed
 
 - menus now singularizes correctly
+- Randomize the time as a string for mysql
 - Remove generation disclaimer for non-go files which prevents proper parsing
   of languages like html
 

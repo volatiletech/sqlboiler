@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- menus now singularizes correctly
 - Remove generation disclaimer for non-go files which prevents proper parsing
   of languages like html
 

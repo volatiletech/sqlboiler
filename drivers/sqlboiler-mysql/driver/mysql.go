@@ -61,7 +61,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	}()
 
 	user := config.MustString(drivers.ConfigUser)
-	pass := config.MustString(drivers.ConfigPass)
+	pass, _ := config.String(drivers.ConfigPass)
 	dbname := config.MustString(drivers.ConfigDBName)
 	host := config.MustString(drivers.ConfigHost)
 	port := config.DefaultInt(drivers.ConfigPort, 3306)

@@ -15,6 +15,13 @@ That means you must first create your database schema. Please use something
 like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate)
 or some other migration tool to manage this part of the database's life-cycle.
 
+# Note on v2 vs v3
+
+v3 is very close to release now, if you are just starting with sqlboiler I strongly recommend you check
+out the v3 branch as there are multiple breaking changes and starting with v2 is going to leave you with
+a migration later on. There are new videos in the v3 branche's README about getting started with it as well
+as all the documentation has been updated. Please refrain from using v2 (current master branch) where possible!
+
 ## Why another ORM
 
 While attempting to migrate a legacy Rails database, we realized how much ActiveRecord benefitted us in terms of development velocity.

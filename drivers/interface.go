@@ -22,6 +22,7 @@ const (
 	ConfigPort    = "port"
 	ConfigDBName  = "dbname"
 	ConfigSSLMode = "sslmode"
+	ConfigDSN     = "dsn"
 )
 
 // Interface abstracts either a side-effect imported driver or a binary

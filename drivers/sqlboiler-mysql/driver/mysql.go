@@ -60,13 +60,33 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}()
 
-	user := config.MustString(drivers.ConfigUser)
-	pass := config.MustString(drivers.ConfigPass)
-	dbname := config.MustString(drivers.ConfigDBName)
-	host := config.MustString(drivers.ConfigHost)
-	port := config.DefaultInt(drivers.ConfigPort, 3306)
-	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
+	var (
+		user, pass, dbname, host string
+		port                     int
+	)
 
+	if dsn, ok := config.String(drivers.ConfigDSN); ok {
+		cfg, err := mysql.ParseDSN(dsn)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		user = cfg.User
+		pass = cfg.Passwd
+		dbname = cfg.DBName
+		hostAndPort := strings.SplitN(cfg.Addr, ":", 2)
+		host = hostAndPort[0]
+		if len(hostAndPort) == 2 {
+			port, _ = strconv.Atoi(hostAndPort[1])
+		}
+	} else {
+		user = config.MustString(drivers.ConfigUser)
+		pass = config.MustString(drivers.ConfigPass)
+		dbname = config.MustString(drivers.ConfigDBName)
+		host = config.MustString(drivers.ConfigHost)
+		port = config.DefaultInt(drivers.ConfigPort, 3306)
+	}
+
+	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
 	schema := dbname
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)

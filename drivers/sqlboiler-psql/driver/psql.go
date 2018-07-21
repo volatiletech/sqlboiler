@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/volatiletech/sqlboiler/importers"
@@ -17,7 +18,7 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 
 	// Side-effect import sql driver
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 //go:generate go-bindata -nometadata -pkg driver -prefix override override/...
@@ -65,17 +66,49 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 		}
 	}()
 
-	user := config.MustString(drivers.ConfigUser)
-	pass := config.MustString(drivers.ConfigPass)
-	dbname := config.MustString(drivers.ConfigDBName)
-	host := config.MustString(drivers.ConfigHost)
-	port := config.DefaultInt(drivers.ConfigPort, 5432)
-	sslmode := config.DefaultString(drivers.ConfigSSLMode, "require")
+	var (
+		user, pass, dbname, host, sslmode string
+		port                              int
+	)
+
+	if dsn, ok := config.String(drivers.ConfigDSN); ok {
+		kvs := dsn
+		if strings.HasPrefix(kvs, "postgres://") || strings.HasPrefix(kvs, "postgresql://") {
+			kvs, err = pq.ParseURL(dsn)
+			if err != nil {
+				return nil, errors.Wrapf(err, "sqlboiler-psql failed to parse dsn %q", dsn)
+			}
+		}
+		for _, kv := range strings.Split(kvs, " ") {
+			keyAndValue := strings.SplitN(kv, "=", 2)
+			switch keyAndValue[0] {
+			case "user":
+				user = keyAndValue[1]
+			case "password":
+				pass = keyAndValue[1]
+			case "host":
+				host = keyAndValue[1]
+			case "port":
+				port, _ = strconv.Atoi(keyAndValue[1])
+			case "dbname":
+				dbname = keyAndValue[1]
+			case "sslmode":
+				sslmode = keyAndValue[1]
+			}
+		}
+	} else {
+		user = config.MustString(drivers.ConfigUser)
+		pass = config.MustString(drivers.ConfigPass)
+		dbname = config.MustString(drivers.ConfigDBName)
+		host = config.MustString(drivers.ConfigHost)
+		port = config.DefaultInt(drivers.ConfigPort, 5432)
+		sslmode = config.DefaultString(drivers.ConfigSSLMode, "require")
+	}
+
 	schema := config.DefaultString(drivers.ConfigSchema, "public")
+	useSchema := schema != "public"
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
-
-	useSchema := schema != "public"
 
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.conn, err = sql.Open("postgres", p.connStr)

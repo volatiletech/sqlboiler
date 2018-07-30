@@ -65,19 +65,24 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 		}
 	}()
 
-	user := config.MustString(drivers.ConfigUser)
-	pass := config.MustString(drivers.ConfigPass)
-	dbname := config.MustString(drivers.ConfigDBName)
-	host := config.MustString(drivers.ConfigHost)
-	port := config.DefaultInt(drivers.ConfigPort, 5432)
-	sslmode := config.DefaultString(drivers.ConfigSSLMode, "require")
+	if dsn, ok := config.String(drivers.ConfigDSN); ok {
+		p.connStr = dsn
+	} else {
+		user := config.MustString(drivers.ConfigUser)
+		pass := config.MustString(drivers.ConfigPass)
+		dbname := config.MustString(drivers.ConfigDBName)
+		host := config.MustString(drivers.ConfigHost)
+		port := config.DefaultInt(drivers.ConfigPort, 5432)
+		sslmode := config.DefaultString(drivers.ConfigSSLMode, "require")
+
+		p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+	}
+
 	schema := config.DefaultString(drivers.ConfigSchema, "public")
+	useSchema := schema != "public"
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 
-	useSchema := schema != "public"
-
-	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.conn, err = sql.Open("postgres", p.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-psql failed to connect to database")

@@ -60,18 +60,23 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}()
 
-	user := config.MustString(drivers.ConfigUser)
-	pass := config.MustString(drivers.ConfigPass)
-	dbname := config.MustString(drivers.ConfigDBName)
-	host := config.MustString(drivers.ConfigHost)
-	port := config.DefaultInt(drivers.ConfigPort, 1433)
-	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
+	if dsn, ok := config.String(drivers.ConfigDSN); ok {
+		m.connStr = dsn
+	} else {
+		user := config.MustString(drivers.ConfigUser)
+		pass := config.MustString(drivers.ConfigPass)
+		dbname := config.MustString(drivers.ConfigDBName)
+		host := config.MustString(drivers.ConfigHost)
+		port := config.DefaultInt(drivers.ConfigPort, 1433)
+		sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
+
+		m.connStr = MSSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+	}
 
 	schema := config.DefaultString(drivers.ConfigSchema, "dbo")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 
-	m.connStr = MSSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mssql", m.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-mssql failed to connect to database")

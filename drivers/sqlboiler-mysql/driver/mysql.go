@@ -60,14 +60,28 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}()
 
-	user := config.MustString(drivers.ConfigUser)
-	pass := config.MustString(drivers.ConfigPass)
-	dbname := config.MustString(drivers.ConfigDBName)
-	host := config.MustString(drivers.ConfigHost)
-	port := config.DefaultInt(drivers.ConfigPort, 3306)
-	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
+	var schema string
 
-	schema := dbname
+	if dsn, ok := config.String(drivers.ConfigDSN); ok {
+		cfg, err := mysql.ParseDSN(dsn)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		schema = cfg.DBName
+		m.connStr = dsn
+	} else {
+		user := config.MustString(drivers.ConfigUser)
+		pass := config.MustString(drivers.ConfigPass)
+		dbname := config.MustString(drivers.ConfigDBName)
+		host := config.MustString(drivers.ConfigHost)
+		port := config.DefaultInt(drivers.ConfigPort, 3306)
+		sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
+
+		schema = dbname
+		m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+	}
+
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 
@@ -78,7 +92,6 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}
 
-	m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mysql", m.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-mysql failed to connect to database")

@@ -216,6 +216,14 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		c.column_default,
 
 		c.is_nullable = 'YES' as is_nullable,
+		(case
+			when (select 
+		    case
+			    when column_name = 'is_identity' then (select c.is_identity = 'YES' as is_identity)
+		    else 
+			    false
+		    end as is_identity from information_schema.columns
+		    WHERE table_schema='information_schema' and table_name='columns' and column_name='is_identity') IS NULL then 'NO' else is_identity end) = 'YES' as is_identity,
 		(select exists(
 			select 1
 			from information_schema.table_constraints tc
@@ -269,8 +277,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	for rows.Next() {
 		var colName, colType, udtName string
 		var defaultValue, arrayType *string
-		var nullable, unique bool
-		if err := rows.Scan(&colName, &colType, &udtName, &arrayType, &defaultValue, &nullable, &unique); err != nil {
+		var nullable, identity, unique bool
+		if err := rows.Scan(&colName, &colType, &udtName, &arrayType, &defaultValue, &nullable, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -284,6 +292,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		}
 		if defaultValue != nil {
 			column.Default = *defaultValue
+		}
+
+		if identity != false {
+			column.Default = "IDENTITY"
 		}
 
 		columns = append(columns, column)

@@ -1,6 +1,10 @@
 package qm
 
-import "github.com/volatiletech/sqlboiler/queries"
+import (
+	"strings"
+
+	"github.com/volatiletech/sqlboiler/queries"
+)
 
 // QueryMod modifies a query object.
 type QueryMod interface {
@@ -13,7 +17,7 @@ type QueryMod interface {
 // QueryModFunc(f) is a QueryMod that calls f.
 type QueryModFunc func(q *queries.Query)
 
-// Mod calls f(q).
+// Apply calls f(q).
 func (f QueryModFunc) Apply(q *queries.Query) {
 	f(q)
 }
@@ -363,4 +367,10 @@ func For(clause string) QueryMod {
 	return forQueryMod{
 		clause: clause,
 	}
+}
+
+// Rels is an alias for strings.Join to make it easier to use relationship name
+// constants in Load.
+func Rels(r ...string) string {
+	return strings.Join(r, ".")
 }

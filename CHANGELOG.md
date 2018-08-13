@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- MySQL now correctly imports the null package for null json fields
+  (thanks @mickeyreiss)
 - Pass is now optional as in the README, except mssql (thanks @izumin5210)
 - menus now singularizes correctly (thanks @jonas747)
 - Randomize the time as a string for mysql

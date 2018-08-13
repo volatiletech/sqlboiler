@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add support for PSQL Identity columns (thanks @gencer)
 - Add a new syntax for import maps in the config file. This allows us to
   sidestep viper's constant downcasing of config keys. This is the
   exact same fix as happened with aliases previously.
@@ -15,10 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Change querymods to an interface much like the http.Handler interface. This
   is a breaking change but facilitates being able to actually test querymods
-  as well as a more flexible method of being able to create them. For compatibility
-  with older querymods you've created, use the `qm.QueryModFunc` to convert them
-  to a function type that implements the interface, just like `http.HandlerFunc`
-  (thanks @glerchundi)
+  as well as a more flexible method of being able to create them. For
+  compatibility with older querymods you've created, use the `qm.QueryModFunc`
+  to convert them to a function type that implements the interface, just like
+  `http.HandlerFunc` (thanks @glerchundi)
 - Change the `seed` parameter to a `func () int64` function that when called
   safely produces a new thread-safe pseudorandom sequential integer. This was
   done to remove the dependency on `sqlboiler` code.
@@ -32,7 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Pass is now optional as it says in the README except for mssql
+- Pass is now optional as in the README, except mssql (thanks @izumin5210)
 - menus now singularizes correctly (thanks @jonas747)
 - Randomize the time as a string for mysql
 - Remove generation disclaimer for non-go files which prevents proper parsing

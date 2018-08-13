@@ -1,18 +1,6 @@
 CREATE TABLE event_one (
   id     serial PRIMARY KEY NOT NULL,
   name   VARCHAR(255),
-  day    enum('monday','tuesday','wednesday')
-);
-
-CREATE TABLE event_two (
-  id     serial PRIMARY KEY NOT NULL,
-  name   VARCHAR(255),
-  face    enum('happy','sad','bitter')
-);
-
-CREATE TABLE event_three (
-  id     serial PRIMARY KEY NOT NULL,
-  name   VARCHAR(255),
   face   enum('happy','sad','bitter'),
   mood   enum('happy','sad','bitter'),
   day    enum('monday','tuesday','wednesday')

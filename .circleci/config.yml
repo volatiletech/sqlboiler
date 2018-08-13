@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /root
     docker:
-      - image: aarondl0/sqlboiler-test:latest
+      - image: aarondl0/sqlboiler-test:v3
 
       - image: postgres:9.6
         environment:
@@ -13,10 +13,10 @@ jobs:
         environment:
           MYSQL_ROOT_PASSWORD: mysqlpassword
 
-#     - image: microsoft/mssql-server-linux:ctp2-0
-#       environment:
-#         ACCEPT_EULA: 'Y'
-#         SA_PASSWORD: 'R@@tr@@t1234'
+      - image: microsoft/mssql-server-linux:2017-GDR
+        environment:
+          ACCEPT_EULA: 'Y'
+          SA_PASSWORD: 'Sqlboiler@1234'
 
     environment:
       GOPATH: /go
@@ -24,140 +24,109 @@ jobs:
 
     steps:
       - run:
-          name: Add PSQL Creds
+          name: 'Make GOPATH'
+          command: mkdir -p $ROOTPATH
+
+      - checkout:
+          name: 'Checkout'
+          path: /go/src/github.com/volatiletech/sqlboiler
+
+      # Workaround to allow the use of the circleci local cli.
+      - run:
+          name: 'Checkout (local)'
+          command: |
+            if [ ! -z "$ROOTPATH" ]; then rmdir $ROOTPATH; ln -s /root $ROOTPATH; fi
+
+      - run:
+          name: 'Add PSQL Credentials'
           command: |
             echo "*:*:*:*:psqlpassword" > /root/.pgpass
             chmod 600 /root/.pgpass
+
       - run:
-          name: Add MySQL Creds
+          name: 'Add MySQL Credentials'
           command: |
             echo -e "[client]\nuser = root\npassword = mysqlpassword\nhost = localhost\nprotocol = tcp" > /root/.my.cnf
             chmod 600 /root/.my.cnf
 
       - run:
-          name: Wait for PSQL
+          name: 'Wait for PSQL'
           command: >
+            c=0;
             for i in `seq 30`; do
               echo "Waiting for psql"
-              set +o errexit
-              psql --host localhost --username postgres --dbname template1 -c 'select * from information_schema.tables;' > /dev/null
-              status=$?
-              set -o errexit
-              if [ $status -eq 0 ]; then
-                break
-              fi
-              if [ $i -eq 30 ]; then
-                echo "Failed to wait for psql"
-                exit 1
-              fi
-              sleep 1
-            done
+              psql --host localhost --username postgres --dbname template1 -c 'select * from information_schema.tables;' > /dev/null && c=0 && break || c=$? && sleep 1
+            done;
+            exit $c
 
       - run:
-          name: Wait for MySQL
+          name: 'Wait for MySQL'
           command: >
+            c=0;
             for i in `seq 30`; do
               echo "Waiting for mysql"
-              set +o errexit
-              mysql --execute 'select * from information_schema.tables;' > /dev/null
-              status=$?
-              set -o errexit
-              if [ $status -eq 0 ]; then
-                break
+              mysql --execute 'select * from information_schema.tables;' > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
+            done;
+            exit $c
+
+      - run:
+          name: Wait for MSSQL
+          command: >
+            c=0;
+            for i in `seq 30`; do
+              echo "Waiting for mssql"
+              sqlcmd -H localhost -U sa -P Sqlboiler@1234 -Q "select * from information_schema.tables;" > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
+            done;
+            exit $c
+
+      - run:
+          name: 'Download dependencies (core, driver, test, generated)'
+          command: |
+            cd $ROOTPATH; go get -v -t ./...
+
+      - run:
+          name: 'Build SQLBoiler core and drivers'
+          command: |
+            cd $ROOTPATH; make build
+            cd $ROOTPATH; make build-{psql,mysql,mssql}
+
+      - run:
+          name: 'Prepare for tests'
+          command: |
+            mkdir -p $HOME/test_results
+
+      - run:
+          name: 'Tests: All (except drivers,vendor)'
+          command: |
+            cd $ROOTPATH
+            make test | tee $HOME/test_results/results.txt
+            for engine in psql mysql mssql; do
+              make test-user-${engine}
+              make test-db-${engine}
+              make test-generate-${engine}
+              # workaround to fix failing tests due to the absence of 'table_schema.sql'
+              if [ "${engine}" != "mssql" ]; then
+                make test-${engine} | tee $HOME/test_results/results.${engine}.txt
               fi
-              if [ $i -eq 30 ]; then
-                echo "Failed to wait for mysql"
-                exit 1
-              fi
-              sleep 1
             done
 
-#     - run:
-#         name: Wait for MSSQL
-#         command: >
-#           for i in `seq 30`; do
-#             echo "Waiting for mssql"
-#             set +o errexit
-#             sqlcmd -H localhost -U sa -P R@@tr@@t1234 -Q "select * from information_schema.tables;" > /dev/null
-#             status=$?
-#             set -o errexit
-#             if [ $status -eq 0 ]; then
-#               break
-#             fi
-#             if [ $i -eq 30 ]; then
-#               echo "Failed to wait for mssql"
-#               exit 1
-#             fi
-#             sleep 1
-#           done
-
       - run:
-          name: Make GOPATH
-          command: mkdir -p /go/src/github.com/volatiletech/sqlboiler
-
-      - checkout:
-          path: /go/src/github.com/volatiletech/sqlboiler
-
-      - run:
-          name: Create PSQL DB
-          command: |
-            createdb --host localhost --username postgres --owner postgres sqlboiler
-            psql --host localhost --username postgres --dbname sqlboiler < $ROOTPATH/testdata/postgres_test_schema.sql
-      - run:
-          name: Create MySQL DB
-          command: |
-            mysql --host localhost --execute 'create database sqlboiler;'
-            mysql --host localhost --database sqlboiler < $ROOTPATH/testdata/mysql_test_schema.sql
-#     - run:
-#         name: Create MSSQL DB
-#         command: |
-#           sqlcmd -S localhost -U sa -P R@@tr@@t1234 -Q "create database sqlboiler;"
-#           sqlcmd -S localhost -U sa -P R@@tr@@t1234 -d sqlboiler -i $ROOTPATH/testdata/mssql_test_schema.sql
-
-      - run:
-          name: Build SQLBoiler
-          command: |
-            cd $ROOTPATH; go get -v -t
-            cd $ROOTPATH; go build -v github.com/volatiletech/sqlboiler
-
-      - run:
-          name: 'Configure SQLBoiler: PSQL'
-          command: echo -e '[postgres]\nhost="localhost"\nport=5432\nuser="postgres"\npass="psqlpassword"\ndbname="sqlboiler"\nsslmode="disable"\n' > $ROOTPATH/sqlboiler.toml
-      - run:
-          name: 'Configure SQLBoiler: MySQL'
-          command: echo -e '[mysql]\nhost="localhost"\nport=3306\nuser="root"\npass="mysqlpassword"\ndbname="sqlboiler"\nsslmode="false"\n' >> $ROOTPATH/sqlboiler.toml
-#     - run:
-#         name: 'Configure SQLBoiler: MSSQL'
-#         command: echo -e '[mssql]\nhost="localhost"\nport=1433\nuser="sa"\npass="R@@tr@@t1234"\ndbname="sqlboiler"\nsslmode="disable"\n' >> $ROOTPATH/sqlboiler.toml
-
-      - run:
-          name: 'Generate: PSQL'
-          command: cd $ROOTPATH; ./sqlboiler -o postgres postgres
-      - run:
-          name: 'Generate: MySQL'
-          command: cd $ROOTPATH; ./sqlboiler -o mysql mysql
-#     - run:
-#         name: 'Generate: MSSQL'
-#         command: cd $ROOTPATH; ./sqlboiler -o mssql mssql
-
-      - run:
-          name: Download generated and test deps
+          name: 'Tests: Drivers'
           command: |
             cd $ROOTPATH
-            go get -v -t ./...
+            for engine in psql mysql mssql; do
+              make driver-db-${engine}
+              make driver-user-${engine}
+              make driver-test-${engine} | tee $HOME/test_results/results.driver-${engine}.txt
+            done
 
       - run:
-          name: Run Tests
+          name: 'Tests: Convert from plain to JUnit'
           command: |
-            cd $ROOTPATH
-            #cp ./testdata/mssql_test_schema.sql mssql/tables_schema.sql
-            go test -v -race ./... | tee test_out.txt
-
-      - run:
-          name: Convert test output to JUNIT
-          command: |
-            mkdir -p $HOME/test_results/go
-            cat $ROOTPATH/test_out.txt | go-junit-report > $HOME/test_results/go/out.xml
+            for file in $HOME/test_results/*.txt; do
+              cat ${file} | go-junit-report > "${file%.txt}.xml"
+            done
 
       - store_test_results:
+          name: 'Store test results'
           path: test_results

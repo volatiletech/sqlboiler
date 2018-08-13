@@ -1,6 +1,11 @@
 /sqlboiler
+/sqlboiler-psql
+/sqlboiler-mysql
+/sqlboiler-mssql
 /cmd/sqlboiler/sqlboiler
 sqlboiler.toml
 models/
 testschema.sql
 .cover
+*.sqlite3
+issue*.sql

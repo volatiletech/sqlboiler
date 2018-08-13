@@ -3,6 +3,8 @@ package strmangle
 import (
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func TestIdentQuote(t *testing.T) {
@@ -248,6 +250,9 @@ func TestCamelCase(t *testing.T) {
 		{"thing_guid", "thingGUID"},
 		{"guid_thing", "guidThing"},
 		{"thing_guid_thing", "thingGUIDThing"},
+		{"Some_upperCase___thing", "someUpperCaseThing"},
+		{"A", "a"},
+		{"A_a", "aA"},
 	}
 
 	for i, test := range tests {
@@ -600,5 +605,49 @@ func TestReplaceReservedWords(t *testing.T) {
 		} else if !test.Replace && strings.HasSuffix(got, "_") {
 			t.Errorf("%d) want normal (%s), got: %s", i, test.Word, got)
 		}
+	}
+}
+
+func TestRemoveDuplicates(t *testing.T) {
+	t.Parallel()
+
+	hasDups := func(possible []string) error {
+		for i := 0; i < len(possible)-1; i++ {
+			for j := i + 1; j < len(possible); j++ {
+				if possible[i] == possible[j] {
+					return errors.Errorf("found duplicate: %s [%d] [%d]", possible[i], i, j)
+				}
+			}
+		}
+
+		return nil
+	}
+
+	if len(RemoveDuplicates([]string{})) != 0 {
+		t.Error("It should have returned an empty slice")
+	}
+
+	oneItem := []string{"patrick"}
+	slice := RemoveDuplicates(oneItem)
+	if ln := len(slice); ln != 1 {
+		t.Error("Length was wrong:", ln)
+	} else if oneItem[0] != slice[0] {
+		t.Errorf("Slices differ: %#v %#v", oneItem, slice)
+	}
+
+	slice = RemoveDuplicates([]string{"hello", "patrick", "hello"})
+	if ln := len(slice); ln != 2 {
+		t.Error("Length was wrong:", ln)
+	}
+	if err := hasDups(slice); err != nil {
+		t.Error(err)
+	}
+
+	slice = RemoveDuplicates([]string{"five", "patrick", "hello", "hello", "patrick", "hello", "hello"})
+	if ln := len(slice); ln != 3 {
+		t.Error("Length was wrong:", ln)
+	}
+	if err := hasDups(slice); err != nil {
+		t.Error(err)
 	}
 }

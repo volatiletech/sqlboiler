@@ -11,6 +11,11 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+
+	"github.com/volatiletech/sqlboiler/importers"
+
+	"github.com/volatiletech/sqlboiler/drivers"
+	_ "github.com/volatiletech/sqlboiler/drivers/mocks"
 )
 
 var state *State
@@ -37,10 +42,15 @@ func TestNew(t *testing.T) {
 	}()
 
 	config := &Config{
-		DriverName:      "mock",
-		PkgName:         "models",
-		OutFolder:       out,
-		BlacklistTables: []string{"hangars"},
+		DriverName: "mock",
+		PkgName:    "models",
+		OutFolder:  out,
+		NoTests:    true,
+		DriverConfig: map[string]interface{}{
+			drivers.ConfigSchema:    "schema",
+			drivers.ConfigBlacklist: []string{"hangars"},
+		},
+		Imports: importers.NewDefaultImports(),
 	}
 
 	state, err = New(config)
@@ -48,7 +58,7 @@ func TestNew(t *testing.T) {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}
 
-	if err = state.Run(false); err != nil {
+	if err = state.Run(); err != nil {
 		t.Errorf("Unable to execute State.Run: %s", err)
 	}
 
@@ -136,5 +146,75 @@ func outputCompileErrors(buf *bytes.Buffer, outFolder string) {
 		}
 
 		fh.Close()
+	}
+}
+
+func TestProcessTypeReplacements(t *testing.T) {
+	s := new(State)
+	s.Config = &Config{}
+	s.Config.Imports.BasedOnType = make(map[string]importers.Set)
+	s.Tables = []drivers.Table{
+		{
+			Columns: []drivers.Column{
+				{
+					Name:     "id",
+					Type:     "int",
+					DBType:   "serial",
+					Default:  "some db nonsense",
+					Nullable: false,
+				},
+				{
+					Name:     "name",
+					Type:     "null.String",
+					DBType:   "serial",
+					Default:  "some db nonsense",
+					Nullable: true,
+				},
+			},
+		},
+	}
+
+	s.Config.TypeReplaces = []TypeReplace{
+		{
+			Match: drivers.Column{
+				DBType: "serial",
+			},
+			Replace: drivers.Column{
+				Type: "excellent.Type",
+			},
+			Imports: importers.Set{
+				ThirdParty: []string{`"rock.com/excellent"`},
+			},
+		},
+		{
+			Match: drivers.Column{
+				Type:     "null.String",
+				Nullable: true,
+			},
+			Replace: drivers.Column{
+				Type: "int",
+			},
+			Imports: importers.Set{
+				Standard: []string{`"context"`},
+			},
+		},
+	}
+
+	if err := s.processTypeReplacements(); err != nil {
+		t.Fatal(err)
+	}
+
+	if typ := s.Tables[0].Columns[0].Type; typ != "excellent.Type" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := s.Config.Imports.BasedOnType["excellent.Type"].ThirdParty[0]; i != `"rock.com/excellent"` {
+		t.Error("imports were not adjusted")
+	}
+
+	if typ := s.Tables[0].Columns[1].Type; typ != "int" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := s.Config.Imports.BasedOnType["int"].Standard[0]; i != `"context"` {
+		t.Error("imports were not adjusted")
 	}
 }

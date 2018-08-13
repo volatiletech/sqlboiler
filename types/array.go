@@ -33,7 +33,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ericlagergren/decimal"
 	"github.com/lib/pq/oid"
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 type parameterStatus struct {
@@ -519,13 +521,13 @@ func (a *BoolArray) scanBytes(src []byte) error {
 	} else {
 		b := make(BoolArray, len(elems))
 		for i, v := range elems {
-			if len(v) != 1 {
+			if len(v) < 1 {
 				return fmt.Errorf("boil: could not parse boolean array index %d: invalid boolean %q", i, v)
 			}
-			switch v[0] {
-			case 't':
+			switch v[:1][0] {
+			case 't', 'T':
 				b[i] = true
-			case 'f':
+			case 'f', 'F':
 				b[i] = false
 			default:
 				return fmt.Errorf("boil: could not parse boolean array index %d: invalid boolean %q", i, v)
@@ -563,6 +565,11 @@ func (a BoolArray) Value() (driver.Value, error) {
 	}
 
 	return "{}", nil
+}
+
+// Randomize for sqlboiler
+func (a *BoolArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = BoolArray{nextInt()%2 == 0, nextInt()%2 == 0, nextInt()%2 == 0}
 }
 
 // BytesArray represents a one-dimensional array of the PostgreSQL bytea type.
@@ -636,6 +643,11 @@ func (a BytesArray) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
+// Randomize for sqlboiler
+func (a *BytesArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = BytesArray{randomize.ByteSlice(nextInt, 4), randomize.ByteSlice(nextInt, 4), randomize.ByteSlice(nextInt, 4)}
+}
+
 // Float64Array represents a one-dimensional array of the PostgreSQL double
 // precision type.
 type Float64Array []float64
@@ -696,6 +708,11 @@ func (a Float64Array) Value() (driver.Value, error) {
 	}
 
 	return "{}", nil
+}
+
+// Randomize for sqlboiler
+func (a *Float64Array) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = Float64Array{float64(nextInt()), float64(nextInt())}
 }
 
 // GenericArray implements the driver.Valuer and sql.Scanner interfaces for
@@ -914,6 +931,11 @@ func (a Int64Array) Value() (driver.Value, error) {
 	return "{}", nil
 }
 
+// Randomize for sqlboiler
+func (a *Int64Array) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	*a = Int64Array{int64(nextInt()), int64(nextInt())}
+}
+
 // StringArray represents a one-dimensional array of the PostgreSQL character types.
 type StringArray []string
 
@@ -973,6 +995,87 @@ func (a StringArray) Value() (driver.Value, error) {
 	}
 
 	return "{}", nil
+}
+
+// Randomize for sqlboiler
+func (a *StringArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	strs := make([]string, 2)
+	fieldType = strings.TrimPrefix(fieldType, "ARRAY")
+
+	for i := range strs {
+		val, ok := randomize.FormattedString(nextInt, fieldType)
+		if ok {
+			strs[i] = val
+			continue
+		}
+
+		strs[i] = randomize.Str(nextInt, 1)
+	}
+
+	*a = strs
+}
+
+// DecimalArray represents a one-dimensional array of the decimal type.
+type DecimalArray []Decimal
+
+// Scan implements the sql.Scanner interface.
+func (a *DecimalArray) Scan(src interface{}) error {
+	switch src := src.(type) {
+	case []byte:
+		return a.scanBytes(src)
+	case string:
+		return a.scanBytes([]byte(src))
+	case nil:
+		*a = nil
+		return nil
+	}
+
+	return fmt.Errorf("boil: cannot convert %T to DecimalArray", src)
+}
+
+func (a *DecimalArray) scanBytes(src []byte) error {
+	elems, err := scanLinearArray(src, []byte{','}, "DecimalArray")
+	if err != nil {
+		return err
+	}
+	if *a != nil && len(elems) == 0 {
+		*a = (*a)[:0]
+	} else {
+		b := make(DecimalArray, len(elems))
+		for i, v := range elems {
+			var success bool
+			b[i].Big, success = new(decimal.Big).SetString(string(v))
+			if !success {
+				return fmt.Errorf("boil: parsing decimal element index as decimal %d: %s", i, v)
+			}
+		}
+		*a = b
+	}
+	return nil
+}
+
+// Value implements the driver.Valuer interface.
+func (a DecimalArray) Value() (driver.Value, error) {
+	if a == nil {
+		return nil, nil
+	} else if len(a) == 0 {
+		return "{}", nil
+	}
+
+	strs := make([]string, len(a))
+	for i, d := range a {
+		strs[i] = d.String()
+	}
+
+	return "{" + strings.Join(strs, ",") + "}", nil
+}
+
+// Randomize for sqlboiler
+func (a *DecimalArray) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	d1, d2 := NewDecimal(new(decimal.Big)), NewDecimal(new(decimal.Big))
+	d1.SetString(fmt.Sprintf("%d.%d", nextInt()%10, nextInt()%10))
+	d2.SetString(fmt.Sprintf("%d.%d", nextInt()%10, nextInt()%10))
+	*a = DecimalArray{d1, d2}
 }
 
 // appendArray appends rv to the buffer, returning the extended buffer and

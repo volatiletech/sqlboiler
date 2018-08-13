@@ -15,7 +15,10 @@ var (
 	rgxInClause   = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
 )
 
-func buildQuery(q *Query) (string, []interface{}) {
+// BuildQuery builds a query object into the query string
+// and it's accompanying arguments. Using this method
+// allows query building without immediate execution.
+func BuildQuery(q *Query) (string, []interface{}) {
 	var buf *bytes.Buffer
 	var args []interface{}
 
@@ -89,7 +92,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			args = append(args, j.args...)
 		}
 		var resp string
-		if q.dialect.IndexPlaceholders {
+		if q.dialect.UseIndexPlaceholders {
 			resp, _ = convertQuestionMarks(joinBuf.String(), argsLen+1)
 		} else {
 			resp = joinBuf.String()
@@ -166,7 +169,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	setSlice := make([]string, len(cols))
 	for index, col := range cols {
-		setSlice[index] = fmt.Sprintf("%s = %s", col, strmangle.Placeholders(q.dialect.IndexPlaceholders, 1, index+1, 1))
+		setSlice[index] = fmt.Sprintf("%s = %s", col, strmangle.Placeholders(q.dialect.UseIndexPlaceholders, 1, index+1, 1))
 	}
 	fmt.Fprintf(buf, " SET %s", strings.Join(setSlice, ", "))
 
@@ -189,143 +192,6 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, args
 }
 
-// BuildUpsertQueryMySQL builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryMySQL(dia Dialect, tableName string, update, whitelist []string) string {
-	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
-
-	buf := strmangle.GetBuffer()
-	defer strmangle.PutBuffer(buf)
-
-	var columns string
-	if len(whitelist) != 0 {
-		columns = strings.Join(whitelist, ", ")
-	}
-
-	if len(update) == 0 {
-		fmt.Fprintf(
-			buf,
-			"INSERT IGNORE INTO %s (%s) VALUES (%s)",
-			tableName,
-			columns,
-			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
-		)
-		return buf.String()
-	}
-
-	fmt.Fprintf(
-		buf,
-		"INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE ",
-		tableName,
-		columns,
-		strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1),
-	)
-
-	for i, v := range update {
-		if i != 0 {
-			buf.WriteByte(',')
-		}
-		quoted := strmangle.IdentQuote(dia.LQ, dia.RQ, v)
-		buf.WriteString(quoted)
-		buf.WriteString(" = VALUES(")
-		buf.WriteString(quoted)
-		buf.WriteByte(')')
-	}
-
-	return buf.String()
-}
-
-// BuildUpsertQueryPostgres builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryPostgres(dia Dialect, tableName string, updateOnConflict bool, ret, update, conflict, whitelist []string) string {
-	conflict = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, conflict)
-	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
-	ret = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, ret)
-
-	buf := strmangle.GetBuffer()
-	defer strmangle.PutBuffer(buf)
-
-	columns := "DEFAULT VALUES"
-	if len(whitelist) != 0 {
-		columns = fmt.Sprintf("(%s) VALUES (%s)",
-			strings.Join(whitelist, ", "),
-			strmangle.Placeholders(dia.IndexPlaceholders, len(whitelist), 1, 1))
-	}
-
-	fmt.Fprintf(
-		buf,
-		"INSERT INTO %s %s ON CONFLICT ",
-		tableName,
-		columns,
-	)
-
-	if !updateOnConflict || len(update) == 0 {
-		buf.WriteString("DO NOTHING")
-	} else {
-		buf.WriteByte('(')
-		buf.WriteString(strings.Join(conflict, ", "))
-		buf.WriteString(") DO UPDATE SET ")
-
-		for i, v := range update {
-			if i != 0 {
-				buf.WriteByte(',')
-			}
-			quoted := strmangle.IdentQuote(dia.LQ, dia.RQ, v)
-			buf.WriteString(quoted)
-			buf.WriteString(" = EXCLUDED.")
-			buf.WriteString(quoted)
-		}
-	}
-
-	if len(ret) != 0 {
-		buf.WriteString(" RETURNING ")
-		buf.WriteString(strings.Join(ret, ", "))
-	}
-
-	return buf.String()
-}
-
-// BuildUpsertQueryMSSQL builds a SQL statement string using the upsertData provided.
-func BuildUpsertQueryMSSQL(dia Dialect, tableName string, primary, update, insert []string, output []string) string {
-	insert = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, insert)
-
-	buf := strmangle.GetBuffer()
-	defer strmangle.PutBuffer(buf)
-
-	startIndex := 1
-
-	fmt.Fprintf(buf, "MERGE INTO %s as [t]\n", tableName)
-	fmt.Fprintf(buf, "USING (SELECT %s) as [s] ([%s])\n",
-		strmangle.Placeholders(dia.IndexPlaceholders, len(primary), startIndex, 1),
-		strings.Join(primary, string(dia.RQ)+","+string(dia.LQ)))
-	fmt.Fprint(buf, "ON (")
-	for i, v := range primary {
-		if i != 0 {
-			fmt.Fprint(buf, " AND ")
-		}
-		fmt.Fprintf(buf, "[s].[%s] = [t].[%s]", v, v)
-	}
-	fmt.Fprint(buf, ")\n")
-
-	startIndex += len(primary)
-
-	fmt.Fprint(buf, "WHEN MATCHED THEN ")
-	fmt.Fprintf(buf, "UPDATE SET %s\n", strmangle.SetParamNames(string(dia.LQ), string(dia.RQ), startIndex, update))
-
-	startIndex += len(update)
-
-	fmt.Fprint(buf, "WHEN NOT MATCHED THEN ")
-	fmt.Fprintf(buf, "INSERT (%s) VALUES (%s)",
-		strings.Join(insert, ", "),
-		strmangle.Placeholders(dia.IndexPlaceholders, len(insert), startIndex, 1))
-
-	if len(output) > 0 {
-		fmt.Fprintf(buf, "\nOUTPUT INSERTED.[%s];", strings.Join(output, "],INSERTED.["))
-	} else {
-		fmt.Fprint(buf, ";")
-	}
-
-	return buf.String()
-}
-
 func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if len(q.groupBy) != 0 {
 		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
@@ -343,7 +209,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 			*args = append(*args, j.args...)
 		}
 		var resp string
-		if q.dialect.IndexPlaceholders {
+		if q.dialect.UseIndexPlaceholders {
 			resp, _ = convertQuestionMarks(havingBuf.String(), argsLen+1)
 		} else {
 			resp = havingBuf.String()
@@ -471,7 +337,7 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 	}
 
 	var resp string
-	if q.dialect.IndexPlaceholders {
+	if q.dialect.UseIndexPlaceholders {
 		resp, _ = convertQuestionMarks(buf.String(), startAt)
 	} else {
 		resp = buf.String()
@@ -515,7 +381,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 		// column name side, however if this case is being hit then the regexp
 		// probably needs adjustment, or the user is passing in invalid clauses.
 		if matches == nil {
-			clause, count := convertInQuestionMarks(q.dialect.IndexPlaceholders, in.clause, startAt, 1, ln)
+			clause, count := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, in.clause, startAt, 1, ln)
 			buf.WriteString(clause)
 			startAt = startAt + count
 		} else {
@@ -530,7 +396,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 
 			var leftClause string
 			var leftCount int
-			if q.dialect.IndexPlaceholders {
+			if q.dialect.UseIndexPlaceholders {
 				leftClause, leftCount = convertQuestionMarks(strings.Join(cols, ","), startAt)
 			} else {
 				// Count the number of cols that are question marks, so we know
@@ -542,7 +408,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 				}
 				leftClause = strings.Join(cols, ",")
 			}
-			rightClause, rightCount := convertInQuestionMarks(q.dialect.IndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
+			rightClause, rightCount := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
 			buf.WriteString(leftClause)
 			buf.WriteString(" IN ")
 			buf.WriteString(rightClause)
@@ -560,7 +426,7 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 // It uses groupAt to determine how many placeholders should be in each group,
 // for example, groupAt 2 would result in: (($1,$2),($3,$4))
 // and groupAt 1 would result in ($1,$2,$3,$4)
-func convertInQuestionMarks(indexPlaceholders bool, clause string, startAt, groupAt, total int) (string, int) {
+func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, groupAt, total int) (string, int) {
 	if startAt == 0 || len(clause) == 0 {
 		panic("Not a valid start number.")
 	}
@@ -582,7 +448,7 @@ func convertInQuestionMarks(indexPlaceholders bool, clause string, startAt, grou
 
 	paramBuf.WriteString(clause[:foundAt])
 	paramBuf.WriteByte('(')
-	paramBuf.WriteString(strmangle.Placeholders(indexPlaceholders, total, startAt, groupAt))
+	paramBuf.WriteString(strmangle.Placeholders(UseIndexPlaceholders, total, startAt, groupAt))
 	paramBuf.WriteByte(')')
 	paramBuf.WriteString(clause[foundAt+1:])
 

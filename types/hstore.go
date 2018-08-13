@@ -23,10 +23,13 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"strings"
+
+	"github.com/volatiletech/null"
+	"github.com/volatiletech/sqlboiler/randomize"
 )
 
 // HStore is a wrapper for transferring HStore values back and forth easily.
-type HStore map[string]sql.NullString
+type HStore map[string]null.String
 
 // escapes and quotes hstore keys/values
 // s should be a sql.NullString or string
@@ -57,7 +60,7 @@ func (h *HStore) Scan(value interface{}) error {
 		h = nil
 		return nil
 	}
-	*h = make(map[string]sql.NullString)
+	*h = make(map[string]null.String)
 	var b byte
 	pair := [][]byte{{}, {}}
 	pi := 0
@@ -96,9 +99,9 @@ func (h *HStore) Scan(value interface{}) error {
 				case ',':
 					s := string(pair[1])
 					if !didQuote && len(s) == 4 && strings.ToLower(s) == "null" {
-						(*h)[string(pair[0])] = sql.NullString{String: "", Valid: false}
+						(*h)[string(pair[0])] = null.String{String: "", Valid: false}
 					} else {
-						(*h)[string(pair[0])] = sql.NullString{String: string(pair[1]), Valid: true}
+						(*h)[string(pair[0])] = null.String{String: string(pair[1]), Valid: true}
 					}
 					pair[0] = []byte{}
 					pair[1] = []byte{}
@@ -112,9 +115,9 @@ func (h *HStore) Scan(value interface{}) error {
 	if bindex > 0 {
 		s := string(pair[1])
 		if !didQuote && len(s) == 4 && strings.ToLower(s) == "null" {
-			(*h)[string(pair[0])] = sql.NullString{String: "", Valid: false}
+			(*h)[string(pair[0])] = null.String{String: "", Valid: false}
 		} else {
-			(*h)[string(pair[0])] = sql.NullString{String: string(pair[1]), Valid: true}
+			(*h)[string(pair[0])] = null.String{String: string(pair[1]), Valid: true}
 		}
 	}
 	return nil
@@ -132,4 +135,16 @@ func (h HStore) Value() (driver.Value, error) {
 		parts = append(parts, thispart)
 	}
 	return []byte(strings.Join(parts, ",")), nil
+}
+
+// Randomize for sqlboiler
+func (h *HStore) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
+	if shouldBeNull {
+		*h = nil
+		return
+	}
+
+	*h = make(map[string]null.String)
+	(*h)[randomize.Str(nextInt, 3)] = null.String{String: randomize.Str(nextInt, 3), Valid: nextInt()%3 == 0}
+	(*h)[randomize.Str(nextInt, 3)] = null.String{String: randomize.Str(nextInt, 3), Valid: nextInt()%3 == 0}
 }

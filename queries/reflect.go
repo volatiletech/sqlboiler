@@ -1,11 +1,16 @@
 package queries
 
 import (
+	"bytes"
+	"context"
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
+	"time"
+	"unicode"
 
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/boil"
@@ -38,9 +43,10 @@ const (
 
 // BindP executes the query and inserts the
 // result into the passed in object pointer.
-// It panics on error. See boil.Bind() documentation.
-func (q *Query) BindP(obj interface{}) {
-	if err := q.Bind(obj); err != nil {
+// It panics on error.
+// Also see documentation for Bind() and Query.Bind()
+func (q *Query) BindP(ctx context.Context, exec boil.Executor, obj interface{}) {
+	if err := q.Bind(ctx, exec, obj); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -96,14 +102,24 @@ func Bind(rows *sql.Rows, obj interface{}) error {
 // Bind executes the query and inserts the
 // result into the passed in object pointer.
 //
-// See documentation for boil.Bind()
-func (q *Query) Bind(obj interface{}) error {
+// If Context is non-nil it will upgrade the
+// Executor to a ContextExecutor and query with the passed context.
+// If Context is non-nil, any eager loading that's done must also
+// be using load* methods that support context as the first parameter.
+//
+// Also see documentation for Bind()
+func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) error {
 	structType, sliceType, bkind, err := bindChecks(obj)
 	if err != nil {
 		return err
 	}
 
-	rows, err := q.Query()
+	var rows *sql.Rows
+	if ctx != nil {
+		rows, err = q.QueryContext(ctx, exec.(boil.ContextExecutor))
+	} else {
+		rows, err = q.Query(exec)
+	}
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
@@ -122,7 +138,7 @@ func (q *Query) Bind(obj interface{}) error {
 	}
 
 	if len(q.load) != 0 {
-		return eagerLoad(q.executor, q.load, obj, bkind)
+		return eagerLoad(ctx, exec, q.load, q.loadMods, obj, bkind)
 	}
 
 	return nil
@@ -279,14 +295,13 @@ func BindMapping(typ reflect.Type, mapping map[string]uint64, cols []string) ([]
 
 ColLoop:
 	for i, c := range cols {
-		name := strmangle.TitleCaseIdentifier(c)
-		ptrMap, ok := mapping[name]
+		ptrMap, ok := mapping[c]
 		if ok {
 			ptrs[i] = ptrMap
 			continue
 		}
 
-		suffix := "." + name
+		suffix := "." + c
 		for maybeMatch, mapping := range mapping {
 			if strings.HasSuffix(maybeMatch, suffix) {
 				ptrs[i] = mapping
@@ -367,7 +382,7 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 
 		tag, recurse := getBoilTag(f)
 		if len(tag) == 0 {
-			tag = f.Name
+			tag = unTitleCase(f.Name)
 		} else if tag[0] == '-' {
 			continue
 		}
@@ -387,21 +402,20 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 
 func getBoilTag(field reflect.StructField) (name string, recurse bool) {
 	tag := field.Tag.Get("boil")
-	name = field.Name
 
 	if len(tag) == 0 {
-		return name, false
+		return "", false
 	}
 
 	ind := strings.IndexByte(tag, ',')
 	if ind == -1 {
-		return strmangle.TitleCase(tag), false
+		return tag, false
 	} else if ind == 0 {
-		return name, true
+		return "", true
 	}
 
 	nameFragment := tag[:ind]
-	return strmangle.TitleCase(nameFragment), true
+	return nameFragment, true
 }
 
 func makeCacheKey(typ string, cols []string) string {
@@ -414,4 +428,298 @@ func makeCacheKey(typ string, cols []string) string {
 	strmangle.PutBuffer(buf)
 
 	return mapKey
+}
+
+// Equal is different to reflect.DeepEqual in that it's both less efficient
+// less magical, and dosen't concern itself with a wide variety of types that could
+// be present but it does use the driver.Valuer interface since many types that will
+// go through database things will use these.
+//
+// We're focused on basic types + []byte. Since we're really only interested in things
+// that are typically used for primary keys in a database.
+//
+// Choosing not to use the DefaultParameterConverter here because sqlboiler doesn't generate
+// pointer columns.
+func Equal(a, b interface{}) bool {
+	if (a == nil && b != nil) || (a != nil && b == nil) {
+		return false
+	}
+
+	// Here we make a fast-path for bytes, because it's the most likely thing
+	// this method will be called with.
+	if ab, ok := a.([]byte); ok {
+		if bb, ok := b.([]byte); ok {
+			return bytes.Equal(ab, bb)
+		}
+	}
+
+	var err error
+	// If either is a sql.Scanner, pull the primitive value out before we get into type checking
+	// since we can't compare complex types anyway.
+	if v, ok := a.(driver.Valuer); ok {
+		a, err = v.Value()
+		if err != nil {
+			panic(fmt.Sprintf("while comparing values, although 'a' implemented driver.Valuer, an error occured when calling it: %+v", err))
+		}
+	}
+	if v, ok := b.(driver.Valuer); ok {
+		b, err = v.Value()
+		if err != nil {
+			panic(fmt.Sprintf("while comparing values, although 'b' implemented driver.Valuer, an error occured when calling it: %+v", err))
+		}
+	}
+
+	// Do nil checks again, since a Null type could have returned nil
+	if (a == nil && b != nil) || (a != nil && b == nil) {
+		return false
+	}
+
+	a = upgradeNumericTypes(a)
+	b = upgradeNumericTypes(b)
+
+	if at, bt := reflect.TypeOf(a), reflect.TypeOf(b); at != bt {
+		panic(fmt.Sprintf("primitive type of a (%s) was not the same primitive type as b (%s)", at.String(), bt.String()))
+	}
+
+	switch t := a.(type) {
+	case int64, float64, bool, string:
+		return a == b
+	case []byte:
+		return bytes.Equal(t, b.([]byte))
+	case time.Time:
+		return t.Equal(b.(time.Time))
+	}
+
+	return false
+}
+
+// Assign assigns a value to another using reflection.
+// Dst must be a pointer.
+func Assign(dst, src interface{}) {
+	// Fast path for []byte since it's one of the
+	// most frequent other "ids" we'll be assigning.
+	if db, ok := dst.(*[]byte); ok {
+		if sb, ok := src.([]byte); ok {
+			*db = make([]byte, len(sb))
+			copy(*db, sb)
+			return
+		}
+	}
+
+	scan, isDstScanner := dst.(sql.Scanner)
+	val, isSrcValuer := src.(driver.Valuer)
+
+	switch {
+	case isDstScanner && isSrcValuer:
+		val, err := val.Value()
+		if err != nil {
+			panic(fmt.Sprintf("tried to call value on %T but got err: %+v", src, err))
+		}
+
+		err = scan.Scan(val)
+		if err != nil {
+			panic(fmt.Sprintf("tried to call Scan on %T with %#v but got err: %+v", dst, val, err))
+		}
+
+	case isDstScanner && !isSrcValuer:
+		// Compress any lower width integer types
+		src = upgradeNumericTypes(src)
+
+		if err := scan.Scan(src); err != nil {
+			panic(fmt.Sprintf("tried to call Scan on %T with %#v but got err: %+v", dst, val, err))
+		}
+
+	case !isDstScanner && isSrcValuer:
+		val, err := val.Value()
+		if err != nil {
+			panic(fmt.Sprintf("tried to call value on %T but got err: %+v", src, err))
+		}
+
+		assignValue(dst, val)
+
+	default:
+		// We should always be comparing primitives with each other with == in templates
+		// so this method should never be called for say: string, string, or int, int
+		panic("this case should have been handled by something other than this method")
+	}
+}
+
+func upgradeNumericTypes(i interface{}) interface{} {
+	switch t := i.(type) {
+	case int:
+		return int64(t)
+	case int8:
+		return int64(t)
+	case int16:
+		return int64(t)
+	case int32:
+		return int64(t)
+	case uint:
+		return int64(t)
+	case uint8:
+		return int64(t)
+	case uint16:
+		return int64(t)
+	case uint32:
+		return int64(t)
+	case float32:
+		return float64(t)
+	default:
+		return i
+	}
+}
+
+// This whole function makes assumptions that whatever type
+// dst is, will be compatible with whatever came out of the Valuer.
+// We handle the types that driver.Value could possibly be.
+func assignValue(dst interface{}, val driver.Value) {
+	dstType := reflect.TypeOf(dst).Elem()
+	dstVal := reflect.ValueOf(dst).Elem()
+
+	if val == nil {
+		dstVal.Set(reflect.Zero(dstType))
+		return
+	}
+
+	v := reflect.ValueOf(val)
+
+	switch dstType.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		dstVal.SetInt(v.Int())
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		dstVal.SetInt(int64(v.Uint()))
+	case reflect.Bool:
+		dstVal.SetBool(v.Bool())
+	case reflect.String:
+		dstVal.SetString(v.String())
+	case reflect.Float32, reflect.Float64:
+		dstVal.SetFloat(v.Float())
+	case reflect.Slice:
+		// Assume []byte
+		db, sb := dst.(*[]byte), val.([]byte)
+		*db = make([]byte, len(sb))
+		copy(*db, sb)
+	case reflect.Struct:
+		// Assume time.Time
+		dstVal.Set(v)
+	}
+}
+
+// MustTime retrieves a time value from a valuer.
+func MustTime(val driver.Valuer) time.Time {
+	v, err := val.Value()
+	if err != nil {
+		panic(fmt.Sprintf("attempted to call value on %T to get time but got an error: %+v", val, err))
+	}
+
+	if v == nil {
+		return time.Time{}
+	}
+
+	return v.(time.Time)
+}
+
+// IsValuerNil returns true if the valuer's value is null.
+func IsValuerNil(val driver.Valuer) bool {
+	v, err := val.Value()
+	if err != nil {
+		panic(fmt.Sprintf("attempted to call value on %T but got an error: %+v", val, err))
+	}
+
+	return v == nil
+}
+
+// SetScanner attempts to set a scannable value on a scanner.
+func SetScanner(scanner sql.Scanner, val driver.Value) {
+	if err := scanner.Scan(val); err != nil {
+		panic(fmt.Sprintf("attempted to call Scan on %T with %#v but got an error: %+v", scanner, val, err))
+	}
+}
+
+// These are sorted by size so that the biggest thing
+// gets replaced first (think guid/id). This list is copied
+// from strmangle.uppercaseWords and should hopefully be kept
+// in sync.
+var specialWordReplacer = strings.NewReplacer(
+	"ASCII", "Ascii",
+	"GUID", "Guid",
+	"JSON", "Json",
+	"UUID", "Uuid",
+	"UTF8", "Utf8",
+	"ACL", "Acl",
+	"API", "Api",
+	"CPU", "Cpu",
+	"EOF", "Eof",
+	"RAM", "Ram",
+	"SLA", "Sla",
+	"UDP", "Udp",
+	"UID", "Uid",
+	"URI", "Uri",
+	"URL", "Url",
+	"ID", "Id",
+	"IP", "Ip",
+	"UI", "Ui",
+)
+
+// unTitleCase attempts to undo a title-cased string.
+//
+// DO NOT USE THIS METHOD IF YOU CAN AVOID IT
+//
+// Normally this would be easy but we have to deal with uppercased words
+// of varying lengths. We almost never use this function so it
+// can be as badly performing as we want. If people don't want to incur
+// it's cost they should be able to use the `boil` struct tag to avoid it.
+//
+// We did not put this in strmangle because we don't want it being part
+// of any public API as it's loaded with corner cases and sad performance.
+func unTitleCase(n string) string {
+	if len(n) == 0 {
+		return ""
+	}
+
+	// Make our words no longer special case
+	n = specialWordReplacer.Replace(n)
+
+	buf := strmangle.GetBuffer()
+
+	first := true
+
+	writeIt := func(s string) {
+		if first {
+			first = false
+		} else {
+			buf.WriteByte('_')
+		}
+		buf.WriteString(strings.ToLower(s))
+	}
+
+	lastUp := true
+	start := 0
+	for i, r := range n {
+		currentUp := unicode.IsUpper(r)
+		isDigit := unicode.IsDigit(r)
+
+		if !isDigit && !lastUp && currentUp {
+			fragment := n[start:i]
+			writeIt(fragment)
+			start = i
+		}
+
+		if !isDigit && lastUp && !currentUp && i-1-start > 1 {
+			fragment := n[start : i-1]
+			writeIt(fragment)
+			start = i - 1
+		}
+
+		lastUp = currentUp
+	}
+
+	remaining := n[start:]
+	if len(remaining) > 0 {
+		writeIt(remaining)
+	}
+
+	ret := buf.String()
+	strmangle.PutBuffer(buf)
+	return ret
 }

@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   was PR'd to v2 but never to v3. (thanks @ceshihao)
 - Remove satori.uuid in favor of a properly maintained fork, this should not
   be a breaking change.
+- Hstore now uses the null package in order to have nicer JSON serialization
 
 ### Fixed
 

@@ -3,12 +3,6 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-
-### Changed
-
-- Remove satori.uuid in favor of a properly maintained fork
-
 ## [v3.0.0-rc10]
 
 ### Added
@@ -33,9 +27,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - MySQL driver was erroneously using time.Time for the `time` type but the
   most prolific driver does not support this, use string instead. This change
   was PR'd to v2 but never to v3. (thanks @ceshihao)
+- Remove satori.uuid in favor of a properly maintained fork, this should not
+  be a breaking change.
 
 ### Fixed
 
+- Pass is now optional as it says in the README except for mssql
 - menus now singularizes correctly (thanks @jonas747)
 - Randomize the time as a string for mysql
 - Remove generation disclaimer for non-go files which prevents proper parsing

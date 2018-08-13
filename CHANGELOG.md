@@ -3,10 +3,13 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [v3.0.0-rc10]
+## [v3.0.0] - 2018-08-13
 
 ### Added
 
+- Add constant for relationship names, as well as a helper to use them in
+  query mods: See `ModelNameRels` for the constants and `qm.Rels` for the helper
+  (thanks @glerchundi).
 - Add support for PSQL Identity columns (thanks @gencer)
 - Add a new syntax for import maps in the config file. This allows us to
   sidestep viper's constant downcasing of config keys. This is the
@@ -31,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Remove satori.uuid in favor of a properly maintained fork, this should not
   be a breaking change.
 - Hstore now uses the null package in order to have nicer JSON serialization
+- Changed bindata fork to https://github.com/kevinburke/go-bindata
 
 ### Fixed
 

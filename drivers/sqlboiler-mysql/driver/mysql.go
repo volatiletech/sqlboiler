@@ -553,6 +553,9 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 		"null.Bytes": {
 			ThirdParty: importers.List{`"github.com/volatiletech/null"`},
 		},
+		"null.JSON": {
+			ThirdParty: importers.List{`"github.com/volatiletech/null"`},
+		},
 
 		"time.Time": {
 			Standard: importers.List{`"time"`},

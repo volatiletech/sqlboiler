@@ -1545,8 +1545,7 @@ instead of an enum.
 
 ### Constants
 
-The models package will also contain some structs that contain all of the table and column
-names harvested from the database at generation time.
+The models package will also contain some structs that contain all of the table and column names harvested from the database at generation time. Eager loading constants are also generated mainly to avoid hardcoding and possible runtime issues.
 
 For table names they're generated under `models.TableNames`:
 
@@ -1564,6 +1563,7 @@ var TableNames = struct {
 fmt.Println(models.TableNames.Messages)
 ```
 
+For column names they're generated under `models.{Model}Columns`:
 ```go
 // Generated code from models package
 var MessageColumns = struct {
@@ -1576,6 +1576,19 @@ var MessageColumns = struct {
 
 // Usage example:
 fmt.Println(models.MessageColumns.ID)
+```
+
+For eager loading relationships ther're generated under `models.{Model}Rels`:
+```go
+// Generated code from models package
+var MessageRels = struct {
+	Purchase string
+}{
+	Purchase: "Purchase",
+}
+
+// Usage example:
+fmt.Println(models.MessageRels.Purchase)
 ```
 
 ## FAQ

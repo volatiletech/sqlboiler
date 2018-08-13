@@ -31,6 +31,41 @@ var {{$alias.UpSingular}}Columns = struct {
 
 {{- if .Table.IsJoinTable -}}
 {{- else}}
+// {{$alias.UpSingular}}Rels is where relationship names are stored.
+var {{$alias.UpSingular}}Rels = struct {
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{$relAlias.Foreign}} string
+	{{end -}}
+
+	{{range .Table.ToOneRelationships -}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $ftable.Relationship .Name -}}
+	{{$relAlias.Local}} string
+	{{end -}}
+
+	{{range .Table.ToManyRelationships -}}
+	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
+	{{$relAlias.Local}} string
+	{{end -}}{{/* range tomany */}}
+}{
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{$relAlias.Foreign}}: "{{$relAlias.Foreign}}",
+	{{end -}}
+
+	{{range .Table.ToOneRelationships -}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $ftable.Relationship .Name -}}
+	{{$relAlias.Local}}: "{{$relAlias.Local}}",
+	{{end -}}
+
+	{{range .Table.ToManyRelationships -}}
+	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
+	{{$relAlias.Local}}: "{{$relAlias.Local}}",
+	{{end -}}{{/* range tomany */}}
+}
+
 // {{$alias.DownSingular}}R is where relationships are stored.
 type {{$alias.DownSingular}}R struct {
 	{{range .Table.FKeys -}}

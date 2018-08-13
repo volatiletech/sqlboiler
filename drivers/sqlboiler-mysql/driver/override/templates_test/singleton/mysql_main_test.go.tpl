@@ -120,7 +120,9 @@ func (m *mysqlTester) makeOptionFile() error {
 	fmt.Fprintf(tmp, "host=%s\n", m.host)
 	fmt.Fprintf(tmp, "port=%d\n", m.port)
 	fmt.Fprintf(tmp, "user=%s\n", m.user)
-	fmt.Fprintf(tmp, "password=%s\n", m.pass)
+	if len(m.pass) != 0 {
+		fmt.Fprintf(tmp, "password=%s\n", m.pass)
+	}
 	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
 	if isTCP {
 		fmt.Fprintln(tmp, "protocol=tcp")
@@ -130,7 +132,9 @@ func (m *mysqlTester) makeOptionFile() error {
 	fmt.Fprintf(tmp, "host=%s\n", m.host)
 	fmt.Fprintf(tmp, "port=%d\n", m.port)
 	fmt.Fprintf(tmp, "user=%s\n", m.user)
-	fmt.Fprintf(tmp, "password=%s\n", m.pass)
+	if len(m.pass) != 0 {
+		fmt.Fprintf(tmp, "password=%s\n", m.pass)
+	}
 	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
 	if isTCP {
 		fmt.Fprintln(tmp, "protocol=tcp")

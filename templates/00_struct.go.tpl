@@ -93,21 +93,11 @@ var {{$alias.UpSingular}}ToOneRels = struct {
 
 // {{$alias.UpSingular}}ToManyRels is where ToMany relationship names are stored.
 var {{$alias.UpSingular}}ToManyRels = struct {
-	{{range .Table.FKeys -}}
-	{{- $relAlias := $alias.Relationship .Name -}}
-	{{$relAlias.Foreign}} string
-	{{end -}}
-
 	{{range .Table.ToManyRelationships -}}
 	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
 	{{$relAlias.Local}} string
 	{{end -}}{{/* range tomany */}}
 }{
-	{{range .Table.FKeys -}}
-	{{- $relAlias := $alias.Relationship .Name -}}
-	{{$relAlias.Foreign}}: "{{$relAlias.Foreign}}",
-	{{end -}}
-
 	{{range .Table.ToManyRelationships -}}
 	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
 	{{$relAlias.Local}}: "{{$relAlias.Local}}",

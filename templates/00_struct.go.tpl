@@ -66,6 +66,54 @@ var {{$alias.UpSingular}}Rels = struct {
 	{{end -}}{{/* range tomany */}}
 }
 
+// {{$alias.UpSingular}}ToOneRels is where ToOne relationship names are stored.
+var {{$alias.UpSingular}}ToOneRels = struct {
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{$relAlias.Foreign}} string
+	{{end -}}
+
+	{{range .Table.ToOneRelationships -}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $ftable.Relationship .Name -}}
+	{{$relAlias.Local}} string
+	{{end -}}
+}{
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{$relAlias.Foreign}}: "{{$relAlias.Foreign}}",
+	{{end -}}
+
+	{{range .Table.ToOneRelationships -}}
+	{{- $ftable := $.Aliases.Table .ForeignTable -}}
+	{{- $relAlias := $ftable.Relationship .Name -}}
+	{{$relAlias.Local}}: "{{$relAlias.Local}}",
+	{{end -}}
+}
+
+// {{$alias.UpSingular}}ToManyRels is where ToMany relationship names are stored.
+var {{$alias.UpSingular}}ToManyRels = struct {
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{$relAlias.Foreign}} string
+	{{end -}}
+
+	{{range .Table.ToManyRelationships -}}
+	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
+	{{$relAlias.Local}} string
+	{{end -}}{{/* range tomany */}}
+}{
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{$relAlias.Foreign}}: "{{$relAlias.Foreign}}",
+	{{end -}}
+
+	{{range .Table.ToManyRelationships -}}
+	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
+	{{$relAlias.Local}}: "{{$relAlias.Local}}",
+	{{end -}}{{/* range tomany */}}
+}
+
 // {{$alias.DownSingular}}R is where relationships are stored.
 type {{$alias.DownSingular}}R struct {
 	{{range .Table.FKeys -}}

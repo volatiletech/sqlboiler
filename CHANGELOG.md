@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v3.0.1] - 2018-08-24
+
+### Fixed
+
+- Fix a DSN formatting issue when connecting to sql server instances
+- Fix missing BindG function (should have been there)
+- Fix blacklist using the whitelist instead of blacklist in the mssql driver
+
 ## [v3.0.0] - 2018-08-13
 
 ### Added

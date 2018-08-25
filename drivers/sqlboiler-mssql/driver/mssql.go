@@ -115,11 +115,17 @@ func MSSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 	query.Add("encrypt", sslmode)
 
 	u := &url.URL{
-		Scheme: "sqlserver",
-		User:   url.UserPassword(user, pass),
-		Host:   fmt.Sprintf("%s:%d", host, port),
-		// Path:  instance, // if connecting to an instance instead of a port
+		Scheme:   "sqlserver",
+		User:     url.UserPassword(user, pass),
+		Host:     fmt.Sprintf("%s:%d", host, port),
 		RawQuery: query.Encode(),
+	}
+
+	// If the host is an "sqlserver instance" then we set the Path not the Host
+	// so the url package doesn't escape the /
+	if strings.Contains(host, "/") {
+		u.Path = host
+		u.Host = ""
 	}
 
 	return u.String()

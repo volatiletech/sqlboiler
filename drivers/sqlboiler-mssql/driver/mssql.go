@@ -146,7 +146,7 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 			}
 		}
 	} else if len(blacklist) > 0 {
-		tables := drivers.TablesFromList(whitelist)
+		tables := drivers.TablesFromList(blacklist)
 		if len(tables) > 0 {
 			query += fmt.Sprintf(" AND table_name not IN (%s);", strings.Repeat(",?", len(tables))[1:])
 			for _, b := range tables {

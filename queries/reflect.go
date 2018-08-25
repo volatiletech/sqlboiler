@@ -51,6 +51,14 @@ func (q *Query) BindP(ctx context.Context, exec boil.Executor, obj interface{}) 
 	}
 }
 
+// BindG executes the query and inserts
+// the result into the passed in object pointer.
+// It uses the global executor.
+// Also see documentation for Bind() and Query.Bind()
+func (q *Query) BindG(ctx context.Context, obj interface{}) error {
+	return q.Bind(ctx, boil.GetDB(), obj)
+}
+
 // Bind executes the query and inserts the
 // result into the passed in object pointer.
 //

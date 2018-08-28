@@ -209,13 +209,9 @@ func (o {{$alias.UpSingular}}Slice) InsertAll({{if .NoContext}}exec boil.Executo
 		return nil
 	}
 
-	{{if .Dialect.UseLastInsertID -}}
-	var sql string
-	{{else -}}
 	var sql, retQuery string
-	{{end -}}
 	vals := []interface{}{}
-	retMaps := []interface{}{}
+	retMaps := make([][]interface{}, 0)
 	for i, row := range o {
 		if err := row.doBeforeInsertHooks(ctx, exec); err != nil {
 			return err
@@ -265,6 +261,11 @@ func (o {{$alias.UpSingular}}Slice) InsertAll({{if .NoContext}}exec boil.Executo
 			sql = "INSERT INTO {{$schemaTable}} " + "({{.LQ}}" + strings.Join(wl, "{{.RQ}},{{.LQ}}") + "{{.RQ}})" + " VALUES "
 			{{if not .Dialect.UseLastInsertID -}}
 			retQuery = " RETURNING {{.LQ}}" + strings.Join(returnColumns, "{{.RQ}},{{.LQ}}") + "{{.RQ}} "
+			{{else -}}
+			retQuery = fmt.Sprintf("SELECT {{.LQ}}%s{{.RQ}} FROM {{$schemaTable}} WHERE {{.LQ}}%s{{.RQ}} IN %s",
+			  strings.Join(returnColumns, "{{.RQ}},{{.LQ}}"),
+			  {{$alias.DownSingular}}PrimaryKeyColumns[0],
+			  strmangle.Placeholders(dialect.UseIndexPlaceholders, len(o), 1, len(o)))
 			{{end -}}
 		}
 
@@ -283,7 +284,7 @@ func (o {{$alias.UpSingular}}Slice) InsertAll({{if .NoContext}}exec boil.Executo
 		}
 		value := reflect.Indirect(reflect.ValueOf(row))
 		vals = append(vals, queries.ValuesFromMapping(value, valMapping)...)
-		retMaps = append(retMaps, queries.PtrsFromMapping(value, retMapping)...)
+		retMaps = append(retMaps, queries.PtrsFromMapping(value, retMapping))
 	}
 
 	{{if not .Dialect.UseLastInsertID -}}
@@ -326,8 +327,32 @@ func (o {{$alias.UpSingular}}Slice) InsertAll({{if .NoContext}}exec boil.Executo
 	{{$colName := index .Table.PKey.Columns 0 -}}
 	{{- $col := .Table.GetColumn $colName -}}
 	{{- $colTitled := $colName | titleCase -}}
+
+	ids := []interface{}{}
 	for i := 0; i < len(o); i++ {
-		o[i].{{$colTitled}} = {{$col.Type}}(lastID)+{{$col.Type}}(i)
+		id := {{$col.Type}}(lastID)+{{$col.Type}}(i)
+		ids = append(ids, id)
+	}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, retQuery)
+		fmt.Fprintln(boil.DebugWriter, ids...)
+	}
+
+	{{if .NoContext -}}
+	rows, err := exec.Query(ctx, retQuery, ids...)
+	{{else -}}
+	rows, err := exec.QueryContext(ctx, retQuery, ids...)
+	{{end -}}
+	if err != nil {
+		return errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
+	}
+	defer rows.Close()
+
+	for i := 0; rows.Next() || i < len(retMaps); i++ {
+		if err := rows.Scan(retMaps[i]...); err != nil {
+			return errors.Wrap(err, "{{.PkgName}}: unable to scan returns")
+		}
 	}
 	{{- end}}
 
@@ -355,7 +380,7 @@ func (o {{$alias.UpSingular}}Slice) InsertAll({{if .NoContext}}exec boil.Executo
 	defer rows.Close()
 
 	for i := 0; rows.Next() || i < len(retMaps); i++ {
-		if err := rows.Scan(retMaps[i]); err != nil {
+		if err := rows.Scan(retMaps[i]...); err != nil {
 			return err
 		}
 	}

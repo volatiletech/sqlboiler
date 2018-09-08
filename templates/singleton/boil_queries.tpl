@@ -100,7 +100,7 @@ func deleteOneToManyConflictsBeforeMerge(tx boil.Executor, conflict conflictingU
 	// used in the delete query.
 	colNames, err := rows.Columns()
 	if err != nil {
-		log.Fatal(err)
+		return errors.Err(err)
 	}
 	//Each row result of the query needs to be removed for being a conflicting row. Store each row's keys in an array.
 	var rowsToRemove = [][]interface{}(nil)

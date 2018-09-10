@@ -256,14 +256,16 @@ go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
 
 Create a configuration file. Because the project uses [viper](https://github.com/spf13/viper), TOML, JSON and YAML
 are all supported. Environment variables are also able to be used.
-We will assume TOML for the rest of the documentation.
 
-The configuration file should be named `sqlboiler.toml` and is searched for in the following directories in this
+The configuration file should be named `sqlboiler.toml` for TOML, `sqlboiler.json` for JSON and
+`sqlboiler.yaml` or `sqlboiler.yml` for YAML and is searched for in the following directories in this
 order:
 
 - `./`
 - `$XDG_CONFIG_HOME/sqlboiler/`
 - `$HOME/.config/sqlboiler/`
+
+We will assume TOML for the rest of the documentation.
 
 We require you pass in your `psql` and `mysql` database configuration via the configuration file rather than env vars.
 There is no command line argument support for database configuration. Values given under the `postgres` and `mysql`

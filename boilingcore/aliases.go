@@ -42,7 +42,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 
 	for _, t := range tables {
 		if t.IsJoinTable {
-			if _, ok := a.Tables[t.Name]; !ok {
+			if _, ok := a.Tables[t.Name]; !ok  || a.Tables[t.Name].Relationships == nil {
 				a.Tables[t.Name] = TableAlias{Relationships: make(map[string]RelationshipAlias)}
 			}
 			continue

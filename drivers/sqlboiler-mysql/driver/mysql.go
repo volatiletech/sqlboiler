@@ -378,7 +378,7 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			if unsigned {
 				c.Type = "null.Uint64"
 			} else {
-				c.Type = "null.Uint64"
+				c.Type = "null.Int64"
 			}
 		case "float":
 			c.Type = "null.Float32"

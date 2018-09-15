@@ -25,7 +25,13 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 		if object.R == nil {
 			object.R = &{{$ltable.DownSingular}}R{}
 		}
+		{{if $usesPrimitives -}}
 		args = append(args, object.{{$col}})
+		{{else -}}
+		if !queries.IsValuerNil(object.{{$col}}) {
+			args = append(args, object.{{$col}})
+		}
+		{{end}}
 	} else {
 		Outer:
 		for _, obj := range slice {
@@ -43,7 +49,13 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 				}
 			}
 
+			{{if $usesPrimitives -}}
 			args = append(args, obj.{{$col}})
+			{{else -}}
+			if !queries.IsValuerNil(obj.{{$col}}) {
+				args = append(args, obj.{{$col}})
+			}
+			{{end}}
 		}
 	}
 

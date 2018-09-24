@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix a problem with eager loading where null foreign keys would create bad IDs
   and cause general problems.
 - Fix mysql bigint signed type to not use an unsigned int in Go (thanks @nazo)
+- Fix an issue where generated tests failed when output directory was too
+  far away from the config file (thanks @gedorinku).
 
 ## [v3.0.1] - 2018-08-24
 

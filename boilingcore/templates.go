@@ -50,6 +50,9 @@ type templateData struct {
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
 
+	// OutputDirDepth is used to find sqlboiler config file
+	OutputDirDepth int
+
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
 }

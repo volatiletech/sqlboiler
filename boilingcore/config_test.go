@@ -6,6 +6,41 @@ import (
 	"github.com/volatiletech/sqlboiler/drivers"
 )
 
+func TestConfig_OutputDirDepth(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Output string
+		Depth  int
+	}{
+		{
+			Output: ".",
+			Depth:  0,
+		},
+		{
+			Output: "./",
+			Depth:  0,
+		},
+		{
+			Output: "foo",
+			Depth:  1,
+		},
+		{
+			Output: "foo/bar",
+			Depth:  2,
+		},
+	}
+
+	for i, test := range tests {
+		cfg := Config{
+			OutFolder: test.Output,
+		}
+		if want, got := test.Depth, cfg.OutputDirDepth(); got != want {
+			t.Errorf("%d) wrong depth, want: %d, got: %d", i, want, got)
+		}
+	}
+}
+
 func TestConvertAliases(t *testing.T) {
 	t.Parallel()
 

@@ -1,6 +1,9 @@
 package boilingcore
 
 import (
+	"path/filepath"
+	"strings"
+
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/importers"
 )
@@ -37,6 +40,16 @@ type TypeReplace struct {
 	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
 	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
 	Imports importers.Set  `toml:"imports,omitempty" json:"imports,omitempty"`
+}
+
+// OutputDirDepth returns depth of output directory
+func (c *Config) OutputDirDepth() int {
+	d := filepath.ToSlash(filepath.Clean(c.OutFolder))
+	if d == "." {
+		return 0
+	}
+
+	return strings.Count(d, "/") + 1
 }
 
 // ConvertAliases is necessary because viper

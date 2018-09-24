@@ -1,6 +1,8 @@
 var flagDebugMode = flag.Bool("test.sqldebug", false, "Turns on debug mode for SQL statements")
 var flagConfigFile = flag.String("test.config", "", "Overrides the default config")
 
+const outputDirDepth = {{.OutputDirDepth}}
+
 var (
 	dbMain tester
 )
@@ -72,9 +74,9 @@ func initViper() error {
 	homePath := os.Getenv("HOME")
 	wd, err := os.Getwd()
 	if err != nil {
-		wd = "../"
+		wd = strings.Repeat("../", outputDirDepth)
 	} else {
-		wd = wd + "/.."
+		wd = wd + strings.Repeat("/..", outputDirDepth)
 	}
 
 	configPaths := []string{wd}

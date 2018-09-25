@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fix dead links to drivers in README (thanks @DenLilleMand)
 - Fix a problem with eager loading where null foreign keys would create bad IDs
   and cause general problems.
 - Fix mysql bigint signed type to not use an unsigned int in Go (thanks @nazo)

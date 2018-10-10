@@ -570,6 +570,8 @@ func upgradeNumericTypes(i interface{}) interface{} {
 		return int64(t)
 	case uint32:
 		return int64(t)
+	case uint64:
+		return int64(t)
 	case float32:
 		return float64(t)
 	default:

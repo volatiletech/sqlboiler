@@ -204,6 +204,7 @@ func (q {{$alias.DownSingular}}Query) ExistsP({{if .NoContext}}exec boil.Executo
 func (q {{$alias.DownSingular}}Query) Exists({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (bool, error) {
 	var count int64
 
+	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
 

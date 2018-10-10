@@ -28,7 +28,7 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 		{{if $usesPrimitives -}}
 		args = append(args, object.{{$col}})
 		{{else -}}
-		if !queries.IsValuerNil(object.{{$col}}) {
+		if !queries.IsNil(object.{{$col}}) {
 			args = append(args, object.{{$col}})
 		}
 		{{end}}
@@ -52,7 +52,7 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 			{{if $usesPrimitives -}}
 			args = append(args, obj.{{$col}})
 			{{else -}}
-			if !queries.IsValuerNil(obj.{{$col}}) {
+			if !queries.IsNil(obj.{{$col}}) {
 				args = append(args, obj.{{$col}})
 			}
 			{{end}}

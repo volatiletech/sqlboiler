@@ -637,6 +637,21 @@ func IsValuerNil(val driver.Valuer) bool {
 	return v == nil
 }
 
+// IsNil is a more generic version of IsValuerNil, will check to make sure it's
+// not a valuer first.
+func IsNil(val interface{}) bool {
+	if val == nil {
+		return true
+	}
+
+	valuer, ok := val.(driver.Valuer)
+	if ok {
+		return IsValuerNil(valuer)
+	}
+
+	return reflect.ValueOf(val).IsNil()
+}
+
 // SetScanner attempts to set a scannable value on a scanner.
 func SetScanner(scanner sql.Scanner, val driver.Value) {
 	if err := scanner.Scan(val); err != nil {

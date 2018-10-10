@@ -5,8 +5,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Add extra text to clarify the conditions required for a transparent join table
+  in the readme.
+
 ### Fixed
 
+- Fix boil.sh did not go-generate sqlboiler when using `all`, it now does
+  `sqlboiler` and all drivers as well.
+- Fix a bug with MSSQL exists finisher, it now uses `*` instead of the schema
+  name and a star (like the count query).
+- Fix a panic in aliases code (thanks @nadilas)
+- Fix bug when eager loading with null.Uint64 ids
 - Fix dead links to drivers in README (thanks @DenLilleMand)
 - Fix a problem with eager loading where null foreign keys would create bad IDs
   and cause general problems.

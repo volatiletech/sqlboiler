@@ -209,9 +209,11 @@ fmt.Println(len(users.R.FavoriteMovies))
   and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
 * Join tables should use a *composite primary key*.
   * For join tables to be used transparently for relationships your join table must have
-  a *composite primary key* that encompasses both foreign table foreign keys. For example, on a
-  join table named `user_videos` you should have: `primary key(user_id, video_id)`, with both `user_id`
-  and `video_id` being foreign key columns to the users and videos tables respectively.
+  a *composite primary key* that encompasses both foreign table foreign keys and
+  no other columns in the table. For example, on a join table named
+  `user_videos` you should have: `primary key(user_id, video_id)`, with both
+  `user_id` and `video_id` being foreign key columns to the users and videos
+  tables respectively and there are no other columns on this table.
 * For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate
   [time.Time parsing](https://github.com/go-sql-driver/mysql#timetime-support) when making your
   MySQL database connection. SQLBoiler uses `time.Time` and `null.Time` to represent time in

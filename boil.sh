@@ -210,11 +210,14 @@ driver_test_db() {
 # ====================================
 
 go_generate() {
-    if test -z "${1}"; then
+    if test -z "${1}" -o "all" = "${1}"; then
         set -o xtrace
         go generate
         set +o xtrace
-        return
+
+        if test -z "${1}"; then
+          return
+        fi
     fi
 
     if test "all" = "${1}"; then

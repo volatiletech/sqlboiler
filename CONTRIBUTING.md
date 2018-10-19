@@ -43,10 +43,10 @@ with the Github code review tools. Then it will be merged into dev, and later go
 # Templates
 
 1. add sqlboiler [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
-1. You may need to install go-bindata first
+1. You may need to install go-bindata first. Refer to this repo. https://github.com/kevinburke/go-bindata
 
    ```
-   brew install go-bindata
+   go get -u github.com/kevinburke/go-bindata/...
    ```
 
 1. add changes to the templates files.
@@ -59,13 +59,13 @@ with the Github code review tools. Then it will be merged into dev, and later go
 1. run command to generate the models
 
    ```
-   go run main.go [driver]
+   ./boil.sh gen [driver]
    ```
 
 1. run test
 
    ```
-   go test ./models/...
+   ./boil.sh test
    ```
 
 # Bugs
@@ -84,5 +84,5 @@ with their database schema for various reasons and that's fine. Instead of provi
 then provide a subset of your database (you can munge the names so as to be unrecognizable) that can
 help us reproduce the problem.
 
-*Note:* Your schema information is included in the output from `--debug`, so be careful giving this
+_Note:_ Your schema information is included in the output from `--debug`, so be careful giving this
 information out publicly on a Github issue if you're sensitive about this.

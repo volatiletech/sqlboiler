@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add extra text to clarify the conditions required for a transparent join table
   in the readme.
+- Add extra development instructions to the CONTRIBUTING.md (thanks @gemscng)
+- Add `UpdateAllG` function variant (thanks @gemscng)
+- Add context to Find examples in README.md (thanks @jones77)
 
 ### Fixed
 

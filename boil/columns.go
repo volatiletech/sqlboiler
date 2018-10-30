@@ -87,10 +87,14 @@ func (c Columns) IsGreylist() bool {
 	return c.Kind == columnsGreylist
 }
 
-// InsertColumnSet generates the set of columns to insert and return for an insert statement.
-// The return columns are used to get values that are assigned within the database during the
-// insert to keep the struct in sync with what's in the db. The various interactions with the different
+// InsertColumnSet generates the set of columns to insert and return for an
+// insert statement. The return columns are used to get values that are
+// assigned within the database during the insert to keep the struct in sync
+// with what's in the db. The various interactions with the different
 // types of Columns list are outlined below.
+//
+// Note that a default column's zero value is based on the Go type and does
+// not take into account the default value in the database.
 //
 //  Infer:
 //   insert: columns-without-default + non-zero-default-columns
@@ -142,10 +146,11 @@ func (c Columns) InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []s
 	}
 }
 
-// UpdateColumnSet generates the set of columns to update for an update statement.
-// The various interactions with the different types of Columns list are outlined below.
-// In the case of greylist you can only add pkeys, which isn't useful in an update since
-// then you can't find the original record you were trying to update.
+// UpdateColumnSet generates the set of columns to update for an update
+// statement. The various interactions with the different types of Columns
+// list are outlined below. In the case of greylist you can only add pkeys,
+// which isn't useful in an update since then you can't find the original
+// record you were trying to update.
 //
 //  Infer:     all - pkey-columns
 //  whitelist: whitelist

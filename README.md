@@ -752,6 +752,13 @@ The most common causes of problems and panics are:
     global database handle using `boil.SetDB()`.
 - Naming collisions, if the code fails to compile because there are naming collisions, look at the
   [aliasing](#aliases) feature.
+- A field not being inserted (usually a default true boolean), `boil.Infer` looks at the zero
+  value of your Go type (it doesn't care what the default value in the database is) to determine
+  if it should insert your field or not. In the case of a default true boolean value, when you
+  want to set it to false; you set that in the struct but that's the zero value for the bool
+  field in Go so sqlboiler assumes you do not want to insert that field and you want the default
+  value from the database. Use a whitelist/greylist to add that field to the list of fields
+  to insert.
 
 For errors with other causes, it may be simple to debug yourself by looking at the generated code.
 Setting `boil.DebugMode` to `true` can help with this. You can change the output using `boil.DebugWriter` (defaults to `os.Stdout`).
@@ -1341,8 +1348,22 @@ jet, err := models.FindJet(ctx, db, 1, "name", "color")
 
 ### Insert
 
-The main thing to be aware of with `Insert` is how the `columns` argument operates. You can supply
-one of the following column lists: `boil.Infer`, `boil.Whitelist`, `boil.Blacklist`, or `boil.Greylist`.
+The main thing to be aware of with `Insert` is how the `columns` argument
+operates. You can supply one of the following column lists:
+`boil.Infer`, `boil.Whitelist`, `boil.Blacklist`, or `boil.Greylist`.
+
+These lists control what fields are inserted into the database, and what values
+are returned to your struct from the database (default, auto incrementing,
+trigger-based columns are candidates for this). Your struct will have those
+values after the insert is complete.
+
+When you use inference `sqlboiler` looks at your Go struct field values and if
+the field value is the zero value it will not insert that field, instead it will
+get the value from the database. Keep in mind `sqlboiler` cannot read or
+understand your default values set in the database, so the Go zero value is
+what's important here (this can be especially troubling for default true bool
+fields). Use a whitelist or greylist in cases where you want to insert a Go
+zero value.
 
 | Column List | Behavior |
 | ----------- | -------- |
@@ -1354,9 +1375,6 @@ one of the following column lists: `boil.Infer`, `boil.Whitelist`, `boil.Blackli
 See the documentation for
 [boil.Columns.InsertColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.InsertColumnSet)
 for more details.
-
-Also note that your object will automatically be updated with any missing default values from the
-database after the `Insert` is finished executing. This includes auto-incrementing column values.
 
 ```go
 var p1 models.Pilot
@@ -1391,8 +1409,11 @@ for a collection of rows.
 `Update` on a single object optionally takes a `whitelist`. The purpose of the
 whitelist is to specify which columns in your object should be updated in the database.
 
-Like `Insert`, this method also takes a `Columns` type, but the behavior is slighty different.
-Although the descriptions below look similar the full documentation reveals the differences.
+Like `Insert`, this method also takes a `Columns` type, but the behavior is
+slighty different. Although the descriptions below look similar the full
+documentation reveals the differences. Note that all inference is based on
+the Go types zero value and not the database default value, read the `Insert`
+documentation above for more details.
 
 | Column List | Behavior |
 | ----------- | -------- |

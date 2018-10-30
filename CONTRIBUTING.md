@@ -40,29 +40,29 @@ up as an issue to avoid penalizing the rest of the users for not being on Slack.
 the way to do something, then open the PR against the **dev** branch and we'll commence code review
 with the Github code review tools. Then it will be merged into dev, and later go out in a release.
 
-# Templates
+## Developer getting started
 
-1. add sqlboiler [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
+1. Add a [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
 1. You may need to install go-bindata first. Refer to this repo. https://github.com/kevinburke/go-bindata
 
    ```
    go get -u github.com/kevinburke/go-bindata/...
    ```
 
-1. add changes to the templates files.
-1. generate code for template file using following command
+1. Write your changes
+1. If you changed template files, run the following command
 
    ```
    ./boil.sh go-generate all
    ```
 
-1. run command to generate the models
+1. Generate your models
 
    ```
    ./boil.sh gen [driver]
    ```
 
-1. run test
+1. Test the output
 
    ```
    ./boil.sh test

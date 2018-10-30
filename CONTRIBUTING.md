@@ -40,6 +40,34 @@ up as an issue to avoid penalizing the rest of the users for not being on Slack.
 the way to do something, then open the PR against the **dev** branch and we'll commence code review
 with the Github code review tools. Then it will be merged into dev, and later go out in a release.
 
+# Templates
+
+1. add sqlboiler [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
+1. You may need to install go-bindata first. Refer to this repo. https://github.com/kevinburke/go-bindata
+
+   ```
+   go get -u github.com/kevinburke/go-bindata/...
+   ```
+
+1. add changes to the templates files.
+1. generate code for template file using following command
+
+   ```
+   ./boil.sh go-generate all
+   ```
+
+1. run command to generate the models
+
+   ```
+   ./boil.sh gen [driver]
+   ```
+
+1. run test
+
+   ```
+   ./boil.sh test
+   ```
+
 # Bugs
 
 Issues should be filed on Github, simply use the template provided and fill in detail. If there's
@@ -56,5 +84,5 @@ with their database schema for various reasons and that's fine. Instead of provi
 then provide a subset of your database (you can munge the names so as to be unrecognizable) that can
 help us reproduce the problem.
 
-*Note:* Your schema information is included in the output from `--debug`, so be careful giving this
+_Note:_ Your schema information is included in the output from `--debug`, so be careful giving this
 information out publicly on a Github issue if you're sensitive about this.

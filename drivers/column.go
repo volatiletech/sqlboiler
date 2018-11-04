@@ -1,9 +1,8 @@
 package drivers
 
 import (
+	"fmt"
 	"strings"
-
-	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // Column holds information about a database column.
@@ -47,11 +46,15 @@ func ColumnNames(cols []Column) []string {
 }
 
 // ColumnDBTypes of the columns.
-func ColumnDBTypes(cols []Column) map[string]string {
+func ColumnDBTypes(aliasUpSingular string, aliasColumns map[string]string, cols []Column) map[string]string {
 	types := map[string]string{}
 
 	for _, c := range cols {
-		types[strmangle.TitleCase(c.Name)] = c.DBType
+		name, ok := aliasColumns[c.Name]
+		if !ok {
+			panic(fmt.Sprintf("could not find column alias for: %s.%s", aliasUpSingular, c.Name))
+		}
+		types[name] = c.DBType
 	}
 
 	return types

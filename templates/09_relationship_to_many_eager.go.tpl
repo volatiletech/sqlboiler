@@ -82,7 +82,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		one := new({{$ftable.UpSingular}})
 		var localJoinCol {{$localCol.Type}}
 
-		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap $.StringFuncs.titleCase | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
+		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap (aliasCols $ftable) | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for {{.ForeignTable}}")
 		}

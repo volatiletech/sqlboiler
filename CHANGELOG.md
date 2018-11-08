@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix bug where mysql columns can sometimes be selected out of order in
   certain internal queries. (thanks @cpickett-ml)
+- Fix bug where aliases weren't used in many-to-many eager loading
+  (thanks @nwidger for suggested fix)
 
 ## [v3.1.0] - 2018-10-29
 

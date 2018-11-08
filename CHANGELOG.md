@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   certain internal queries. (thanks @cpickett-ml)
 - Fix bug where aliases weren't used in many-to-many eager loading
   (thanks @nwidger for suggested fix)
+- Fix bug where mysql driver would look outside the current database for
+  indexes that applied to tables and columns named the same and apply those
+  constraints to the generated schema.
 
 ## [v3.1.0] - 2018-10-29
 

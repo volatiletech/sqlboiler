@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   indexes that applied to tables and columns named the same and apply those
   constraints to the generated schema.
 - Fix MSSQL Link in Readme (thanks @philips)
+- Fix bug where psql upsert would error when not doing an update
 
 ## [v3.1.0] - 2018-10-29
 

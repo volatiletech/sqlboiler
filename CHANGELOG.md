@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix bug where mysql driver would look outside the current database for
   indexes that applied to tables and columns named the same and apply those
   constraints to the generated schema.
+- Fix MSSQL Link in Readme (thanks @philips)
 
 ## [v3.1.0] - 2018-10-29
 

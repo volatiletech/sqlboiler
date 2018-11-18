@@ -60,7 +60,9 @@ func (m *mssqlTester) setup() error {
 
 	defer func() { _ = f.Close() }()
 
+    stderr := &bytes.Buffer{}
 	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
+    createCmd.Stderr = stderr
 
 	if err = createCmd.Start(); err != nil {
 		return errors.Wrap(err, "failed to start sqlcmd command")
@@ -68,6 +70,7 @@ func (m *mssqlTester) setup() error {
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
+		fmt.Println(stderr.String())
 		return errors.Wrap(err, "failed to wait for sqlcmd command")
 	}
 

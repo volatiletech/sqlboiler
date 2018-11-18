@@ -62,8 +62,14 @@ func (m *mysqlTester) setup() error {
 	createCmd := exec.Command("mysql", m.defaultsFile(), "--database", m.testDBName)
 
 	r, w := io.Pipe()
+	dumpCmdStderr := &bytes.Buffer{}
+	createCmdStderr := &bytes.Buffer{}
+
 	dumpCmd.Stdout = w
+	dumpCmd.Stderr = dumpCmdStderr
+
 	createCmd.Stdin = newFKeyDestroyer(rgxMySQLkey, r)
+	createCmd.Stderr = createCmdStderr
 
 	if err = dumpCmd.Start(); err != nil {
 		return errors.Wrap(err, "failed to start mysqldump command")
@@ -74,6 +80,7 @@ func (m *mysqlTester) setup() error {
 
 	if err = dumpCmd.Wait(); err != nil {
 		fmt.Println(err)
+		fmt.Println(dumpCmdStderr.String())
 		return errors.Wrap(err, "failed to wait for mysqldump command")
 	}
 
@@ -81,6 +88,7 @@ func (m *mysqlTester) setup() error {
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
+		fmt.Println(createCmdStderr.String())
 		return errors.Wrap(err, "failed to wait for mysql command")
 	}
 

@@ -68,8 +68,14 @@ func (p *pgTester) setup() error {
 	createCmd.Env = append(os.Environ(), p.pgEnv()...)
 
 	r, w := io.Pipe()
+	dumpCmdStderr := &bytes.Buffer{}
+	createCmdStderr := &bytes.Buffer{}
+
 	dumpCmd.Stdout = w
+	dumpCmd.Stderr = dumpCmdStderr
+
 	createCmd.Stdin = newFKeyDestroyer(rgxPGFkey, r)
+	createCmd.Stderr = createCmdStderr
 
 	if err = dumpCmd.Start(); err != nil {
 		return errors.Wrap(err, "failed to start pg_dump command")
@@ -80,6 +86,7 @@ func (p *pgTester) setup() error {
 
 	if err = dumpCmd.Wait(); err != nil {
 		fmt.Println(err)
+		fmt.Println(dumpCmdStderr.String())
 		return errors.Wrap(err, "failed to wait for pg_dump command")
 	}
 
@@ -87,6 +94,7 @@ func (p *pgTester) setup() error {
 
 	if err = createCmd.Wait(); err != nil {
 		fmt.Println(err)
+		fmt.Println(createCmdStderr.String())
 		return errors.Wrap(err, "failed to wait for psql command")
 	}
 

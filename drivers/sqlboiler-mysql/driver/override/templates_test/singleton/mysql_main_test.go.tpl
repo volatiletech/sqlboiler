@@ -1,18 +1,20 @@
 var rgxMySQLkey = regexp.MustCompile(`(?m)((,\n)?\s+CONSTRAINT.*?FOREIGN KEY.*?\n)+`)
 
+
 type mysqlTester struct {
 	dbConn *sql.DB
 
-	dbName	string
-	host	string
-	user	string
-	pass	string
-	sslmode	string
-	port	int
+	dbName  string
+	host    string
+	user    string
+	pass    string
+	sslmode string
+	port    int
 
 	optionFile string
 
-	testDBName string
+	testDBName   string
+	shouldCreateTestDB bool
 }
 
 func init() {
@@ -24,6 +26,7 @@ func (m *mysqlTester) setup() error {
 
 	viper.SetDefault("mysql.sslmode", "true")
 	viper.SetDefault("mysql.port", 3306)
+	viper.SetDefault("mysql.shouldcreatetestdb", "true")
 
 	m.dbName = viper.GetString("mysql.dbname")
 	m.host = viper.GetString("mysql.host")
@@ -31,6 +34,8 @@ func (m *mysqlTester) setup() error {
 	m.pass = viper.GetString("mysql.pass")
 	m.port = viper.GetInt("mysql.port")
 	m.sslmode = viper.GetString("mysql.sslmode")
+	m.testDBName = viper.GetString("mysql.testdbname")
+	m.shouldCreateTestDB = viper.GetBool("mysql.shouldcreatetestdb")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(m.user, "mysql.user"),
@@ -45,19 +50,23 @@ func (m *mysqlTester) setup() error {
 	}
 
 	// Create a randomized db name.
-	m.testDBName = randomize.StableDBName(m.dbName)
+	if len(m.testDBName) == 0 {
+		m.testDBName = randomize.StableDBName(m.dbName)
+	}
 
 	if err = m.makeOptionFile(); err != nil {
 		return errors.Wrap(err, "couldn't make option file")
 	}
 
-	if err = m.dropTestDB(); err != nil {
-		return err
+	if m.shouldCreateTestDB {
+		if err = m.dropTestDB(); err != nil {
+			return err
+		}
+		if err = m.createTestDB(); err != nil {
+			return err
+		}
 	}
-	if err = m.createTestDB(); err != nil {
-		return err
-	}
-
+	
 	dumpCmd := exec.Command("mysqldump", m.defaultsFile(), "--no-data", m.dbName)
 	createCmd := exec.Command("mysql", m.defaultsFile(), "--database", m.testDBName)
 
@@ -168,8 +177,10 @@ func (m *mysqlTester) teardown() error {
 		return m.dbConn.Close()
 	}
 
-	if err := m.dropTestDB(); err != nil {
-		return err
+	if m.shouldCreateTestDB {
+		if err := m.dropTestDB(); err != nil {
+			return err
+		}	
 	}
 
 	return os.Remove(m.optionFile)

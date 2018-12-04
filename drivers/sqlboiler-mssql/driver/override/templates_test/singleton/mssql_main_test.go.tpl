@@ -1,14 +1,15 @@
 var rgxMSSQLkey = regexp.MustCompile(`(?m)^ALTER TABLE .*ADD\s+CONSTRAINT .* FOREIGN KEY.*?.*\n?REFERENCES.*`)
 
 type mssqlTester struct {
-	dbConn     *sql.DB
-	dbName     string
-	host       string
-	user       string
-	pass       string
-	sslmode    string
-	port       int
-	testDBName string
+	dbConn       *sql.DB
+	dbName       string
+	host         string
+	user         string
+	pass         string
+	sslmode      string
+	port         int
+	testDBName   string
+	shouldCreateTestDB bool
 }
 
 func init() {
@@ -21,6 +22,7 @@ func (m *mssqlTester) setup() error {
 	viper.SetDefault("mssql.schema", "dbo")
 	viper.SetDefault("mssql.sslmode", "true")
 	viper.SetDefault("mssql.port", 1433)
+	viper.SetDefault("mssql.shouldcreatetestdb", "true")
 
 	m.dbName = viper.GetString("mssql.dbname")
 	m.host = viper.GetString("mssql.host")
@@ -28,6 +30,8 @@ func (m *mssqlTester) setup() error {
 	m.pass = viper.GetString("mssql.pass")
 	m.port = viper.GetInt("mssql.port")
 	m.sslmode = viper.GetString("mssql.sslmode")
+	m.testDBName = viper.GetString("mssql.testdbname")
+	m.shouldCreateTestDB = viper.GetBool("mssql.shouldcreatetestdb")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),
@@ -42,15 +46,20 @@ func (m *mssqlTester) setup() error {
 	}
 
 	// Create a randomized db name.
-	m.testDBName = randomize.StableDBName(m.dbName)
-
-	if err = m.dropTestDB(); err != nil {
-		return err
-	}
-	if err = m.createTestDB(); err != nil {
-		return err
+	if len(p.testDBName) == 0 {
+		p.testDBName = randomize.StableDBName(p.dbName)
 	}
 
+	
+	if m.shouldCreateTestDB {
+		if err = m.dropTestDB(); err != nil {
+			return err
+		}
+		if err = m.createTestDB(); err != nil {
+			return err
+		}
+	}
+	
 	createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
 	f, err := os.Open("tables_schema.sql")
@@ -114,8 +123,10 @@ func (m *mssqlTester) teardown() error {
 		m.dbConn.Close()
 	}
 
-	if err := m.dropTestDB(); err != nil {
-		return err
+	if m.shouldCreateTestDB {
+		if err := m.dropTestDB(); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -12,7 +12,8 @@ type pgTester struct {
 
 	pgPassFile string
 
-	testDBName string
+	testDBName   string
+	shouldCreateTestDB bool
 }
 
 func init() {
@@ -28,6 +29,7 @@ func (p *pgTester) setup() error {
 	viper.SetDefault("psql.schema", "public")
 	viper.SetDefault("psql.port", 5432)
 	viper.SetDefault("psql.sslmode", "require")
+	viper.SetDefault("psql.shouldcreatetestdb", "true")
 
 	p.dbName = viper.GetString("psql.dbname")
 	p.host = viper.GetString("psql.host")
@@ -35,6 +37,8 @@ func (p *pgTester) setup() error {
 	p.pass = viper.GetString("psql.pass")
 	p.port = viper.GetInt("psql.port")
 	p.sslmode = viper.GetString("psql.sslmode")
+	p.testDBName = viper.GetString("psql.testdbname")
+	p.shouldCreateTestDB = viper.GetBool("psql.shouldcreatetestdb")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(p.user, "psql.user"),
@@ -48,18 +52,23 @@ func (p *pgTester) setup() error {
 		return err
 	}
 
-	// Create a randomized db name.
-	p.testDBName = randomize.StableDBName(p.dbName)
+	// if no testing DB passed
+	if len(p.testDBName) == 0 {
+		// Create a randomized db name.
+		p.testDBName = randomize.StableDBName(p.dbName)
+	}
 
 	if err = p.makePGPassFile(); err != nil {
 		return err
 	}
 
-	if err = p.dropTestDB(); err != nil {
-		return err
-	}
-	if err = p.createTestDB(); err != nil {
-		return err
+	if p.shouldCreateTestDB {
+		if err = p.dropTestDB(); err != nil {
+			return err
+		}
+		if err = p.createTestDB(); err != nil {
+			return err
+		}
 	}
 
 	dumpCmd := exec.Command("pg_dump", "--schema-only", p.dbName)
@@ -176,10 +185,12 @@ func (p *pgTester) teardown() error {
 	}
 	p.dbConn = nil
 
-	if err = p.dropTestDB(); err != nil {
-		return err
+	if p.shouldCreateTestDB {
+		if err = p.dropTestDB(); err != nil {
+			return err
+		}
 	}
-
+	
 	return os.Remove(p.pgPassFile)
 }
 

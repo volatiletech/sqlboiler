@@ -49,11 +49,6 @@ with the Github code review tools. Then it will be merged into dev, and later go
    go get -u github.com/kevinburke/go-bindata/...
    ```
 
-1. Generate executable. Run again if you has change anything in core code or driver code.
-   ```
-   ./boil.sh build all
-   ```
-
 1. Write your changes
 1. If you changed template files, run the following command to generate the binddata. 
 
@@ -61,6 +56,11 @@ with the Github code review tools. Then it will be merged into dev, and later go
    ./boil.sh go-generate all
    ```
  
+ 1. Generate executable. Run again if you has change anything in core code or driver code.
+   ```
+   ./boil.sh build all
+   ```
+
 1. Generate your models from existing tables
 
    ```

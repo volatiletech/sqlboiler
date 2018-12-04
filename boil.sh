@@ -17,16 +17,32 @@ build() {
 
     buildPath=github.com/volatiletech/sqlboiler
     case "${driver}" in
-        all)   drivers="psql mysql mssql"; shift ;;
-        psql)  drivers="psql"; shift ;;
-        mysql) drivers="mysql"; shift ;;
-        mssql) drivers="mssql"; shift ;;
-        *) set -o xtrace; go build "$@" "${buildPath}"; set +o xtrace; return ;;
+        all)   
+            set -o xtrace 
+            go build "${buildPath}"
+            { set +o xtrace; } 2>/dev/null
+            drivers="psql mysql mssql" 
+            shift ;;
+        psql)  
+            drivers="psql"
+            shift ;;
+        mysql) 
+            drivers="mysql"
+            shift ;;
+        mssql) 
+            drivers="mssql"
+            shift ;;
+        *) 
+            set -o xtrace 
+            go build "$@" "${buildPath}" 
+            { set +o xtrace; } 2>/dev/null
+            return ;;
     esac
 
     for d in $drivers; do
         set -o xtrace
         go build "$@" ${buildPath}/drivers/sqlboiler-"${d}"
+        { set +o xtrace; } 2>/dev/null
     done
 }
 

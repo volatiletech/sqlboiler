@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix bug where mysql columns can sometimes be selected out of order in
   certain internal queries. (thanks @cpickett-ml)
+- Fix bug where an incorrect query could be built while eager loading nullable
+  relations (thanks @parnic)
 - Fix bug where aliases weren't used in many-to-many eager loading
   (thanks @nwidger for suggested fix)
 - Fix bug where mysql driver would look outside the current database for

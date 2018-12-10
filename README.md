@@ -1067,11 +1067,11 @@ err := queries.Raw(db, `
 ).Bind(&paj)
 
 // Use query building
-err := models.NewQuery(db,
+err := models.NewQuery(
   Select("pilots.id", "pilots.name", "jets.id", "jets.pilot_id", "jets.age", "jets.name", "jets.color"),
   From("pilots"),
   InnerJoin("jets on jets.pilot_id = pilots.id"),
-).Bind(&paj)
+).Bind(ctx, db, &paj)
 ```
 
 ```go
@@ -1084,10 +1084,10 @@ type JetInfo struct {
 var info JetInfo
 
 // Use query building
-err := models.NewQuery(db, Select("sum(age) as age_sum", "count(*) as juicy_count", From("jets"))).Bind(&info)
+err := models.NewQuery(Select("sum(age) as age_sum", "count(*) as juicy_count", From("jets"))).Bind(ctx, db, &info)
 
 // Use a raw query
-err := queries.Raw(db, `select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(&info)
+err := queries.Raw(`select sum(age) as "age_sum", count(*) as "juicy_count" from jets`).Bind(ctx, db, &info)
 ```
 
 We support the following struct tag modes for `Bind()` control:

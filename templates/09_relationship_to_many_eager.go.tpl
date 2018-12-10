@@ -48,6 +48,10 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		}
 	}
 
+	if len(args) == 0 {
+		return nil
+	}
+
 		{{if .ToJoinTable -}}
 			{{- $schemaJoinTable := .JoinTable | $.SchemaTable -}}
 	query := NewQuery(

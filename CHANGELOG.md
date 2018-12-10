@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   constraints to the generated schema.
 - Fix MSSQL Link in Readme (thanks @philips)
 - Fix bug where psql upsert would error when not doing an update
+- Fix bug where mysql upsert did not have quotes around the table name
 
 ## [v3.1.0] - 2018-10-29
 

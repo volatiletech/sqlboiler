@@ -1,13 +1,14 @@
 // buildUpsertQueryMySQL builds a SQL statement string using the upsertData provided.
 func buildUpsertQueryMySQL(dia drivers.Dialect, tableName string, update, whitelist []string) string {
 	whitelist = strmangle.IdentQuoteSlice(dia.LQ, dia.RQ, whitelist)
+	tableName = strmangle.IdentQuote(dia.LQ, dia.RQ, tableName)
 
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
 
 	var columns string
 	if len(whitelist) != 0 {
-		columns = strings.Join(whitelist, ", ")
+		columns = strings.Join(whitelist, ",")
 	}
 
 	if len(update) == 0 {

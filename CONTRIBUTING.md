@@ -61,6 +61,8 @@ with the Github code review tools. Then it will be merged into dev, and later go
    ./boil.sh build all
    ```
 
+1. Also Move sqlboiler-[driver] built to the bin of gopath if you have changed the driver code. 
+
 1. Generate your models from existing tables
 
    ```

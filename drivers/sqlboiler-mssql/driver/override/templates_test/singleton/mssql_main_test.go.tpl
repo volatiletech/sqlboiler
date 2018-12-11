@@ -1,15 +1,15 @@
 var rgxMSSQLkey = regexp.MustCompile(`(?m)^ALTER TABLE .*ADD\s+CONSTRAINT .* FOREIGN KEY.*?.*\n?REFERENCES.*`)
 
 type mssqlTester struct {
-	dbConn       *sql.DB
-	dbName       string
-	host         string
-	user         string
-	pass         string
-	sslmode      string
-	port         int
-	testDBName   string
-	shouldCreateTestDB bool
+	dbConn     *sql.DB
+	dbName     string
+	host       string
+	user       string
+	pass       string
+	sslmode    string
+	port       int
+	testDBName string
+	skipSQLCmd bool
 }
 
 func init() {
@@ -22,7 +22,6 @@ func (m *mssqlTester) setup() error {
 	viper.SetDefault("mssql.schema", "dbo")
 	viper.SetDefault("mssql.sslmode", "true")
 	viper.SetDefault("mssql.port", 1433)
-	viper.SetDefault("mssql.shouldcreatetestdb", "true")
 
 	m.dbName = viper.GetString("mssql.dbname")
 	m.host = viper.GetString("mssql.host")
@@ -31,7 +30,7 @@ func (m *mssqlTester) setup() error {
 	m.port = viper.GetInt("mssql.port")
 	m.sslmode = viper.GetString("mssql.sslmode")
 	m.testDBName = viper.GetString("mssql.testdbname")
-	m.shouldCreateTestDB = viper.GetBool("mssql.shouldcreatetestdb")
+	m.skipSQLCmd = viper.GetBool("mssql.skipSQLCmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),
@@ -51,36 +50,36 @@ func (m *mssqlTester) setup() error {
 	}
 
 	
-	if m.shouldCreateTestDB {
+	if !m.skipSQLCmd {
 		if err = m.dropTestDB(); err != nil {
 			return err
 		}
 		if err = m.createTestDB(); err != nil {
 			return err
 		}
-	}
-	
-	createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
-	f, err := os.Open("tables_schema.sql")
-	if err != nil {
-		return errors.Wrap(err, "failed to open tables_schema.sql file")
-	}
+		createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
-	defer func() { _ = f.Close() }()
+		f, err := os.Open("tables_schema.sql")
+		if err != nil {
+			return errors.Wrap(err, "failed to open tables_schema.sql file")
+		}
 
-    stderr := &bytes.Buffer{}
-	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
-    createCmd.Stderr = stderr
+		defer func() { _ = f.Close() }()
 
-	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start sqlcmd command")
-	}
+		stderr := &bytes.Buffer{}
+		createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
+		createCmd.Stderr = stderr
 
-	if err = createCmd.Wait(); err != nil {
-		fmt.Println(err)
-		fmt.Println(stderr.String())
-		return errors.Wrap(err, "failed to wait for sqlcmd command")
+		if err = createCmd.Start(); err != nil {
+			return errors.Wrap(err, "failed to start sqlcmd command")
+		}
+
+		if err = createCmd.Wait(); err != nil {
+			fmt.Println(err)
+			fmt.Println(stderr.String())
+			return errors.Wrap(err, "failed to wait for sqlcmd command")
+		}
 	}
 
 	return nil
@@ -123,7 +122,7 @@ func (m *mssqlTester) teardown() error {
 		m.dbConn.Close()
 	}
 
-	if m.shouldCreateTestDB {
+	if !m.skipSQLCmd {
 		if err := m.dropTestDB(); err != nil {
 			return err
 		}

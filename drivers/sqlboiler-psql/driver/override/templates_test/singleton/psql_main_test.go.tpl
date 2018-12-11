@@ -12,8 +12,8 @@ type pgTester struct {
 
 	pgPassFile string
 
-	testDBName   string
-	shouldCreateTestDB bool
+	testDBName string
+	skipSQLCmd bool
 }
 
 func init() {
@@ -29,7 +29,6 @@ func (p *pgTester) setup() error {
 	viper.SetDefault("psql.schema", "public")
 	viper.SetDefault("psql.port", 5432)
 	viper.SetDefault("psql.sslmode", "require")
-	viper.SetDefault("psql.shouldcreatetestdb", "true")
 
 	p.dbName = viper.GetString("psql.dbname")
 	p.host = viper.GetString("psql.host")
@@ -38,7 +37,7 @@ func (p *pgTester) setup() error {
 	p.port = viper.GetInt("psql.port")
 	p.sslmode = viper.GetString("psql.sslmode")
 	p.testDBName = viper.GetString("psql.testdbname")
-	p.shouldCreateTestDB = viper.GetBool("psql.shouldcreatetestdb")
+	p.skipSQLCmd = viper.GetBool("psql.skipSQLCmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(p.user, "psql.user"),
@@ -62,49 +61,49 @@ func (p *pgTester) setup() error {
 		return err
 	}
 
-	if p.shouldCreateTestDB {
+	if !p.skipSQLCmd {
 		if err = p.dropTestDB(); err != nil {
 			return err
 		}
 		if err = p.createTestDB(); err != nil {
 			return err
 		}
-	}
 
-	dumpCmd := exec.Command("pg_dump", "--schema-only", p.dbName)
-	dumpCmd.Env = append(os.Environ(), p.pgEnv()...)
-	createCmd := exec.Command("psql", p.testDBName)
-	createCmd.Env = append(os.Environ(), p.pgEnv()...)
+		dumpCmd := exec.Command("pg_dump", "--schema-only", p.dbName)
+		dumpCmd.Env = append(os.Environ(), p.pgEnv()...)
+		createCmd := exec.Command("psql", p.testDBName)
+		createCmd.Env = append(os.Environ(), p.pgEnv()...)
 
-	r, w := io.Pipe()
-	dumpCmdStderr := &bytes.Buffer{}
-	createCmdStderr := &bytes.Buffer{}
+		r, w := io.Pipe()
+		dumpCmdStderr := &bytes.Buffer{}
+		createCmdStderr := &bytes.Buffer{}
 
-	dumpCmd.Stdout = w
-	dumpCmd.Stderr = dumpCmdStderr
+		dumpCmd.Stdout = w
+		dumpCmd.Stderr = dumpCmdStderr
 
-	createCmd.Stdin = newFKeyDestroyer(rgxPGFkey, r)
-	createCmd.Stderr = createCmdStderr
+		createCmd.Stdin = newFKeyDestroyer(rgxPGFkey, r)
+		createCmd.Stderr = createCmdStderr
 
-	if err = dumpCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start pg_dump command")
-	}
-	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start psql command")
-	}
+		if err = dumpCmd.Start(); err != nil {
+			return errors.Wrap(err, "failed to start pg_dump command")
+		}
+		if err = createCmd.Start(); err != nil {
+			return errors.Wrap(err, "failed to start psql command")
+		}
 
-	if err = dumpCmd.Wait(); err != nil {
-		fmt.Println(err)
-		fmt.Println(dumpCmdStderr.String())
-		return errors.Wrap(err, "failed to wait for pg_dump command")
-	}
+		if err = dumpCmd.Wait(); err != nil {
+			fmt.Println(err)
+			fmt.Println(dumpCmdStderr.String())
+			return errors.Wrap(err, "failed to wait for pg_dump command")
+		}
 
-	_ = w.Close() // After dumpCmd is done, close the write end of the pipe
+		_ = w.Close() // After dumpCmd is done, close the write end of the pipe
 
-	if err = createCmd.Wait(); err != nil {
-		fmt.Println(err)
-		fmt.Println(createCmdStderr.String())
-		return errors.Wrap(err, "failed to wait for psql command")
+		if err = createCmd.Wait(); err != nil {
+			fmt.Println(err)
+			fmt.Println(createCmdStderr.String())
+			return errors.Wrap(err, "failed to wait for psql command")
+		}
 	}
 
 	return nil
@@ -185,12 +184,12 @@ func (p *pgTester) teardown() error {
 	}
 	p.dbConn = nil
 
-	if p.shouldCreateTestDB {
+	if !p.skipSQLCmd {
 		if err = p.dropTestDB(); err != nil {
 			return err
 		}
 	}
-	
+
 	return os.Remove(p.pgPassFile)
 }
 

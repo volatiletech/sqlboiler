@@ -1,6 +1,5 @@
 var rgxMySQLkey = regexp.MustCompile(`(?m)((,\n)?\s+CONSTRAINT.*?FOREIGN KEY.*?\n)+`)
 
-
 type mysqlTester struct {
 	dbConn *sql.DB
 
@@ -13,8 +12,8 @@ type mysqlTester struct {
 
 	optionFile string
 
-	testDBName   string
-	shouldCreateTestDB bool
+	testDBName string
+	skipSQLCmd bool
 }
 
 func init() {
@@ -26,7 +25,6 @@ func (m *mysqlTester) setup() error {
 
 	viper.SetDefault("mysql.sslmode", "true")
 	viper.SetDefault("mysql.port", 3306)
-	viper.SetDefault("mysql.shouldcreatetestdb", "true")
 
 	m.dbName = viper.GetString("mysql.dbname")
 	m.host = viper.GetString("mysql.host")
@@ -35,7 +33,7 @@ func (m *mysqlTester) setup() error {
 	m.port = viper.GetInt("mysql.port")
 	m.sslmode = viper.GetString("mysql.sslmode")
 	m.testDBName = viper.GetString("mysql.testdbname")
-	m.shouldCreateTestDB = viper.GetBool("mysql.shouldcreatetestdb")
+	m.skipSQLCmd = viper.GetBool("mysql.skipSQLCmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(m.user, "mysql.user"),
@@ -58,47 +56,47 @@ func (m *mysqlTester) setup() error {
 		return errors.Wrap(err, "couldn't make option file")
 	}
 
-	if m.shouldCreateTestDB {
+	if !m.skipSQLCmd {
 		if err = m.dropTestDB(); err != nil {
 			return err
 		}
 		if err = m.createTestDB(); err != nil {
 			return err
 		}
-	}
-	
-	dumpCmd := exec.Command("mysqldump", m.defaultsFile(), "--no-data", m.dbName)
-	createCmd := exec.Command("mysql", m.defaultsFile(), "--database", m.testDBName)
+		
+		dumpCmd := exec.Command("mysqldump", m.defaultsFile(), "--no-data", m.dbName)
+		createCmd := exec.Command("mysql", m.defaultsFile(), "--database", m.testDBName)
 
-	r, w := io.Pipe()
-	dumpCmdStderr := &bytes.Buffer{}
-	createCmdStderr := &bytes.Buffer{}
+		r, w := io.Pipe()
+		dumpCmdStderr := &bytes.Buffer{}
+		createCmdStderr := &bytes.Buffer{}
 
-	dumpCmd.Stdout = w
-	dumpCmd.Stderr = dumpCmdStderr
+		dumpCmd.Stdout = w
+		dumpCmd.Stderr = dumpCmdStderr
 
-	createCmd.Stdin = newFKeyDestroyer(rgxMySQLkey, r)
-	createCmd.Stderr = createCmdStderr
+		createCmd.Stdin = newFKeyDestroyer(rgxMySQLkey, r)
+		createCmd.Stderr = createCmdStderr
 
-	if err = dumpCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start mysqldump command")
-	}
-	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start mysql command")
-	}
+		if err = dumpCmd.Start(); err != nil {
+			return errors.Wrap(err, "failed to start mysqldump command")
+		}
+		if err = createCmd.Start(); err != nil {
+			return errors.Wrap(err, "failed to start mysql command")
+		}
 
-	if err = dumpCmd.Wait(); err != nil {
-		fmt.Println(err)
-		fmt.Println(dumpCmdStderr.String())
-		return errors.Wrap(err, "failed to wait for mysqldump command")
-	}
+		if err = dumpCmd.Wait(); err != nil {
+			fmt.Println(err)
+			fmt.Println(dumpCmdStderr.String())
+			return errors.Wrap(err, "failed to wait for mysqldump command")
+		}
 
-	_ = w.Close() // After dumpCmd is done, close the write end of the pipe
+		_ = w.Close() // After dumpCmd is done, close the write end of the pipe
 
-	if err = createCmd.Wait(); err != nil {
-		fmt.Println(err)
-		fmt.Println(createCmdStderr.String())
-		return errors.Wrap(err, "failed to wait for mysql command")
+		if err = createCmd.Wait(); err != nil {
+			fmt.Println(err)
+			fmt.Println(createCmdStderr.String())
+			return errors.Wrap(err, "failed to wait for mysql command")
+		}
 	}
 
 	return nil
@@ -177,7 +175,7 @@ func (m *mysqlTester) teardown() error {
 		return m.dbConn.Close()
 	}
 
-	if m.shouldCreateTestDB {
+	if !m.skipSQLCmd {
 		if err := m.dropTestDB(); err != nil {
 			return err
 		}	

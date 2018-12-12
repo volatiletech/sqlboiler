@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spf13/cast"
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/importers"
 )
@@ -82,7 +83,7 @@ func ConvertAliases(i interface{}) (a Aliases) {
 		return a
 	}
 
-	topLevel := i.(map[string]interface{})
+	topLevel := cast.ToStringMap(i)
 
 	tablesIntf := topLevel["tables"]
 
@@ -91,7 +92,7 @@ func ConvertAliases(i interface{}) (a Aliases) {
 			a.Tables = make(map[string]TableAlias)
 		}
 
-		t := tIntf.(map[string]interface{})
+		t := cast.ToStringMap(tIntf)
 
 		var ta TableAlias
 
@@ -114,8 +115,9 @@ func ConvertAliases(i interface{}) (a Aliases) {
 			iterateMapOrSlice(colsIntf, func(name string, colIntf interface{}) {
 				var alias string
 				switch col := colIntf.(type) {
-				case map[string]interface{}:
-					alias = col["alias"].(string)
+				case map[string]interface{}, map[interface{}]interface{}:
+					cmap := cast.ToStringMap(colIntf)
+					alias = cmap["alias"].(string)
 				case string:
 					alias = col
 				}
@@ -131,7 +133,7 @@ func ConvertAliases(i interface{}) (a Aliases) {
 				}
 
 				var ra RelationshipAlias
-				rel := rIntf.(map[string]interface{})
+				rel := cast.ToStringMap(rIntf)
 
 				if s := rel["local"]; s != nil {
 					ra.Local = s.(string)
@@ -152,13 +154,14 @@ func ConvertAliases(i interface{}) (a Aliases) {
 
 func iterateMapOrSlice(mapOrSlice interface{}, fn func(name string, obj interface{})) {
 	switch t := mapOrSlice.(type) {
-	case map[string]interface{}:
-		for name, table := range t {
+	case map[string]interface{}, map[interface{}]interface{}:
+		tmap := cast.ToStringMap(mapOrSlice)
+		for name, table := range tmap {
 			fn(name, table)
 		}
 	case []interface{}:
 		for _, intf := range t {
-			obj := intf.(map[string]interface{})
+			obj := cast.ToStringMap(intf)
 			name := obj["name"].(string)
 			fn(name, intf)
 		}
@@ -174,7 +177,7 @@ func ConvertTypeReplace(i interface{}) []TypeReplace {
 	intfArray := i.([]interface{})
 	var replaces []TypeReplace
 	for _, r := range intfArray {
-		replaceIntf := r.(map[string]interface{})
+		replaceIntf := cast.ToStringMap(r)
 		replace := TypeReplace{}
 
 		if replaceIntf["match"] == nil || replaceIntf["replace"] == nil {
@@ -199,7 +202,7 @@ func ConvertTypeReplace(i interface{}) []TypeReplace {
 }
 
 func columnFromInterface(i interface{}) (col drivers.Column) {
-	m := i.(map[string]interface{})
+	m := cast.ToStringMap(i)
 	if s := m["name"]; s != nil {
 		col.Name = s.(string)
 	}

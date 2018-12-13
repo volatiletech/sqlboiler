@@ -1430,7 +1430,7 @@ for more details.
 // Find a pilot and update his name
 pilot, _ := models.FindPilot(ctx, db, 1)
 pilot.Name = "Neo"
-rowsAff, err := pilot.Update(ctx, db)
+rowsAff, err := pilot.Update(ctx, db, boil.Infer())
 
 // Update a slice of pilots to have the name "Smith"
 pilots, _ := models.Pilots().All(ctx, db)

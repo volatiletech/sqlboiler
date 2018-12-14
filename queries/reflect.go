@@ -288,6 +288,9 @@ Rows:
 			ptrSlice.Set(reflect.Append(ptrSlice, newStruct))
 		}
 	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
 
 	if bkind == kindStruct && !foundOne {
 		return sql.ErrNoRows

@@ -43,7 +43,7 @@ func (q {{$alias.DownSingular}}Query) One({{if .NoContext}}exec boil.Executor{{e
 	err := q.Bind({{if .NoContext}}nil{{else}}ctx{{end}}, exec, o)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
-			return nil, sql.ErrNoRows
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "{{.PkgName}}: failed to execute a one query for {{.Table.Name}}")
 	}

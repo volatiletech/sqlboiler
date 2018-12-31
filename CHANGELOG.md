@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix MSSQL Link in Readme (thanks @philips)
 - Fix bug where psql upsert would error when not doing an update
 - Fix bug where mysql upsert did not have quotes around the table name
+- Fix bug where yaml config files would panic due to type assertions (thanks
+  @ch3rub1m)
 
 ## [v3.1.0] - 2018-10-29
 

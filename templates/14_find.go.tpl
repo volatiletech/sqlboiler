@@ -54,7 +54,7 @@ func Find{{$alias.UpSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx co
 	err := q.Bind({{if not .NoContext}}ctx{{else}}nil{{end}}, exec, {{$alias.DownSingular}}Obj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
-			return nil, sql.ErrNoRows
+			return nil, nil
 		}
 		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
 	}

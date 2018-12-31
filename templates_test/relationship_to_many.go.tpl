@@ -61,14 +61,13 @@ func test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}}(t *testing.T) {
 	}
 	{{end}}
 
-	{{$varname := .ForeignTable | singular | camelCase -}}
-	{{$varname}}, err := a.{{$relAlias.Local}}().All({{if not $.NoContext}}ctx, {{end -}} tx)
+	check, err := a.{{$relAlias.Local}}().All({{if not $.NoContext}}ctx, {{end -}} tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
-	for _, v := range {{$varname}} {
+	for _, v := range check {
 		{{if $usesPrimitives -}}
 		if v.{{$fcolField}} == b.{{$fcolField}} {
 			bFound = true
@@ -110,7 +109,7 @@ func test{{$ltable.UpSingular}}ToMany{{$relAlias.Local}}(t *testing.T) {
 	}
 
 	if t.Failed() {
-		t.Logf("%#v", {{$varname}})
+		t.Logf("%#v", check)
 	}
 }
 

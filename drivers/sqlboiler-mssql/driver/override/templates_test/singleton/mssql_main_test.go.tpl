@@ -9,6 +9,7 @@ type mssqlTester struct {
 	sslmode    string
 	port       int
 	testDBName string
+	skipSQLCmd bool
 }
 
 func init() {
@@ -28,6 +29,8 @@ func (m *mssqlTester) setup() error {
 	m.pass = viper.GetString("mssql.pass")
 	m.port = viper.GetInt("mssql.port")
 	m.sslmode = viper.GetString("mssql.sslmode")
+	m.testDBName = viper.GetString("mssql.testdbname")
+	m.skipSQLCmd = viper.GetBool("mssql.skipSQLCmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),
@@ -42,36 +45,40 @@ func (m *mssqlTester) setup() error {
 	}
 
 	// Create a randomized db name.
-	m.testDBName = randomize.StableDBName(m.dbName)
-
-	if err = m.dropTestDB(); err != nil {
-		return err
-	}
-	if err = m.createTestDB(); err != nil {
-		return err
+	if len(p.testDBName) == 0 {
+		p.testDBName = randomize.StableDBName(p.dbName)
 	}
 
-	createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
+	if !m.skipSQLCmd {
+		if err = m.dropTestDB(); err != nil {
+			return err
+		}
+		if err = m.createTestDB(); err != nil {
+			return err
+		}
 
-	f, err := os.Open("tables_schema.sql")
-	if err != nil {
-		return errors.Wrap(err, "failed to open tables_schema.sql file")
-	}
+		createCmd := exec.Command("sqlcmd", "-S", m.host, "-U", m.user, "-P", m.pass, "-d", m.testDBName)
 
-	defer func() { _ = f.Close() }()
+		f, err := os.Open("tables_schema.sql")
+		if err != nil {
+			return errors.Wrap(err, "failed to open tables_schema.sql file")
+		}
 
-    stderr := &bytes.Buffer{}
-	createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
-    createCmd.Stderr = stderr
+		defer func() { _ = f.Close() }()
 
-	if err = createCmd.Start(); err != nil {
-		return errors.Wrap(err, "failed to start sqlcmd command")
-	}
+		stderr := &bytes.Buffer{}
+		createCmd.Stdin = newFKeyDestroyer(rgxMSSQLkey, f)
+		createCmd.Stderr = stderr
 
-	if err = createCmd.Wait(); err != nil {
-		fmt.Println(err)
-		fmt.Println(stderr.String())
-		return errors.Wrap(err, "failed to wait for sqlcmd command")
+		if err = createCmd.Start(); err != nil {
+			return errors.Wrap(err, "failed to start sqlcmd command")
+		}
+
+		if err = createCmd.Wait(); err != nil {
+			fmt.Println(err)
+			fmt.Println(stderr.String())
+			return errors.Wrap(err, "failed to wait for sqlcmd command")
+		}
 	}
 
 	return nil
@@ -114,8 +121,10 @@ func (m *mssqlTester) teardown() error {
 		m.dbConn.Close()
 	}
 
-	if err := m.dropTestDB(); err != nil {
-		return err
+	if !m.skipSQLCmd {
+		if err := m.dropTestDB(); err != nil {
+			return err
+		}
 	}
 
 	return nil

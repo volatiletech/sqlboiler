@@ -50,16 +50,29 @@ with the Github code review tools. Then it will be merged into dev, and later go
    ```
 
 1. Write your changes
-1. If you changed template files, run the following command
+1. If you changed template files, run the following command to re-generate the binddata.
 
    ```
    ./boil.sh go-generate all
    ```
 
-1. Generate your models
+1. Generate executable. Run again if you have changed anything in core code or driver code.
+   ```
+   ./boil.sh build all
+   ```
+
+1. Also Move sqlboiler-[driver] built to the bin of gopath if you have changed the driver code.
+
+1. Generate your models from existing tables
 
    ```
    ./boil.sh gen [driver]
+   ```
+
+1. You may need to install following package before able to run the tests.
+
+   ```
+   go get -u github.com/volatiletech/null
    ```
 
 1. Test the output
@@ -67,6 +80,7 @@ with the Github code review tools. Then it will be merged into dev, and later go
    ```
    ./boil.sh test
    ```
+
 
 # Bugs
 

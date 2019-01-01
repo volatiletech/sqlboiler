@@ -33,7 +33,7 @@ func (m *mysqlTester) setup() error {
 	m.port = viper.GetInt("mysql.port")
 	m.sslmode = viper.GetString("mysql.sslmode")
 	m.testDBName = viper.GetString("mysql.testdbname")
-	m.skipSQLCmd = viper.GetBool("mysql.skipSQLCmd")
+	m.skipSQLCmd = viper.GetBool("mysql.skipsqlcmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(m.user, "mysql.user"),

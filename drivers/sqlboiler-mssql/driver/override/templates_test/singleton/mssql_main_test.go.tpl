@@ -30,7 +30,7 @@ func (m *mssqlTester) setup() error {
 	m.port = viper.GetInt("mssql.port")
 	m.sslmode = viper.GetString("mssql.sslmode")
 	m.testDBName = viper.GetString("mssql.testdbname")
-	m.skipSQLCmd = viper.GetBool("mssql.skipSQLCmd")
+	m.skipSQLCmd = viper.GetBool("mssql.skipsqlcmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(viper.GetString("mssql.user"), "mssql.user"),

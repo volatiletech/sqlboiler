@@ -37,7 +37,7 @@ func (p *pgTester) setup() error {
 	p.port = viper.GetInt("psql.port")
 	p.sslmode = viper.GetString("psql.sslmode")
 	p.testDBName = viper.GetString("psql.testdbname")
-	p.skipSQLCmd = viper.GetBool("psql.skipSQLCmd")
+	p.skipSQLCmd = viper.GetBool("psql.skipsqlcmd")
 
 	err = vala.BeginValidation().Validate(
 		vala.StringNotEmpty(p.user, "psql.user"),

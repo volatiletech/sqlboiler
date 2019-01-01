@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Driver specific commands (eg. pg_dump) that are run for test scaffolding
   will now output their error messages to stderr where they were previously
   silently failing (thanks @LukasAuerbeck)
+- Add skipsqlcmd to generated test code for each driver. This allows skipping
+  the whole drop/create database cycle while testing so you may point sqlboiler
+  at a pre-setup test database. (thanks @gemscng)
 
 ### Fixed
 

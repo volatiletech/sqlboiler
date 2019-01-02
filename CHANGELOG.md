@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add skipsqlcmd to generated test code for each driver. This allows skipping
   the whole drop/create database cycle while testing so you may point sqlboiler
   at a pre-setup test database. (thanks @gemscng)
-- Add a way to skip hook execution for a given query
-- Add a way to skip timestamp updating for a given query
+- Add a way to skip hook execution for a given query (boil.SkipHooks)
+- Add a way to skip timestamp updating for a given query (boil.SkipTimestamps)
 
 ### Fixed
 

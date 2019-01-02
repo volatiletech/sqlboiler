@@ -66,6 +66,7 @@ Table of Contents
     * [Diagnosing Problems](#diagnosing-problems)
     * [Features &amp; Examples](#features--examples)
       * [Automatic CreatedAt/UpdatedAt](#automatic-createdatupdatedat)
+        * [Skipping Automatic Timestamps](#skipping-automatic-timestamps)
         * [Overriding Automatic Timestamps](#overriding-automatic-timestamps)
       * [Query Building](#query-building)
       * [Query Mod System](#query-mod-system)
@@ -75,6 +76,7 @@ Table of Contents
       * [Binding](#binding)
       * [Relationships](#relationships)
       * [Hooks](#hooks)
+        * [Skipping Hooks](#skipping-hooks)
       * [Transactions](#transactions)
       * [Debug Logging](#debug-logging)
       * [Select](#select)
@@ -90,6 +92,10 @@ Table of Contents
     * [FAQ](#faq)
         * [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
         * [Missing imports for generated package](#missing-imports-for-generated-package)
+        * [How should I handle multiple schemas](#how-should-i-handle-multiple-schemas)
+        * [How do I use the types.BytesArray for Postgres bytea arrays?](#how-do-i-use-typesbytesarray-for-postgres-bytea-arrays)
+        * [Why aren't my time.Time or null.Time fields working in MySQL?](#why-arent-my-timetime-or-nulltime-fields-working-in-mysql)
+        * [Where is the homepage?](#where-is-the-homepage)
   * [Benchmarks](#benchmarks)
 
 ## About SQL Boiler
@@ -869,6 +875,12 @@ to `time.Now()` in your database, and update your object appropriately.
 To disable this feature use `--no-auto-timestamps`.
 
 Note: You can set the timezone for this feature by calling `boil.SetLocation()`
+
+#### Skipping Automatic Timestamps
+
+If for a given query you do not want timestamp columns to be updated
+then you can use `boil.SkipTimestamps` on the context you pass in to the query
+to prevent them from being updated.
 
 #### Overriding Automatic Timestamps
 

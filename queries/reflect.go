@@ -59,10 +59,14 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 	return q.Bind(ctx, boil.GetDB(), obj)
 }
 
-// Bind executes the query and inserts the
-// result into the passed in object pointer.
+// Bind inserts the rows into the passed in object pointer, because the caller
+// owns the rows it is imperative to note that the caller MUST both close the
+// rows and check for errors on the rows.
 //
-// The caller is responsible for closing the rows.
+// If you neglect closing the rows your application may have a memory leak
+// if the rows are not implicitly closed by iteration alone.
+// If you neglect checking the rows.Err silent failures may occur in your
+// application.
 //
 // Bind rules:
 //   - Struct tags control bind, in the form of: `boil:"name,bind"`
@@ -72,9 +76,10 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 //     be used instead of the struct field name for binding.
 //   - If the "name" of the struct tag is "-", this field will not be bound to.
 //   - If the ",bind" option is specified on a struct field and that field
-//     is a struct itself, it will be recursed into to look for fields for binding.
+//     is a struct itself, it will be recursed into to look for fields for
+//     binding.
 //
-// Example Query:
+// Example usage:
 //
 //   type JoinStruct struct {
 //     // User1 can have it's struct fields bound to since it specifies
@@ -94,7 +99,9 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 //     Date       time.Time
 //   }
 //
-//   models.Users(qm.InnerJoin("users as friend on users.friend_id = friend.id")).Bind(&joinStruct)
+//   models.Users(
+//     qm.InnerJoin("users as friend on users.friend_id = friend.id")
+//   ).Bind(&joinStruct)
 //
 // For custom objects that want to use eager loading, please see the
 // loadRelationships function.

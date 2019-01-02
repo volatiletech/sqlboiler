@@ -1,5 +1,25 @@
 package boil
 
+import "context"
+
+type contextType int
+
+const (
+	ctxSkipHooks contextType = iota
+)
+
+// SkipHooks modifies a context to prevent hooks from running for any query
+// it encounters.
+func SkipHooks(ctx context.Context) context.Context {
+	return context.WithValue(ctx, ctxSkipHooks, true)
+}
+
+// HooksAreSkipped returns true if the context skips hooks
+func HooksAreSkipped(ctx context.Context) bool {
+	skip := ctx.Value(ctxSkipHooks)
+	return skip != nil && skip.(bool)
+}
+
 // HookPoint is the point in time at which we hook
 type HookPoint int
 

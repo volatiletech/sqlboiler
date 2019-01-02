@@ -1279,6 +1279,11 @@ models.AddPilotHook(boil.BeforeInsertHook, myHook)
 
 Your `ModelHook` will always be defined as `func(context.Context, boil.ContextExecutor, *Model) error` if context is not turned off.
 
+#### Skipping Hooks
+
+You can skip hooks by using the `boil.SkipHooks` on the context you pass in
+to a given query.
+
 ### Transactions
 
 The `boil.Executor` and `boil.ContextExecutor` interface powers all of SQLBoiler. This means

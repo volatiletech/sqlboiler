@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fix panic on eager load with nullable foreign keys
 - Fix bug where mysql columns can sometimes be selected out of order in
   certain internal queries. (thanks @cpickett-ml)
 - Fix bug where an incorrect query could be built while eager loading nullable

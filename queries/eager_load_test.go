@@ -2,6 +2,7 @@ package queries
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/volatiletech/sqlboiler/boil"
@@ -324,6 +325,39 @@ func TestEagerLoadZeroParentsMany(t *testing.T) {
 	}
 	if obj[1].R.ZeroOne != nil {
 		t.Error("should have loaded nothing")
+	}
+}
+
+func TestCollectLoadedNils(t *testing.T) {
+	t.Parallel()
+
+	obj := []*testEager{
+		&testEager{R: &testEagerR{}},
+		&testEager{R: &testEagerR{}},
+	}
+
+	loaded, _, err := collectLoaded("ChildMany", reflect.ValueOf(obj))
+	collected := loaded.Interface().([]*testEagerChild)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, c := range collected {
+		if c == nil {
+			t.Error("it should not be possible to get a nil")
+		}
+	}
+
+	loaded, _, err = collectLoaded("ChildOne", reflect.ValueOf(obj))
+	collected = loaded.Interface().([]*testEagerChild)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, c := range collected {
+		if c == nil {
+			t.Error("it should not be possible to get a nil")
+		}
 	}
 }
 

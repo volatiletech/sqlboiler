@@ -270,7 +270,9 @@ func collectLoaded(key string, loadingFrom reflect.Value) (reflect.Value, bindKi
 	for {
 		switch bkind {
 		case kindStruct:
-			collection = reflect.Append(collection, loadedObject)
+			if !loadedObject.IsNil() {
+				collection = reflect.Append(collection, loadedObject)
+			}
 		case kindPtrSliceStruct:
 			collection = reflect.AppendSlice(collection, loadedObject)
 		}

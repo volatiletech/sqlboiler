@@ -205,6 +205,7 @@ func NewDefaultImports() Collection {
 			`"github.com/volatiletech/sqlboiler/boil"`,
 			`"github.com/volatiletech/sqlboiler/queries"`,
 			`"github.com/volatiletech/sqlboiler/queries/qm"`,
+			`"github.com/volatiletech/sqlboiler/queries/qmhelper"`,
 			`"github.com/volatiletech/sqlboiler/strmangle"`,
 		},
 	}

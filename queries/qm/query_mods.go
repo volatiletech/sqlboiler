@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/volatiletech/sqlboiler/queries"
+	"github.com/volatiletech/sqlboiler/queries/qmhelper"
 )
 
 // QueryMod modifies a query object.
@@ -138,21 +139,11 @@ func Select(columns ...string) QueryMod {
 	}
 }
 
-type whereQueryMod struct {
-	clause string
-	args   []interface{}
-}
-
-// Apply implements QueryMod.Apply.
-func (qm whereQueryMod) Apply(q *queries.Query) {
-	queries.AppendWhere(q, qm.clause, qm.args...)
-}
-
 // Where allows you to specify a where clause for your statement
 func Where(clause string, args ...interface{}) QueryMod {
-	return whereQueryMod{
-		clause: clause,
-		args:   args,
+	return qmhelper.WhereQueryMod{
+		Clause: clause,
+		Args:   args,
 	}
 }
 

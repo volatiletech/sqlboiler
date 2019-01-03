@@ -283,6 +283,7 @@ var templateFunctions = template.FuncMap{
 	// Alias and text helping
 	"aliasCols":      func(ta TableAlias) func(string) string { return func(s string) string { return ta.Column(s) } },
 	"usesPrimitives": usesPrimitives,
+	"isPrimitive":    isPrimitive,
 
 	// dbdrivers ops
 	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,

@@ -29,6 +29,44 @@ var {{$alias.UpSingular}}Columns = struct {
 	{{end -}}
 }
 
+var {{$alias.UpSingular}}Where = struct {
+	{{range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{$colAlias}}EQ  func({{$column.Type}}) qm.QueryMod
+	{{$colAlias}}NEQ func({{$column.Type}}) qm.QueryMod
+	{{if isPrimitive $column.Type -}}
+	{{$colAlias}}LT  func({{$column.Type}}) qm.QueryMod
+	{{$colAlias}}LTE func({{$column.Type}}) qm.QueryMod
+	{{$colAlias}}GT  func({{$column.Type}}) qm.QueryMod
+	{{$colAlias}}GTE func({{$column.Type}}) qm.QueryMod
+	{{end -}}
+	{{end -}}
+}{
+	{{range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{$colAlias}}EQ: func(x {{$column.Type}}) qm.QueryMod {
+		{{- if $column.Nullable -}}
+		return qmhelper.WhereNullEQ(`{{$column.Name}}`, false, x)
+		{{else -}}
+		return qmhelper.Where(`{{$column.Name}}`, qmhelper.EQ, x)
+		{{- end -}}
+	},
+	{{$colAlias}}NEQ: func(x {{$column.Type}}) qm.QueryMod {
+		{{- if $column.Nullable -}}
+		return qmhelper.WhereNullEQ(`{{$column.Name}}`, true, x)
+		{{else -}}
+		return qmhelper.Where(`{{$column.Name}}`, qmhelper.NEQ, x)
+		{{- end -}}
+	},
+	{{if isPrimitive $column.Type -}}
+	{{$colAlias}}LT: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.LT, x) },
+	{{$colAlias}}LTE: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.LTE, x) },
+	{{$colAlias}}GT: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.GT, x) },
+	{{$colAlias}}GTE: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.GTE, x) },
+	{{end -}}
+	{{end -}}
+}
+
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 // {{$alias.UpSingular}}Rels is where relationship names are stored.

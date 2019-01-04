@@ -1389,6 +1389,8 @@ zero value.
 | Blacklist   | Infer the column list, but ensure these columns are not inserted
 | Greylist    | Infer the column list, but ensure these columns are inserted
 
+**NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
+
 See the documentation for
 [boil.Columns.InsertColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.InsertColumnSet)
 for more details.
@@ -1438,6 +1440,8 @@ documentation above for more details.
 | Whitelist   | Update only the columns specified in this list
 | Blacklist   | Infer the column list for updating, but ensure these columns are not updated
 | Greylist    | Infer the column list, but ensure these columns are updated
+
+**NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
 [boil.Columns.UpdateColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.UpdateColumnSet)

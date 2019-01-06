@@ -2,13 +2,14 @@ package qmhelper
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/volatiletech/sqlboiler/queries"
 )
 
 // Nullable object
 type Nullable interface {
-	IsValid() bool
+	IsZero() bool
 }
 
 // WhereQueryMod allows construction of where clauses
@@ -23,8 +24,15 @@ func (qm WhereQueryMod) Apply(q *queries.Query) {
 }
 
 // WhereNullEQ is a helper for doing equality with null types
-func WhereNullEQ(name string, negated bool, value Nullable) WhereQueryMod {
-	if !value.IsValid() {
+func WhereNullEQ(name string, negated bool, value interface{}) WhereQueryMod {
+	isNull := false
+	if nullable, ok := value.(Nullable); ok {
+		isNull = nullable.IsZero()
+	} else {
+		isNull = reflect.ValueOf(value).IsNil()
+	}
+
+	if isNull {
 		var not string
 		if negated {
 			not = "not "
@@ -43,7 +51,16 @@ func WhereNullEQ(name string, negated bool, value Nullable) WhereQueryMod {
 		Clause: fmt.Sprintf("%s %s ?", name, op),
 		Args:   []interface{}{value},
 	}
+}
 
+// WhereIsNull is a helper that just returns "name is null"
+func WhereIsNull(name string) WhereQueryMod {
+	return WhereQueryMod{Clause: fmt.Sprintf("%s is null", name)}
+}
+
+// WhereIsNotNull is a helper that just returns "name is not null"
+func WhereIsNotNull(name string) WhereQueryMod {
+	return WhereQueryMod{Clause: fmt.Sprintf("%s is not null", name)}
 }
 
 type operator string

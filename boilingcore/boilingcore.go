@@ -145,6 +145,7 @@ func (s *State) Run() error {
 		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
 		OutputDirDepth:   s.Config.OutputDirDepth(),
 
+		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
 	}
 

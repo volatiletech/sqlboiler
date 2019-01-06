@@ -29,41 +29,34 @@ var {{$alias.UpSingular}}Columns = struct {
 	{{end -}}
 }
 
+{{/* Generated where helpers for all types in the database */}}
+// Generated where
+{{- range .Table.Columns -}}
+	{{- if (oncePut $.DBTypes .Type)}}
+	{{$name := printf "whereHelper%s" (goVarname .Type)}}
+type {{$name}} struct { field string }
+func (w {{$name}}) EQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, false, x){{else}}(w.field, qmhelper.EQ, x){{end}} }
+func (w {{$name}}) NEQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, true, x){{else}}(w.field, qmhelper.NEQ, x){{end}} }
+{{if .Nullable -}}
+func (w {{$name}}) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w {{$name}}) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+{{end -}}
+func (w {{$name}}) LT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w {{$name}}) LTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w {{$name}}) GT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+	{{- end -}}
+{{- end}}
+
 var {{$alias.UpSingular}}Where = struct {
 	{{range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
-	{{$colAlias}}EQ  func({{$column.Type}}) qm.QueryMod
-	{{$colAlias}}NEQ func({{$column.Type}}) qm.QueryMod
-	{{if isPrimitive $column.Type -}}
-	{{$colAlias}}LT  func({{$column.Type}}) qm.QueryMod
-	{{$colAlias}}LTE func({{$column.Type}}) qm.QueryMod
-	{{$colAlias}}GT  func({{$column.Type}}) qm.QueryMod
-	{{$colAlias}}GTE func({{$column.Type}}) qm.QueryMod
-	{{end -}}
+	{{$colAlias}} whereHelper{{goVarname $column.Type}}
 	{{end -}}
 }{
 	{{range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
-	{{$colAlias}}EQ: func(x {{$column.Type}}) qm.QueryMod {
-		{{- if $column.Nullable -}}
-		return qmhelper.WhereNullEQ(`{{$column.Name}}`, false, x)
-		{{else -}}
-		return qmhelper.Where(`{{$column.Name}}`, qmhelper.EQ, x)
-		{{- end -}}
-	},
-	{{$colAlias}}NEQ: func(x {{$column.Type}}) qm.QueryMod {
-		{{- if $column.Nullable -}}
-		return qmhelper.WhereNullEQ(`{{$column.Name}}`, true, x)
-		{{else -}}
-		return qmhelper.Where(`{{$column.Name}}`, qmhelper.NEQ, x)
-		{{- end -}}
-	},
-	{{if isPrimitive $column.Type -}}
-	{{$colAlias}}LT: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.LT, x) },
-	{{$colAlias}}LTE: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.LTE, x) },
-	{{$colAlias}}GT: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.GT, x) },
-	{{$colAlias}}GTE: func(x {{$column.Type}}) qm.QueryMod { return qmhelper.Where(`{{$column.Name}}`, qmhelper.GTE, x) },
-	{{end -}}
+	{{$colAlias}}: whereHelper{{goVarname $column.Type}}{field: `{{$column.Name}}`},
 	{{end -}}
 }
 

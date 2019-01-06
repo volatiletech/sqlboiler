@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Type-safe where clauses can now be created, see README for details. It is
+  highly recommended that this be used at all times.
 - Driver specific commands (eg. pg_dump) that are run for test scaffolding
   will now output their error messages to stderr where they were previously
   silently failing (thanks @LukasAuerbeck)

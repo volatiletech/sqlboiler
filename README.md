@@ -226,6 +226,11 @@ fmt.Println(len(users.R.FavoriteMovies))
   it's models and without this enabled any models with `DATE`/`DATETIME` columns will not work.
 
 ### Pro Tips
+
+* SQLBoiler generates type safe identifiers for table names, table column names,
+  a table's relationship names and type-safe where clauses. You should use these
+  instead of strings due to the ability to catch more errors at compile time
+  when your database schema changes. See [Constants](#constants) for details.
 * It's highly recommended to use transactions where sqlboiler will be doing
   multiple database calls (relationship setops with insertions for example) for
   both performance and data integrity.
@@ -922,7 +927,7 @@ can do so using `models.NewQuery()`:
 
 ```go
 // Select all rows from the pilots table by using the From query mod.
-err := models.NewQuery(db, From("pilots")).All(ctx, db)
+err := models.NewQuery(db, qm.From("pilots")).All(ctx, db)
 ```
 
 As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
@@ -934,8 +939,38 @@ We also generate query building helper methods for your relationships as well. T
 
 ### Query Mod System
 
-The query mod system allows you to modify queries created with [Starter](#query-building) methods
-when performing query building. Here is a list of all of your generated query mods using examples:
+The query mod system allows you to modify queries created with
+[Starter](#query-building) methods when performing query building.
+See examples below.
+
+SQLBoiler generates type-safe identifiers based on your database
+tables, columns and relationships. Using these is a bit more verbose, but is
+especially safe since when the names change in the database the generated
+code will be different causing compilation failures instead of runtime
+errors. It is highly recommended you use these instead of regular strings.
+
+There are type safe identifiers at:
+* models.TableNames.TableName
+* models.ModelColumns.ColumnName
+* models.ModelWhere.ColumnName.Operator
+* models.ModelRels.ForeignTableName
+
+**NOTE:** You can also assign the ModelWhere or ColumnNames to a variable and
+although you probably pay some performance penalty with it sometimes the
+readability increase is worth it:
+
+```go
+cols := &models.UserColumns
+where := &models.UserWhere
+
+u, err := models.Users(where.Name.EQ("hello"), qm.Or(cols.Age + "=?", 5))
+```
+
+**NOTE:** You will notice that there is printf used below mixed with SQL
+statements. This is normally NOT OK if the user is able to supply any of
+the sql string, but here we always use a `?` placeholder and pass arguments
+so that, and the only thing that's being printf'd are constants which makes it
+safe, but be careful!
 
 ```go
 // Dot import so we can access query mods directly instead of prefixing with "qm."
@@ -948,24 +983,36 @@ SQL("select * from pilots where id=$1", 10)
 models.Pilots(SQL("select * from pilots where id=$1", 10)).All()
 
 Select("id", "name") // Select specific columns.
+Select(models.PilotColumns.ID, models.PilotColumns.Name)
 From("pilots as p") // Specify the FROM table manually, can be useful for doing complex queries.
+From(models.TableNames.Pilots + " as p")
 
 // WHERE clause building
 Where("name=?", "John")
+models.PilotWhere.Name.EQ("John")
 And("age=?", 24)
+// No equivalent type safe query yet
 Or("height=?", 183)
+// No equivalent type safe query yet
 
 // WHERE IN clause building
 WhereIn("name, age in ?", "John", 24, "Tim", 33) // Generates: WHERE ("name","age") IN (($1,$2),($3,$4))
+WhereIn(fmt.Sprintf("%s, %s in ?", models.PilotColumns.Name, models.PilotColumns.Age, "John", 24, "Tim", 33))
 AndIn("weight in ?", 84)
+AndIn(fmt.Sprintf("%s in ?", models.PilotColumns.Weight), 84)
 OrIn("height in ?", 183, 177, 204)
+OrIn(fmt.Sprintf("%s in ?", models.PilotColumns.Height), 183, 177, 204)
 
 InnerJoin("pilots p on jets.pilot_id=?", 10)
+InnerJoin(models.TableNames.Pilots + " p on " + models.TableNames.Jets + "." + models.JetColumns.PilotID + "=?", 10)
 
 GroupBy("name")
+GroupBy(models.PilotColumns.Name)
 OrderBy("age, height")
+OrderBy(models.PilotColumns.Age, models.PilotColumns.Height)
 
 Having("count(jets) > 2")
+Having(fmt.Sprintf("count(%s) > 2", models.TableNames.Jets)
 
 Limit(15)
 Offset(5)
@@ -976,6 +1023,7 @@ For("update nowait")
 // Eager Loading -- Load takes the relationship name, ie the struct field name of the
 // Relationship struct field you want to load. Optionally also takes query mods to filter on that query.
 Load("Languages", Where(...)) // If it's a ToOne relationship it's in singular form, ToMany is plural.
+Load(models.PilotRels.Languages, Where(...))
 ```
 
 Note: We don't force you to break queries apart like this if you don't want to, the following
@@ -1166,6 +1214,8 @@ for i := 0; i < len(jets); i++ {
 
 // Instead, use Eager Loading!
 jets, _ := models.Jets(Load("Pilot")).All(ctx, db)
+// Type safe relationship names exist too:
+jets, _ := models.Jets(Load(models.JetRels.Pilot)).All(ctx, db)
 ```
 
 Eager loading can be combined with other query mods, and it can also eager load recursively.
@@ -1175,6 +1225,9 @@ Eager loading can be combined with other query mods, and it can also eager load 
 // Each jet will have its pilot loaded, and each pilot will have its languages loaded.
 jets, _ := models.Jets(Load("Pilot.Languages")).All(ctx, db)
 // Note that each level of a nested Load call will be loaded. No need to call Load() multiple times.
+
+// Type safe queries exist for this too!
+jets, _ := models.Jets(LoadRels(models.JetRels.Pilot, models.PilotRels.Languages)).All(ctx, db)
 
 // A larger example. In the below scenario, Pets will only be queried one time, despite
 // showing up twice because they're the same query (the user's pets)
@@ -1304,7 +1357,6 @@ can be used to execute queries. `sql.DB`, `sql.Tx` as well as other
 libraries (`sqlx`) conform to this interface, and therefore any of these things may be
 used as an executor for any query in the system. This makes using transactions very simple:
 
-
 ```go
 tx, err := db.BeginTx(ctx, nil)
 if err != nil {
@@ -1346,9 +1398,13 @@ Select is done through [Query Building](#query-building) and [Find](#find). Here
 ```go
 // Select one pilot
 pilot, err := models.Pilots(qm.Where("name=?", "Tim")).One(ctx, db)
+// Type safe variant
+pilot, err := models.Pilots(models.PilotWhere.Name.EQ("Tim")).One(ctx, db)
 
 // Select specific columns of many jets
 jets, err := models.Jets(qm.Select("age", "name")).All(ctx, db)
+// Type safe variant
+jets, err := models.Jets(qm.Select(models.JetColumns.Age, models.JetColumns.Name)).All(ctx, db)
 ```
 
 ### Find
@@ -1591,7 +1647,9 @@ instead of an enum.
 
 ### Constants
 
-The models package will also contain some structs that contain all of the table and column names harvested from the database at generation time. Eager loading constants are also generated mainly to avoid hardcoding and possible runtime issues.
+The models package will also contain some structs that contain all of the table and column names
+harvested from the database at generation time. Eager loading constants are also generated mainly
+to avoid hardcoding and possible runtime issues.
 
 For table names they're generated under `models.TableNames`:
 
@@ -1622,6 +1680,20 @@ var MessageColumns = struct {
 
 // Usage example:
 fmt.Println(models.MessageColumns.ID)
+```
+
+For where clauses they're generated under `models.{Model}Where.{Column}.{Operator}`:
+```go
+var MessageWhere = struct {
+	ID       whereHelperint
+  Text     whereHelperstring
+}{
+ 	ID:         whereHelperint{field: `id`},
+  PurchaseID: whereHelperstring{field: `purchase_id`},
+}
+
+// Usage example:
+models.Messages(models.MessageWhere.PurchaseID.EQ("hello"))
 ```
 
 For eager loading relationships ther're generated under `models.{Model}Rels`:

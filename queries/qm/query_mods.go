@@ -139,7 +139,8 @@ func Select(columns ...string) QueryMod {
 	}
 }
 
-// Where allows you to specify a where clause for your statement
+// Where allows you to specify a where clause for your statement. If multiple
+// Where statements are used they are combined with 'and'
 func Where(clause string, args ...interface{}) QueryMod {
 	return qmhelper.WhereQueryMod{
 		Clause: clause,
@@ -160,6 +161,9 @@ func (qm andQueryMod) Apply(q *queries.Query) {
 // And allows you to specify a where clause separated by an AND for your statement
 // And is a duplicate of the Where function, but allows for more natural looking
 // query mod chains, for example: (Where("a=?"), And("b=?"), Or("c=?")))
+//
+// Because Where statements are by default combined with and, there's no reason
+// to call this method as it behaves the same as "Where"
 func And(clause string, args ...interface{}) QueryMod {
 	return andQueryMod{
 		clause: clause,
@@ -184,6 +188,22 @@ func Or(clause string, args ...interface{}) QueryMod {
 		clause: clause,
 		args:   args,
 	}
+}
+
+// Or2 takes a Where query mod and turns it into an Or. It can be detrimental
+// if used on things that are not Where query mods as it will still modify the
+// last Where statement into an Or.
+func Or2(q QueryMod) QueryMod {
+	return or2QueryMod{inner: q}
+}
+
+type or2QueryMod struct {
+	inner QueryMod
+}
+
+func (qm or2QueryMod) Apply(q *queries.Query) {
+	qm.inner.Apply(q)
+	queries.SetLastWhereAsOr(q)
 }
 
 // Apply implements QueryMod.Apply.
@@ -244,6 +264,30 @@ func OrIn(clause string, args ...interface{}) QueryMod {
 		clause: clause,
 		args:   args,
 	}
+}
+
+// Expr groups where query mods. It's detrimental to use this with any other
+// type of Query Mod because the effects will always only affect where clauses.
+//
+// When Expr is used, the entire query will stop doing automatic paretheses
+// for the where statement and you must use Expr anywhere you would like them.
+//
+// Do NOT use with anything except where.
+func Expr(wheremods ...QueryMod) QueryMod {
+	return exprMod{mods: wheremods}
+}
+
+type exprMod struct {
+	mods []QueryMod
+}
+
+// Apply implements QueryMod.Apply
+func (qm exprMod) Apply(q *queries.Query) {
+	queries.AppendWhereLeftParen(q)
+	for _, mod := range qm.mods {
+		mod.Apply(q)
+	}
+	queries.AppendWhereRightParen(q)
 }
 
 type groupByQueryMod struct {

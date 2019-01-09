@@ -920,6 +920,8 @@ pilots, err := models.Pilots(qm.Limit(5)).All(ctx, db)
 
 // DELETE FROM "pilots" WHERE "id"=$1;
 err := models.Pilots(qm.Where("id=?", 1)).DeleteAll(ctx, db)
+// type safe version of above
+err := models.Pilots(models.PilotWhere.ID.EQ(1)).DeleteAll(ctx, db)
 ```
 
 In the event that you would like to build a query and specify the table yourself, you
@@ -930,12 +932,11 @@ can do so using `models.NewQuery()`:
 err := models.NewQuery(db, qm.From("pilots")).All(ctx, db)
 ```
 
-As you can see, [Query Mods](#query-mods) allow you to modify your queries, and [Finishers](#finishers)
-allow you to execute the final action.
+As you can see, [Query Mods](#query-mod-system) allow you to modify your
+queries, and [Finishers](#finishers) allow you to execute the final action.
 
 We also generate query building helper methods for your relationships as well. Take a look at our
 [Relationships Query Building](#relationships) section for some additional query building information.
-
 
 ### Query Mod System
 
@@ -943,33 +944,17 @@ The query mod system allows you to modify queries created with
 [Starter](#query-building) methods when performing query building.
 See examples below.
 
-SQLBoiler generates type-safe identifiers based on your database
+**NOTE:** SQLBoiler generates type-safe identifiers based on your database
 tables, columns and relationships. Using these is a bit more verbose, but is
 especially safe since when the names change in the database the generated
 code will be different causing compilation failures instead of runtime
 errors. It is highly recommended you use these instead of regular strings.
-
-There are type safe identifiers at:
-* models.TableNames.TableName
-* models.ModelColumns.ColumnName
-* models.ModelWhere.ColumnName.Operator
-* models.ModelRels.ForeignTableName
-
-**NOTE:** You can also assign the ModelWhere or ColumnNames to a variable and
-although you probably pay some performance penalty with it sometimes the
-readability increase is worth it:
-
-```go
-cols := &models.UserColumns
-where := &models.UserWhere
-
-u, err := models.Users(where.Name.EQ("hello"), qm.Or(cols.Age + "=?", 5))
-```
+See [Constants](#constants) for more details.
 
 **NOTE:** You will notice that there is printf used below mixed with SQL
 statements. This is normally NOT OK if the user is able to supply any of
 the sql string, but here we always use a `?` placeholder and pass arguments
-so that, and the only thing that's being printf'd are constants which makes it
+so that the only thing that's being printf'd are constants which makes it
 safe, but be careful!
 
 ```go
@@ -995,13 +980,23 @@ And("age=?", 24)
 Or("height=?", 183)
 // No equivalent type safe query yet
 
+Where("(name=? and age=?) or (age=?)", "John", 5, 6)
+// Expr allows manual grouping of statements
+Where(
+  Expr(
+    models.PilotWhere.Name.EQ("John"),
+    Or2(models.PilotWhere.Age.Eq(5),
+  ),
+  Or2(models.PilotAge),
+)
+
 // WHERE IN clause building
 WhereIn("name, age in ?", "John", 24, "Tim", 33) // Generates: WHERE ("name","age") IN (($1,$2),($3,$4))
 WhereIn(fmt.Sprintf("%s, %s in ?", models.PilotColumns.Name, models.PilotColumns.Age, "John", 24, "Tim", 33))
 AndIn("weight in ?", 84)
-AndIn(fmt.Sprintf("%s in ?", models.PilotColumns.Weight), 84)
+AndIn(models.PilotColumns.Weight + " in ?", 84)
 OrIn("height in ?", 183, 177, 204)
-OrIn(fmt.Sprintf("%s in ?", models.PilotColumns.Height), 183, 177, 204)
+OrIn(models.PilotColumns.Height + " in ?"), 183, 177, 204)
 
 InnerJoin("pilots p on jets.pilot_id=?", 10)
 InnerJoin(models.TableNames.Pilots + " p on " + models.TableNames.Jets + "." + models.JetColumns.PilotID + "=?", 10)
@@ -1647,9 +1642,15 @@ instead of an enum.
 
 ### Constants
 
-The models package will also contain some structs that contain all of the table and column names
-harvested from the database at generation time. Eager loading constants are also generated mainly
-to avoid hardcoding and possible runtime issues.
+The models package will also contain some structs that contain all table,
+column, relationship names harvested from the database at generation time. Type
+safe where query mods are also generated.
+
+There are type safe identifiers at:
+* models.TableNames.TableName
+* models.ModelColumns.ColumnName
+* models.ModelWhere.ColumnName.Operator
+* models.ModelRels.ForeignTableName
 
 For table names they're generated under `models.TableNames`:
 
@@ -1686,10 +1687,10 @@ For where clauses they're generated under `models.{Model}Where.{Column}.{Operato
 ```go
 var MessageWhere = struct {
 	ID       whereHelperint
-  Text     whereHelperstring
+	Text     whereHelperstring
 }{
- 	ID:         whereHelperint{field: `id`},
-  PurchaseID: whereHelperstring{field: `purchase_id`},
+	ID:         whereHelperint{field: `id`},
+	PurchaseID: whereHelperstring{field: `purchase_id`},
 }
 
 // Usage example:
@@ -1707,6 +1708,17 @@ var MessageRels = struct {
 
 // Usage example:
 fmt.Println(models.MessageRels.Purchase)
+```
+
+**NOTE:** You can also assign the ModelWhere or ColumnNames to a variable and
+although you probably pay some performance penalty with it sometimes the
+readability increase is worth it:
+
+```go
+cols := &models.UserColumns
+where := &models.UserWhere
+
+u, err := models.Users(where.Name.EQ("hello"), qm.Or(cols.Age + "=?", 5))
 ```
 
 ## FAQ

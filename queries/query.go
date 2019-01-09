@@ -35,7 +35,6 @@ type Query struct {
 	from       []string
 	joins      []join
 	where      []where
-	in         []in
 	groupBy    []string
 	orderBy    []string
 	having     []having
@@ -51,7 +50,18 @@ type Applicator interface {
 	Apply(*Query)
 }
 
+type whereKind int
+
+const (
+	whereKindNormal whereKind = iota
+	whereKindLeftParen
+	whereKindRightParen
+	whereKindIn
+)
+
 type where struct {
+	kind whereKind
+
 	clause      string
 	orSeparator bool
 	args        []interface{}
@@ -285,7 +295,7 @@ func AppendWhere(q *Query, clause string, args ...interface{}) {
 
 // AppendIn on the query.
 func AppendIn(q *Query, clause string, args ...interface{}) {
-	q.in = append(q.in, in{clause: clause, args: args})
+	q.where = append(q.where, where{kind: whereKindIn, clause: clause, args: args})
 }
 
 // SetLastWhereAsOr sets the or separator for the tail "WHERE" in the slice
@@ -294,16 +304,44 @@ func SetLastWhereAsOr(q *Query) {
 		return
 	}
 
-	q.where[len(q.where)-1].orSeparator = true
-}
-
-// SetLastInAsOr sets the or separator for the tail "IN" in the slice
-func SetLastInAsOr(q *Query) {
-	if len(q.in) == 0 {
+	pos := len(q.where) - 1
+	where := q.where[pos]
+	if where.kind != whereKindRightParen {
+		q.where[len(q.where)-1].orSeparator = true
 		return
 	}
 
-	q.in[len(q.in)-1].orSeparator = true
+	stack := 0
+	pos--
+	for ; pos >= 0; pos-- {
+		switch q.where[pos].kind {
+		case whereKindLeftParen:
+			if stack == 0 {
+				q.where[pos].orSeparator = true
+				return
+			}
+			stack--
+		case whereKindRightParen:
+			stack++
+		}
+	}
+
+	panic("could not find matching ( in where query expr")
+}
+
+// SetLastInAsOr is an alias for SetLastWhereAsOr
+func SetLastInAsOr(q *Query) {
+	SetLastWhereAsOr(q)
+}
+
+// AppendWhereLeftParen creates a right left in the where expression
+func AppendWhereLeftParen(q *Query) {
+	q.where = append(q.where, where{kind: whereKindLeftParen})
+}
+
+// AppendWhereRightParen creates a right paren in the where expression
+func AppendWhereRightParen(q *Query) {
+	q.where = append(q.where, where{kind: whereKindRightParen})
 }
 
 // AppendGroupBy on the query.

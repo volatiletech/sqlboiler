@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Type-safe where clauses can now be created, see README for details. It is
+  highly recommended that this be used at all times.
+- Type-safe where clauses can now be combined with Or2 for setting or.
+- The new Expr query mod will allow you to group where statements manually
+  (this turns off all automatic paretheses in the where clause for the query).
 - Driver specific commands (eg. pg_dump) that are run for test scaffolding
   will now output their error messages to stderr where they were previously
   silently failing (thanks @LukasAuerbeck)
@@ -19,6 +24,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fix panic on eager load with nullable foreign keys
+- Fix bug that prevented 'where' and 'in' from being mixed naturally as 'in'
+  query mods would always be rendered at the end of the query resulting in
+  an unintentional problem.
+- Fix an issue where 'in' query mods were not being automatically grouped in
+  parentheses like 'where' statements.
 - Fix bug where mysql columns can sometimes be selected out of order in
   certain internal queries. (thanks @cpickett-ml)
 - Fix bug where an incorrect query could be built while eager loading nullable

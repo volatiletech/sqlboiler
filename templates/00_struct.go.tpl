@@ -29,6 +29,37 @@ var {{$alias.UpSingular}}Columns = struct {
 	{{end -}}
 }
 
+{{/* Generated where helpers for all types in the database */}}
+// Generated where
+{{- range .Table.Columns -}}
+	{{- if (oncePut $.DBTypes .Type)}}
+	{{$name := printf "whereHelper%s" (goVarname .Type)}}
+type {{$name}} struct { field string }
+func (w {{$name}}) EQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, false, x){{else}}(w.field, qmhelper.EQ, x){{end}} }
+func (w {{$name}}) NEQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, true, x){{else}}(w.field, qmhelper.NEQ, x){{end}} }
+{{if .Nullable -}}
+func (w {{$name}}) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w {{$name}}) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+{{end -}}
+func (w {{$name}}) LT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w {{$name}}) LTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w {{$name}}) GT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+	{{- end -}}
+{{- end}}
+
+var {{$alias.UpSingular}}Where = struct {
+	{{range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{$colAlias}} whereHelper{{goVarname $column.Type}}
+	{{end -}}
+}{
+	{{range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{$colAlias}}: whereHelper{{goVarname $column.Type}}{field: `{{$column.Name}}`},
+	{{end -}}
+}
+
 {{- if .Table.IsJoinTable -}}
 {{- else}}
 // {{$alias.UpSingular}}Rels is where relationship names are stored.

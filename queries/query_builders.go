@@ -107,12 +107,6 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		args = append(args, whereArgs...)
 	}
 
-	in, inArgs := inClause(q, len(args)+1)
-	buf.WriteString(in)
-	if len(inArgs) != 0 {
-		args = append(args, inArgs...)
-	}
-
 	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
@@ -131,12 +125,6 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		args = append(args, whereArgs...)
 	}
 	buf.WriteString(where)
-
-	in, inArgs := inClause(q, len(args)+1)
-	if len(inArgs) != 0 {
-		args = append(args, inArgs...)
-	}
-	buf.WriteString(in)
 
 	writeModifiers(q, buf, &args)
 
@@ -178,12 +166,6 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		args = append(args, whereArgs...)
 	}
 	buf.WriteString(where)
-
-	in, inArgs := inClause(q, len(args)+1)
-	if len(inArgs) != 0 {
-		args = append(args, inArgs...)
-	}
-	buf.WriteString(in)
 
 	writeModifiers(q, buf, &args)
 
@@ -310,7 +292,7 @@ func writeAsStatements(q *Query) []string {
 
 // whereClause parses a where slice and converts it into a
 // single WHERE clause like:
-// WHERE (a=$1) AND (b=$2)
+// WHERE (a=$1) AND (b=$2) AND (a,b) in (($3, $4), ($5, $6))
 //
 // startAt specifies what number placeholders start at
 func whereClause(q *Query, startAt int) (string, []interface{}) {
@@ -318,73 +300,75 @@ func whereClause(q *Query, startAt int) (string, []interface{}) {
 		return "", nil
 	}
 
+	manualParens := false
+ManualParen:
+	for _, w := range q.where {
+		switch w.kind {
+		case whereKindLeftParen, whereKindRightParen:
+			manualParens = true
+			break ManualParen
+		}
+	}
+
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
 	var args []interface{}
 
+	notFirstExpression := false
 	buf.WriteString(" WHERE ")
-	for i, where := range q.where {
-		if i != 0 {
+	for _, where := range q.where {
+		if notFirstExpression && where.kind != whereKindRightParen {
 			if where.orSeparator {
 				buf.WriteString(" OR ")
 			} else {
 				buf.WriteString(" AND ")
 			}
-		}
-
-		buf.WriteString(fmt.Sprintf("(%s)", where.clause))
-		args = append(args, where.args...)
-	}
-
-	var resp string
-	if q.dialect.UseIndexPlaceholders {
-		resp, _ = convertQuestionMarks(buf.String(), startAt)
-	} else {
-		resp = buf.String()
-	}
-
-	return resp, args
-}
-
-// inClause parses an in slice and converts it into a
-// single IN clause, like:
-// WHERE ("a", "b") IN (($1,$2),($3,$4)).
-func inClause(q *Query, startAt int) (string, []interface{}) {
-	if len(q.in) == 0 {
-		return "", nil
-	}
-
-	buf := strmangle.GetBuffer()
-	defer strmangle.PutBuffer(buf)
-	var args []interface{}
-
-	if len(q.where) == 0 {
-		buf.WriteString(" WHERE ")
-	}
-
-	for i, in := range q.in {
-		ln := len(in.args)
-		// We only prefix the OR and AND separators after the first
-		// clause has been generated UNLESS there is already a where
-		// clause that we have to add on to.
-		if i != 0 || len(q.where) > 0 {
-			if in.orSeparator {
-				buf.WriteString(" OR ")
-			} else {
-				buf.WriteString(" AND ")
-			}
-		}
-
-		matches := rgxInClause.FindStringSubmatch(in.clause)
-		// If we can't find any matches attempt a simple replace with 1 group.
-		// Clauses that fit this criteria will not be able to contain ? in their
-		// column name side, however if this case is being hit then the regexp
-		// probably needs adjustment, or the user is passing in invalid clauses.
-		if matches == nil {
-			clause, count := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, in.clause, startAt, 1, ln)
-			buf.WriteString(clause)
-			startAt = startAt + count
 		} else {
+			notFirstExpression = true
+		}
+
+		switch where.kind {
+		case whereKindNormal:
+			if !manualParens {
+				buf.WriteByte('(')
+			}
+			if q.dialect.UseIndexPlaceholders {
+				replaced, n := convertQuestionMarks(where.clause, startAt)
+				buf.WriteString(replaced)
+				startAt += n
+			} else {
+				buf.WriteString(where.clause)
+			}
+			if !manualParens {
+				buf.WriteByte(')')
+			}
+			args = append(args, where.args...)
+		case whereKindLeftParen:
+			buf.WriteByte('(')
+			notFirstExpression = false
+		case whereKindRightParen:
+			buf.WriteByte(')')
+		case whereKindIn:
+			ln := len(where.args)
+			matches := rgxInClause.FindStringSubmatch(where.clause)
+			// If we can't find any matches attempt a simple replace with 1 group.
+			// Clauses that fit this criteria will not be able to contain ? in their
+			// column name side, however if this case is being hit then the regexp
+			// probably needs adjustment, or the user is passing in invalid clauses.
+			if matches == nil {
+				clause, count := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, where.clause, startAt, 1, ln)
+				if !manualParens {
+					buf.WriteByte('(')
+				}
+				buf.WriteString(clause)
+				if !manualParens {
+					buf.WriteByte(')')
+				}
+				args = append(args, where.args...)
+				startAt += count
+				break
+			}
+
 			leftSide := strings.TrimSpace(matches[1])
 			rightSide := strings.TrimSpace(matches[2])
 			// If matches are found, we have to parse the left side (column side)
@@ -409,13 +393,20 @@ func inClause(q *Query, startAt int) (string, []interface{}) {
 				leftClause = strings.Join(cols, ",")
 			}
 			rightClause, rightCount := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
+			if !manualParens {
+				buf.WriteByte('(')
+			}
 			buf.WriteString(leftClause)
 			buf.WriteString(" IN ")
 			buf.WriteString(rightClause)
-			startAt = startAt + leftCount + rightCount
+			if !manualParens {
+				buf.WriteByte(')')
+			}
+			startAt += leftCount + rightCount
+			args = append(args, where.args...)
+		default:
+			panic("unknown where type")
 		}
-
-		args = append(args, in.args...)
 	}
 
 	return buf.String(), args
@@ -436,7 +427,7 @@ func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, g
 
 	foundAt := -1
 	for i := 0; i < len(clause); i++ {
-		if (clause[i] == '?' && i == 0) || (clause[i] == '?' && clause[i-1] != '\\') {
+		if (i == 0 && clause[i] == '?') || (clause[i] == '?' && clause[i-1] != '\\') {
 			foundAt = i
 			break
 		}

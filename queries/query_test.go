@@ -158,37 +158,37 @@ func TestAppendIn(t *testing.T) {
 	AppendIn(q, expect, 5, 3)
 	AppendIn(q, expect, 5, 3)
 
-	if len(q.in) != 2 {
-		t.Errorf("%#v", q.in)
+	if len(q.where) != 2 {
+		t.Errorf("%#v", q.where)
 	}
 
-	if q.in[0].clause != expect || q.in[1].clause != expect {
-		t.Errorf("Expected %s, got %#v", expect, q.in)
+	if q.where[0].clause != expect || q.where[1].clause != expect {
+		t.Errorf("Expected %s, got %#v", expect, q.where)
 	}
 
-	if len(q.in[0].args) != 2 || len(q.in[0].args) != 2 {
-		t.Errorf("arg length wrong: %#v", q.in)
+	if len(q.where[0].args) != 2 || len(q.where[0].args) != 2 {
+		t.Errorf("arg length wrong: %#v", q.where)
 	}
 
-	if q.in[0].args[0].(int) != 5 || q.in[0].args[1].(int) != 3 {
-		t.Errorf("args wrong: %#v", q.in)
+	if q.where[0].args[0].(int) != 5 || q.where[0].args[1].(int) != 3 {
+		t.Errorf("args wrong: %#v", q.where)
 	}
 
-	q.in = []in{{clause: expect, args: []interface{}{5, 3}}}
-	if q.in[0].clause != expect {
-		t.Errorf("Expected %s, got %v", expect, q.in)
+	q.where = []where{{clause: expect, args: []interface{}{5, 3}}}
+	if q.where[0].clause != expect {
+		t.Errorf("Expected %s, got %v", expect, q.where)
 	}
 
-	if len(q.in[0].args) != 2 {
-		t.Errorf("Expected %d args, got %d", 2, len(q.in[0].args))
+	if len(q.where[0].args) != 2 {
+		t.Errorf("Expected %d args, got %d", 2, len(q.where[0].args))
 	}
 
-	if q.in[0].args[0].(int) != 5 || q.in[0].args[1].(int) != 3 {
-		t.Errorf("Args not set correctly, expected 5 & 3, got: %#v", q.in[0].args)
+	if q.where[0].args[0].(int) != 5 || q.where[0].args[1].(int) != 3 {
+		t.Errorf("Args not set correctly, expected 5 & 3, got: %#v", q.where[0].args)
 	}
 
-	if len(q.in) != 1 {
-		t.Errorf("%#v", q.in)
+	if len(q.where) != 1 {
+		t.Errorf("%#v", q.where)
 	}
 }
 
@@ -198,29 +198,29 @@ func TestSetLastInAsOr(t *testing.T) {
 
 	AppendIn(q, "")
 
-	if q.in[0].orSeparator {
+	if q.where[0].orSeparator {
 		t.Errorf("Do not want or separator")
 	}
 
 	SetLastInAsOr(q)
 
-	if len(q.in) != 1 {
+	if len(q.where) != 1 {
 		t.Errorf("Want len 1")
 	}
-	if !q.in[0].orSeparator {
+	if !q.where[0].orSeparator {
 		t.Errorf("Want or separator")
 	}
 
 	AppendIn(q, "")
 	SetLastInAsOr(q)
 
-	if len(q.in) != 2 {
+	if len(q.where) != 2 {
 		t.Errorf("Want len 2")
 	}
-	if q.in[0].orSeparator != true {
+	if q.where[0].orSeparator != true {
 		t.Errorf("Expected true")
 	}
-	if q.in[1].orSeparator != true {
+	if q.where[1].orSeparator != true {
 		t.Errorf("Expected true")
 	}
 }

@@ -167,7 +167,7 @@ users, err := models.Users().All(ctx, db)
 users := models.Users().AllP(db)
 
 // More complex query
-users, err := models.Users(Where("age > ?", 30), Limit(5), Offset(6)).All(db, ctx)
+users, err := models.Users(Where("age > ?", 30), Limit(5), Offset(6)).All(ctx, db)
 
 // Ultra complex query
 users, err := models.Users(

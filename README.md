@@ -220,6 +220,7 @@ fmt.Println(len(users.R.FavoriteMovies))
   `user_videos` you should have: `primary key(user_id, video_id)`, with both
   `user_id` and `video_id` being foreign key columns to the users and videos
   tables respectively and there are no other columns on this table.
+* MySQL 5.6.30 minimum; ssl-mode option is not supported for earlier versions.
 * For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate
   [time.Time parsing](https://github.com/go-sql-driver/mysql#timetime-support) when making your
   MySQL database connection. SQLBoiler uses `time.Time` and `null.Time` to represent time in

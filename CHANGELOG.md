@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add note about mysql minimum version requirement to README (thanks @jlarusso)
 - Type-safe where clauses can now be created, see README for details. It is
   highly recommended that this be used at all times.
 - Type-safe where clauses can now be combined with Or2 for setting or.

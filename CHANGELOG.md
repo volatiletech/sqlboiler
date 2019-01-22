@@ -3,11 +3,10 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.2.0] - 2019-01-22
 
 ### Added
 
-- Add note about mysql minimum version requirement to README (thanks @jlarusso)
 - Type-safe where clauses can now be created, see README for details. It is
   highly recommended that this be used at all times.
 - Type-safe where clauses can now be combined with Or2 for setting or.
@@ -21,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   at a pre-setup test database. (thanks @gemscng)
 - Add a way to skip hook execution for a given query (boil.SkipHooks)
 - Add a way to skip timestamp updating for a given query (boil.SkipTimestamps)
+- Add note about mysql minimum version requirement to README (thanks @jlarusso)
 
 ### Fixed
 

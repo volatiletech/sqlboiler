@@ -32,11 +32,11 @@ import (
 type HStore map[string]null.String
 
 // escapes and quotes hstore keys/values
-// s should be a sql.NullString or string
+// s should be a null.String or string
 func hQuote(s interface{}) string {
 	var str string
 	switch v := s.(type) {
-	case sql.NullString:
+	case null.String:
 		if !v.Valid {
 			return "NULL"
 		}
@@ -44,7 +44,7 @@ func hQuote(s interface{}) string {
 	case string:
 		str = v
 	default:
-		panic("not a string or sql.NullString")
+		panic("not a string or null.String")
 	}
 
 	str = strings.Replace(str, "\\", "\\\\", -1)

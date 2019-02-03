@@ -477,7 +477,7 @@ you would use the key `[aliases.tables.videos.relationships.fk_name]`. From here
 the *local* and *foreign* attributes to define how you'll refer to each side of a relationship.
 
 In terms of understanding what *local* and *foreign* denote in the context of renaming relationships,
-*local* simply stands for the name that will be generated on "the side of the foreign key entity". 
+*local* simply stands for the name that will be generated for the property on "the side of the foreign key entity".
 
 For example - let's have a `users <-> videos` one to many relationship where we have a `user_id`
 in the `videos` table that refers to an id of the `users` table. Defining the relationship will

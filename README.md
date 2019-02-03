@@ -446,7 +446,7 @@ available via the config file and can use some explanation.
 ##### Aliases
 
 In sqlboiler, names are automatically generated for you. If you name your database
-entitiese properly you will likely have descriptive names generated in the end. However in the case where thee
+entities properly you will likely have descriptive names generated in the end. However in the case where the
 names in your database are bad AND unchangeable, or sqlboiler's inference doesn't understand
 the names you do have (even though they are good and correct) you can use aliases to
 change the name of your tables, columns and relationships in the generated Go code.
@@ -479,17 +479,19 @@ the *local* and *foreign* attributes to define how you'll refer to each side of 
 In terms of understanding what *local* and *foreign* denote in the context of renaming relationships,
 *local* simply stands for the name that will be generated on "the side of the foreign key entity". 
 
-For example - let's have a `users <-> videos` one to many relationship where we have an `user_id`
+For example - let's have a `users <-> videos` one to many relationship where we have a `user_id`
 in the `videos` table that refers to an id of the `users` table. Defining the relationship will
-look something like this `[aliases.tables.videos.relationships.videos_user_id_fkey]`. In this instance
-`local` simply defines how we'll refer to the `videos` on the side of the generated `User` entity 
-("the foreign key entity"). In the example below we've named the *local* side (how we refer 
-to the videos from the user's side) `AuthoredVideos`. 
+look something like this: `[aliases.tables.videos.relationships.videos_user_id_fkey]`.
+
+In this instance `local` simply defines the name of the properety with which we'll refer to the `videos`
+on the side of the generated `User` entity ("the foreign key entity") - in essence, the name of the
+property with which we'll be able to fetch a given user's videos. In the example below we've named
+the *local* side (how we refer to the videos from the user's side) `AuthoredVideos`. 
 
 Now that we've defined how we'll refer to videos on the user's side, we can define how we'll look
 at the relationship the other way around - how will a `Video` entity refer to it's author? Here's where 
 the *foreign* attribute comes into the picture - it allows us to define exatly that side of the relationship. 
-In the example below we've set the *foreign* attribute to `Author`.
+In the example below we've set the *foreign* attribute to `Author`:
 
 ```toml
 [aliases.tables.videos.relationships.videos_author_id_fkey]
@@ -516,9 +518,9 @@ local   = "Rags"
 foreign = "Videos"
 ```
 
-The above definition will specify `Rags` as the name of the field with which the `Video` entity will be able to
-acessd all of it's tags. If we look the other way around - a single `Tag` entity will refer to all videos that
-have that specific tag with the `Videos` entity.
+The above definition will specify `Rags` as the name of the property with which a given `Video` entity will be able to
+access all of it's tags. If we look the other way around - a single `Tag` entity will refer to all videos that
+have that specific tag with the `Videos` property.
 
 There is an alternative syntax available for those who are challenged by the key syntax of
 toml or challenged by viper lowercasing all of your keys. Instead of using a regular table

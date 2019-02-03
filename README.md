@@ -446,7 +446,7 @@ available via the config file and can use some explanation.
 ##### Aliases
 
 In sqlboiler, names are automatically generated for you. If you name your database
-nice things you will likely have nice names in the end. However in the case where your
+entitiese properly you will likely have descriptive names generated in the end. However in the case where thee
 names in your database are bad AND unchangeable, or sqlboiler's inference doesn't understand
 the names you do have (even though they are good and correct) you can use aliases to
 change the name of your tables, columns and relationships in the generated Go code.
@@ -467,21 +467,29 @@ down_singular = "teamName"
   team_name = "OurTeamName"
 ```
 
-When creating aliases for relationships, it's important to know how the concept of local/foreign
-map to what is used for generation. First off, everything is renamed using the foreign key as a
+When creating aliases for relationships, it's important to know how the concept of *local*/*foreign* 
+map to what is used by sqlboiler for generation. First off, everything is renamed using the foreign key as a
 unique identifier (namespaced to the table). If you don't know your foreign key names, it's likely
 you have not been naming them manually and it's possible they change suddenly for whatever reason.
 If you're going to rename relationships it's recommended that you use manually named foreign keys
 for stability. Therefore to rename a relationship based on a foreign key on the `videos` table
-you would use the key `[aliases.tables.videos.relationships.fk_name]`.
+you would use the key `[aliases.tables.videos.relationships.fk_name]`. From here you can use
+the *local* and *foreign* attributes to define how you'll refer to each side of a relationship.
 
-In terms of how to understand what local and foreign are in the context of renaming relationships,
-local simply means "the side with the foreign key". For example in a `users <-> videos` relationship
-where we have a `author_id` on the video that refers to the id of the `users` table, the foreign key
-is on the `videos` table itself, so the `local` key refers to how we refer to the `videos` side 
-of the relationship. In the example below we're naming the local side (how we refer to the videos) 
-`AuthoredVideos`. The table foreign to the foreign key is the `users` table and we want to
-refer to that side of the relationship as the `Author`.
+In terms of understanding what *local* and *foreign* denote in the context of renaming relationships,
+*local* simply stands for the name that will be generated on "the side of the foreign key entity". 
+
+For example - let's have a `users <-> videos` one to many relationship where we have an `user_id`
+in the `videos` table that refers to an id of the `users` table. Defining the relationship will
+look something like this `[aliases.tables.videos.relationships.videos_user_id_fkey]`. In this instance
+`local` simply defines how we'll refer to the `videos` on the side of the generated `User` entity 
+("the foreign key entity"). In the example below we've named the *local* side (how we refer 
+to the videos from the user's side) `AuthoredVideos`. 
+
+Now that we've defined how we'll refer to videos on the user's side, we can define how we'll look
+at the relationship the other way around - how will a `Video` entity refer to it's author? Here's where 
+the *foreign* attribute comes into the picture - it allows us to define exatly that side of the relationship. 
+In the example below we've set the *foreign* attribute to `Author`.
 
 ```toml
 [aliases.tables.videos.relationships.videos_author_id_fkey]
@@ -493,8 +501,8 @@ local   = "AuthoredVideos"
 foreign = "Author"
 ```
 
-In a many-to-many relationship it's a bit more complicated. In an example where `videos <-> tags`
-with a join table in the middle. Imagine if the join table didn't exist, and instead both of the
+In a many-to-many relationship it's a bit more complicated. Let's look at an example relationship between
+`videos <-> tags` with a join table in the middle. Imagine if the join table didn't exist, and instead both of the
 id columns in the join table were slapped on to the tables themselves. You'd have `videos.tag_id`
 and `tags.video_id`. Using a similar method to the above (the side with the foreign key) we can rename
 the relationships. To change `Videos.Tags` to `Videos.Rags` we can use the example below.
@@ -507,6 +515,10 @@ side will be automatically mirrored, though you can specify both if you so choos
 local   = "Rags"
 foreign = "Videos"
 ```
+
+The above definition will specify `Rags` as the name of the field with which the `Video` entity will be able to
+acessd all of it's tags. If we look the other way around - a single `Tag` entity will refer to all videos that
+have that specific tag with the `Videos` entity.
 
 There is an alternative syntax available for those who are challenged by the key syntax of
 toml or challenged by viper lowercasing all of your keys. Instead of using a regular table

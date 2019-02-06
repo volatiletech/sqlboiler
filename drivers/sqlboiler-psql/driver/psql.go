@@ -444,12 +444,10 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "circle":
 			c.Type = "pgeo.NullCircle"
 		case "ARRAY":
-			if c.ArrType == nil {
-				panic("unable to get postgres ARRAY underlying type")
-			}
-			c.Type = getArrayType(c)
+			var dbType string
+			c.Type, dbType = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-			c.DBType = c.DBType + *c.ArrType
+			c.DBType = c.DBType + dbType
 		case "USER-DEFINED":
 			switch c.UDTName {
 			case "hstore":
@@ -505,9 +503,10 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "circle":
 			c.Type = "pgeo.Circle"
 		case "ARRAY":
-			c.Type = getArrayType(c)
+			var dbType string
+			c.Type, dbType = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-			c.DBType = c.DBType + *c.ArrType
+			c.DBType = c.DBType + dbType
 		case "USER-DEFINED":
 			switch c.UDTName {
 			case "hstore":
@@ -528,22 +527,48 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 }
 
 // getArrayType returns the correct boil.Array type for each database type
-func getArrayType(c drivers.Column) string {
-	switch *c.ArrType {
-	case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial":
-		return "types.Int64Array"
-	case "bytea":
-		return "types.BytesArray"
-	case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
-		return "types.StringArray"
-	case "boolean":
-		return "types.BoolArray"
-	case "decimal", "numeric":
-		return "types.DecimalArray"
-	case "double precision", "real":
-		return "types.Float64Array"
-	default:
-		return "types.StringArray"
+func getArrayType(c drivers.Column) (string, string) {
+	// If a domain is created with a statement like this: "CREATE DOMAIN
+	// text_array AS TEXT[] CHECK ( ... )" then the array type will be null,
+	// but the udt name will be whatever the underlying type is with a leading
+	// underscore. Note that this code handles some types, but not nearly all
+	// the possibities. Notably, an array of a user-defined type ("CREATE
+	// DOMAIN my_array AS my_type[]") will be treated as an array of strings,
+	// which is not guaranteed to be correct.
+	if c.ArrType != nil {
+		switch *c.ArrType {
+		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial":
+			return "types.Int64Array", *c.ArrType
+		case "bytea":
+			return "types.BytesArray", *c.ArrType
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+			return "types.StringArray", *c.ArrType
+		case "boolean":
+			return "types.BoolArray", *c.ArrType
+		case "decimal", "numeric":
+			return "types.DecimalArray", *c.ArrType
+		case "double precision", "real":
+			return "types.Float64Array", *c.ArrType
+		default:
+			return "types.StringArray", *c.ArrType
+		}
+	} else {
+		switch c.UDTName {
+		case "_int4", "_int8":
+			return "types.Int64Array", c.UDTName
+		case "_bytea":
+			return "types.BytesArray", c.UDTName
+		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_uuid", "_xml":
+			return "types.StringArray", c.UDTName
+		case "_bool":
+			return "types.BoolArray", c.UDTName
+		case "_numeric":
+			return "types.DecimalArray", c.UDTName
+		case "_float4", "_float8":
+			return "types.Float64Array", c.UDTName
+		default:
+			return "types.StringArray", c.UDTName
+		}
 	}
 }
 

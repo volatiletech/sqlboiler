@@ -118,15 +118,19 @@ func decimalScan(d *decimal.Big, val interface{}, canNull bool) (*decimal.Big, e
 		return nil, nil
 	}
 
-	if d == nil {
-		d = new(decimal.Big)
-	}
-
 	switch t := val.(type) {
 	case float64:
+		if d == nil {
+			d = new(decimal.Big)
+		}
 		d.SetFloat64(t)
 		return d, nil
+	case int64:
+		return decimal.New(t, 0), nil
 	case string:
+		if d == nil {
+			d = new(decimal.Big)
+		}
 		if _, ok := d.SetString(t); !ok {
 			if err := d.Context.Err(); err != nil {
 				return nil, err
@@ -135,6 +139,9 @@ func decimalScan(d *decimal.Big, val interface{}, canNull bool) (*decimal.Big, e
 		}
 		return d, nil
 	case []byte:
+		if d == nil {
+			d = new(decimal.Big)
+		}
 		if err := d.UnmarshalText(t); err != nil {
 			return nil, err
 		}

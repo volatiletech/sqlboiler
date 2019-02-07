@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Extra documentation to explain how local/foreign work in aliases
   (thanks @NickyMateev).
 
+### Fixed
+
+- Fix a bug where decimal types in the database without decimal points
+  would be provided by the driver as an int64 which failed to Scan() into
+  a types.Decimal
+
 ## [v3.2.0] - 2019-01-22
 
 ### Added

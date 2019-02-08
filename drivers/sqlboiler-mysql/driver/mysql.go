@@ -139,7 +139,7 @@ func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE' order by table_name`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
@@ -313,6 +313,7 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 	select constraint_name, table_name, column_name, referenced_table_name, referenced_column_name
 	from information_schema.key_column_usage
 	where table_schema = ? and referenced_table_schema = ? and table_name = ?
+	order by constraint_name, table_name, column_name, referenced_table_name, referenced_column_name
 	`
 
 	var rows *sql.Rows

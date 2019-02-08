@@ -3,13 +3,20 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-<<<<<<< HEAD
 ## [Unreleased]
 
 ### Added
 
 - Extra documentation to explain how local/foreign work in aliases
   (thanks @NickyMateev).
+- When re-running the sqlboiler command to dump a schema, all tables, columns,
+  and foreign keys are now selected in a predictable sorted order. This means
+  that if you run the command against the same schema twice you should get
+  exactly the same output each time. This is useful if you want to check in
+  your generated code, as it avoids pointless churn. It is also helpful if you
+  want to test that the checked-in generated code is up to date. You can now
+  regenerate the code and simply check that nothing has changed. (thanks
+  @autarch)
 
 ### Fixed
 

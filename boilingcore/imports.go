@@ -183,6 +183,7 @@ func newImporter() importer {
 		"boil_queries": imports{
 			standard: importList{
 				`"fmt"`,
+				`"strings"`,
 			},
 			thirdParty: importList{
 				`"github.com/lbryio/lbry.go/extras/errors"`,

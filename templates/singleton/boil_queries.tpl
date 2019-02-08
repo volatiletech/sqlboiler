@@ -27,11 +27,15 @@ func mergeModels(tx boil.Executor, primaryID uint64, secondaryID uint64, foreign
 	var err error
 
 	for _, conflict := range conflictingKeys {
-		err = deleteConflictsBeforeMerge(tx, conflict, primaryID, secondaryID)
-		if err != nil {
-			return err
-		}
-	}
+        if len(conflict.columns) == 1 && conflict.columns[0] == conflict.objectIdColumn {
+            err = deleteOneToOneConflictsBeforeMerge(tx, conflict, primaryID, secondaryID)
+        } else {
+            err = deleteOneToManyConflictsBeforeMerge(tx, conflict, primaryID, secondaryID)
+        }
+        if err != nil {
+            return err
+        }
+     }
 
 	for _, fk := range foreignKeys {
 		// TODO: use NewQuery here, not plain sql
@@ -48,52 +52,96 @@ func mergeModels(tx boil.Executor, primaryID uint64, secondaryID uint64, foreign
 	return checkMerge(tx, foreignKeys)
 }
 
-func deleteConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
-	conflictingColumns := strmangle.SetComplement(conflict.columns, []string{conflict.objectIdColumn})
-
-	if len(conflictingColumns) < 1 {
-		return nil
-	} else if len(conflictingColumns) > 1 {
-		return errors.Err("this doesnt work for unique keys with more than two columns (yet)")
-	}
-
+func deleteOneToOneConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
 	query := fmt.Sprintf(
-		"SELECT %s FROM %s WHERE %s IN (%s) GROUP BY %s HAVING count(distinct %s) > 1",
-		conflictingColumns[0], conflict.table, conflict.objectIdColumn,
+		"SELECT COUNT(*) FROM %s WHERE %s IN (%s)",
+		conflict.table, conflict.objectIdColumn,
 		strmangle.Placeholders(dialect.IndexPlaceholders, 2, 1, 1),
-		conflictingColumns[0], conflict.objectIdColumn,
 	)
 
-	rows, err := tx.Query(query, primaryID, secondaryID)
-	defer rows.Close()
+	var count int
+	err := tx.QueryRow(query, primaryID, secondaryID).Scan(&count)
 	if err != nil {
 		return errors.Err(err)
 	}
 
-	args := []interface{}{secondaryID}
-	for rows.Next() {
-		var value string
-		err = rows.Scan(&value)
-		if err != nil {
-			return errors.Err(err)
-		}
-		args = append(args, value)
-	}
-
-	// if no rows found, no need to delete anything
-	if len(args) < 2 {
-		return nil
+	if count > 2 {
+		return errors.Err("it should not be possible to have more than two rows here")
+	} else if count != 2 {
+		return nil // no conflicting rows
 	}
 
 	query = fmt.Sprintf(
-		"DELETE FROM %s WHERE %s = %s AND %s IN (%s)",
+		"DELETE FROM %s WHERE %s = %s",
 		conflict.table, conflict.objectIdColumn, strmangle.Placeholders(dialect.IndexPlaceholders, 1, 1, 1),
-		conflictingColumns[0], strmangle.Placeholders(dialect.IndexPlaceholders, len(args)-1, 2, 1),
 	)
 
-	_, err = tx.Exec(query, args...)
+	_, err = tx.Exec(query, secondaryID)
+	return errors.Err(err)
+}
+
+func deleteOneToManyConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
+	conflictingColumns := strmangle.SetComplement(conflict.columns, []string{conflict.objectIdColumn})
+
+	query := fmt.Sprintf(
+		"SELECT %s FROM %s WHERE %s IN (%s) GROUP BY %s HAVING count(distinct %s) > 1",
+		strings.Join(conflictingColumns, ","), conflict.table, conflict.objectIdColumn,
+		strmangle.Placeholders(dialect.IndexPlaceholders, 2, 1, 1),
+		strings.Join(conflictingColumns, ","), conflict.objectIdColumn,
+	)
+
+	//The selectParams should be the ObjectIDs to search for regarding the conflict.
+	rows, err := tx.Query(query, primaryID, secondaryID)
 	if err != nil {
 		return errors.Err(err)
+	}
+
+	//Since we don't don't know if advance how many columns the query returns, we have dynamically assign them to be
+	// used in the delete query.
+	colNames, err := rows.Columns()
+	if err != nil {
+		return errors.Err(err)
+	}
+	//Each row result of the query needs to be removed for being a conflicting row. Store each row's keys in an array.
+	var rowsToRemove = [][]interface{}(nil)
+	for rows.Next() {
+		//Set pointers for dynamic scan
+		iColPtrs := make([]interface{}, len(colNames))
+		for i := 0; i < len(colNames); i++ {
+			s := string("")
+			iColPtrs[i] = &s
+		}
+		//Dynamically scan n columns
+		err = rows.Scan(iColPtrs...)
+		if err != nil {
+			return errors.Err(err)
+		}
+		//Grab scanned values for query arguments
+		iCol := make([]interface{}, len(colNames))
+		for i, col := range iColPtrs {
+			x := col.(*string)
+			iCol[i] = *x
+		}
+		rowsToRemove = append(rowsToRemove, iCol)
+	}
+	defer rows.Close()
+
+	//This query will adjust dynamically depending on the number of conflicting keys, adding AND expressions for each
+	// key to ensure the right conflicting rows are deleted.
+	query = fmt.Sprintf(
+		"DELETE FROM %s %s",
+		conflict.table,
+		"WHERE "+strings.Join(conflict.columns, " = ? AND ")+" = ?",
+	)
+
+	//There could be multiple conflicting rows between ObjectIDs. In the SELECT query we grab each row and their column
+	// keys to be deleted here in a loop.
+	for _, rowToDelete := range rowsToRemove {
+		rowToDelete = append(rowToDelete, secondaryID)
+		_, err = tx.Exec(query, rowToDelete...)
+		if err != nil {
+			return errors.Err(err)
+		}
 	}
 	return nil
 }

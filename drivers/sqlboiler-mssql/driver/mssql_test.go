@@ -81,7 +81,7 @@ func TestDriver(t *testing.T) {
 		}
 	}
 
-	got, err := json.Marshal(info)
+	got, err := json.MarshalIndent(info, "", "\t")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,6 +6,10 @@ drop table if exists sponsors;
 drop table if exists users;
 drop table if exists type_monsters;
 
+-- Note that if we don't explicitly name foreign keys then MS SQL will
+-- generate a name that includes a random set of 8 hex digits at the end,
+-- meaning that the driver result varies every time it's run.
+
 create table users (
 	id int identity (1,1) primary key not null
 );
@@ -20,8 +24,8 @@ create table videos (
 	user_id int not null,
 	sponsor_id int unique,
 
-	foreign key (user_id) references users (id),
-	foreign key (sponsor_id) references sponsors (id)
+	constraint FK_videos_users foreign key (user_id) references users (id),
+	constraint FK_videos_sponsors foreign key (sponsor_id) references sponsors (id)
 );
 
 create table tags (
@@ -33,8 +37,8 @@ create table video_tags (
 	tag_id int not null,
 
 	primary key (video_id, tag_id),
-	foreign key (video_id) references videos (id),
-	foreign key (tag_id) references tags (id)
+	constraint FK_video_tags_videos foreign key (video_id) references videos (id),
+	constraint FK_video_tags_tags foreign key (tag_id) references tags (id)
 );
 
 create table type_monsters (

@@ -15,8 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   exactly the same output each time. This is useful if you want to check in
   your generated code, as it avoids pointless churn. It is also helpful if you
   want to test that the checked-in generated code is up to date. You can now
-  regenerate the code and simply check that nothing has changed. (thanks
-  @autarch)
+  regenerate the code and simply check that nothing has changed. Note that
+  with MS SQL this only works if you provide explicit names for all of your
+  foreign keys, as MS SQL generates names with a random component
+  otherwise. (thanks @autarch)
 
 ### Fixed
 

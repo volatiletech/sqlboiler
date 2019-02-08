@@ -29,7 +29,7 @@
 			"is_join_table": false,
 			"to_one_relationships": [
 				{
-					"name": "FK__videos__sponsor___4959E263",
+					"name": "FK_videos_sponsors",
 					"table": "sponsors",
 					"column": "id",
 					"nullable": false,
@@ -82,11 +82,11 @@
 					"foreign_column_unique": true,
 					"to_join_table": true,
 					"join_table": "video_tags",
-					"join_local_fkey_name": "FK__video_tag__tag_i__4F12BBB9",
+					"join_local_fkey_name": "FK_video_tags_tags",
 					"join_local_column": "tag_id",
 					"join_local_column_nullable": false,
 					"join_local_column_unique": false,
-					"join_foreign_fkey_name": "FK__video_tag__video__4E1E9780",
+					"join_foreign_fkey_name": "FK_video_tags_videos",
 					"join_foreign_column": "video_id",
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false
@@ -1373,7 +1373,7 @@
 			"to_one_relationships": null,
 			"to_many_relationships": [
 				{
-					"name": "FK__videos__user_id__4865BE2A",
+					"name": "FK_videos_users",
 					"table": "users",
 					"column": "id",
 					"nullable": false,
@@ -1436,7 +1436,7 @@
 			"f_keys": [
 				{
 					"table": "video_tags",
-					"name": "FK__video_tag__tag_i",
+					"name": "FK_video_tags_tags",
 					"column": "tag_id",
 					"nullable": false,
 					"unique": false,
@@ -1447,7 +1447,7 @@
 				},
 				{
 					"table": "video_tags",
-					"name": "FK__video_tag__video",
+					"name": "FK_video_tags_videos",
 					"column": "video_id",
 					"nullable": false,
 					"unique": false,
@@ -1514,7 +1514,7 @@
 			"f_keys": [
 				{
 					"table": "videos",
-					"name": "FK__videos__sponsor_",
+					"name": "FK_videos_sponsors",
 					"column": "sponsor_id",
 					"nullable": true,
 					"unique": true,
@@ -1525,7 +1525,7 @@
 				},
 				{
 					"table": "videos",
-					"name": "FK__videos__user_id",
+					"name": "FK_videos_users",
 					"column": "user_id",
 					"nullable": false,
 					"unique": false,
@@ -1550,11 +1550,11 @@
 					"foreign_column_unique": true,
 					"to_join_table": true,
 					"join_table": "video_tags",
-					"join_local_fkey_name": "FK__video_tag__video__4E1E9780",
+					"join_local_fkey_name": "FK_video_tags_videos",
 					"join_local_column": "video_id",
 					"join_local_column_nullable": false,
 					"join_local_column_unique": false,
-					"join_foreign_fkey_name": "FK__video_tag__tag_i__4F12BBB9",
+					"join_foreign_fkey_name": "FK_video_tags_tags",
 					"join_foreign_column": "tag_id",
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false

@@ -1237,7 +1237,7 @@ jets, _ := models.Jets(Load("Pilot.Languages")).All(ctx, db)
 // Note that each level of a nested Load call will be loaded. No need to call Load() multiple times.
 
 // Type safe queries exist for this too!
-jets, _ := models.Jets(LoadRels(models.JetRels.Pilot, models.PilotRels.Languages)).All(ctx, db)
+jets, _ := models.Jets(Load(Rels(models.JetRels.Pilot, models.PilotRels.Languages))).All(ctx, db)
 
 // A larger example. In the below scenario, Pets will only be queried one time, despite
 // showing up twice because they're the same query (the user's pets)

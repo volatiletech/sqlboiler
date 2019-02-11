@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   code. These are now handled correctly when the array's type is a
   built-in. If the array type is itself a UDT then this will be treated as a
   string, which will not be correct in some cases. (thanks @autarch)
+- Fix doc typo around qm.Load/qm.Rels (thanks @KopiasCsaba)
 
 ## [v3.2.0] - 2019-01-22
 

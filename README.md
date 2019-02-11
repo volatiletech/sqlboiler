@@ -21,7 +21,7 @@ v3 has been released, please upgrade when possible, v2 is on life support only n
 
 ## Why another ORM
 
-While attempting to migrate a legacy Rails database, we realized how much ActiveRecord benefitted us in terms of development velocity.
+While attempting to migrate a legacy Rails database, we realized how much ActiveRecord benefited us in terms of development velocity.
 Coming over to the Go `database/sql` package after using ActiveRecord feels extremely repetitive, super long-winded and down-right boring.
 Being Go veterans we knew the state of ORMs was shaky, and after a quick review we found what our fears confirmed. Most packages out
 there are code-first, reflect-based and have a very weak story around relationships between models. So with that we set out with these goals:
@@ -261,7 +261,7 @@ available.
 ```shell
 go get -u -t github.com/volatiletech/sqlboiler
 
-# Also install the driver of your choice, there exists pqsl, mysql, mssql
+# Also install the driver of your choice, there exists psql, mysql, mssql
 # These are separate binaries.
 go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
 ```
@@ -614,7 +614,7 @@ wish to generate code for. With this flag you specify root directories, that is 
 directories.
 
 If root directories have a `_test` suffix in the name, this folder is considered a folder
-full of templates for testing only and will be ommitted when `--no-tests` is specified and
+full of templates for testing only and will be omitted when `--no-tests` is specified and
 its templates will be generated into files with a `_test` suffix.
 
 Each root directory is recursively walked. Each template found will be merged into table_name.ext
@@ -1481,7 +1481,7 @@ for a collection of rows.
 whitelist is to specify which columns in your object should be updated in the database.
 
 Like `Insert`, this method also takes a `Columns` type, but the behavior is
-slighty different. Although the descriptions below look similar the full
+slightly different. Although the descriptions below look similar the full
 documentation reveals the differences. Note that all inference is based on
 the Go types zero value and not the database default value, read the `Insert`
 documentation above for more details.

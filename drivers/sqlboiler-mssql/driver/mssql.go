@@ -140,7 +140,8 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	query := `
 		SELECT table_name
 		FROM   information_schema.tables
-		WHERE  table_schema = ? AND table_type = 'BASE TABLE'`
+		WHERE  table_schema = ? AND table_type = 'BASE TABLE'
+		ORDER BY table_name`
 
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
@@ -217,7 +218,8 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
        END AS is_unique,
 	   COLUMNPROPERTY(object_id($1 + '.' + $2), c.column_name, 'IsIdentity') as is_identity
 	FROM information_schema.columns c
-	WHERE table_schema = $1 AND table_name = $2`
+	WHERE table_schema = $1 AND table_name = $2
+	ORDER BY column_name`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -339,6 +341,7 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 	WHERE ccu.table_schema = ?
 	  AND ccu.constraint_schema = ?
 	  AND ccu.table_name = ?
+	ORDER BY ccu.constraint_name, local_table, local_column, foreign_table, foreign_column
 	`
 
 	var rows *sql.Rows

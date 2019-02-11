@@ -140,7 +140,7 @@ func PSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode str
 func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1 order by table_name`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
@@ -247,7 +247,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		left join information_schema.element_types e
 			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
 			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
-		where c.table_name = $2 and c.table_schema = $1`
+		where c.table_name = $2 and c.table_schema = $1
+		order by c.column_name`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -371,7 +372,8 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid
 		inner join pg_attribute pgasrc on pgc.oid = pgasrc.attrelid and pgasrc.attnum = ANY(pgcon.conkey)
 		inner join pg_attribute pgadst on pgcon.confrelid = pgadst.attrelid and pgadst.attnum = ANY(pgcon.confkey)
-	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'`
+	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'
+	order by pgcon.conname, source_table, source_column, dest_table, dest_column`
 
 	var rows *sql.Rows
 	var err error

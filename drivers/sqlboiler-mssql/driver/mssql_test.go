@@ -31,7 +31,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/volatiletech/sqlboiler/drivers"
+	"github.com/ActiveState/sqlboiler/drivers"
 )
 
 var (
@@ -81,7 +81,7 @@ func TestDriver(t *testing.T) {
 		}
 	}
 
-	got, err := json.Marshal(info)
+	got, err := json.MarshalIndent(info, "", "\t")
 	if err != nil {
 		t.Fatal(err)
 	}

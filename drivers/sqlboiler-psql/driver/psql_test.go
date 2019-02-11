@@ -66,7 +66,7 @@ func TestAssemble(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err := json.Marshal(info)
+	got, err := json.MarshalIndent(info, "", "\t")
 	if err != nil {
 		t.Fatal(err)
 	}

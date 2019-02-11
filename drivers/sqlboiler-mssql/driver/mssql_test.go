@@ -31,7 +31,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/ActiveState/sqlboiler/drivers"
+	"github.com/volatiletech/sqlboiler/drivers"
 )
 
 var (

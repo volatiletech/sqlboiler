@@ -3,6 +3,7 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+<<<<<<< HEAD
 ## [Unreleased]
 
 ### Added
@@ -15,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix a bug where decimal types in the database without decimal points
   would be provided by the driver as an int64 which failed to Scan() into
   a types.Decimal
+- A Postgres domain that was created from an array ("CREATE DOMAIN foo AS
+  INT[]") would cause a runtime panic when trying to generate model
+  code. These are now handled correctly when the array's type is a
+  built-in. If the array type is itself a UDT then this will be treated as a
+  string, which will not be correct in some cases. (thanks @autarch)
 
 ## [v3.2.0] - 2019-01-22
 

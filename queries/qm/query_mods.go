@@ -123,6 +123,25 @@ func InnerJoin(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+type withQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm withQueryMod) Apply(q *queries.Query) {
+	queries.AppendWith(q, qm.clause, qm.args...)
+}
+
+// With allows you to pass in a Common Table Expression clause (and args)
+// to precede the SELECT clause
+func With(clause string, args ...interface{}) QueryMod {
+	return withQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
 type selectQueryMod struct {
 	columns []string
 }

@@ -451,3 +451,47 @@ func TestAppendInnerJoin(t *testing.T) {
 		t.Errorf("Got invalid innerJoin on string: %#v", q.joins)
 	}
 }
+
+func TestAppendWith(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	AppendWith(q, "cte_0 AS (SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2)", 5, 10)
+	AppendWith(q, "cte_1 AS (SELECT * FROM table_1 WHERE thing=$1 AND stuff=$2)", 5, 10)
+
+	if len(q.withs) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.withs))
+	}
+
+	if q.withs[0].clause != "cte_0 AS (SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2)" {
+		t.Errorf("Got invalid with on string: %#v", q.withs)
+	}
+	if q.withs[1].clause != "cte_1 AS (SELECT * FROM table_1 WHERE thing=$1 AND stuff=$2)" {
+		t.Errorf("Got invalid with on string: %#v", q.withs)
+	}
+
+	if len(q.withs[0].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.withs[0].args))
+	}
+	if len(q.withs[1].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.withs[1].args))
+	}
+
+	if q.withs[0].args[0] != 5 && q.withs[0].args[1] != 10 {
+		t.Errorf("Invalid args values, got %#v", q.withs[0].args)
+	}
+
+	q.withs = []with{{,
+		clause: "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)",
+		args:   []interface{}{3, 7},
+	}}
+
+	if len(q.withs) != 1 {
+		t.Errorf("Expected len 1, got %d", len(q.withs))
+	}
+
+	if q.withs[0].clause != "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)" {
+		t.Errorf("Got invalid innerJoin on string: %#v", q.withs)
+	}
+}
+

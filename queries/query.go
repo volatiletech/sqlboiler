@@ -30,6 +30,7 @@ type Query struct {
 
 	delete     bool
 	update     map[string]interface{}
+	withs      []with
 	selectCols []string
 	count      bool
 	from       []string
@@ -85,6 +86,11 @@ type rawSQL struct {
 
 type join struct {
 	kind   joinKind
+	clause string
+	args   []interface{}
+}
+
+type with struct {
 	clause string
 	args   []interface{}
 }
@@ -352,4 +358,9 @@ func AppendGroupBy(q *Query, clause string) {
 // AppendOrderBy on the query.
 func AppendOrderBy(q *Query, clause string) {
 	q.orderBy = append(q.orderBy, clause)
+}
+
+// AppendWith on the query.
+func AppendWith(q *Query, clause string, args ...interface{}) {
+	q.withs = append(q.withs, with{clause: clause, args: args})
 }

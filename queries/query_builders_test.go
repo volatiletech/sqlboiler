@@ -94,6 +94,13 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{from: []string{"cats c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{from: []string{"cats as c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{
+			from: []string{"t"}, 
+			with: []with{
+				{"cte_0 AS (SELECT * FROM other_t0)", nil},
+				{"cte_1 AS (SELECT * FROM other_t1 WHERE thing=? AND stuff=?)", []interface{}{3,7}},
+			}}, nil
+		},
 	}
 
 	for i, test := range tests {

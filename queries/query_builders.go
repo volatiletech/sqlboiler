@@ -47,6 +47,8 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 	var args []interface{}
 
+	writeCTEs(q, buf, &args)
+
 	buf.WriteString("SELECT ")
 
 	if q.dialect.UseTopClause {
@@ -117,6 +119,8 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	var args []interface{}
 	buf := strmangle.GetBuffer()
 
+	writeCTEs(q, buf, &args)
+
 	buf.WriteString("DELETE FROM ")
 	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
 
@@ -135,12 +139,14 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
+	var args []interface{}
+
+	writeCTEs(q, buf, &args)
 
 	buf.WriteString("UPDATE ")
 	buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
 
 	cols := make(sort.StringSlice, len(q.update))
-	var args []interface{}
 
 	count := 0
 	for name := range q.update {
@@ -523,4 +529,29 @@ func parseFromClause(toks []string) (alias, name string, ok bool) {
 	}
 
 	return alias, name, ok
+}
+
+func writeCTEs(q *Query, buf *bytes.Buffer, args *[]interface{}) {
+	if len(q.withs) != 0 {
+		buf.WriteString("WITH")
+		argsLen := len(*args)
+		withBuf := strmangle.GetBuffer()
+		lastPos := len(q.withs) - 1
+		for i, w := range q.withs {
+			fmt.Fprintf(withBuf, " %s", w.clause)
+			if i >= 0 && i < lastPos {
+				withBuf.WriteByte(',')
+			}
+			*args = append(*args, w.args...)
+		}
+		withBuf.WriteByte(' ')
+		var resp string
+		if q.dialect.UseIndexPlaceholders {
+			resp, _ = convertQuestionMarks(withBuf.String(), argsLen+1)
+		} else {
+			resp = withBuf.String()
+		}
+		fmt.Fprintf(buf, resp)
+		strmangle.PutBuffer(withBuf)
+	}
 }

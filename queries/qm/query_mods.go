@@ -134,7 +134,6 @@ func (qm withQueryMod) Apply(q *queries.Query) {
 }
 
 // With allows you to pass in a Common Table Expression clause (and args)
-// to precede the SELECT clause
 func With(clause string, args ...interface{}) QueryMod {
 	return withQueryMod{
 		clause: clause,

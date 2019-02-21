@@ -702,7 +702,7 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 		"types.DecimalArray": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
-		"types.Hstore": {
+		"types.HStore": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
 		},
 		"pgeo.Point": {

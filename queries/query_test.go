@@ -481,7 +481,7 @@ func TestAppendWith(t *testing.T) {
 		t.Errorf("Invalid args values, got %#v", q.withs[0].args)
 	}
 
-	q.withs = []with{{,
+	q.withs = []with{{
 		clause: "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)",
 		args:   []interface{}{3, 7},
 	}}
@@ -494,4 +494,3 @@ func TestAppendWith(t *testing.T) {
 		t.Errorf("Got invalid innerJoin on string: %#v", q.withs)
 	}
 }
-

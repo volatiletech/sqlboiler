@@ -539,7 +539,7 @@ down_singular = "teamName"
   name  = "team_name"
   alias = "OurTeamName"
 
-  [[aliases.tables.video_tags.relationships]]
+  [[aliases.tables.relationships]]
   name    = "fk_video_id"
   local   = "Rags"
   foreign = "Videos"

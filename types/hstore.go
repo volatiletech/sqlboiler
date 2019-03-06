@@ -36,6 +36,11 @@ type HStore map[string]null.String
 func hQuote(s interface{}) string {
 	var str string
 	switch v := s.(type) {
+	case null.String:
+		if !v.Valid {
+			return "NULL"
+		}
+		str = v.String
 	case sql.NullString:
 		if !v.Valid {
 			return "NULL"

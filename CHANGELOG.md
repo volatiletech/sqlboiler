@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- CTE Support for query-mod built queries: see With query mod (thanks @lucaslsl)
 - Extra documentation to explain how local/foreign work in aliases
   (thanks @NickyMateev).
 - When re-running the sqlboiler command to dump a schema, all tables, columns,

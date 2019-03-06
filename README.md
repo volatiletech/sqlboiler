@@ -1030,6 +1030,9 @@ Offset(5)
 // Explicit locking
 For("update nowait")
 
+// Common Table Expressions
+With("cte_0 AS (SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2)")
+
 // Eager Loading -- Load takes the relationship name, ie the struct field name of the
 // Relationship struct field you want to load. Optionally also takes query mods to filter on that query.
 Load("Languages", Where(...)) // If it's a ToOne relationship it's in singular form, ToMany is plural.

@@ -532,26 +532,28 @@ func parseFromClause(toks []string) (alias, name string, ok bool) {
 }
 
 func writeCTEs(q *Query, buf *bytes.Buffer, args *[]interface{}) {
-	if len(q.withs) != 0 {
-		buf.WriteString("WITH")
-		argsLen := len(*args)
-		withBuf := strmangle.GetBuffer()
-		lastPos := len(q.withs) - 1
-		for i, w := range q.withs {
-			fmt.Fprintf(withBuf, " %s", w.clause)
-			if i >= 0 && i < lastPos {
-				withBuf.WriteByte(',')
-			}
-			*args = append(*args, w.args...)
-		}
-		withBuf.WriteByte(' ')
-		var resp string
-		if q.dialect.UseIndexPlaceholders {
-			resp, _ = convertQuestionMarks(withBuf.String(), argsLen+1)
-		} else {
-			resp = withBuf.String()
-		}
-		fmt.Fprintf(buf, resp)
-		strmangle.PutBuffer(withBuf)
+	if len(q.withs) == 0 {
+		return
 	}
+
+	buf.WriteString("WITH")
+	argsLen := len(*args)
+	withBuf := strmangle.GetBuffer()
+	lastPos := len(q.withs) - 1
+	for i, w := range q.withs {
+		fmt.Fprintf(withBuf, " %s", w.clause)
+		if i >= 0 && i < lastPos {
+			withBuf.WriteByte(',')
+		}
+		*args = append(*args, w.args...)
+	}
+	withBuf.WriteByte(' ')
+	var resp string
+	if q.dialect.UseIndexPlaceholders {
+		resp, _ = convertQuestionMarks(withBuf.String(), argsLen+1)
+	} else {
+		resp = withBuf.String()
+	}
+	fmt.Fprintf(buf, resp)
+	strmangle.PutBuffer(withBuf)
 }

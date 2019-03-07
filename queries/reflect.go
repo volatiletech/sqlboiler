@@ -68,6 +68,12 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 // If you neglect checking the rows.Err silent failures may occur in your
 // application.
 //
+// Valid types to bind to are: *Struct, []*Struct, and []Struct. Keep in mind
+// if you use []Struct that Bind will be doing copy-by-value as a method
+// of keeping heap memory usage low which means if your Struct contains
+// reference types/pointers you will see incorrect results, do not use
+// []Struct with a Struct with reference types.
+//
 // Bind rules:
 //   - Struct tags control bind, in the form of: `boil:"name,bind"`
 //   - If "name" is omitted the sql column names that come back are TitleCased

@@ -139,12 +139,12 @@ func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE' order by table_name`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
 		if len(tables) > 0 {
-			query += fmt.Sprintf(" and table_name in (%s);", strings.Repeat(",?", len(tables))[1:])
+			query += fmt.Sprintf(" and table_name in (%s)", strings.Repeat(",?", len(tables))[1:])
 			for _, w := range tables {
 				args = append(args, w)
 			}
@@ -152,12 +152,14 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	} else if len(blacklist) > 0 {
 		tables := drivers.TablesFromList(blacklist)
 		if len(tables) > 0 {
-			query += fmt.Sprintf(" and table_name not in (%s);", strings.Repeat(",?", len(tables))[1:])
+			query += fmt.Sprintf(" and table_name not in (%s)", strings.Repeat(",?", len(tables))[1:])
 			for _, b := range tables {
 				args = append(args, b)
 			}
 		}
 	}
+
+	query += ` order by table_name;`
 
 	rows, err := m.conn.Query(query, args...)
 
@@ -202,8 +204,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and constraint_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'
-	order by c.ordinal_position`
+	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -222,6 +223,8 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			}
 		}
 	}
+
+	query += ` order by c.ordinal_position;`
 
 	rows, err := m.conn.Query(query, args...)
 	if err != nil {

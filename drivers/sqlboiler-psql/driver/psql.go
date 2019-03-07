@@ -140,12 +140,12 @@ func PSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode str
 func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1 order by table_name`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
 		if len(tables) > 0 {
-			query += fmt.Sprintf(" and table_name in (%s);", strmangle.Placeholders(true, len(tables), 2, 1))
+			query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(true, len(tables), 2, 1))
 			for _, w := range tables {
 				args = append(args, w)
 			}
@@ -153,12 +153,14 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 	} else if len(blacklist) > 0 {
 		tables := drivers.TablesFromList(blacklist)
 		if len(tables) > 0 {
-			query += fmt.Sprintf(" and table_name not in (%s);", strmangle.Placeholders(true, len(tables), 2, 1))
+			query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(true, len(tables), 2, 1))
 			for _, b := range tables {
 				args = append(args, b)
 			}
 		}
 	}
+
+	query += ` order by table_name;`
 
 	rows, err := p.conn.Query(query, args...)
 
@@ -247,8 +249,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		left join information_schema.element_types e
 			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
 			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
-		where c.table_name = $2 and c.table_schema = $1
-		order by c.column_name`
+		where c.table_name = $2 and c.table_schema = $1`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -267,6 +268,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			}
 		}
 	}
+
+	query += ` order by c.column_name;`
 
 	rows, err := p.conn.Query(query, args...)
 

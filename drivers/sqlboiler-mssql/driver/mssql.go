@@ -140,14 +140,13 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	query := `
 		SELECT table_name
 		FROM   information_schema.tables
-		WHERE  table_schema = ? AND table_type = 'BASE TABLE'
-		ORDER BY table_name`
+		WHERE  table_schema = ? AND table_type = 'BASE TABLE'`
 
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
 		if len(tables) > 0 {
-			query += fmt.Sprintf(" AND table_name IN (%s);", strings.Repeat(",?", len(tables))[1:])
+			query += fmt.Sprintf(" AND table_name IN (%s)", strings.Repeat(",?", len(tables))[1:])
 			for _, w := range tables {
 				args = append(args, w)
 			}
@@ -155,12 +154,14 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	} else if len(blacklist) > 0 {
 		tables := drivers.TablesFromList(blacklist)
 		if len(tables) > 0 {
-			query += fmt.Sprintf(" AND table_name not IN (%s);", strings.Repeat(",?", len(tables))[1:])
+			query += fmt.Sprintf(" AND table_name not IN (%s)", strings.Repeat(",?", len(tables))[1:])
 			for _, b := range tables {
 				args = append(args, b)
 			}
 		}
 	}
+
+	query += ` ORDER BY table_name;`
 
 	rows, err := m.conn.Query(query, args...)
 
@@ -218,8 +219,7 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
        END AS is_unique,
 	   COLUMNPROPERTY(object_id($1 + '.' + $2), c.column_name, 'IsIdentity') as is_identity
 	FROM information_schema.columns c
-	WHERE table_schema = $1 AND table_name = $2
-	ORDER BY column_name`
+	WHERE table_schema = $1 AND table_name = $2`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -238,6 +238,8 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			}
 		}
 	}
+
+	query += ` ORDER BY column_name;`
 
 	rows, err := m.conn.Query(query, args...)
 	if err != nil {

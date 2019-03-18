@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fix a bug where types declared within a non-global scope could cause cache
+  key collisions and create undesirable behavior within Bind().
 - Fix a bug where decimal types in the database without decimal points
   would be provided by the driver as an int64 which failed to Scan() into
   a types.Decimal

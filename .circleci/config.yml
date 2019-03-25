@@ -35,7 +35,7 @@ jobs:
       - run:
           name: 'Checkout (local)'
           command: |
-            if [ ! -z "$ROOTPATH" ]; then rmdir $ROOTPATH; ln -s /root $ROOTPATH; fi
+            if [ ! -z "$ROOTPATH" ]; then rmdir --ignore-fail-on-non-empty $ROOTPATH; ln -s /root $ROOTPATH; fi
 
       - run:
           name: 'Add PSQL Credentials'

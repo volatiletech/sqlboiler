@@ -87,8 +87,8 @@ jobs:
       - run:
           name: 'Build SQLBoiler core and drivers'
           command: |
-            cd $ROOTPATH; make build
-            cd $ROOTPATH; make build-{psql,mysql,mssql}
+            cd $ROOTPATH; ./boil.sh build
+            cd $ROOTPATH; ./boil.sh build-{psql,mysql,mssql}
 
       - run:
           name: 'Prepare for tests'
@@ -99,14 +99,14 @@ jobs:
           name: 'Tests: All (except drivers,vendor)'
           command: |
             cd $ROOTPATH
-            make test | tee $HOME/test_results/results.txt
+            ./boil.sh test | tee $HOME/test_results/results.txt
             for engine in psql mysql mssql; do
-              make test-user-${engine}
-              make test-db-${engine}
-              make test-generate-${engine}
+              ./boil.sh test-user-${engine}
+              ./boil.sh test-db-${engine}
+              ./boil.sh test-generate-${engine}
               # workaround to fix failing tests due to the absence of 'table_schema.sql'
               if [ "${engine}" != "mssql" ]; then
-                make test-${engine} | tee $HOME/test_results/results.${engine}.txt
+                ./boil.sh test-${engine} | tee $HOME/test_results/results.${engine}.txt
               fi
             done
 
@@ -115,9 +115,9 @@ jobs:
           command: |
             cd $ROOTPATH
             for engine in psql mysql mssql; do
-              make driver-db-${engine}
-              make driver-user-${engine}
-              make driver-test-${engine} | tee $HOME/test_results/results.driver-${engine}.txt
+              ./boil.sh driver-db-${engine}
+              ./boil.sh driver-user-${engine}
+              ./boil.sh driver-test-${engine} | tee $HOME/test_results/results.driver-${engine}.txt
             done
 
       - run:

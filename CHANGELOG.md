@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   foreign keys, as MS SQL generates names with a random component
   otherwise. (thanks @autarch)
 
+### Changed
+
+- Change error return on ModelSlice.DeleteAll when ModelSlice is nil to simply
+  return 0, nil. This is not really an error state and is burdensome to users.
+
 ### Fixed
 
 - Fix a bug where types declared within a non-global scope could cause cache

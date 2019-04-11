@@ -189,10 +189,6 @@ func (o {{$alias.UpSingular}}Slice) DeleteAllGP({{if not .NoContext}}ctx context
 
 // DeleteAll deletes all rows in the slice, using an executor.
 func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
-	if o == nil {
-		return {{if not .NoRowsAffected}}0, {{end -}} errors.New("{{.PkgName}}: no {{$alias.UpSingular}} slice provided for delete all")
-	}
-
 	if len(o) == 0 {
 		return {{if not .NoRowsAffected}}0, {{end -}} nil
 	}

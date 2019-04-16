@@ -350,6 +350,11 @@ ManualParen:
 			buf.WriteByte(')')
 		case whereKindIn:
 			ln := len(where.args)
+			if ln == 0 {
+				buf.WriteString("1=0")
+				continue
+			}
+
 			matches := rgxInClause.FindStringSubmatch(where.clause)
 			// If we can't find any matches attempt a simple replace with 1 group.
 			// Clauses that fit this criteria will not be able to contain ? in their

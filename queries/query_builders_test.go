@@ -310,7 +310,7 @@ func TestInClause(t *testing.T) {
 			q: Query{
 				where: []where{{kind: whereKindIn, clause: "a in ?", args: []interface{}{}, orSeparator: true}},
 			},
-			expect: ` WHERE ("a" IN ())`,
+			expect: ` WHERE 1=0`,
 		},
 		{
 			q: Query{

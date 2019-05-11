@@ -55,7 +55,7 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 
 	if !cached {
 		wl, returnColumns := columns.InsertColumnSet(
-			{{$alias.DownSingular}}ColumnsAll,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}ColumnsWithDefault,
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,

@@ -61,7 +61,7 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 
 	if !cached {
 		wl := columns.UpdateColumnSet(
-			{{$alias.DownSingular}}ColumnsAll,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
 		{{if .Dialect.UseAutoColumns -}}

@@ -86,7 +86,7 @@ func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
 	if strmangle.StringSliceMatch({{$alias.DownSingular}}ColumnsAll, {{$alias.DownSingular}}PrimaryKeyColumns) {
-		fields = {{$alias.DownSingular}}Columns
+		fields = {{$alias.DownSingular}}ColumnsAll
 	} else {
 		fields = strmangle.SetComplement(
 			{{$alias.DownSingular}}ColumnsAll,

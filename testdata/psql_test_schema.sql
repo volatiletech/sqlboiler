@@ -388,7 +388,7 @@ CREATE TABLE race (
 CREATE TABLE race_results (
     id integer PRIMARY KEY NOT NULL,
     race_id integer,
-    name text, 
+    name text,
     foreign key (race_id) references race(id)
 );
 
@@ -436,3 +436,8 @@ ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_pkey PRIMARY KEY (pilo
 -- The following fkey remains poorly named to avoid regressions related to psql naming
 ALTER TABLE pilot_languages ADD CONSTRAINT pilots_fkey FOREIGN KEY (pilot_id) REFERENCES pilots(id);
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
+
+-- Previously the generated code had a naming clash when a table was called 'updates'
+CREATE TABLE updates (
+    id integer PRIMARY KEY NOT NULL
+);

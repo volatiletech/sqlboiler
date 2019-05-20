@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.3.0] - 2019-05-20
 
 ### Added
 
@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fix identifiers in Where helpers not being quoted nor having table
+  specifications.
 - Fix a bug where types declared within a non-global scope could cause cache
   key collisions and create undesirable behavior within Bind().
 - Fix a bug where decimal types in the database without decimal points
@@ -41,6 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   string, which will not be correct in some cases. (thanks @autarch)
 - Fix doc typo around qm.Load/qm.Rels (thanks @KopiasCsaba)
 - Fix a bug where hstore did not Value() properly
+- Fix an issue related to interface{} keys from yaml type replacements
 
 ## [v3.2.0] - 2019-01-22
 

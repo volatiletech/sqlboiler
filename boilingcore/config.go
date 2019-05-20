@@ -188,6 +188,7 @@ func ConvertTypeReplace(i interface{}) []TypeReplace {
 		replace.Replace = columnFromInterface(replaceIntf["replace"])
 
 		if imps := replaceIntf["imports"]; imps != nil {
+			imps = cast.ToStringMap(imps)
 			var err error
 			replace.Imports, err = importers.SetFromInterface(imps)
 			if err != nil {

@@ -58,7 +58,7 @@ var {{$alias.UpSingular}}Where = struct {
 }{
 	{{range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
-	{{$colAlias}}: whereHelper{{goVarname $column.Type}}{field: `{{$column.Name}}`},
+	{{$colAlias}}: whereHelper{{goVarname $column.Type}}{field: "{{$.Table.Name | $.SchemaTable}}.{{$column.Name | $.Quotes}}"},
 	{{end -}}
 }
 

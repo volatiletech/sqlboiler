@@ -19,7 +19,7 @@ type {{$alias.UpSingular}} struct {
 	{{end -}}
 }
 
-var {{$alias.UpSingular}}AllColumns = struct {
+var {{$alias.UpSingular}}Columns = struct {
 	{{range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
 	{{$colAlias}} string

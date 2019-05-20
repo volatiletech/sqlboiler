@@ -1619,10 +1619,10 @@ you will need to call the `Reload` methods on those yourself.
 jet, err := models.FindJet(ctx, db, 1)
 
 // Check if the pilot assigned to this jet exists.
-exists, err := jet.Pilot(ctx, db).Exists()
+exists, err := jet.Pilot().Exists(ctx, db)
 
 // Check if the pilot with ID 5 exists
-exists, err := models.Pilots(ctx, db, Where("id=?", 5)).Exists()
+exists, err := models.Pilots(Where("id=?", 5)).Exists(ctx, db)
 ```
 
 ### Enums

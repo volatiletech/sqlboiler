@@ -153,6 +153,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 	s := new(State)
 	s.Config = &Config{}
 	s.Config.Imports.BasedOnType = make(map[string]importers.Set)
+	domainStr := "a_domain"
 	s.Tables = []drivers.Table{
 		{
 			Columns: []drivers.Column{
@@ -169,6 +170,14 @@ func TestProcessTypeReplacements(t *testing.T) {
 					DBType:   "serial",
 					Default:  "some db nonsense",
 					Nullable: true,
+				},
+				{
+					Name: "domain",
+					Type: "int",
+					DBType: "numeric",
+					Default: "some db nonsense",
+					DomainName: &domainStr,
+					Nullable: false,
 				},
 			},
 		},
@@ -196,6 +205,17 @@ func TestProcessTypeReplacements(t *testing.T) {
 			},
 			Imports: importers.Set{
 				Standard: []string{`"context"`},
+			},
+		},
+		{
+			Match: drivers.Column{
+				DomainName: &domainStr,
+			},
+			Replace: drivers.Column{
+				Type: "big.Int",
+			},
+			Imports: importers.Set{
+				Standard: []string{`"math/big"`},
 			},
 		},
 	}

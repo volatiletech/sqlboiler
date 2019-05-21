@@ -453,7 +453,10 @@ func matchColumn(c, m drivers.Column) bool {
 	if !matches(m.FullDBType, c.FullDBType) {
 		return false
 	}
-	if m.ArrType != nil && !matches(*m.ArrType, *c.ArrType) {
+	if m.ArrType != nil && (c.ArrType == nil || !matches(*m.ArrType, *c.ArrType)) {
+		return false
+	}
+	if m.DomainName != nil && (c.DomainName == nil || !matches(*m.DomainName, *c.DomainName)) {
 		return false
 	}
 

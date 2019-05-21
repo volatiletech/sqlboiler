@@ -215,6 +215,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 		c.udt_name,
 		e.data_type as array_type,
+		c.domain_name,
 		c.column_default,
 
 		c.is_nullable = 'YES' as is_nullable,
@@ -280,19 +281,20 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 	for rows.Next() {
 		var colName, colType, udtName string
-		var defaultValue, arrayType *string
+		var defaultValue, arrayType, domainName *string
 		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &udtName, &arrayType, &defaultValue, &nullable, &identity, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &udtName, &arrayType, &domainName, &defaultValue, &nullable, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := drivers.Column{
-			Name:     colName,
-			DBType:   colType,
-			ArrType:  arrayType,
-			UDTName:  udtName,
-			Nullable: nullable,
-			Unique:   unique,
+			Name:       colName,
+			DBType:     colType,
+			ArrType:    arrayType,
+			DomainName: domainName,
+			UDTName:    udtName,
+			Nullable:   nullable,
+			Unique:     unique,
 		}
 		if defaultValue != nil {
 			column.Default = *defaultValue

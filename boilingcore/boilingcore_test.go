@@ -237,4 +237,11 @@ func TestProcessTypeReplacements(t *testing.T) {
 	if i := s.Config.Imports.BasedOnType["int"].Standard[0]; i != `"context"` {
 		t.Error("imports were not adjusted")
 	}
+
+	if typ := s.Tables[0].Columns[2].Type; typ != "big.Int" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := s.Config.Imports.BasedOnType["big.Int"].Standard[0]; i != `"math/big"` {
+		t.Error("imports were not adjusted")
+	}
 }

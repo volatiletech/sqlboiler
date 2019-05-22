@@ -191,27 +191,16 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	query := `
 	select
 		c.column_name,
+		ct.column_type,
 		(
-			case when pgt.typtype = 'e'
+			case when c.character_maximum_length != 0
 			then
 			(
-				select 'enum.' || c.udt_name || '(''' || string_agg(labels.label, ''',''') || ''')'
-				from (
-					select pg_enum.enumlabel as label
-					from pg_enum
-					where pg_enum.enumtypid =
-					(
-						select typelem
-						from pg_type
-						where pg_type.typtype = 'b' and pg_type.typname = ('_' || c.udt_name)
-						limit 1
-					)
-					order by pg_enum.enumsortorder
-				) as labels
+				ct.column_type || '(' || c.character_maximum_length || ')'
 			)
-			else c.data_type
+			else c.udt_name
 			end
-		) as column_type,
+		) as column_full_type,
 
 		c.udt_name,
 		e.data_type as array_type,
@@ -219,10 +208,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 		c.is_nullable = 'YES' as is_nullable,
 		(case
-			when (select 
+			when (select
 		    case
 			    when column_name = 'is_identity' then (select c.is_identity = 'YES' as is_identity)
-		    else 
+		    else
 			    false
 		    end as is_identity from information_schema.columns
 		    WHERE table_schema='information_schema' and table_name='columns' and column_name='is_identity') IS NULL then 'NO' else is_identity end) = 'YES' as is_identity,
@@ -248,7 +237,30 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		left join pg_type pgt on c.data_type = 'USER-DEFINED' and pgn.oid = pgt.typnamespace and c.udt_name = pgt.typname
 		left join information_schema.element_types e
 			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
-			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
+			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier)),
+		lateral (select
+			(
+				case when pgt.typtype = 'e'
+				then
+				(
+					select 'enum.' || c.udt_name || '(''' || string_agg(labels.label, ''',''') || ''')'
+					from (
+						select pg_enum.enumlabel as label
+						from pg_enum
+						where pg_enum.enumtypid =
+						(
+							select typelem
+							from pg_type
+							where pg_type.typtype = 'b' and pg_type.typname = ('_' || c.udt_name)
+							limit 1
+						)
+						order by pg_enum.enumsortorder
+					) as labels
+				)
+				else c.data_type
+				end
+			) as column_type
+		) ct
 		where c.table_name = $2 and c.table_schema = $1`
 
 	if len(whitelist) > 0 {
@@ -279,20 +291,21 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, udtName string
+		var colName, colType, colFullType, udtName string
 		var defaultValue, arrayType *string
 		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &udtName, &arrayType, &defaultValue, &nullable, &identity, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &defaultValue, &nullable, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := drivers.Column{
-			Name:     colName,
-			DBType:   colType,
-			ArrType:  arrayType,
-			UDTName:  udtName,
-			Nullable: nullable,
-			Unique:   unique,
+			Name:       colName,
+			DBType:     colType,
+			FullDBType: colFullType,
+			ArrType:    arrayType,
+			UDTName:    udtName,
+			Nullable:   nullable,
+			Unique:     unique,
 		}
 		if defaultValue != nil {
 			column.Default = *defaultValue

@@ -1100,7 +1100,7 @@ We provide `queries.Raw()` for executing raw queries. Generally you will want to
 this, like the following:
 
 ```go
-err := queries.Raw(db, "select * from pilots where id=$1", 5).Bind(ctx, db, &obj)
+err := queries.Raw("select * from pilots where id=$1", 5).Bind(ctx, db, &obj)
 ```
 
 You can use your own structs or a generated struct as a parameter to Bind. Bind supports both

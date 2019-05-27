@@ -153,6 +153,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 	s := new(State)
 	s.Config = &Config{}
 	s.Config.Imports.BasedOnType = make(map[string]importers.Set)
+	domainStr := "a_domain"
 	s.Tables = []drivers.Table{
 		{
 			Columns: []drivers.Column{
@@ -169,6 +170,14 @@ func TestProcessTypeReplacements(t *testing.T) {
 					DBType:   "serial",
 					Default:  "some db nonsense",
 					Nullable: true,
+				},
+				{
+					Name: "domain",
+					Type: "int",
+					DBType: "numeric",
+					Default: "some db nonsense",
+					DomainName: &domainStr,
+					Nullable: false,
 				},
 			},
 		},
@@ -198,6 +207,17 @@ func TestProcessTypeReplacements(t *testing.T) {
 				Standard: []string{`"context"`},
 			},
 		},
+		{
+			Match: drivers.Column{
+				DomainName: &domainStr,
+			},
+			Replace: drivers.Column{
+				Type: "big.Int",
+			},
+			Imports: importers.Set{
+				Standard: []string{`"math/big"`},
+			},
+		},
 	}
 
 	if err := s.processTypeReplacements(); err != nil {
@@ -215,6 +235,13 @@ func TestProcessTypeReplacements(t *testing.T) {
 		t.Error("type was wrong:", typ)
 	}
 	if i := s.Config.Imports.BasedOnType["int"].Standard[0]; i != `"context"` {
+		t.Error("imports were not adjusted")
+	}
+
+	if typ := s.Tables[0].Columns[2].Type; typ != "big.Int" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := s.Config.Imports.BasedOnType["big.Int"].Standard[0]; i != `"math/big"` {
 		t.Error("imports were not adjusted")
 	}
 }

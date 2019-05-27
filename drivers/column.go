@@ -23,6 +23,9 @@ type Column struct {
 	// https://www.postgresql.org/docs/9.1/static/infoschema-element-types.html
 	ArrType *string `json:"arr_type" toml:"arr_type"`
 	UDTName string  `json:"udt_name" toml:"udt_name"`
+	// DomainName is the domain type name associated to the column. See here:
+	// https://www.postgresql.org/docs/10/extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS
+	DomainName *string `json:"domain_name" toml:"domain_name"`
 
 	// MySQL only bits
 	// Used to get full type, ex:

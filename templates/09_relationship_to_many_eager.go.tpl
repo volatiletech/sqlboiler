@@ -76,28 +76,20 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
 	}
 
-	var resultSlice []*{{$ftable.UpSingular}}
 	{{if .ToJoinTable -}}
 	{{- $foreignTable := getTable $.Tables .ForeignTable -}}
 	{{- $joinTable := getTable $.Tables .JoinTable -}}
 	{{- $localCol := $joinTable.GetColumn .JoinLocalColumn}}
-	var localJoinCols []{{$localCol.Type}}
-	for results.Next() {
-		one := new({{$ftable.UpSingular}})
-		var localJoinCol {{$localCol.Type}}
-
-		err = results.Scan({{$foreignTable.Columns | columnNames | stringMap (aliasCols $ftable) | prefixStringSlice "&one." | join ", "}}, &localJoinCol)
-		if err != nil {
-			return errors.Wrap(err, "failed to scan eager loaded results for {{.ForeignTable}}")
-		}
-		if err = results.Err(); err != nil {
-			return errors.Wrap(err, "failed to plebian-bind eager loaded slice {{.ForeignTable}}")
-		}
-
-		resultSlice = append(resultSlice, one)
-		localJoinCols = append(localJoinCols, localJoinCol)
+	var resultSlice []*struct {
+		{{$ftable.UpSingular}} `boil:"{{$rel.ForeignTable}},bind"`
+		LocalJoinCol {{$localCol.Type}} `boil:"{{id 0}}.{{.JoinLocalColumn}}"`
+	}
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
 	}
 	{{- else -}}
+	var resultSlice []*{{$ftable.UpSingular}}
+
 	if err = queries.Bind(results, &resultSlice); err != nil {
 		return errors.Wrap(err, "failed to bind eager loaded slice {{.ForeignTable}}")
 	}
@@ -121,7 +113,15 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 
 	{{- end}}
 	if singular {
+		{{if .ToJoinTable -}}
+		var foreignSlice = make([]*{{$ftable.UpSingular}}, len(resultSlice))
+		for i, r := range resultSlice {
+			foreignSlice[i] = &r.{{$ftable.UpSingular}}
+		}
+		object.R.{{$relAlias.Local}} = foreignSlice
+		{{else -}}
 		object.R.{{$relAlias.Local}} = resultSlice
+		{{end -}}
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &{{$ftable.DownSingular}}R{}
@@ -136,15 +136,15 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	}
 
 	{{if .ToJoinTable -}}
-	for i, foreign := range resultSlice {
-		localJoinCol := localJoinCols[i]
+	for _, foreign := range resultSlice {
+		localJoinCol := foreign.LocalJoinCol
 		for _, local := range slice {
 			{{if $usesPrimitives -}}
 			if local.{{$col}} == localJoinCol {
 			{{else -}}
 			if queries.Equal(local.{{$col}}, localJoinCol) {
 			{{end -}}
-				local.R.{{$relAlias.Local}} = append(local.R.{{$relAlias.Local}}, foreign)
+				local.R.{{$relAlias.Local}} = append(local.R.{{$relAlias.Local}}, &foreign.{{$ftable.UpSingular}})
 				if foreign.R == nil {
 					foreign.R = &{{$ftable.DownSingular}}R{}
 				}

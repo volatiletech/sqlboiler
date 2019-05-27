@@ -3,6 +3,21 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v3.4.0] - 2019-05-27
+
+### Added
+
+- Add domain name to psql column data from driver (thanks @natsukagami)
+- Add full_db_type to psql column data from driver (thanks @vincentserpoul)
+
+### Fixed
+
+- Fix problems with idempotency patch messing up the lists of columns, now to
+  achieve idempotency in column lists we sort based on information_schema's
+  ordinal index for columns.
+- Fix code compilation failure due to whitespace when certain struct tag
+  options were used.
+
 ## [v3.3.0] - 2019-05-20
 
 ### Added

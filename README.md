@@ -467,7 +467,7 @@ down_singular = "teamName"
   team_name = "OurTeamName"
 ```
 
-When creating aliases for relationships, it's important to know how the concept of *local*/*foreign* 
+When creating aliases for relationships, it's important to know how the concept of *local*/*foreign*
 map to what is used by sqlboiler for generation. First off, everything is renamed using the foreign key as a
 unique identifier (namespaced to the table). If you don't know your foreign key names, it's likely
 you have not been naming them manually and it's possible they change suddenly for whatever reason.
@@ -486,11 +486,11 @@ look something like this: `[aliases.tables.videos.relationships.videos_user_id_f
 In this instance `local` simply defines the name of the properety with which we'll refer to the `videos`
 on the side of the generated `User` entity ("the foreign key entity") - in essence, the name of the
 property with which we'll be able to fetch a given user's videos. In the example below we've named
-the *local* side (how we refer to the videos from the user's side) `AuthoredVideos`. 
+the *local* side (how we refer to the videos from the user's side) `AuthoredVideos`.
 
 Now that we've defined how we'll refer to videos on the user's side, we can define how we'll look
-at the relationship the other way around - how will a `Video` entity refer to it's author? Here's where 
-the *foreign* attribute comes into the picture - it allows us to define exatly that side of the relationship. 
+at the relationship the other way around - how will a `Video` entity refer to it's author? Here's where
+the *foreign* attribute comes into the picture - it allows us to define exatly that side of the relationship.
 In the example below we've set the *foreign* attribute to `Author`:
 
 ```toml
@@ -666,7 +666,7 @@ output_dir/
 
 **Note**: Because the `--templates` flag overrides the internal bindata of `sqlboiler`, if you still
 wish to generate the default templates it's recommended that you include the path to sqlboiler's templates
-as well. 
+as well.
 
 ```toml
 templates = [
@@ -1386,7 +1386,7 @@ tx.Rollback()
 
 It's also worth noting that there's a way to take advantage of `boil.SetDB()`
 by using the
-[boil.BeginTx()](https://godoc.org/github.com/volatiletech/sqlboiler/boil#BeginTx) 
+[boil.BeginTx()](https://godoc.org/github.com/volatiletech/sqlboiler/boil#BeginTx)
 function. This opens a transaction using the globally stored database.
 
 ### Debug Logging
@@ -1444,12 +1444,12 @@ trigger-based columns are candidates for this). Your struct will have those
 values after the insert is complete.
 
 When you use inference `sqlboiler` looks at your Go struct field values and if
-the field value is the zero value it will not insert that field, instead it will
-get the value from the database. Keep in mind `sqlboiler` cannot read or
-understand your default values set in the database, so the Go zero value is
-what's important here (this can be especially troubling for default true bool
-fields). Use a whitelist or greylist in cases where you want to insert a Go
-zero value.
+the field value is the Go zero value and that field has a default value in the
+database it will not insert that field, instead it will get the value from the
+database. Keep in mind `sqlboiler` cannot read or understand your default
+values set in the database, so the Go zero value is what's important here (this
+can be especially troubling for default true bool fields). Use a whitelist or
+greylist in cases where you want to insert a Go zero value.
 
 | Column List | Behavior |
 | ----------- | -------- |
@@ -1679,11 +1679,11 @@ For table names they're generated under `models.TableNames`:
 ```go
 // Generated code from models package
 var TableNames = struct {
-	Messages  string
-	Purchases string
+  Messages  string
+  Purchases string
 }{
-	Messages:  "messages",
-	Purchases: "purchases",
+  Messages:  "messages",
+  Purchases: "purchases",
 }
 
 // Usage example:
@@ -1694,11 +1694,11 @@ For column names they're generated under `models.{Model}Columns`:
 ```go
 // Generated code from models package
 var MessageColumns = struct {
-	ID         string
-	PurchaseID string
+  ID         string
+  PurchaseID string
 }{
-	ID:         "id",
-	PurchaseID: "purchase_id",
+  ID:         "id",
+  PurchaseID: "purchase_id",
 }
 
 // Usage example:
@@ -1708,11 +1708,11 @@ fmt.Println(models.MessageColumns.ID)
 For where clauses they're generated under `models.{Model}Where.{Column}.{Operator}`:
 ```go
 var MessageWhere = struct {
-	ID       whereHelperint
-	Text     whereHelperstring
+  ID       whereHelperint
+  Text     whereHelperstring
 }{
-	ID:         whereHelperint{field: `id`},
-	PurchaseID: whereHelperstring{field: `purchase_id`},
+  ID:         whereHelperint{field: `id`},
+  PurchaseID: whereHelperstring{field: `purchase_id`},
 }
 
 // Usage example:
@@ -1723,9 +1723,9 @@ For eager loading relationships ther're generated under `models.{Model}Rels`:
 ```go
 // Generated code from models package
 var MessageRels = struct {
-	Purchase string
+  Purchase string
 }{
-	Purchase: "Purchase",
+  Purchase: "Purchase",
 }
 
 // Usage example:

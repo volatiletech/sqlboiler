@@ -239,7 +239,7 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 		}
 	}
 
-	query += ` ORDER BY column_name;`
+	query += ` ORDER BY ordinal_position;`
 
 	rows, err := m.conn.Query(query, args...)
 	if err != nil {

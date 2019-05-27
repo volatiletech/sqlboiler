@@ -281,7 +281,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		}
 	}
 
-	query += ` order by c.column_name;`
+	query += ` order by c.ordinal_position;`
 
 	rows, err := p.conn.Query(query, args...)
 

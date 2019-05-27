@@ -437,3 +437,10 @@ CREATE TABLE powers_of_two
   CONSTRAINT machine_name UNIQUE(machine_name)
 );
 GO
+
+-- Previously the generated code had a naming clash when a table was called 'updates'
+CREATE TABLE updates
+(
+  id integer PRIMARY KEY NOT NULL
+);
+GO

@@ -5,7 +5,7 @@ func test{{$alias.UpPlural}}Update(t *testing.T) {
 	if 0 == len({{$alias.DownSingular}}PrimaryKeyColumns) {
 		t.Skip("Skipping table with no primary key columns")
 	}
-	if len({{$alias.DownSingular}}Columns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
+	if len({{$alias.DownSingular}}AllColumns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
@@ -52,7 +52,7 @@ func test{{$alias.UpPlural}}Update(t *testing.T) {
 func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 	t.Parallel()
 
-	if len({{$alias.DownSingular}}Columns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
+	if len({{$alias.DownSingular}}AllColumns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 
@@ -85,11 +85,11 @@ func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 
 	// Remove Primary keys and unique columns from what we plan to update
 	var fields []string
-	if strmangle.StringSliceMatch({{$alias.DownSingular}}Columns, {{$alias.DownSingular}}PrimaryKeyColumns) {
-		fields = {{$alias.DownSingular}}Columns
+	if strmangle.StringSliceMatch({{$alias.DownSingular}}AllColumns, {{$alias.DownSingular}}PrimaryKeyColumns) {
+		fields = {{$alias.DownSingular}}AllColumns
 	} else {
 		fields = strmangle.SetComplement(
-			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
 		{{- if .Dialect.UseAutoColumns }}

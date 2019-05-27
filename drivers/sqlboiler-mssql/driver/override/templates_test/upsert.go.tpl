@@ -2,7 +2,7 @@
 func test{{$alias.UpPlural}}Upsert(t *testing.T) {
 	t.Parallel()
 
-	if len({{$alias.DownSingular}}Columns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
+	if len({{$alias.DownSingular}}AllColumns) == len({{$alias.DownSingular}}PrimaryKeyColumns) {
 		t.Skip("Skipping table with only primary key columns")
 	}
 

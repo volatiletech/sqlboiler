@@ -82,13 +82,13 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 
 	if !cached {
 		insert, ret := insertColumns.InsertColumnSet(
-			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}ColumnsWithDefault,
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
 		update := updateColumns.UpdateColumnSet(
-			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
 

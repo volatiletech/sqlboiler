@@ -55,7 +55,7 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 
 	if !cached {
 		wl, returnColumns := columns.InsertColumnSet(
-			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}ColumnsWithDefault,
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
@@ -122,7 +122,7 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
 	}
-	
+
 	{{if $canLastInsertID -}}
 	var lastID int64
 	{{- end}}

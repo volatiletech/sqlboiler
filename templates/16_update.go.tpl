@@ -61,7 +61,7 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 
 	if !cached {
 		wl := columns.UpdateColumnSet(
-			{{$alias.DownSingular}}Columns,
+			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
 		{{if .Dialect.UseAutoColumns -}}
@@ -253,7 +253,7 @@ func (o {{$alias.UpSingular}}Slice) UpdateAll({{if .NoContext}}exec boil.Executo
 		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$alias.DownSingular}}PrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
-	
+
 	sql := fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
 		strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}len(colNames)+1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)))

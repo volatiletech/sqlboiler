@@ -294,7 +294,7 @@ CREATE TABLE race (
 CREATE TABLE race_results (
     id integer PRIMARY KEY NOT NULL,
     race_id integer,
-    name text, 
+    name text,
     foreign key (race_id) references race(id)
 );
 
@@ -342,7 +342,7 @@ ALTER TABLE pilot_languages ADD CONSTRAINT pilot_language_fkey FOREIGN KEY (pilo
 ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_id) REFERENCES languages(id);
 
 CREATE TABLE powers_of_two (
-  vid int(10) unsigned NOT NULL AUTO_INCREMENT, 
+  vid int(10) unsigned NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL DEFAULT '',
   machine_name varchar(255) NOT NULL DEFAULT '',
   description longtext,
@@ -353,3 +353,8 @@ CREATE TABLE powers_of_two (
   UNIQUE KEY machine_name (machine_name),
   KEY list (weight,name)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+-- Previously the generated code had a naming clash when a table was called 'updates'
+CREATE TABLE updates (
+    id integer PRIMARY KEY NOT NULL
+);

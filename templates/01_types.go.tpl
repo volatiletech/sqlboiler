@@ -2,7 +2,7 @@
 {{else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 var (
-	{{$alias.DownSingular}}Columns               = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+	{{$alias.DownSingular}}AllColumns               = []string{{"{"}}{{.Table.Columns | columnNames | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
 	{{if .Dialect.UseAutoColumns -}}
 	{{$alias.DownSingular}}ColumnsWithAuto = []string{{"{"}}{{.Table.Columns | filterColumnsByAuto true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{end -}}

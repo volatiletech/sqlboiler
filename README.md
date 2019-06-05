@@ -671,7 +671,7 @@ as well.
 ```toml
 templates = [
   "/path/to/sqlboiler/templates",
-  "/path/to/sqlboiler/templates_test"
+  "/path/to/sqlboiler/templates_test",
   "/path/to/your_project/more_templates"
 ]
 ```

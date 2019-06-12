@@ -82,7 +82,12 @@ func deleteOneToOneConflictsBeforeMerge(tx boil.Executor, conflict conflictingUn
 
 func deleteOneToManyConflictsBeforeMerge(tx boil.Executor, conflict conflictingUniqueKey, primaryID uint64, secondaryID uint64) error {
 	conflictingColumns := strmangle.SetComplement(conflict.columns, []string{conflict.objectIdColumn})
-
+    var objectIDIndex int
+    for i, column := range conflict.columns {
+        if column == conflict.objectIdColumn {
+            objectIDIndex = i
+        }
+    }
 	query := fmt.Sprintf(
 		"SELECT %s FROM %s WHERE %s IN (%s) GROUP BY %s HAVING count(distinct %s) > 1",
 		strings.Join(conflictingColumns, ","), conflict.table, conflict.objectIdColumn,
@@ -137,13 +142,17 @@ func deleteOneToManyConflictsBeforeMerge(tx boil.Executor, conflict conflictingU
 	//There could be multiple conflicting rows between ObjectIDs. In the SELECT query we grab each row and their column
 	// keys to be deleted here in a loop.
 	for _, rowToDelete := range rowsToRemove {
-		rowToDelete = append(rowToDelete, secondaryID)
+		rowToDelete = insert(rowToDelete, objectIDIndex, secondaryID)
 		_, err = tx.Exec(query, rowToDelete...)
 		if err != nil {
 			return errors.Err(err)
 		}
 	}
 	return nil
+}
+
+func insert(slice []interface{}, index int, value interface{}) []interface{} {
+	return append(slice[:index], append([]interface{}{value}, slice[index:]...)...)
 }
 
 func checkMerge(tx boil.Executor, foreignKeys []foreignKey) error {

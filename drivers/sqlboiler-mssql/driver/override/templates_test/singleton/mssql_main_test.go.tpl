@@ -45,8 +45,8 @@ func (m *mssqlTester) setup() error {
 	}
 
 	// Create a randomized db name.
-	if len(p.testDBName) == 0 {
-		p.testDBName = randomize.StableDBName(p.dbName)
+	if len(m.testDBName) == 0 {
+		m.testDBName = randomize.StableDBName(m.dbName)
 	}
 
 	if !m.skipSQLCmd {

@@ -14,7 +14,7 @@ import (
 
 	"github.com/volatiletech/sqlboiler/drivers"
 
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"github.com/DATA-DOG/go-sqlmock"
 )
 
 func bin64(i uint64) string {

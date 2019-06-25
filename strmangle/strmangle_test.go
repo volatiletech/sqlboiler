@@ -28,6 +28,20 @@ func TestIdentQuote(t *testing.T) {
 		{In: `hello.there.*`, Out: `"hello"."there".*`},
 		{In: `"hello".there.*`, Out: `"hello"."there".*`},
 		{In: `hello."there".*`, Out: `"hello"."there".*`},
+
+		{In: `Thing`, Out: `"Thing"`},
+		{In: `null`, Out: `null`},
+		{In: `"Thing"`, Out: `"Thing"`},
+
+		{In: `Thing.Thing`, Out: `"Thing"."Thing"`},
+		{In: `"Thing"."Thing"`, Out: `"Thing"."Thing"`},
+		{In: `Thing.Thing.Thing.Thing`, Out: `"Thing"."Thing"."Thing"."Thing"`},
+		{In: `Thing."Thing".Thing."Thing"`, Out: `"Thing"."Thing"."Thing"."Thing"`},
+		{In: `COUNT(*) AS Ab, Thing AS Bd`, Out: `COUNT(*) AS Ab, Thing AS Bd`},
+		{In: `Hello.*`, Out: `"Hello".*`},
+		{In: `Hello.There.*`, Out: `"Hello"."There".*`},
+		{In: `"Hello".There.*`, Out: `"Hello"."There".*`},
+		{In: `Hello."There".*`, Out: `"Hello"."There".*`},
 	}
 
 	for _, test := range tests {
@@ -143,6 +157,11 @@ func TestSingular(t *testing.T) {
 		{"friends", "friend"},
 		{"areas", "area"},
 		{"hello_there_people", "hello_there_person"},
+		{"HelloPeople", "HelloPerson"},
+		{"HelloPerson", "HelloPerson"},
+		{"Friends", "Friend"},
+		{"Areas", "Area"},
+		{"HelloTherePeople", "HelloTherePerson"},
 	}
 
 	for i, test := range tests {
@@ -164,6 +183,11 @@ func TestPlural(t *testing.T) {
 		{"friends", "friends"},
 		{"area", "areas"},
 		{"hello_there_person", "hello_there_people"},
+		{"HelloPerson", "HelloPeople"},
+		{"Friend", "Friends"},
+		{"Friends", "Friends"},
+		{"Area", "Areas"},
+		{"HelloTherePerson", "HelloTherePeople"},
 	}
 
 	for i, test := range tests {
@@ -208,6 +232,11 @@ func TestTitleCase(t *testing.T) {
 		{"id0_uid000_guid0e0", "ID0UID000GUID0E0"},
 		{"ab_5zxc5d5", "Ab5ZXC5D5"},
 		{"Identifier", "Identifier"},
+		{"HelloThere", "HelloThere"},
+		{"FunId", "FunId"},
+		{"ThingGuid", "ThingGuid"},
+		{"GuidThing", "GuidThing"},
+		{"ThingGuidThing", "ThingGuidThing"},
 	}
 
 	for i, test := range tests {
@@ -272,6 +301,9 @@ func TestTitleCaseIdentifier(t *testing.T) {
 		{"hello", "Hello"},
 		{"hello.world", "Hello.World"},
 		{"hey.id.world", "Hey.ID.World"},
+		{"Hello", "Hello"},
+		{"Hello.World", "Hello.World"},
+		{"Hey.Id.World", "Hey.ID.World"},
 	}
 
 	for i, test := range tests {
@@ -336,6 +368,10 @@ func TestSetParamNames(t *testing.T) {
 		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
 		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4,"col2"=$5`},
 		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4,"col2"=$5,"col3"=$6`},
+		{Cols: []string{"Col1", "Col2"}, Start: 0, Should: `"Col1"=?,"Col2"=?`},
+		{Cols: []string{"Col1"}, Start: 2, Should: `"Col1"=$2`},
+		{Cols: []string{"Col1", "Col2"}, Start: 4, Should: `"Col1"=$4,"Col2"=$5`},
+		{Cols: []string{"Col1", "Col2", "Col3"}, Start: 4, Should: `"Col1"=$4,"Col2"=$5,"Col3"=$6`},
 	}
 
 	for i, test := range tests {
@@ -358,6 +394,10 @@ func TestWhereClause(t *testing.T) {
 		{Cols: []string{"col1"}, Start: 2, Should: `"col1"=$2`},
 		{Cols: []string{"col1", "col2"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5`},
 		{Cols: []string{"col1", "col2", "col3"}, Start: 4, Should: `"col1"=$4 AND "col2"=$5 AND "col3"=$6`},
+		{Cols: []string{"Col1", "Col2"}, Start: 0, Should: `"Col1"=? AND "Col2"=?`},
+		{Cols: []string{"Col1"}, Start: 2, Should: `"Col1"=$2`},
+		{Cols: []string{"Col1", "Col2"}, Start: 4, Should: `"Col1"=$4 AND "Col2"=$5`},
+		{Cols: []string{"Col1", "Col2", "Col3"}, Start: 4, Should: `"Col1"=$4 AND "Col2"=$5 AND "Col3"=$6`},
 	}
 
 	for i, test := range tests {
@@ -533,6 +573,10 @@ func TestParseEnum(t *testing.T) {
 		{"enum('one','two')", "", []string{"one", "two"}},
 		{"enum.working('one')", "working", []string{"one"}},
 		{"enum.wor_king('one','two')", "wor_king", []string{"one", "two"}},
+		{"enum('ONE')", "", []string{"ONE"}},
+		{"enum('ONE','TWO')", "", []string{"ONE", "TWO"}},
+		{"enum.working('ONE')", "working", []string{"ONE"}},
+		{"enum.wor_king('ONE','TWO')", "wor_king", []string{"ONE", "TWO"}},
 	}
 
 	for i, test := range tests {

@@ -35,6 +35,23 @@ func TestTxtNameToOne(t *testing.T) {
 		{"jets", "plane_id", true, "jets", "id", true, "PlaneJet", "Plane"},
 
 		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "ResultRaceResultScratchings", "Result"},
+
+		{"Jets", "AirportId", false, "Airports", "Id", true, "Jets", "Airport"},
+		{"Jets", "AirportId", true, "Airports", "Id", true, "Jet", "Airport"},
+
+		{"Jets", "HolidayId", false, "Airports", "Id", true, "HolidayJets", "Holiday"},
+		{"Jets", "HolidayId", true, "Airports", "Id", true, "HolidayJet", "Holiday"},
+
+		{"Jets", "HolidayAirportId", false, "Airports", "Id", true, "HolidayAirportJets", "HolidayAirport"},
+		{"Jets", "HolidayAirportId", true, "Airports", "Id", true, "HolidayAirportJet", "HolidayAirport"},
+
+		{"Jets", "JetId", false, "Jets", "Id", true, "Jets", "Jet"},
+		{"Jets", "JetId", true, "Jets", "Id", true, "Jet", "Jet"},
+		{"Jets", "PlaneId", false, "Jets", "Id", true, "PlaneJets", "Plane"},
+		{"Jets", "PlaneId", true, "Jets", "Id", true, "PlaneJet", "Plane"},
+
+		{"RaceResultScratchings", "resultId", false, "RaceResults", "id", true, "ResultRaceResultScratchings", "Result"},
+
 	}
 
 	for i, test := range tests {
@@ -75,6 +92,16 @@ func TestTxtNameToMany(t *testing.T) {
 
 		{"videos", "video_id", "tags", "tag_id", "Videos", "Tags"},
 		{"tags", "tag_id", "videos", "video_id", "Tags", "Videos"},
+
+		{"Pilots", "PilotId", "Languages", "LanguageId", "Pilots", "Languages"},
+		{"Pilots", "CaptainId", "Languages", "LingoId", "CaptainPilots", "LingoLanguages"},
+
+		{"Pilots", "PilotId", "Pilots", "MentorId", "Pilots", "MentorPilots"},
+		{"Pilots", "MentorId", "Pilots", "PilotId", "MentorPilots", "Pilots"},
+		{"Pilots", "CaptainId", "Pilots", "MentorId", "CaptainPilots", "MentorPilots"},
+
+		{"Videos", "VideoId", "Tags", "TagId", "Videos", "Tags"},
+		{"Tags", "TagId", "Videos", "VideoId", "Tags", "Videos"},
 	}
 
 	for i, test := range tests {

@@ -109,7 +109,7 @@ func usesPrimitives(tables []drivers.Table, table, column, foreignTable, foreign
 	return isPrimitive(col.Type) && isPrimitive(foreignCol.Type)
 }
 
-var identifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid"}
+var identifierSuffixes = []string{"_id", "_uuid", "_guid", "_oid", "UUID", "GUID", "OID", "ID", "Uuid", "Guid", "Oid", "Id"}
 
 // trimSuffixes from the identifier
 func trimSuffixes(str string) string {

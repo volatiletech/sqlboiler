@@ -3,8 +3,8 @@ package boilingcore
 import (
 	"strings"
 
+	"github.com/bugzpodder/sqlboiler/strmangle"
 	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
 // txtNameToOne creates the local and foreign function names for
@@ -38,11 +38,19 @@ import (
 // fk != table = industry.ParentIndustry | industry.Industry
 func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 	foreignFn = strmangle.Singular(trimSuffixes(fk.Column))
-	fkeyNotTableName := foreignFn != strmangle.Singular(fk.ForeignTable)
+	foreignTableName := strmangle.Singular(fk.ForeignTable)
 	foreignFn = strmangle.TitleCase(foreignFn)
 
-	if fkeyNotTableName {
+	if foreignFn != foreignTableName {
 		localFn = foreignFn
+	}
+
+	if foreignFn == fk.Column {
+		if strings.HasPrefix(foreignFn, foreignTableName) {
+			foreignFn = foreignTableName
+		} else {
+			foreignFn += foreignTableName
+		}
 	}
 
 	plurality := strmangle.Plural

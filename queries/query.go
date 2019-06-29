@@ -30,6 +30,7 @@ type Query struct {
 	selectCols []string
 	count      bool
 	from       []string
+	forceindex string
 	joins      []join
 	where      []where
 	in         []in
@@ -261,6 +262,11 @@ func SetLastWhereAsOr(q *Query) {
 	}
 
 	q.where[len(q.where)-1].orSeparator = true
+}
+
+// SetForceIndex sets the index to be used by the query
+func SetForceIndex(q *Query, index string){
+	q.forceindex = index
 }
 
 // SetLastInAsOr sets the or separator for the tail "IN" in the slice

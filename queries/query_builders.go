@@ -76,7 +76,13 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteByte(')')
 	}
 
-	fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
+	if len(q.forceindex) > 0 {
+		fmt.Fprintf(buf, " FROM %s FORCE INDEX (%s)", strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "),q.forceindex)
+
+	}else{
+		fmt.Fprintf(buf, " FROM %s", strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.from), ", "))
+
+	}
 
 	if len(q.joins) > 0 {
 		argsLen := len(args)

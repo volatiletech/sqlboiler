@@ -123,6 +123,13 @@ func From(from string) QueryMod {
 	}
 }
 
+func ForceIndex( index string) QueryMod {
+	return func(q *queries.Query) {
+		queries.SetForceIndex(q, index)
+	}
+}
+
+
 // Limit the number of returned rows
 func Limit(limit int) QueryMod {
 	return func(q *queries.Query) {

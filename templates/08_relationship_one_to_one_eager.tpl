@@ -8,15 +8,15 @@
 // Load{{$txt.Function.Name}} allows an eager lookup of values, cached into the
 // loaded structs of the objects.
 func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singular bool, {{$arg}} interface{}) error {
-	var slice []*{{$txt.LocalTable.NameGo}}
+	var slice  *{{$txt.LocalTable.NameGo}}Slice
 	var object *{{$txt.LocalTable.NameGo}}
 
 	count := 1
 	if singular {
 		object = {{$arg}}.(*{{$txt.LocalTable.NameGo}})
 	} else {
-		slice = *{{$arg}}.(*[]*{{$txt.LocalTable.NameGo}})
-		count = len(slice)
+		slice = {{$arg}}.(*{{$txt.LocalTable.NameGo}}Slice)
+		count = len(*slice)
 	}
 
 	args := make([]interface{}, count)
@@ -26,7 +26,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		}
 		args[0] = object.{{$txt.LocalTable.ColumnNameGo}}
 	} else {
-		for i, obj := range slice {
+		for i, obj := range *slice {
 			if obj.R == nil {
 				obj.R = &{{$varNameSingular}}R{}
 			}
@@ -73,7 +73,7 @@ func ({{$varNameSingular}}L) Load{{$txt.Function.Name}}(e boil.Executor, singula
 		return nil
 	}
 
-	for _, local := range slice {
+	for _, local := range *slice {
 		for _, foreign := range resultSlice {
 			{{if $txt.Function.UsesBytes -}}
 			if 0 == bytes.Compare(local.{{$txt.Function.LocalAssignment}}, foreign.{{$txt.Function.ForeignAssignment}}) {

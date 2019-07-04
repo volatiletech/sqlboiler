@@ -276,7 +276,7 @@ func getVariableRandValue(s *Seed, fieldType string, kind reflect.Kind, typ refl
 		if ok {
 			return str
 		}
-		return Str(s.NextInt, 1)
+		return Str(s.NextInt, 2)
 	case reflect.Slice:
 		sliceVal := typ.Elem()
 		if sliceVal.Kind() != reflect.Uint8 {

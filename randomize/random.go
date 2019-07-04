@@ -19,7 +19,7 @@ const alphabetLowerAlpha = "abcdefghijklmnopqrstuvwxyz"
 func Str(nextInt func() int64, ln int) string {
 	str := make([]byte, ln)
 	for i := 0; i < ln; i++ {
-		str[i] = byte(alphabetAll[nextInt()%int64(len(alphabetAll))])
+		str[i] = byte(alphabetAll[rand.Intn(len(alphabetAll))])
 	}
 
 	return string(str)

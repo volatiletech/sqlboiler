@@ -1765,7 +1765,7 @@ If your database uses multiple schemas you should generate a new package for eac
 Note that this only applies to databases that use real, SQL standard schemas (like PostgreSQL), not
 fake schemas (like MySQL).
 
-#### How do I use types.BytesArray for Postgres bytea arrays?
+#### How do I use types.BytesArray for Postgres byte arrays?
 
 Only "escaped format" is supported for types.BytesArray. This means that your byte slice needs to have
 a format of "\\x00" (4 bytes per byte) opposed to "\x00" (1 byte per byte). This is to maintain compatibility

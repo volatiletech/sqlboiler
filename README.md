@@ -382,7 +382,7 @@ Flags:
       --no-tests                   Disable generated go test files
   -o, --output string              The name of the folder to output to (default "models")
   -p, --pkgname string             The name you wish to assign to your generated package (default "models")
-      --struct-tag-casing string   Decides the casing for go structure tag names. camel or snake (default snake) (default "snake")
+      --struct-tag-casing string   Decides the casing for go structure tag names. camel or snake (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
       --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
       --version                    Print the version

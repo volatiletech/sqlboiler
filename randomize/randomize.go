@@ -266,6 +266,10 @@ func getVariableRandValue(s *Seed, fieldType string, kind reflect.Kind, typ refl
 	case reflect.Uint16:
 		return uint16(s.NextInt() % math.MaxUint16)
 	case reflect.Uint32:
+		val, ok := MediumUint(s.NextInt, fieldType)
+		if ok {
+			return val
+		}
 		return uint32(s.NextInt() % math.MaxUint32)
 	case reflect.Uint64:
 		return uint64(s.NextInt())

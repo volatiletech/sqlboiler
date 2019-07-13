@@ -76,6 +76,16 @@ func MediumInt(nextInt func() int64, fieldType string) (int32, bool) {
 	return 0, false
 }
 
+// MediumUint is the unsigned version of MediumInt
+func MediumUint(nextInt func() int64, fieldType string) (uint32, bool) {
+	fmt.Println(fieldType)
+	if fieldType == "mediumint" {
+		return uint32(nextInt()) % 16777215, true
+	}
+
+	return 0, false
+}
+
 // Date generates a random time.Time between 1850 and 2050.
 // Only the Day/Month/Year columns are set so that Dates and DateTimes do
 // not cause mismatches in the test data comparisons.

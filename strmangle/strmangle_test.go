@@ -28,6 +28,7 @@ func TestIdentQuote(t *testing.T) {
 		{In: `hello.there.*`, Out: `"hello"."there".*`},
 		{In: `"hello".there.*`, Out: `"hello"."there".*`},
 		{In: `hello."there".*`, Out: `"hello"."there".*`},
+		{In: `go-backend.tokens`, Out: `"go-backend"."tokens"`},
 	}
 
 	for _, test := range tests {

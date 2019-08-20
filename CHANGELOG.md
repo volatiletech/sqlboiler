@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fix import for sqlmock
+- Fix issue with quoting identifiers that contain -
 - Fix unsigned mediumint overflows for mysql tests
 
 ## [v3.4.0] - 2019-05-27

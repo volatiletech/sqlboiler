@@ -180,35 +180,41 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, args
 }
 
+func writeParameterizedModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}, keyword, delim string, clauses []clauseType) {
+	argsLen := len(*args)
+	modBuf := strmangle.GetBuffer()
+	fmt.Fprintf(modBuf, keyword)
+
+	for i, j := range clauses {
+		if i > 0 {
+			modBuf.WriteString(delim)
+		}
+		modBuf.WriteString(j.clause)
+		*args = append(*args, j.args...)
+	}
+
+	var resp string
+	if q.dialect.UseIndexPlaceholders {
+		resp, _ = convertQuestionMarks(modBuf.String(), argsLen+1)
+	} else {
+		resp = modBuf.String()
+	}
+
+	buf.WriteString(resp)
+	strmangle.PutBuffer(modBuf)
+}
+
 func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if len(q.groupBy) != 0 {
 		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
 	}
 
 	if len(q.having) != 0 {
-		argsLen := len(*args)
-		havingBuf := strmangle.GetBuffer()
-		fmt.Fprintf(havingBuf, " HAVING ")
-		for i, j := range q.having {
-			if i > 0 {
-				fmt.Fprintf(havingBuf, " AND ")
-			}
-			fmt.Fprintf(havingBuf, j.clause)
-			*args = append(*args, j.args...)
-		}
-		var resp string
-		if q.dialect.UseIndexPlaceholders {
-			resp, _ = convertQuestionMarks(havingBuf.String(), argsLen+1)
-		} else {
-			resp = havingBuf.String()
-		}
-		fmt.Fprintf(buf, resp)
-		strmangle.PutBuffer(havingBuf)
+		writeParameterizedModifiers(q, buf, args, " HAVING ", " AND ", q.having)
 	}
 
 	if len(q.orderBy) != 0 {
-		buf.WriteString(" ORDER BY ")
-		buf.WriteString(strings.Join(q.orderBy, ", "))
+		writeParameterizedModifiers(q, buf, args, " ORDER BY ", ", ", q.orderBy)
 	}
 
 	if !q.dialect.UseTopClause {

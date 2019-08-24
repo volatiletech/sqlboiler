@@ -28,7 +28,13 @@ func TestBuildQuery(t *testing.T) {
 	}{
 		{&Query{from: []string{"t"}}, nil},
 		{&Query{from: []string{"q"}, limit: 5, offset: 6}, nil},
-		{&Query{from: []string{"q"}, orderBy: []string{"a ASC", "b DESC"}}, nil},
+		{&Query{
+			from: []string{"q"},
+			orderBy: []clauseType{
+				{"a ASC", []interface{}{}},
+				{"b like ? DESC", []interface{}{"stuff"}},
+			},
+		}, []interface{}{"stuff"}},
 		{&Query{from: []string{"t"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
 		{&Query{from: []string{"a", "b"}, selectCols: []string{"count(*) as ab, thing as bd", `"stuff"`}}, nil},
 		{&Query{
@@ -55,7 +61,7 @@ func TestBuildQuery(t *testing.T) {
 				{clause: "a=? or b=?", args: []interface{}{1, 2}},
 				{clause: "c=?", args: []interface{}{3}},
 			},
-			having: []having{
+			having: []clauseType{
 				{clause: "id <> ?", args: []interface{}{1}},
 				{clause: "length(name, ?) > ?", args: []interface{}{"utf8", 5}},
 			},

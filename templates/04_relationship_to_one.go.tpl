@@ -7,7 +7,7 @@
 // {{$rel.Foreign}} pointed to by the foreign key.
 func (o *{{$ltable.UpSingular}}) {{$rel.Foreign}}(mods ...qm.QueryMod) ({{$ftable.DownSingular}}Query) {
 	queryMods := []qm.QueryMod{
-		qm.Where("{{$fkey.ForeignColumn}}=?", o.{{$ltable.Column $fkey.Column}}),
+		qm.Where("{{$fkey.ForeignColumn | $.Quotes}} = ?", o.{{$ltable.Column $fkey.Column}}),
 	}
 
 	queryMods = append(queryMods, mods...)

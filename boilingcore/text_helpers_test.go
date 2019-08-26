@@ -34,6 +34,16 @@ func TestTxtNameToOne(t *testing.T) {
 		{"jets", "plane_id", false, "jets", "id", true, "PlaneJets", "Plane"},
 		{"jets", "plane_id", true, "jets", "id", true, "PlaneJet", "Plane"},
 
+		{"videos", "user_id", false, "users", "id", true, "Videos", "User"},
+		{"videos", "producer_id", false, "users", "id", true, "ProducerVideos", "Producer"},
+		{"videos", "user_id", true, "users", "id", true, "Video", "User"},
+		{"videos", "producer_id", true, "users", "id", true, "ProducerVideo", "Producer"},
+
+		{"industries", "industry_id", false, "industries", "id", true, "Industries", "Industry"},
+		{"industries", "parent_id", false, "industries", "id", true, "ParentIndustries", "Parent"},
+		{"industries", "industry_id", true, "industries", "id", true, "Industry", "Industry"},
+		{"industries", "parent_id", true, "industries", "id", true, "ParentIndustry", "Parent"},
+
 		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "ResultRaceResultScratchings", "Result"},
 	}
 

@@ -445,14 +445,15 @@ available via the config file and can use some explanation.
 
 ##### Aliases
 
-In sqlboiler, names are automatically generated for you. If you name your database
-entities properly you will likely have descriptive names generated in the end. However in the case where the
-names in your database are bad AND unchangeable, or sqlboiler's inference doesn't understand
-the names you do have (even though they are good and correct) you can use aliases to
-change the name of your tables, columns and relationships in the generated Go code.
+In sqlboiler, names are automatically generated for you. If you name your
+database entities properly you will likely have descriptive names generated in
+the end. However in the case where the names in your database are bad AND
+unchangeable, or sqlboiler's inference doesn't understand the names you do have
+(even though they are good and correct) you can use aliases to change the name
+of your tables, columns and relationships in the generated Go code.
 
-*Note: It is not required to provide all parts of all names. Anything left out will be
-inferred as it was in the past.*
+*Note: It is not required to provide all parts of all names. Anything left out
+will be inferred as it was in the past.*
 
 ```toml
 # Although team_names works fine without configuration, we use it here for illustrative purposes
@@ -467,31 +468,46 @@ down_singular = "teamName"
   team_name = "OurTeamName"
 ```
 
-When creating aliases for relationships, it's important to know how the concept of *local*/*foreign*
-map to what is used by sqlboiler for generation. First off, everything is renamed using the foreign key as a
-unique identifier (namespaced to the table). If you don't know your foreign key names, it's likely
-you have not been naming them manually and it's possible they change suddenly for whatever reason.
-If you're going to rename relationships it's recommended that you use manually named foreign keys
-for stability. Therefore to rename a relationship based on a foreign key on the `videos` table
-you would use the key `[aliases.tables.videos.relationships.fk_name]`. From here you can use
-the *local* and *foreign* attributes to define how you'll refer to each side of a relationship.
+When creating aliases for relationships, it's important to know how sqlboiler
+names relationships. For a given table the foreign key name is used as a unique
+identifier to refer to a given relationship. If you are going to be aliasing
+relationships it's **highly recommended** that you name your foreign keys
+explicitly in your database or the auto-generated names could one day
+change/break your aliases.
 
-In terms of understanding what *local* and *foreign* denote in the context of renaming relationships,
-*local* simply stands for the name that will be generated for the property on "the side of the foreign key entity".
+Each relationship has a **local** and a **foreign** function name. The function name will
+be inserted into your generated code as a function to retrieve relationship data as
+well as refer to the relationship in a few other places. **local** means "the function name
+that refers to the table with the foreign key on it" and conversely **foreign**
+means "the function that refers to the table the foreign key points to".
 
-For example - let's have a `users <-> videos` one to many relationship where we have a `user_id`
-in the `videos` table that refers to an id of the `users` table. Defining the relationship will
-look something like this: `[aliases.tables.videos.relationships.videos_user_id_fkey]`.
+For example - let's have a `videos -> users` many to one relationship that looks
+like this:
 
-In this instance `local` simply defines the name of the properety with which we'll refer to the `videos`
-on the side of the generated `User` entity ("the foreign key entity") - in essence, the name of the
-property with which we'll be able to fetch a given user's videos. In the example below we've named
-the *local* side (how we refer to the videos from the user's side) `AuthoredVideos`.
+```text
+The tables and their columns:
 
-Now that we've defined how we'll refer to videos on the user's side, we can define how we'll look
-at the relationship the other way around - how will a `Video` entity refer to it's author? Here's where
-the *foreign* attribute comes into the picture - it allows us to define exatly that side of the relationship.
-In the example below we've set the *foreign* attribute to `Author`:
+| videos  | users |
+|---------|-------|
+| user_id | id    |
+
+Our foreign key:
+videos_user_id_fkey: videos.user_id -> users.id
+```
+
+In this example `local` (how we refer to the table with the foreign key) is
+going to be inferred as `Videos`. We're going to override that below to be
+`AuthoredVideos`.
+
+Conversely `foreign` (how we refer to the table the foreign key points to) is
+going to be inferred as `User`, which we'd like to rename to `Author` to suit
+our domain language a bit better.
+
+With the configuration snippet below we can use the following relationship
+helper functions off of the respective models: `video.Author` and
+`user.AuthoredVideos` which make a bit more sense than the inferred names when
+we see it in the code for our domain. Note the use of the foreign key name to
+refer to the relationship in the configuration key.
 
 ```toml
 [aliases.tables.videos.relationships.videos_author_id_fkey]
@@ -503,14 +519,18 @@ local   = "AuthoredVideos"
 foreign = "Author"
 ```
 
-In a many-to-many relationship it's a bit more complicated. Let's look at an example relationship between
-`videos <-> tags` with a join table in the middle. Imagine if the join table didn't exist, and instead both of the
-id columns in the join table were slapped on to the tables themselves. You'd have `videos.tag_id`
-and `tags.video_id`. Using a similar method to the above (the side with the foreign key) we can rename
-the relationships. To change `Videos.Tags` to `Videos.Rags` we can use the example below.
+In a many-to-many relationship it's a bit more complicated. Let's look at an
+example relationship between `videos <-> tags` with a join table in the middle.
+Imagine if the join table didn't exist, and instead both of the id columns in
+the join table were slapped on to the tables themselves. You'd have
+`videos.tag_id` and `tags.video_id`. Using a similar method to the above (local
+is the name with which we refer to the side that has the foreign key)
+we can rename the relationships. To change `Videos.Tags` to `Videos.Rags`
+we can use the example below.
 
-Keep in mind that naming ONE side of the many-to-many relationship is sufficient as the other
-side will be automatically mirrored, though you can specify both if you so choose.
+Keep in mind that naming ONE side of the many-to-many relationship is sufficient
+as the other side will be automatically mirrored, though you can specify both if
+you so choose.
 
 ```toml
 [aliases.tables.video_tags.relationships.fk_video_id]
@@ -518,14 +538,16 @@ local   = "Rags"
 foreign = "Videos"
 ```
 
-The above definition will specify `Rags` as the name of the property with which a given `Video` entity will be able to
-access all of it's tags. If we look the other way around - a single `Tag` entity will refer to all videos that
-have that specific tag with the `Videos` property.
+The above definition will specify `Rags` as the name of the property with which
+a given `Video` entity will be able to access all of it's tags. If we look the
+other way around - a single `Tag` entity will refer to all videos that have that
+specific tag with the `Videos` property.
 
-There is an alternative syntax available for those who are challenged by the key syntax of
-toml or challenged by viper lowercasing all of your keys. Instead of using a regular table
-in toml, use an array of tables, and add a name field to each object. The only one that changes
-past that is columns, which now has to have a new field called `alias`.
+There is an alternative syntax available for those who are challenged by the key
+syntax of toml or challenged by viper lowercasing all of your keys. Instead of
+using a regular table in toml, use an array of tables, and add a name field to
+each object. The only one that changes past that is columns, which now has to
+have a new field called `alias`.
 
 ```toml
 [[aliases.tables]]

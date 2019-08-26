@@ -19,6 +19,7 @@ import (
 // fk != table = user.ProducerVideos | video.Producer
 //
 // = many-to-one
+// industries - industries : industry_id
 // industries - industries : parent_id
 //
 // fk == table = industry.Industries | industry.Industry

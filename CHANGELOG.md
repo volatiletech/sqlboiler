@@ -3,13 +3,25 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v3.4.1] - 2019-08-26
+
+### Added
+
+- Add wherein helpers for string and int column types (thanks @bugzpodder)
+
+### Changed
+
+- Rewrite alias documentation for relationships to be a bit more clear and
+  concise.
 
 ### Fixed
 
-- Fix import for sqlmock
+- Fix a bug where relationship helpers were not quoting properly
+- Fix issue where eager loads could produce ambiguous wherein clauses
+- Fix import for sqlmock (thanks @zikaeroh)
 - Fix issue with quoting identifiers that contain -
 - Fix unsigned mediumint overflows for mysql tests
+- Fix bad reference in mssql templates (thanks @cliedeman)
 
 ## [v3.4.0] - 2019-05-27
 

@@ -80,6 +80,12 @@ func New(config *Config) (*State, error) {
 		}
 	}()
 
+	if len(config.Version) > 0 {
+		noEditDisclaimer = []byte(
+			fmt.Sprintf(noEditDisclaimerFmt, " "+config.Version+" "),
+		)
+	}
+
 	s.Driver = drivers.GetDriver(config.DriverName)
 
 	err := s.initDBInfo(config.DriverConfig)

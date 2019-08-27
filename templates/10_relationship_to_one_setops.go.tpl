@@ -64,10 +64,17 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}({{if $.NoContext}}exec boil
 	)
 	values := []interface{}{related.{{$fcol}}, o.{{$.Table.PKey.Columns | stringMap (aliasCols $ltable) | join ", o."}}{{"}"}}
 
+	{{if .NoContext -}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
+	{{else -}}
+	if debug, writer := boil.IsDebug(ctx); debug {
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	{{end -}}
 
 	{{if $.NoContext -}}
 	if _, err = exec.Exec(updateQuery, values...); err != nil {

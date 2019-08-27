@@ -7,6 +7,7 @@ type contextType int
 const (
 	ctxSkipHooks contextType = iota
 	ctxSkipTimestamps
+	ctxDebug
 )
 
 // SkipHooks modifies a context to prevent hooks from running for any query

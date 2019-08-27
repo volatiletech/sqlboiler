@@ -99,10 +99,17 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
+	{{if .NoContext -}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, cache.query)
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
+	{{else -}}
+	if debug, writer := boil.IsDebug(ctx); debug {
+		fmt.Fprintln(writer, cache.query)
+		fmt.Fprintln(writer, vals)
+	}
+	{{end -}}
 
 	{{if .Dialect.UseLastInsertID -}}
 	{{- $canLastInsertID := .Table.CanLastInsertID -}}
@@ -153,10 +160,17 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 		{{end -}}
 	}
 
+	{{if .NoContext -}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
 		fmt.Fprintln(boil.DebugWriter, identifierCols...)
 	}
+	{{else -}}
+	if debug, writer := boil.IsDebug(ctx); debug {
+		fmt.Fprintln(writer, cache.retQuery)
+		fmt.Fprintln(writer, identifierCols...)
+	}
+	{{end -}}
 
 	{{if .NoContext -}}
 	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)

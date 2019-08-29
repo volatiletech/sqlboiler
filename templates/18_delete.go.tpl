@@ -65,7 +65,8 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 		fmt.Fprintln(boil.DebugWriter, args...)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
 		fmt.Fprintln(writer, args...)
 	}
@@ -225,7 +226,8 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
 		fmt.Fprintln(boil.DebugWriter, args)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
 		fmt.Fprintln(writer, args)
 	}

@@ -83,7 +83,8 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 				fmt.Fprintln(boil.DebugWriter, values)
 			}
 			{{else -}}
-			if debug, writer := boil.IsDebug(ctx); debug {
+			if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 				fmt.Fprintln(writer, updateQuery)
 				fmt.Fprintln(writer, values)
 			}
@@ -116,7 +117,8 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 			fmt.Fprintln(boil.DebugWriter, values)
 		}
 		{{else -}}
-		if debug, writer := boil.IsDebug(ctx); debug {
+		if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 			fmt.Fprintln(writer, query)
 			fmt.Fprintln(writer, values)
 		}
@@ -233,7 +235,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, query)
 		fmt.Fprintln(writer, values)
 	}
@@ -329,7 +332,8 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, query)
 		fmt.Fprintln(writer, values)
 	}

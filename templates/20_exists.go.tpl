@@ -52,7 +52,8 @@ func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx 
 		fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
 		fmt.Fprintln(writer, {{$pkNames | join ", "}})
 	}

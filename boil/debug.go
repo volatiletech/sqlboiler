@@ -5,34 +5,33 @@ import (
 	"io"
 )
 
-type debugConfig struct {
-	debug  bool
-	writer io.Writer
+// WithDebug modifies a context to configure debug writing.
+func WithDebug(ctx context.Context, debug bool) context.Context {
+	return context.WithValue(ctx, ctxDebug, debug)
 }
 
-// ContextDebug modifies a context to configure the debug output, overriding
-// the global DebugMode and DebugWriter. If writer is nil, then DebugWriter
-// will still be used.
-func ContextDebug(ctx context.Context, debug bool, writer io.Writer) context.Context {
-	return context.WithValue(ctx, ctxDebug, &debugConfig{
-		debug:  debug,
-		writer: writer,
-	})
-}
-
-// IsDebug checks to see if debugging is enabled, and returns the correct
-// debug writer to use for outputting.
-func IsDebug(ctx context.Context) (bool, io.Writer) {
-	config, _ := ctx.Value(ctxDebug).(*debugConfig)
-
-	switch {
-	case config == nil:
-		return DebugMode, DebugWriter
-	case !config.debug:
-		return false, nil
-	case config.writer != nil:
-		return true, config.writer
-	default:
-		return true, DebugWriter
+// IsDebug returns true if the context has debugging enabled, or
+// the value of DebugMode if not set.
+func IsDebug(ctx context.Context) bool {
+	debug, ok := ctx.Value(ctxDebug).(bool)
+	if ok {
+		return debug
 	}
+	return DebugMode
+}
+
+// WithDebugWriter modifies a context to configure the writer written to
+// when debugging is enabled.
+func WithDebugWriter(ctx context.Context, writer io.Writer) context.Context {
+	return context.WithValue(ctx, ctxDebugWriter, writer)
+}
+
+// DebugWriterFrom returns the debug writer for the contexts, or DebugWriter
+// if not set.
+func DebugWriterFrom(ctx context.Context) io.Writer {
+	writer, ok := ctx.Value(ctxDebugWriter).(io.Writer)
+	if ok {
+		return writer
+	}
+	return DebugWriter
 }

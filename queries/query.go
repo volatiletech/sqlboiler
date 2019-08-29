@@ -143,7 +143,8 @@ func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
 // ExecContext executes a query that does not need a row returned
 func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql.Result, error) {
 	qs, args := BuildQuery(q)
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, qs)
 		fmt.Fprintln(writer, args)
 	}
@@ -153,7 +154,8 @@ func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql
 // QueryRowContext executes the query for the One finisher and returns a row
 func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) *sql.Row {
 	qs, args := BuildQuery(q)
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, qs)
 		fmt.Fprintln(writer, args)
 	}
@@ -163,7 +165,8 @@ func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) 
 // QueryContext executes the query for the All finisher and returns multiple rows
 func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*sql.Rows, error) {
 	qs, args := BuildQuery(q)
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, qs)
 		fmt.Fprintln(writer, args)
 	}

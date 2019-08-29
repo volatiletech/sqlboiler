@@ -105,7 +105,8 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 		fmt.Fprintln(boil.DebugWriter, vals)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
@@ -166,7 +167,8 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 		fmt.Fprintln(boil.DebugWriter, identifierCols...)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.retQuery)
 		fmt.Fprintln(writer, identifierCols...)
 	}

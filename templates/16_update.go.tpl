@@ -94,7 +94,8 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, values)
 	}
@@ -271,7 +272,8 @@ func (o {{$alias.UpSingular}}Slice) UpdateAll({{if .NoContext}}exec boil.Executo
 		fmt.Fprintln(boil.DebugWriter, args...)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
 		fmt.Fprintln(writer, args...)
 	}

@@ -70,7 +70,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}({{if $.NoContext}}exec boil
 		fmt.Fprintln(boil.DebugWriter, values)
 	}
 	{{else -}}
-	if debug, writer := boil.IsDebug(ctx); debug {
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, updateQuery)
 		fmt.Fprintln(writer, values)
 	}

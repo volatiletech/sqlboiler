@@ -77,7 +77,7 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 			)
 			values := []interface{}{o.{{$col}}, rel.{{$foreignPKeyCols | stringMap (aliasCols $ftable) | join ", rel."}}{{"}"}}
 
-			{{if .NoContext -}}
+			{{if $.NoContext -}}
 			if boil.DebugMode {
 				fmt.Fprintln(boil.DebugWriter, updateQuery)
 				fmt.Fprintln(boil.DebugWriter, values)
@@ -111,7 +111,7 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 		query := "insert into {{.JoinTable | $.SchemaTable}} ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}"
 		values := []interface{}{{"{"}}o.{{$col}}, rel.{{$fcol}}}
 
-		{{if .NoContext -}}
+		{{if $.NoContext -}}
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, query)
 			fmt.Fprintln(boil.DebugWriter, values)
@@ -229,7 +229,7 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 	query := "update {{.ForeignTable | $.SchemaTable}} set {{.ForeignColumn | $.Quotes}} = null where {{.ForeignColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}"
 	values := []interface{}{{"{"}}o.{{$col}}}
 	{{end -}}
-	{{if .NoContext -}}
+	{{if $.NoContext -}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)
@@ -326,7 +326,7 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 		values = append(values, rel.{{$fcol}})
 	}
 
-	{{if .NoContext -}}
+	{{if $.NoContext -}}
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, query)
 		fmt.Fprintln(boil.DebugWriter, values)

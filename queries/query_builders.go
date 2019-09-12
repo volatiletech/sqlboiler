@@ -180,7 +180,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, args
 }
 
-func writeParameterizedModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}, keyword, delim string, clauses []clauseType) {
+func writeParameterizedModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}, keyword, delim string, clauses []argClause) {
 	argsLen := len(*args)
 	modBuf := strmangle.GetBuffer()
 	fmt.Fprintf(modBuf, keyword)

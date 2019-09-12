@@ -30,15 +30,15 @@ type Query struct {
 
 	delete     bool
 	update     map[string]interface{}
-	withs      []with
+	withs      []argClause
 	selectCols []string
 	count      bool
 	from       []string
 	joins      []join
 	where      []where
 	groupBy    []string
-	orderBy    []clauseType
-	having     []clauseType
+	orderBy    []argClause
+	having     []argClause
 	limit      int
 	offset     int
 	forlock    string
@@ -74,7 +74,7 @@ type in struct {
 	args        []interface{}
 }
 
-type clauseType struct {
+type argClause struct {
 	clause string
 	args   []interface{}
 }
@@ -86,11 +86,6 @@ type rawSQL struct {
 
 type join struct {
 	kind   joinKind
-	clause string
-	args   []interface{}
-}
-
-type with struct {
 	clause string
 	args   []interface{}
 }
@@ -291,7 +286,7 @@ func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 
 // AppendHaving on the query.
 func AppendHaving(q *Query, clause string, args ...interface{}) {
-	q.having = append(q.having, clauseType{clause: clause, args: args})
+	q.having = append(q.having, argClause{clause: clause, args: args})
 }
 
 // AppendWhere on the query.
@@ -357,10 +352,10 @@ func AppendGroupBy(q *Query, clause string) {
 
 // AppendOrderBy on the query.
 func AppendOrderBy(q *Query, clause string, args ...interface{}) {
-	q.orderBy = append(q.orderBy, clauseType{clause: clause, args: args})
+	q.orderBy = append(q.orderBy, argClause{clause: clause, args: args})
 }
 
 // AppendWith on the query.
 func AppendWith(q *Query, clause string, args ...interface{}) {
-	q.withs = append(q.withs, with{clause: clause, args: args})
+	q.withs = append(q.withs, argClause{clause: clause, args: args})
 }

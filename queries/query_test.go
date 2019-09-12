@@ -259,7 +259,7 @@ func TestAppendOrderBy(t *testing.T) {
 		t.Errorf("Expected %v, got %v %v", 10, q.orderBy[0].args[0], q.orderBy[1].args[0])
 	}
 
-	q.orderBy = []clauseType{
+	q.orderBy = []argClause{
 		{"col1 desc, col2 asc", []interface{}{}},
 	}
 	if len(q.orderBy) != 1 && q.orderBy[0].clause != expect {
@@ -287,7 +287,7 @@ func TestAppendHaving(t *testing.T) {
 		t.Errorf("Expected %v, got %v %v", 10, q.having[0].args[0], q.having[1].args[0])
 	}
 
-	q.having = []clauseType{{clause: expect, args: []interface{}{10}}}
+	q.having = []argClause{{clause: expect, args: []interface{}{10}}}
 	if len(q.having) != 1 && (q.having[0].clause != expect || q.having[0].args[0] != 10) {
 		t.Errorf("Expected %s, got %s %v", expect, q.having[0], q.having[0].args[0])
 	}
@@ -487,7 +487,7 @@ func TestAppendWith(t *testing.T) {
 		t.Errorf("Invalid args values, got %#v", q.withs[0].args)
 	}
 
-	q.withs = []with{{
+	q.withs = []argClause{{
 		clause: "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)",
 		args:   []interface{}{3, 7},
 	}}

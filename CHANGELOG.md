@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Log lines now can be controlled by context (both their presence and output)
+  see the new boil.WithDebug/boil.WithDebugWriter (thanks @zikaeroh)
 - OrderBy can now optionally take arguments (thanks @emwalker)
 
 ## [v3.5.0] - 2019-08-26

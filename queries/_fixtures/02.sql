@@ -1,1 +1,1 @@
-SELECT * FROM "q" ORDER BY a ASC, b DESC;
+SELECT * FROM "q" ORDER BY a ASC, b like $1 DESC;

@@ -37,8 +37,8 @@ type Query struct {
 	joins      []join
 	where      []where
 	groupBy    []string
-	orderBy    []string
-	having     []having
+	orderBy    []clauseType
+	having     []clauseType
 	limit      int
 	offset     int
 	forlock    string
@@ -74,7 +74,7 @@ type in struct {
 	args        []interface{}
 }
 
-type having struct {
+type clauseType struct {
 	clause string
 	args   []interface{}
 }
@@ -291,7 +291,7 @@ func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 
 // AppendHaving on the query.
 func AppendHaving(q *Query, clause string, args ...interface{}) {
-	q.having = append(q.having, having{clause: clause, args: args})
+	q.having = append(q.having, clauseType{clause: clause, args: args})
 }
 
 // AppendWhere on the query.
@@ -356,8 +356,8 @@ func AppendGroupBy(q *Query, clause string) {
 }
 
 // AppendOrderBy on the query.
-func AppendOrderBy(q *Query, clause string) {
-	q.orderBy = append(q.orderBy, clause)
+func AppendOrderBy(q *Query, clause string, args ...interface{}) {
+	q.orderBy = append(q.orderBy, clauseType{clause: clause, args: args})
 }
 
 // AppendWith on the query.

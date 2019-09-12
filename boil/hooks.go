@@ -2,13 +2,6 @@ package boil
 
 import "context"
 
-type contextType int
-
-const (
-	ctxSkipHooks contextType = iota
-	ctxSkipTimestamps
-)
-
 // SkipHooks modifies a context to prevent hooks from running for any query
 // it encounters.
 func SkipHooks(ctx context.Context) context.Context {

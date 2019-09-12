@@ -1,8 +1,6 @@
 package boil
 
 import (
-	"io"
-	"os"
 	"time"
 )
 
@@ -14,15 +12,6 @@ var (
 	// automated setting of created_at/updated_at columns
 	timestampLocation = time.UTC
 )
-
-// DebugMode is a flag controlling whether generated sql statements and
-// debug information is outputted to the DebugWriter handle
-//
-// NOTE: This should be disabled in production to avoid leaking sensitive data
-var DebugMode = false
-
-// DebugWriter is where the debug output will be sent if DebugMode is true
-var DebugWriter io.Writer = os.Stdout
 
 // SetDB initializes the database handle for all template db interactions
 func SetDB(db Executor) {

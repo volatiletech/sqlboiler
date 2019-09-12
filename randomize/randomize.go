@@ -87,7 +87,7 @@ func Struct(s *Seed, str interface{}, colTypes map[string]string, canBeNull bool
 
 		var found bool
 		for _, v := range blacklist {
-			if strmangle.TitleCase(v) == fieldTyp.Name {
+			if strmangle.TitleCase(v) == fieldTyp.Name || v == fieldTyp.Tag.Get("boil") {
 				found = true
 				break
 			}

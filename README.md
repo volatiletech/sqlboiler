@@ -323,6 +323,7 @@ not to pass them through the command line or environment variables:
 | no-tests            | false     |
 | no-auto-timestamps  | false     |
 | no-rows-affected    | false     |
+| no-driver-templates | false     |
 
 Example:
 

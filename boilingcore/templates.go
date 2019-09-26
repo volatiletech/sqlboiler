@@ -37,12 +37,13 @@ type templateData struct {
 	RQ string
 
 	// Control various generation features
-	AddGlobal        bool
-	AddPanic         bool
-	NoContext        bool
-	NoHooks          bool
-	NoAutoTimestamps bool
-	NoRowsAffected   bool
+	AddGlobal         bool
+	AddPanic          bool
+	NoContext         bool
+	NoHooks           bool
+	NoAutoTimestamps  bool
+	NoRowsAffected    bool
+	NoDriverTemplates bool
 
 	// Tags control which tags are added to the struct
 	Tags []string

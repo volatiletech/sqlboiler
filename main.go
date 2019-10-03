@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bugzpodder/sqlboiler/boilingcore"
+	"github.com/grailbio-external/sqlboiler/boilingcore"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

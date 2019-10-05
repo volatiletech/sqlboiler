@@ -28,6 +28,13 @@ type NullDecimal struct {
 	*decimal.Big
 }
 
+func (d *NullDecimal) UnmarshalJSON(data []byte) error {
+	if d.Big == nil {
+		d.Big = new(decimal.Big)
+	}
+	return d.Big.UnmarshalJSON(data)
+}
+
 // NewDecimal creates a new decimal from a decimal
 func NewDecimal(d *decimal.Big) Decimal {
 	return Decimal{Big: d}

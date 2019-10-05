@@ -6,6 +6,28 @@ import (
 	"github.com/ericlagergren/decimal"
 )
 
+func TestIssue404(t *testing.T) {
+	testPanic := func(t *testing.T, fn func(t *testing.T)) (panicked bool) {
+		defer func() {
+			if recover() != nil {
+				panicked = true
+			}
+		}()
+		fn(t)
+		return panicked
+	}
+	panicked := testPanic(t, func(t *testing.T) {
+		var d NullDecimal
+		err := d.UnmarshalJSON([]byte("3.14"))
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+	if panicked {
+		t.Fatal("unexpected panic")
+	}
+}
+
 func TestDecimal_Value(t *testing.T) {
 	t.Parallel()
 

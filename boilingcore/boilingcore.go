@@ -133,23 +133,24 @@ func New(config *Config) (*State, error) {
 // state given.
 func (s *State) Run() error {
 	data := &templateData{
-		Tables:           s.Tables,
-		Aliases:          s.Config.Aliases,
-		DriverName:       s.Config.DriverName,
-		PkgName:          s.Config.PkgName,
-		AddGlobal:        s.Config.AddGlobal,
-		AddPanic:         s.Config.AddPanic,
-		NoContext:        s.Config.NoContext,
-		NoHooks:          s.Config.NoHooks,
-		NoAutoTimestamps: s.Config.NoAutoTimestamps,
-		NoRowsAffected:   s.Config.NoRowsAffected,
-		StructTagCasing:  s.Config.StructTagCasing,
-		Tags:             s.Config.Tags,
-		Dialect:          s.Dialect,
-		Schema:           s.Schema,
-		LQ:               strmangle.QuoteCharacter(s.Dialect.LQ),
-		RQ:               strmangle.QuoteCharacter(s.Dialect.RQ),
-		OutputDirDepth:   s.Config.OutputDirDepth(),
+		Tables:            s.Tables,
+		Aliases:           s.Config.Aliases,
+		DriverName:        s.Config.DriverName,
+		PkgName:           s.Config.PkgName,
+		AddGlobal:         s.Config.AddGlobal,
+		AddPanic:          s.Config.AddPanic,
+		NoContext:         s.Config.NoContext,
+		NoHooks:           s.Config.NoHooks,
+		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
+		NoRowsAffected:    s.Config.NoRowsAffected,
+		NoDriverTemplates: s.Config.NoDriverTemplates,
+		StructTagCasing:   s.Config.StructTagCasing,
+		Tags:              s.Config.Tags,
+		Dialect:           s.Dialect,
+		Schema:            s.Schema,
+		LQ:                strmangle.QuoteCharacter(s.Dialect.LQ),
+		RQ:                strmangle.QuoteCharacter(s.Dialect.RQ),
+		OutputDirDepth:    s.Config.OutputDirDepth(),
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
@@ -238,13 +239,15 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 		}
 	}
 
-	driverTemplates, err := s.Driver.Templates()
-	if err != nil {
-		return nil, err
-	}
+	if !s.Config.NoDriverTemplates {
+		driverTemplates, err := s.Driver.Templates()
+		if err != nil {
+			return nil, err
+		}
 
-	for template, contents := range driverTemplates {
-		templates[normalizeSlashes(template)] = base64Loader(contents)
+		for template, contents := range driverTemplates {
+			templates[normalizeSlashes(template)] = base64Loader(contents)
+		}
 	}
 
 	for _, replace := range s.Config.Replacements {

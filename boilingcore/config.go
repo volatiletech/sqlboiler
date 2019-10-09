@@ -14,21 +14,22 @@ type Config struct {
 	DriverName   string         `toml:"driver_name,omitempty" json:"driver_name,omitempty"`
 	DriverConfig drivers.Config `toml:"driver_config,omitempty" json:"driver_config,omitempty"`
 
-	PkgName          string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
-	OutFolder        string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
-	TemplateDirs     []string `toml:"template_dirs,omitempty" json:"template_dirs,omitempty"`
-	Tags             []string `toml:"tags,omitempty" json:"tags,omitempty"`
-	Replacements     []string `toml:"replacements,omitempty" json:"replacements,omitempty"`
-	Debug            bool     `toml:"debug,omitempty" json:"debug,omitempty"`
-	AddGlobal        bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
-	AddPanic         bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
-	NoContext        bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
-	NoTests          bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
-	NoHooks          bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
-	NoAutoTimestamps bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
-	NoRowsAffected   bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
-	Wipe             bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
-	StructTagCasing  string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
+	PkgName           string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
+	OutFolder         string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
+	TemplateDirs      []string `toml:"template_dirs,omitempty" json:"template_dirs,omitempty"`
+	Tags              []string `toml:"tags,omitempty" json:"tags,omitempty"`
+	Replacements      []string `toml:"replacements,omitempty" json:"replacements,omitempty"`
+	Debug             bool     `toml:"debug,omitempty" json:"debug,omitempty"`
+	AddGlobal         bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
+	AddPanic          bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
+	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
+	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
+	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
+	NoAutoTimestamps  bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
+	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
+	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
+	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
+	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 

@@ -101,6 +101,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-rows-affected", "", false, "Disable rows affected in the generated API")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
+	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
@@ -161,25 +162,26 @@ func preRun(cmd *cobra.Command, args []string) error {
 	drivers.RegisterBinary(driverName, driverPath)
 
 	cmdConfig = &boilingcore.Config{
-		DriverName:       driverName,
-		OutFolder:        viper.GetString("output"),
-		PkgName:          viper.GetString("pkgname"),
-		Debug:            viper.GetBool("debug"),
-		AddGlobal:        viper.GetBool("add-global-variants"),
-		AddPanic:         viper.GetBool("add-panic-variants"),
-		NoContext:        viper.GetBool("no-context"),
-		NoTests:          viper.GetBool("no-tests"),
-		NoHooks:          viper.GetBool("no-hooks"),
-		NoRowsAffected:   viper.GetBool("no-rows-affected"),
-		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
-		Wipe:             viper.GetBool("wipe"),
-		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
-		TemplateDirs:     viper.GetStringSlice("templates"),
-		Tags:             viper.GetStringSlice("tag"),
-		Replacements:     viper.GetStringSlice("replace"),
-		Aliases:          boilingcore.ConvertAliases(viper.Get("aliases")),
-		TypeReplaces:     boilingcore.ConvertTypeReplace(viper.Get("types")),
-		Version:          sqlBoilerVersion,
+		DriverName:        driverName,
+		OutFolder:         viper.GetString("output"),
+		PkgName:           viper.GetString("pkgname"),
+		Debug:             viper.GetBool("debug"),
+		AddGlobal:         viper.GetBool("add-global-variants"),
+		AddPanic:          viper.GetBool("add-panic-variants"),
+		NoContext:         viper.GetBool("no-context"),
+		NoTests:           viper.GetBool("no-tests"),
+		NoHooks:           viper.GetBool("no-hooks"),
+		NoRowsAffected:    viper.GetBool("no-rows-affected"),
+		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
+		NoDriverTemplates: viper.GetBool("no-driver-templates"),
+		Wipe:              viper.GetBool("wipe"),
+		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
+		TemplateDirs:      viper.GetStringSlice("templates"),
+		Tags:              viper.GetStringSlice("tag"),
+		Replacements:      viper.GetStringSlice("replace"),
+		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
+		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
+		Version:           sqlBoilerVersion,
 	}
 
 	if cmdConfig.Debug {

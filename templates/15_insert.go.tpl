@@ -150,7 +150,7 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	{{- $col := .Table.GetColumn $colName -}}
 	{{- $colTitled := $colName | titleCase}}
 	o.{{$colTitled}} = {{$col.Type}}(lastID)
-	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$alias.DownSingular}}Mapping["{{$colTitled}}"] {
+	if lastID != 0 && len(cache.retMapping) == 1 && cache.retMapping[0] == {{$alias.DownSingular}}Mapping["{{$colName}}"] {
 		goto CacheNoHooks
 	}
 	{{- end}}

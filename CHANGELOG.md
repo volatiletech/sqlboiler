@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fix bug in mssql offset clause, it now properly includes the "ROWS" suffix
   as required by the official T-SQL spec.
+- Fix unmarshalling json into a 0-value Decimal or NullDecimal type when
+  the `*big.Decimal` itself is nil (thanks @ericlagergren)
 
 ## [v3.5.0] - 2019-08-26
 

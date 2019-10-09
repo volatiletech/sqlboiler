@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - OrderBy can now optionally take arguments (thanks @emwalker)
 - Driver templates can now be disabled to allow further re-use of the existing
   drivers without having to recompile custom ones. (thanks @kurt-stolle)
+- Add "whereIn" helpers for int64 (thanks @sadayuki-matsuno)
 
 ### Fixed
 

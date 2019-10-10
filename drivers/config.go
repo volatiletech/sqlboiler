@@ -47,7 +47,11 @@ func (c Config) MustInt(key string) int {
 	case float64:
 		integer = int(t)
 	case string:
-		integer, _ = strconv.Atoi(t)
+		var err error
+		integer, err = strconv.Atoi(t)
+		if err != nil {
+			panic(errors.Errorf("fail to parse %v to int: %v", t, err))
+		}
 	default:
 		panic(errors.Errorf("found key %s in config, but it was not an int (%T)", key, i))
 	}
@@ -104,7 +108,11 @@ func (c Config) Int(key string) (int, bool) {
 	case float64:
 		integer = int(t)
 	case string:
-		integer, _ = strconv.Atoi(t)
+		var err error
+		integer, err = strconv.Atoi(t)
+		if err != nil {
+			return 0, false
+		}
 	default:
 		return 0, false
 	}

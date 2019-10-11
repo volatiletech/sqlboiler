@@ -52,8 +52,8 @@ func hQuote(s interface{}) string {
 		panic("not a string or sql.NullString")
 	}
 
-	str = strings.Replace(str, "\\", "\\\\", -1)
-	return `"` + strings.Replace(str, "\"", "\\\"", -1) + `"`
+	str = strings.ReplaceAll(str, "\\", "\\\\")
+	return `"` + strings.ReplaceAll(str, "\"", "\\\"") + `"`
 }
 
 // Scan implements the Scanner interface.
@@ -103,7 +103,7 @@ func (h *HStore) Scan(value interface{}) error {
 					continue
 				case ',':
 					s := string(pair[1])
-					if !didQuote && len(s) == 4 && strings.ToLower(s) == "null" {
+					if !didQuote && len(s) == 4 && strings.EqualFold(s, "null") {
 						(*h)[string(pair[0])] = null.String{String: "", Valid: false}
 					} else {
 						(*h)[string(pair[0])] = null.String{String: string(pair[1]), Valid: true}
@@ -119,7 +119,7 @@ func (h *HStore) Scan(value interface{}) error {
 	}
 	if bindex > 0 {
 		s := string(pair[1])
-		if !didQuote && len(s) == 4 && strings.ToLower(s) == "null" {
+		if !didQuote && len(s) == 4 && strings.EqualFold(s, "null") {
 			(*h)[string(pair[0])] = null.String{String: "", Valid: false}
 		} else {
 			(*h)[string(pair[0])] = null.String{String: string(pair[1]), Valid: true}

@@ -589,13 +589,13 @@ func mergeTemplates(dst, src map[string]templateLoader) {
 // normalizeSlashes takes a path that was made on linux or windows and converts it
 // to a native path.
 func normalizeSlashes(path string) string {
-	path = strings.Replace(path, `/`, string(os.PathSeparator), -1)
-	path = strings.Replace(path, `\`, string(os.PathSeparator), -1)
+	path = strings.ReplaceAll(path, `/`, string(os.PathSeparator))
+	path = strings.ReplaceAll(path, `\`, string(os.PathSeparator))
 	return path
 }
 
 // denormalizeSlashes takes any backslashes and converts them to linux style slashes
 func denormalizeSlashes(path string) string {
-	path = strings.Replace(path, `\`, `/`, -1)
+	path = strings.ReplaceAll(path, `\`, `/`)
 	return path
 }

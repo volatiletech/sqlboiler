@@ -171,8 +171,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 
 // getStructNullValue for the matching type.
 func getStructNullValue(s *Seed, fieldType string, typ reflect.Type) interface{} {
-	switch typ {
-	case typeTime:
+	if typ == typeTime {
 		// MySQL does not support 0 value time.Time, so use rand
 		return Date(s.NextInt)
 	}
@@ -184,8 +183,7 @@ func getStructNullValue(s *Seed, fieldType string, typ reflect.Type) interface{}
 // The randomness is really an incrementation of the global seed,
 // this is done to avoid duplicate key violations.
 func getStructRandValue(s *Seed, fieldType string, typ reflect.Type) interface{} {
-	switch typ {
-	case typeTime:
+	if typ == typeTime {
 		return Date(s.NextInt)
 	}
 

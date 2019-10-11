@@ -440,7 +440,7 @@ func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, g
 	}
 
 	if foundAt == -1 {
-		return strings.Replace(clause, `\?`, "?", -1), 0
+		return strings.ReplaceAll(clause, `\?`, "?"), 0
 	}
 
 	paramBuf.WriteString(clause[:foundAt])
@@ -450,7 +450,7 @@ func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, g
 	paramBuf.WriteString(clause[foundAt+1:])
 
 	// Remove all backslashes from escaped question-marks
-	ret := strings.Replace(paramBuf.String(), `\?`, "?", -1)
+	ret := strings.ReplaceAll(paramBuf.String(), `\?`, "?")
 	return ret, total
 }
 

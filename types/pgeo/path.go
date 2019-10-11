@@ -9,7 +9,7 @@ import (
 
 // Path is represented by lists of connected points.
 // Paths can be open, where the first and last points in the list are considered not connected,
-//or closed, where the first and last points are considered connected.
+// or closed, where the first and last points are considered connected.
 type Path struct {
 	Points []Point
 	Closed bool `json:"closed"`

@@ -113,6 +113,10 @@ func Load(relationship string, mods ...QueryMod) QueryMod {
 	}
 }
 
+func LoadJoined() QueryMod {
+	return loadJoinedQueryMod{}
+}
+
 type innerJoinQueryMod struct {
 	clause string
 	args   []interface{}

@@ -23,12 +23,12 @@ type {{$alias.UpSingular}} struct {
 	{{- $uniqueForeignTables := .Table.ForeignTables -}}
 type {{$alias.UpSingular}}JoinedResponse struct {
 	{{$alias.UpSingular}} `boil:"{{.Table.Name}},bind"`
-	{{range .Table.FKeys -}}
+	{{- range .Table.FKeys -}}
 	{{- $relAlias := $alias.Relationship .Name -}}
 	{{- $fTableAlias := $.Aliases.Table .ForeignTable -}}
 	{{- if eq $relAlias.Foreign $fTableAlias.UpSingular }}
 		{{$relAlias.Foreign}} `boil:"{{.ForeignTable}},bind"`
-	{{- end}}
+	{{- end -}}
 	{{end -}}
 }
 

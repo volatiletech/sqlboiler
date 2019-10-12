@@ -1,6 +1,6 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
 
-// {{$alias.UpSingular}} is an object representing the database table.
+// {{$alias.UpSingular}} is an object representing the database table
 type {{$alias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
@@ -18,6 +18,32 @@ type {{$alias.UpSingular}} struct {
 	L {{$alias.DownSingular}}L `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
 	{{end -}}
 }
+
+{{if .Table.FKeys -}}
+	{{- $uniqueForeignTables := .Table.ForeignTables -}}
+type {{$alias.UpSingular}}JoinedResponse struct {
+	{{$alias.UpSingular}} `boil:"{{.Table.Name}},bind"`
+	{{range .Table.FKeys -}}
+	{{- $relAlias := $alias.Relationship .Name -}}
+	{{- $fTableAlias := $.Aliases.Table .ForeignTable -}}
+	{{- if eq $relAlias.Foreign $fTableAlias.UpSingular }}
+		{{$relAlias.Foreign}} `boil:"{{.ForeignTable}},bind"`
+	{{- end}}
+	{{end -}}
+}
+
+var {{$alias.DownSingular}}RelationshipColumns = relationMap{
+	{{range .Table.FKeys -}}
+		{{- $fAlias := $.Aliases.Table .ForeignTable -}}
+		{{- $relAlias := $alias.Relationship .Name -}}
+        {{- $colAlias := $alias.Column .Column -}}
+		{{$alias.UpSingular}}Columns.{{$colAlias}}: {
+			Table: TableNames.{{titleCase .ForeignTable}},
+			Column: {{$fAlias.UpSingular}}Columns.{{index $fAlias.Columns .ForeignColumn}},
+		},
+	{{end -}}
+}
+{{- end}}
 
 var {{$alias.UpSingular}}Columns = struct {
 	{{range $column := .Table.Columns -}}

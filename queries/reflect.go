@@ -134,6 +134,19 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return err
 	}
+	currentObj := obj
+
+	if q.loadJoin {
+		currentObj, err = eagerLoadJoin(q, obj, bkind)
+		if err != nil {
+			return err
+		}
+		// using a new bind type, so re-populate
+		structType, sliceType, bkind, err = bindChecks(currentObj)
+		if err != nil {
+			return err
+		}
+	}
 
 	var rows *sql.Rows
 	if ctx != nil {
@@ -144,7 +157,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
-	if err = bind(rows, obj, structType, sliceType, bkind); err != nil {
+	if err = bind(rows, currentObj, structType, sliceType, bkind); err != nil {
 		if innerErr := rows.Close(); innerErr != nil {
 			return errors.Wrapf(err, "error on rows.Close after bind error: %+v", innerErr)
 		}
@@ -158,10 +171,65 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 		return errors.Wrap(err, "error from rows in bind")
 	}
 
-	if len(q.load) != 0 {
+	if len(q.load) != 0 && !q.loadJoin {
 		return eagerLoad(ctx, exec, q.load, q.loadMods, obj, bkind)
 	}
 
+	if q.loadJoin {
+		// we have to take the data that was bound into the load join struct and get it into
+		// the expected struct type
+		objVal := reflect.Indirect(reflect.ValueOf(obj))
+		currentObjVal := reflect.Indirect(reflect.ValueOf(currentObj))
+		if bkind == kindPtrSliceStruct {
+			objType := reflect.TypeOf(obj).Elem().Elem().Elem()
+			for i := 0; i < currentObjVal.Len(); i++ {
+				newObj := reflect.Indirect(reflect.New(objType))
+				processLoadJoinStruct(reflect.Indirect(currentObjVal.Index(i)), newObj)
+				objVal.Set(reflect.Append(objVal, newObj.Addr()))
+			}
+		} else if bkind == kindStruct {
+			// currentObj will have a field with the same type as the type of objVal
+			processLoadJoinStruct(currentObjVal, objVal)
+		} else {
+			return errors.New("unsupported bindKind for loadJoin: " + string(bkind))
+		}
+	}
+
+	return nil
+}
+
+// processLoadJoinStruct uses reflection to populate a struct of a type from a generated table
+// from a struct of the load join type
+func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) error {
+	for i := 0; i < currentObjVal.NumField(); i++ {
+		coField := currentObjVal.Field(i)
+		if coField.Type() == objVal.Type() {
+			objVal.Set(coField)
+			break
+		}
+	}
+	// take the loadjoin struct and map it into the original obj struct (populate *R)
+	relationshipStruct := objVal.FieldByName(relationshipStructName)
+	if !relationshipStruct.IsValid() {
+		return errors.New("cannot find relationship struct")
+	}
+	rStruct := reflect.Indirect(reflect.New(relationshipStruct.Type().Elem()))
+	for i := 0; i < rStruct.NumField(); i++ {
+		f := rStruct.Field(i)
+		if f.Kind() == reflect.Ptr {
+			baseType := f.Type().Elem()
+			// currentObj is where the data is. we need to get the value of the same type from currentObj
+			// and set it in our new rStruct
+			for j := 0; j < currentObjVal.NumField(); j++ {
+				cf := currentObjVal.Field(j)
+				if cf.Type() == baseType {
+					f.Set(cf.Addr())
+				}
+			}
+		}
+	}
+	// set the R struct to be our new value
+	relationshipStruct.Set(rStruct.Addr())
 	return nil
 }
 

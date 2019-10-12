@@ -64,3 +64,13 @@ func (t Table) CanLastInsertID() bool {
 
 	return true
 }
+
+// return only the unique foreign tables of all FKeys
+func (t Table) ForeignTables() map[string]bool {
+	tableMap := make(map[string]bool)
+	for _, fkey := range t.FKeys {
+		tableMap[fkey.ForeignTable] = true
+	}
+
+	return tableMap
+}

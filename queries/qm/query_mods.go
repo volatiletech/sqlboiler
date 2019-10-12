@@ -65,6 +65,10 @@ type loadQueryMod struct {
 	mods         []QueryMod
 }
 
+type loadJoinedQueryMod struct {
+	mods []QueryMod
+}
+
 // Apply implements QueryMod.Apply.
 func (qm loadQueryMod) Apply(q *queries.Query) {
 	queries.AppendLoad(q, qm.relationship)
@@ -72,6 +76,10 @@ func (qm loadQueryMod) Apply(q *queries.Query) {
 	if len(qm.mods) != 0 {
 		queries.SetLoadMods(q, qm.relationship, queryMods(qm.mods))
 	}
+}
+
+func (qm loadJoinedQueryMod) Apply(q *queries.Query) {
+	queries.SetLoadJoin(q)
 }
 
 // Load allows you to specify foreign key relationships to eager load

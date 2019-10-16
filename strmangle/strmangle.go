@@ -723,3 +723,12 @@ func RemoveDuplicates(dedup []string) []string {
 
 	return dedup
 }
+
+// FirstLine returns the first line of a multi-line string, or
+// the entire string if it doesn't contain a line separator.
+func FirstLine(s string) string {
+	if n := strings.IndexAny(s, "\r\n"); n >= 0 {
+		return s[:n]
+	}
+	return s
+}

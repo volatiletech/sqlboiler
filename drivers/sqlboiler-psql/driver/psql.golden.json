@@ -2298,6 +2298,36 @@
 					"domain_name": null,
 					"full_db_type": "int4",
 					"auto_generated": false
+				},
+				{
+					"name": "email_validated",
+					"type": "null.Bool",
+					"db_type": "boolean",
+					"default": "false",
+					"comment": "Has the email address been tested?",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"arr_type": null,
+					"udt_name": "bool",
+					"domain_name": null,
+					"full_db_type": "bool",
+					"auto_generated": false
+				},
+				{
+					"name": "primary_email",
+					"type": "null.String",
+					"db_type": "character varying",
+					"default": "",
+					"comment": "The user's preferred email address.",
+					"nullable": true,
+					"unique": true,
+					"validated": false,
+					"arr_type": null,
+					"udt_name": "varchar",
+					"domain_name": null,
+					"full_db_type": "character varying(100)",
+					"auto_generated": false
 				}
 			],
 			"p_key": {

@@ -207,6 +207,19 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		c.domain_name,
 		c.column_default,
 
+		(select pg_catalog.col_description(pgc.oid, c.ordinal_position::int)
+			from pg_catalog.pg_namespace pgn
+			join pg_catalog.pg_class pgc
+			  on pgc.relnamespace = pgn.oid
+			join pg_catalog.pg_attribute pga
+			  on pga.attrelid = pgc.oid
+			where pgn.nspname = $1
+			  and pgc.relname = $2
+			  and pga.attname = c.column_name
+			  and pga.attnum > 0
+			  and not pga.attisdropped
+			) as comment,
+
 		c.is_nullable = 'YES' as is_nullable,
 		(case
 			when (select
@@ -293,9 +306,9 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 	for rows.Next() {
 		var colName, colType, colFullType, udtName string
-		var defaultValue, arrayType, domainName *string
+		var defaultValue, comment, arrayType, domainName *string
 		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &nullable, &identity, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -311,6 +324,9 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		}
 		if defaultValue != nil {
 			column.Default = *defaultValue
+		}
+		if comment != nil {
+			column.Comment = *comment
 		}
 
 		if identity != false {

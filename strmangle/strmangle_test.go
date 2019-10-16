@@ -652,3 +652,25 @@ func TestRemoveDuplicates(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestFirstLine(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		In  string
+		Out string
+	}{
+		{In: "", Out: ""},
+		{In: "\nfoo", Out: ""},
+		{In: "bar", Out: "bar"},
+		{In: "baz\nqux", Out: "baz"},
+		{In: "quux\r\ncorge", Out: "quux"},
+		{In: "grault\ngarply\nwaldo", Out: "grault"},
+	}
+
+	for i, test := range tests {
+		if got := FirstLine(test.In); got != test.Out {
+			t.Errorf("[%d] (%q) want: %q, got: %q", i, test.In, test.Out, got)
+		}
+	}
+}

@@ -252,6 +252,7 @@ var templateFunctions = template.FuncMap{
 	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
 	"id":        strmangle.Identifier,
 	"goVarname": func(s string) string { return goVarnameReplacer.Replace(s) },
+	"firstLine": strmangle.FirstLine,
 
 	// Pluralization
 	"singular": strmangle.Singular,

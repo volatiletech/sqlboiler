@@ -1,0 +1,60 @@
+#!/bin/bash
+set -ex
+
+LASTEST_MAJOR="3"
+DRIVERS="mssql mysql psql"
+
+# inspired from https://github.com/fsaintjacques/semver-tool
+SEMVER_REGEX="^[vV]?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\-(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$"
+
+if [[ "${SOURCE_BRANCH}" =~ ${SEMVER_REGEX} ]]; then
+    major="${BASH_REMATCH[1]}"
+    minor="${BASH_REMATCH[2]}"
+    patch="${BASH_REMATCH[3]}"
+    prere="${BASH_REMATCH[4]}"
+else
+    echo "The tag is not semantic versioning 2.0.0 compatible, not pushing any build."
+    exit 1
+fi
+
+# tag and push a docker image
+function tagAndPush {
+    src_tag="$1"
+    dst_tag="$2"
+
+    docker tag "$src_tag" "$dst_tag"
+    docker push "$dst_tag"
+}
+
+# tag and push a version of each image (main image, and single driver images)
+function tagAndPushVersion {
+    version="$1"
+
+    # main image (all drivers)
+    tagAndPush sqlboiler "${DOCKER_REPO}:${version}"
+
+    # single driver images
+    for driver in $DRIVERS; do
+        tagAndPush "sqlboiler-${driver}" "${DOCKER_REPO}:${version}-${driver}"
+    done
+}
+
+# if not a prerelease
+if [[ "${prere}" == "" ]]; then
+    tagAndPushVersion "${major}"
+    tagAndPushVersion "${major}.${minor}"
+    tagAndPushVersion "${major}.${minor}.${patch}"
+
+    # if the major version correspond to the latest major version
+    if [[ "${major}" == "${LASTEST_MAJOR}" ]]; then
+        # main image (all drivers)
+        tagAndPush sqlboiler "${DOCKER_REPO}:latest"
+
+        # single driver images
+        for driver in $DRIVERS; do
+            tagAndPush "sqlboiler-${driver}" "${DOCKER_REPO}:${driver}"
+        done
+    fi
+else
+    tagAndPushVersion "${major}.${minor}.${patch}${prere}"
+fi

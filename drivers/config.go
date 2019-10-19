@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
 )
 
 // Config is a map with helper functions

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
 )
 
 func TestIdentQuote(t *testing.T) {

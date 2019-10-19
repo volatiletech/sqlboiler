@@ -356,7 +356,7 @@ func TestMerge(t *testing.T) {
 var testImportStringExpect = `import (
 	"fmt"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
 )`
 
 func TestSetFormat(t *testing.T) {
@@ -367,7 +367,7 @@ func TestSetFormat(t *testing.T) {
 			`"fmt"`,
 		},
 		ThirdParty: List{
-			`"github.com/pkg/errors"`,
+			`"github.com/friendsofgo/errors"`,
 		},
 	}
 

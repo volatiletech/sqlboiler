@@ -212,6 +212,9 @@ func columnFromInterface(i interface{}) (col drivers.Column) {
 	if s := m["type"]; s != nil {
 		col.Type = s.(string)
 	}
+	if s := m["null_type"]; s != nil {
+		col.NullType = s.(string)
+	}
 	if s := m["db_type"]; s != nil {
 		col.DBType = s.(string)
 	}

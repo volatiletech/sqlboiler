@@ -64,14 +64,14 @@ func fullyQualifiedColumns(tableName string, columns []string) (query string) {
 }
 
 // construct a simple join clause
-func joinClause(sourceColumn string, relationMap relationMap) (clause string, err error) {
+func joinClause(sourceTable string, sourceColumn string, relationMap relationMap) (clause string, err error) {
 	relation, ok := relationMap[sourceColumn]
 	if !ok {
 		err = errors.New("Cannot find source column in relationMap")
 		return
 	}
 
-	clause = fmt.Sprintf("`%s` ON `%s`=`%s`.`%s`", relation.Table, sourceColumn, relation.Table, relation.Column)
+	clause = fmt.Sprintf("`%s` ON `%s`.`%s`=`%s`.`%s`", relation.Table, sourceTable, sourceColumn, relation.Table, relation.Column)
 	return
 }
 
@@ -96,18 +96,18 @@ func getSourceColumn(typeName string, rColumns relationMap) (sourceColumn string
 
 
 // given a type that the relationship points to, build an InnerJoin query mod
-func innerJoin(typeName string, rColumns relationMap) qm.QueryMod {
+func leftJoin(sourceTable string, typeName string, rColumns relationMap) qm.QueryMod {
 	sourceColumn, err := getSourceColumn(typeName, rColumns)
 	if err != nil {
 		return nil
 	}
 
-	clause, err := joinClause(sourceColumn, rColumns)
+	clause, err := joinClause(sourceTable, sourceColumn, rColumns)
 	if err != nil {
 		return nil
 	}
 
-	return qm.InnerJoin(clause)
+	return qm.LeftOuterJoin(clause)
 }
 
 

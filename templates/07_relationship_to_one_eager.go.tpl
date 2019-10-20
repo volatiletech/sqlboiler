@@ -14,7 +14,7 @@
 	queryMods[0] = qm.From(TableNames.{{titleCase .Table.Name}})
 	for i, join := range joinable {
 		allColumns[i+1] = fullyQualifiedColumns(typeNameToTableName[join], typeNameToTableColumns[join])
-		queryMods[i+2] = innerJoin(join, {{$alias.DownSingular}}RelationshipColumns)
+		queryMods[i+2] = leftJoin(TableNames.{{titleCase .Table.Name}}, join, {{$alias.DownSingular}}RelationshipColumns)
 	}
 	queryMods[1] = qm.Select(strings.Join(allColumns, ","))
 

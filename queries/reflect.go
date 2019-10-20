@@ -38,6 +38,7 @@ const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
 	loaderStructName       = "L"
+	nullTypeSuffix         = "Null"
 	sentinel               = uint64(255)
 )
 
@@ -222,8 +223,26 @@ func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) er
 			// and set it in our new rStruct
 			for j := 0; j < currentObjVal.NumField(); j++ {
 				cf := currentObjVal.Field(j)
+				myType := cf.Type().String()
+				if myType != "" {
+				}
+				baseTypeName := baseType.String()
+				if baseTypeName != "" {
+				}
 				if cf.Type() == baseType {
 					f.Set(cf.Addr())
+					break
+				}
+				// we need to use a temporary, all-null struct in order for outer joins to work
+				// this is because if a nullable foreign key is null, the outer join will return all columns of the db
+				// as null. to avoid scanning errors, we bind into a version of the struct where every field is a nullable type
+				// and then here we need to convert back to the normal type, if there was in fact a relationship
+				if cf.Type().String() == baseType.String()+nullTypeSuffix {
+					fromNull, err := loadJoinFromNull(baseType, cf)
+					if err == nil {
+						f.Set(fromNull.Addr())
+					}
+					break
 				}
 			}
 		}
@@ -231,6 +250,45 @@ func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) er
 	// set the R struct to be our new value
 	relationshipStruct.Set(rStruct.Addr())
 	return nil
+}
+
+// move fields from the all-null version back to the "real" version of this type
+// return an error if every field is null; that means there was no relationship (the nullable foreign key was set to null)
+func loadJoinFromNull(baseType reflect.Type, nullVal reflect.Value) (baseVal reflect.Value, err error) {
+	const valid = "Valid"
+	baseVal = reflect.Indirect(reflect.New(baseType))
+	haveValid := false
+
+	for i := 0; i < nullVal.NumField(); i++ {
+		bf := baseVal.Field(i)
+		nf := nullVal.Field(i)
+		// every null field is of a null.X type, which is a struct of the real type and a "Valid" bool
+		nullValid := nf.FieldByName(valid)
+		if !nullValid.Bool() {
+			continue
+		}
+		haveValid = true
+		// the base field might be a nullable, in which case we just copy it over
+		if bf.Type() == nf.Type() {
+			bf.Set(nf)
+		} else {
+			for nullStructCtr := 0; nullStructCtr < nf.NumField(); nullStructCtr++ {
+				// find the other field - not named "Valid" - in the null struct
+				nullStructField := nf.Field(nullStructCtr)
+				fieldName := nf.Type().Field(nullStructCtr).Name
+				if fieldName != valid {
+					// set it in the "real" (non-null) object
+					bf.Set(nullStructField)
+					break
+				}
+			}
+		}
+	}
+
+	if !haveValid {
+		err = errors.New("all values were null")
+	}
+	return
 }
 
 // bindChecks resolves information about the bind target, and errors if it's not an object
@@ -351,9 +409,6 @@ Rows:
 		case kindPtrSliceStruct:
 			newStruct = reflect.New(structType)
 			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
-		}
-		if err != nil {
-			return err
 		}
 
 		if err := rows.Scan(pointers...); err != nil {

@@ -19,6 +19,20 @@ type {{$alias.UpSingular}} struct {
 	{{end -}}
 }
 
+// an all-null version of the type, for use in outer join queries where it may not exist
+type {{$alias.UpSingular}}Null struct {
+{{- range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{if eq $.StructTagCasing "title" -}}
+		{{$colAlias}} {{$column.NullType}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | titleCase}}" yaml:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}"`
+	{{else if eq $.StructTagCasing "camel" -}}
+		{{$colAlias}} {{$column.NullType}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`
+	{{else -}}
+		{{$colAlias}} {{$column.NullType}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
+	{{end -}}
+{{end -}}
+}
+
 {{if .Table.FKeys -}}
 	{{- $uniqueForeignTables := .Table.ForeignTables -}}
 type {{$alias.UpSingular}}JoinedResponse struct {
@@ -27,7 +41,7 @@ type {{$alias.UpSingular}}JoinedResponse struct {
 	{{- $relAlias := $alias.Relationship .Name -}}
 	{{- $fTableAlias := $.Aliases.Table .ForeignTable -}}
 	{{- if eq $relAlias.Foreign $fTableAlias.UpSingular }}
-		{{$relAlias.Foreign}} `boil:"{{.ForeignTable}},bind"`
+		{{$relAlias.Foreign}}{{if .Nullable}}Null{{end}} `boil:"{{.ForeignTable}},bind"`
 	{{- end -}}
 	{{end -}}
 }

@@ -5,6 +5,7 @@ package drivers
 
 import (
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -45,6 +46,12 @@ func (c Config) MustInt(key string) int {
 		integer = t
 	case float64:
 		integer = int(t)
+	case string:
+		var err error
+		integer, err = strconv.Atoi(t)
+		if err != nil {
+			panic(errors.Errorf("fail to parse %v to int: %v", t, err))
+		}
 	default:
 		panic(errors.Errorf("found key %s in config, but it was not an int (%T)", key, i))
 	}
@@ -100,6 +107,12 @@ func (c Config) Int(key string) (int, bool) {
 		integer = t
 	case float64:
 		integer = int(t)
+	case string:
+		var err error
+		integer, err = strconv.Atoi(t)
+		if err != nil {
+			return 0, false
+		}
 	default:
 		return 0, false
 	}

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   calls on insert when the id was already known.
 - Fix various quality issues such as Replace(..., -1) -> ReplaceAll, use of
   EqualFold, etc. (thanks @sosiska)
+- Fix an issue where using environment variables to configure sqlboiler's
+  drivers the port would fail to parse (thanks @letientai299)
 
 ## [v3.5.0] - 2019-08-26
 

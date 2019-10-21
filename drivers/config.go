@@ -50,7 +50,7 @@ func (c Config) MustInt(key string) int {
 		var err error
 		integer, err = strconv.Atoi(t)
 		if err != nil {
-			panic(errors.Errorf("fail to parse %v to int: %v", t, err))
+			panic(errors.Errorf("failed to parse key %s (%s) to int: %v", key, t, err))
 		}
 	default:
 		panic(errors.Errorf("found key %s in config, but it was not an int (%T)", key, i))

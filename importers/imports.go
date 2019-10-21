@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
@@ -201,7 +201,7 @@ func NewDefaultImports() Collection {
 			`"time"`,
 		},
 		ThirdParty: List{
-			`"github.com/pkg/errors"`,
+			`"github.com/friendsofgo/errors"`,
 			`"github.com/volatiletech/sqlboiler/boil"`,
 			`"github.com/volatiletech/sqlboiler/queries"`,
 			`"github.com/volatiletech/sqlboiler/queries/qm"`,
@@ -223,7 +223,7 @@ func NewDefaultImports() Collection {
 				`"strconv"`,
 			},
 			ThirdParty: List{
-				`"github.com/pkg/errors"`,
+				`"github.com/friendsofgo/errors"`,
 				`"github.com/volatiletech/sqlboiler/boil"`,
 				`"github.com/volatiletech/sqlboiler/strmangle"`,
 			},

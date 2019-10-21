@@ -1104,95 +1104,51 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"templates/00_struct.go.tpl": templates00_structGoTpl,
-
-	"templates/01_types.go.tpl": templates01_typesGoTpl,
-
-	"templates/02_hooks.go.tpl": templates02_hooksGoTpl,
-
-	"templates/03_finishers.go.tpl": templates03_finishersGoTpl,
-
-	"templates/04_relationship_to_one.go.tpl": templates04_relationship_to_oneGoTpl,
-
-	"templates/05_relationship_one_to_one.go.tpl": templates05_relationship_one_to_oneGoTpl,
-
-	"templates/06_relationship_to_many.go.tpl": templates06_relationship_to_manyGoTpl,
-
-	"templates/07_relationship_to_one_eager.go.tpl": templates07_relationship_to_one_eagerGoTpl,
-
-	"templates/08_relationship_one_to_one_eager.go.tpl": templates08_relationship_one_to_one_eagerGoTpl,
-
-	"templates/09_relationship_to_many_eager.go.tpl": templates09_relationship_to_many_eagerGoTpl,
-
-	"templates/10_relationship_to_one_setops.go.tpl": templates10_relationship_to_one_setopsGoTpl,
-
-	"templates/11_relationship_one_to_one_setops.go.tpl": templates11_relationship_one_to_one_setopsGoTpl,
-
-	"templates/12_relationship_to_many_setops.go.tpl": templates12_relationship_to_many_setopsGoTpl,
-
-	"templates/13_all.go.tpl": templates13_allGoTpl,
-
-	"templates/14_find.go.tpl": templates14_findGoTpl,
-
-	"templates/15_insert.go.tpl": templates15_insertGoTpl,
-
-	"templates/16_update.go.tpl": templates16_updateGoTpl,
-
-	"templates/18_delete.go.tpl": templates18_deleteGoTpl,
-
-	"templates/19_reload.go.tpl": templates19_reloadGoTpl,
-
-	"templates/20_exists.go.tpl": templates20_existsGoTpl,
-
-	"templates/21_auto_timestamps.go.tpl": templates21_auto_timestampsGoTpl,
-
-	"templates/singleton/boil_queries.go.tpl": templatesSingletonBoil_queriesGoTpl,
-
-	"templates/singleton/boil_table_names.go.tpl": templatesSingletonBoil_table_namesGoTpl,
-
-	"templates/singleton/boil_types.go.tpl": templatesSingletonBoil_typesGoTpl,
-
-	"templates_test/00_types.go.tpl": templates_test00_typesGoTpl,
-
-	"templates_test/all.go.tpl": templates_testAllGoTpl,
-
-	"templates_test/delete.go.tpl": templates_testDeleteGoTpl,
-
-	"templates_test/exists.go.tpl": templates_testExistsGoTpl,
-
-	"templates_test/find.go.tpl": templates_testFindGoTpl,
-
-	"templates_test/finishers.go.tpl": templates_testFinishersGoTpl,
-
-	"templates_test/hooks.go.tpl": templates_testHooksGoTpl,
-
-	"templates_test/insert.go.tpl": templates_testInsertGoTpl,
-
-	"templates_test/relationship_one_to_one.go.tpl": templates_testRelationship_one_to_oneGoTpl,
-
+	"templates/00_struct.go.tpl":                           templates00_structGoTpl,
+	"templates/01_types.go.tpl":                            templates01_typesGoTpl,
+	"templates/02_hooks.go.tpl":                            templates02_hooksGoTpl,
+	"templates/03_finishers.go.tpl":                        templates03_finishersGoTpl,
+	"templates/04_relationship_to_one.go.tpl":              templates04_relationship_to_oneGoTpl,
+	"templates/05_relationship_one_to_one.go.tpl":          templates05_relationship_one_to_oneGoTpl,
+	"templates/06_relationship_to_many.go.tpl":             templates06_relationship_to_manyGoTpl,
+	"templates/07_relationship_to_one_eager.go.tpl":        templates07_relationship_to_one_eagerGoTpl,
+	"templates/08_relationship_one_to_one_eager.go.tpl":    templates08_relationship_one_to_one_eagerGoTpl,
+	"templates/09_relationship_to_many_eager.go.tpl":       templates09_relationship_to_many_eagerGoTpl,
+	"templates/10_relationship_to_one_setops.go.tpl":       templates10_relationship_to_one_setopsGoTpl,
+	"templates/11_relationship_one_to_one_setops.go.tpl":   templates11_relationship_one_to_one_setopsGoTpl,
+	"templates/12_relationship_to_many_setops.go.tpl":      templates12_relationship_to_many_setopsGoTpl,
+	"templates/13_all.go.tpl":                              templates13_allGoTpl,
+	"templates/14_find.go.tpl":                             templates14_findGoTpl,
+	"templates/15_insert.go.tpl":                           templates15_insertGoTpl,
+	"templates/16_update.go.tpl":                           templates16_updateGoTpl,
+	"templates/18_delete.go.tpl":                           templates18_deleteGoTpl,
+	"templates/19_reload.go.tpl":                           templates19_reloadGoTpl,
+	"templates/20_exists.go.tpl":                           templates20_existsGoTpl,
+	"templates/21_auto_timestamps.go.tpl":                  templates21_auto_timestampsGoTpl,
+	"templates/singleton/boil_queries.go.tpl":              templatesSingletonBoil_queriesGoTpl,
+	"templates/singleton/boil_table_names.go.tpl":          templatesSingletonBoil_table_namesGoTpl,
+	"templates/singleton/boil_types.go.tpl":                templatesSingletonBoil_typesGoTpl,
+	"templates_test/00_types.go.tpl":                       templates_test00_typesGoTpl,
+	"templates_test/all.go.tpl":                            templates_testAllGoTpl,
+	"templates_test/delete.go.tpl":                         templates_testDeleteGoTpl,
+	"templates_test/exists.go.tpl":                         templates_testExistsGoTpl,
+	"templates_test/find.go.tpl":                           templates_testFindGoTpl,
+	"templates_test/finishers.go.tpl":                      templates_testFinishersGoTpl,
+	"templates_test/hooks.go.tpl":                          templates_testHooksGoTpl,
+	"templates_test/insert.go.tpl":                         templates_testInsertGoTpl,
+	"templates_test/relationship_one_to_one.go.tpl":        templates_testRelationship_one_to_oneGoTpl,
 	"templates_test/relationship_one_to_one_setops.go.tpl": templates_testRelationship_one_to_one_setopsGoTpl,
-
-	"templates_test/relationship_to_many.go.tpl": templates_testRelationship_to_manyGoTpl,
-
-	"templates_test/relationship_to_many_setops.go.tpl": templates_testRelationship_to_many_setopsGoTpl,
-
-	"templates_test/relationship_to_one.go.tpl": templates_testRelationship_to_oneGoTpl,
-
-	"templates_test/relationship_to_one_setops.go.tpl": templates_testRelationship_to_one_setopsGoTpl,
-
-	"templates_test/reload.go.tpl": templates_testReloadGoTpl,
-
-	"templates_test/select.go.tpl": templates_testSelectGoTpl,
-
-	"templates_test/types.go.tpl": templates_testTypesGoTpl,
-
-	"templates_test/update.go.tpl": templates_testUpdateGoTpl,
-
-	"templates_test/singleton/boil_main_test.go.tpl": templates_testSingletonBoil_main_testGoTpl,
-
-	"templates_test/singleton/boil_queries_test.go.tpl": templates_testSingletonBoil_queries_testGoTpl,
-
-	"templates_test/singleton/boil_suites_test.go.tpl": templates_testSingletonBoil_suites_testGoTpl,
+	"templates_test/relationship_to_many.go.tpl":           templates_testRelationship_to_manyGoTpl,
+	"templates_test/relationship_to_many_setops.go.tpl":    templates_testRelationship_to_many_setopsGoTpl,
+	"templates_test/relationship_to_one.go.tpl":            templates_testRelationship_to_oneGoTpl,
+	"templates_test/relationship_to_one_setops.go.tpl":     templates_testRelationship_to_one_setopsGoTpl,
+	"templates_test/reload.go.tpl":                         templates_testReloadGoTpl,
+	"templates_test/select.go.tpl":                         templates_testSelectGoTpl,
+	"templates_test/types.go.tpl":                          templates_testTypesGoTpl,
+	"templates_test/update.go.tpl":                         templates_testUpdateGoTpl,
+	"templates_test/singleton/boil_main_test.go.tpl":       templates_testSingletonBoil_main_testGoTpl,
+	"templates_test/singleton/boil_queries_test.go.tpl":    templates_testSingletonBoil_queries_testGoTpl,
+	"templates_test/singleton/boil_suites_test.go.tpl":     templates_testSingletonBoil_suites_testGoTpl,
 }
 
 // AssetDir returns the file names below a certain

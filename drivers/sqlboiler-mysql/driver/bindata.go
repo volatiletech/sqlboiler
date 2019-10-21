@@ -264,15 +264,11 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"templates/17_upsert.go.tpl": templates17_upsertGoTpl,
-
-	"templates/singleton/mysql_upsert.go.tpl": templatesSingletonMysql_upsertGoTpl,
-
-	"templates_test/singleton/mysql_main_test.go.tpl": templates_testSingletonMysql_main_testGoTpl,
-
+	"templates/17_upsert.go.tpl":                        templates17_upsertGoTpl,
+	"templates/singleton/mysql_upsert.go.tpl":           templatesSingletonMysql_upsertGoTpl,
+	"templates_test/singleton/mysql_main_test.go.tpl":   templates_testSingletonMysql_main_testGoTpl,
 	"templates_test/singleton/mysql_suites_test.go.tpl": templates_testSingletonMysql_suites_testGoTpl,
-
-	"templates_test/upsert.go.tpl": templates_testUpsertGoTpl,
+	"templates_test/upsert.go.tpl":                      templates_testUpsertGoTpl,
 }
 
 // AssetDir returns the file names below a certain

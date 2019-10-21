@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   the `*big.Decimal` itself is nil (thanks @ericlagergren)
 - Fix a bug where mysql/sqlite3 would make spurious select id from table
   calls on insert when the id was already known.
+- Fix various quality issues such as Replace(..., -1) -> ReplaceAll, use of
+  EqualFold, etc. (thanks @sosiska)
 
 ## [v3.5.0] - 2019-08-26
 

@@ -27,6 +27,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix an issue where using environment variables to configure sqlboiler's
   drivers the port would fail to parse (thanks @letientai299)
 
+### Changed
+
+- Changed the github.com/pkg/errors library for github.com/friendsofgo/errors
+  This change is backwards compatible, it simply needs the new dependency
+  to be downloaded. It also provides compatible with the new Go 1.13 error
+  handling idioms with which we'd like for users to be able to use.
+  (thanks @jwilner)
+
 ## [v3.5.0] - 2019-08-26
 
 ### Added

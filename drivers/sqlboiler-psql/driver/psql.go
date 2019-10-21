@@ -467,7 +467,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			var dbType string
 			c.Type, dbType = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-			c.DBType = c.DBType + dbType
+			c.DBType += dbType
 		case "USER-DEFINED":
 			switch c.UDTName {
 			case "hstore":
@@ -526,7 +526,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			var dbType string
 			c.Type, dbType = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-			c.DBType = c.DBType + dbType
+			c.DBType += dbType
 		case "USER-DEFINED":
 			switch c.UDTName {
 			case "hstore":

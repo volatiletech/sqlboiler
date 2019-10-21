@@ -251,7 +251,7 @@ var templateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
 	"id":        strmangle.Identifier,
-	"goVarname": func(s string) string { return goVarnameReplacer.Replace(s) },
+	"goVarname": goVarnameReplacer.Replace,
 
 	// Pluralization
 	"singular": strmangle.Singular,
@@ -289,7 +289,7 @@ var templateFunctions = template.FuncMap{
 	"whereClause": strmangle.WhereClause,
 
 	// Alias and text helping
-	"aliasCols":      func(ta TableAlias) func(string) string { return func(s string) string { return ta.Column(s) } },
+	"aliasCols":      func(ta TableAlias) func(string) string { return ta.Column },
 	"usesPrimitives": usesPrimitives,
 	"isPrimitive":    isPrimitive,
 

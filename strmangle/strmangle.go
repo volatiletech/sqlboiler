@@ -95,7 +95,7 @@ func SchemaTable(lq, rq string, useSchema bool, schema string, table string) str
 
 // IdentQuote attempts to quote simple identifiers in SQL statements
 func IdentQuote(lq rune, rq rune, s string) string {
-	if strings.ToLower(s) == "null" || s == "?" {
+	if strings.EqualFold(s, "null") || s == "?" {
 		return s
 	}
 

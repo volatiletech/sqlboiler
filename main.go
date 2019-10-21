@@ -253,20 +253,20 @@ func postRun(cmd *cobra.Command, args []string) error {
 func allKeys(prefix string) []string {
 	keys := make(map[string]bool)
 
-	prefix = prefix + "."
+	prefix += "."
 
 	for _, e := range os.Environ() {
 		splits := strings.SplitN(e, "=", 2)
-		key := strings.Replace(strings.ToLower(splits[0]), "_", ".", -1)
+		key := strings.ReplaceAll(strings.ToLower(splits[0]), "_", ".")
 
 		if strings.HasPrefix(key, prefix) {
-			keys[strings.Replace(key, prefix, "", -1)] = true
+			keys[strings.ReplaceAll(key, prefix, "")] = true
 		}
 	}
 
 	for _, key := range viper.AllKeys() {
 		if strings.HasPrefix(key, prefix) {
-			keys[strings.Replace(key, prefix, "", -1)] = true
+			keys[strings.ReplaceAll(key, prefix, "")] = true
 		}
 	}
 

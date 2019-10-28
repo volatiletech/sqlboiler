@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-DRIVERS="mssql mysql psql"
+DRIVERS="$(ls -d drivers/sqlboiler-* | cut -d- -f2-)"
 
 # main image (all drivers included)
 docker build -f "${DOCKERFILE_PATH}" -t sqlboiler .

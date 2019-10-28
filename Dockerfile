@@ -7,10 +7,10 @@ WORKDIR /go/src/github.com/volatiletech/sqlboiler
 
 COPY . .
 RUN go get -v -t ./...
-RUN go build -ldflags "-w -s" . && \
-    go build -ldflags "-w -s" ./drivers/sqlboiler-psql && \
-    go build -ldflags "-w -s" ./drivers/sqlboiler-mysql && \
-    go build -ldflags "-w -s" ./drivers/sqlboiler-mssql
+RUN go build -trimpath -ldflags "-w -s" . && \
+    go build -trimpath -ldflags "-w -s" ./drivers/sqlboiler-psql && \
+    go build -trimpath -ldflags "-w -s" ./drivers/sqlboiler-mysql && \
+    go build -trimpath -ldflags "-w -s" ./drivers/sqlboiler-mssql
 
 
 # sqlboiler (no drivers, just to take advantage of layer caching)

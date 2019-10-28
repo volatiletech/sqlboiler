@@ -1,8 +1,7 @@
 #!/bin/bash
 set -ex
 
-LASTEST_MAJOR="3"
-DRIVERS="mssql mysql psql"
+DRIVERS="$(ls -d drivers/sqlboiler-* | cut -d- -f2-)"
 
 # inspired from https://github.com/fsaintjacques/semver-tool
 SEMVER_REGEX="^[vV]?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\-(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$"
@@ -45,8 +44,9 @@ if [[ "${prere}" == "" ]]; then
     tagAndPushVersion "${major}.${minor}"
     tagAndPushVersion "${major}.${minor}.${patch}"
 
-    # if the major version correspond to the latest major version
-    if [[ "${major}" == "${LASTEST_MAJOR}" ]]; then
+    # if the release correspond to the latest stable version
+    latest="$(git tag --list 'v[0-9]*' --sort=v:refname | grep -E '^v([0-9]+.[0-9]+.[0-9]+)$' | tail -n 1)"
+    if [[ "v${major}.${minor}.${patch}" == "${latest}" ]]; then
         # main image (all drivers)
         tagAndPush sqlboiler "${DOCKER_REPO}:latest"
 

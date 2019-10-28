@@ -1,6 +1,6 @@
 {{- $alias := .Aliases.Table .Table.Name}}
 
-func (o *{{$alias.UpSingular}}) Editor() *{{$alias.UpSingular}}E {
+func (o *{{$alias.UpSingular}}) E() *{{$alias.UpSingular}}E {
     return &{{$alias.UpSingular}}E{S:o}
 }
 

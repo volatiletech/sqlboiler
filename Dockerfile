@@ -1,7 +1,7 @@
 # builder
 FROM golang:1.13-alpine AS builder
 
-RUN apk add git
+RUN apk add git build-base
 
 WORKDIR /go/src/github.com/volatiletech/sqlboiler
 

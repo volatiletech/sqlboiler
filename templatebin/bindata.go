@@ -21,6 +21,7 @@
 // templates/19_reload.go.tpl (4.159kB)
 // templates/20_exists.go.tpl (3.041kB)
 // templates/21_auto_timestamps.go.tpl (2.487kB)
+// templates/22_updater.go.tpl (1.211kB)
 // templates/singleton/boil_queries.go.tpl (769B)
 // templates/singleton/boil_table_names.go.tpl (196B)
 // templates/singleton/boil_types.go.tpl (2.958kB)
@@ -530,6 +531,26 @@ func templates21_auto_timestampsGoTpl() (*asset, error) {
 
 	info := bindataFileInfo{name: "templates/21_auto_timestamps.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x80, 0x2d, 0xff, 0xf2, 0x4c, 0x2a, 0x24, 0xba, 0x26, 0xa3, 0xcc, 0xb7, 0x3, 0xcf, 0x4e, 0xee, 0xa9, 0xd0, 0x35, 0x9f, 0x1c, 0xb0, 0xc1, 0xd3, 0x3e, 0xe3, 0x87, 0xc1, 0xb2, 0xc, 0xde, 0x23}}
+	return a, nil
+}
+
+var _templates22_updaterGoTpl = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xbc\x53\x4d\x8f\xd3\x30\x10\xbd\xe7\x57\xcc\x61\x85\x12\xd4\xfa\x84\x38\xac\xd4\x43\x55\xf5\xc0\x65\x0f\x74\x57\x1c\x10\x07\xaf\x33\x2d\x96\x5c\x3b\xb2\x27\x22\x2b\x33\xff\x1d\xc5\x76\x5a\x2a\x92\x05\x24\xc4\x29\x1f\xf3\x66\x9e\xdf\x1b\xbf\x18\xd7\x70\x27\x8d\x96\x01\xee\x37\x20\xb6\xe3\x1b\x06\xf1\x28\x9f\x0d\x42\x7e\x88\x07\x79\x46\xe6\xaa\x3a\xf6\x56\x41\xed\xe0\x6d\x8c\xb9\x45\x3c\x75\x07\x6d\x4f\xbd\x91\x9e\xb9\x81\x7d\xab\xc9\xf9\xba\x59\x00\xec\x21\x56\x00\x00\x1e\xa9\xf7\x16\xde\xcc\x83\xe2\xe1\xde\x71\x35\xb1\xcd\x63\xfe\x11\xcf\x7c\x25\x72\xa2\xa7\x97\x0e\x17\xe8\x21\x90\xef\x15\x15\x9a\xc3\xc2\x31\x52\x51\x39\xd3\x9f\x6d\x80\xcf\x5f\x02\x79\x6d\x4f\x17\x61\x35\x2e\x9d\xbe\x81\x0f\x36\xa0\xa7\x3a\x46\x7d\x04\xf1\xe0\x76\xce\x12\x0e\xc4\x8c\x03\x2a\x78\x76\xda\x88\xfd\x80\xaa\x27\xe7\x63\x44\x13\x90\x59\xd1\x00\x2a\xc3\x44\x81\xaf\xe0\x0a\x2f\xbf\x7e\xea\xb2\xed\xb8\x30\xf4\xde\xf9\x5b\xb7\x50\x1c\x44\xe1\x57\x34\xe4\x21\xab\x3c\xe5\xd3\x57\x4d\x68\x74\xa0\x1a\x45\xd1\x25\x84\x68\x9a\x3f\xd2\xf4\xd4\xb5\x92\xf0\x3f\x68\x9a\x18\x3e\xba\x6f\x61\x7b\x3c\xa2\x22\x6c\x99\x93\xd2\x69\x72\xad\x2d\xbd\x7f\xb7\xca\xf2\x9b\xd4\x09\x6b\xe6\x5f\x8d\x28\x87\xfe\x1b\x23\x62\xf4\xd2\x9e\x10\xee\x72\x21\x85\x2a\xa7\x68\x57\xae\xc2\x9a\xb9\x4a\xa9\x53\xce\x6c\xa7\xe0\x15\xd3\x32\x66\x6a\x4e\xc1\x4b\xf8\xdf\xda\x1b\xe3\x65\x1c\x73\x9d\xbf\x2e\x13\xbe\x83\x92\x67\x34\x3b\x39\x8a\x87\x6b\xf1\xf1\xa5\xc3\xd1\xb2\xd7\x63\x34\x1a\x71\x33\x1e\x36\xf0\x1a\x41\x69\x9a\x6e\xfe\x06\x64\xd7\xa1\x6d\xaf\x5e\xad\xe6\x63\x55\xfc\xb9\xe5\x6a\x6e\x56\x92\x0d\x2e\xeb\xaa\x7e\x04\x00\x00\xff\xff\xea\x55\xaf\x40\xbb\x04\x00\x00")
+
+func templates22_updaterGoTplBytes() ([]byte, error) {
+	return bindataRead(
+		_templates22_updaterGoTpl,
+		"templates/22_updater.go.tpl",
+	)
+}
+
+func templates22_updaterGoTpl() (*asset, error) {
+	bytes, err := templates22_updaterGoTplBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "templates/22_updater.go.tpl", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x1b, 0x5b, 0xbf, 0x59, 0xdc, 0x31, 0xb7, 0x1, 0x87, 0x5, 0xa2, 0x54, 0x81, 0x31, 0xff, 0xbf, 0x36, 0x1b, 0xde, 0x93, 0x24, 0xae, 0xbf, 0x4f, 0x22, 0xfa, 0xbb, 0x9a, 0x41, 0x61, 0xe1, 0x2e}}
 	return a, nil
 }
 
@@ -1125,6 +1146,7 @@ var _bindata = map[string]func() (*asset, error){
 	"templates/19_reload.go.tpl":                           templates19_reloadGoTpl,
 	"templates/20_exists.go.tpl":                           templates20_existsGoTpl,
 	"templates/21_auto_timestamps.go.tpl":                  templates21_auto_timestampsGoTpl,
+	"templates/22_updater.go.tpl":                          templates22_updaterGoTpl,
 	"templates/singleton/boil_queries.go.tpl":              templatesSingletonBoil_queriesGoTpl,
 	"templates/singleton/boil_table_names.go.tpl":          templatesSingletonBoil_table_namesGoTpl,
 	"templates/singleton/boil_types.go.tpl":                templatesSingletonBoil_typesGoTpl,
@@ -1214,6 +1236,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"19_reload.go.tpl":                         &bintree{templates19_reloadGoTpl, map[string]*bintree{}},
 		"20_exists.go.tpl":                         &bintree{templates20_existsGoTpl, map[string]*bintree{}},
 		"21_auto_timestamps.go.tpl":                &bintree{templates21_auto_timestampsGoTpl, map[string]*bintree{}},
+		"22_updater.go.tpl":                        &bintree{templates22_updaterGoTpl, map[string]*bintree{}},
 		"singleton": &bintree{nil, map[string]*bintree{
 			"boil_queries.go.tpl":     &bintree{templatesSingletonBoil_queriesGoTpl, map[string]*bintree{}},
 			"boil_table_names.go.tpl": &bintree{templatesSingletonBoil_table_namesGoTpl, map[string]*bintree{}},

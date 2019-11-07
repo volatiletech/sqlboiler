@@ -25,8 +25,17 @@ func (e *{{$alias.UpSingular}}E) Update({{if .NoContext}}exec boil.Executor{{els
 {{- $colAlias := $alias.Column $column.Name -}}
 func (e *{{$alias.UpSingular}}E) {{$colAlias}}({{$column.Name | camelCase}} {{$column.Type}}) *{{$alias.UpSingular}}E {
     e.S.{{$colAlias}} = {{$column.Name | camelCase}}
-    e.columns = append(e.columns, {{$alias.UpSingular}}Columns.{{$colAlias}})
+    e.addColumn({{$alias.UpSingular}}Columns.{{$colAlias}})
     return e
 }
 
 {{end -}}
+
+func (e *{{$alias.UpSingular}}E) addColumn(column string) {
+    for _, col := range e.columns {
+        if col == column {
+            return
+        }
+    }
+    e.columns = append(e.columns, column)
+}

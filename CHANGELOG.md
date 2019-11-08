@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Add 'where in' helpers for all primitive Go types
+
 ### Fixed
 
 - Fix an idempotency issue with primary key column ordering

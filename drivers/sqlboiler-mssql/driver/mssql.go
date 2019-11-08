@@ -298,7 +298,8 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 	queryColumns := `
 	SELECT column_name
 	FROM   information_schema.key_column_usage
-	WHERE  table_name = ? AND constraint_name = ? AND table_schema = ?;`
+	WHERE  table_name = ? AND constraint_name = ? AND table_schema = ?
+	ORDER BY ordinal_position;`
 
 	var rows *sql.Rows
 	if rows, err = m.conn.Query(queryColumns, tableName, pkey.Name, schema); err != nil {

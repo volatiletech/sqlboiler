@@ -344,7 +344,8 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  constraint_name = $1 and table_name = $2 and table_schema = $3;`
+	where  constraint_name = $1 and table_name = $2 and table_schema = $3
+	order by kcu.ordinal_position;`
 
 	var rows *sql.Rows
 	if rows, err = p.conn.Query(queryColumns, pkey.Name, tableName, schema); err != nil {

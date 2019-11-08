@@ -223,12 +223,7 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 		}
 
 		if q.offset != 0 {
-			// This seems to be the latest version of mssql's syntax for offset
-			// (the suffix ROWS)
-			// This is true for latest sql server as well as their cloud offerings & the upcoming sql server 2019
-			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-2017
-			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
-			fmt.Fprintf(buf, " OFFSET %d ROWS", q.offset)
+			fmt.Fprintf(buf, " OFFSET %d", q.offset)
 		}
 	} else {
 		// From MS SQL 2012 and above: https://technet.microsoft.com/en-us/library/ms188385(v=sql.110).aspx
@@ -246,7 +241,12 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 				buf.WriteString(" ORDER BY (SELECT NULL)")
 			}
 
-			fmt.Fprintf(buf, " OFFSET %d", q.offset)
+			// This seems to be the latest version of mssql's syntax for offset
+			// (the suffix ROWS)
+			// This is true for latest sql server as well as their cloud offerings & the upcoming sql server 2019
+			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-2017
+			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
+			fmt.Fprintf(buf, " OFFSET %d ROWS", q.offset)
 
 			if q.limit != 0 {
 				fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", q.limit)

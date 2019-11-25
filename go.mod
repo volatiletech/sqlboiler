@@ -1,4 +1,4 @@
-module github.com/razor-1/sqlboiler
+module github.com/razor-1/sqlboiler/v3
 
 go 1.13
 

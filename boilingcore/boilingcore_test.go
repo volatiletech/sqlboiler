@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/razor-1/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/v3/importers"
 
-	"github.com/razor-1/sqlboiler/drivers"
-	_ "github.com/razor-1/sqlboiler/drivers/mocks"
+	"github.com/razor-1/sqlboiler/v3/drivers"
+	_ "github.com/razor-1/sqlboiler/v3/drivers/mocks"
 )
 
 var state *State

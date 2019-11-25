@@ -18,7 +18,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/v3/drivers"
 )
 
 var (

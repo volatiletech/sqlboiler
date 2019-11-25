@@ -24,7 +24,7 @@ import (
 	"database/sql/driver"
 	"strings"
 
-	"github.com/razor-1/sqlboiler/randomize"
+	"github.com/razor-1/sqlboiler/v3/randomize"
 	"github.com/volatiletech/null"
 )
 

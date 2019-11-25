@@ -3,7 +3,7 @@ package drivers
 import (
 	"testing"
 
-	"github.com/razor-1/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/v3/importers"
 )
 
 type testRegistrationDriver struct{}

@@ -3,8 +3,8 @@ package boilingcore
 import (
 	"strings"
 
-	"github.com/razor-1/sqlboiler/drivers"
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 // txtNameToOne creates the local and foreign function names for

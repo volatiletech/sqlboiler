@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/pkg/errors"
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 // Collection of imports for various templating purposes
@@ -202,20 +202,20 @@ func NewDefaultImports() Collection {
 		},
 		ThirdParty: List{
 			`"github.com/pkg/errors"`,
-			`"github.com/razor-1/sqlboiler/boil"`,
-			`"github.com/razor-1/sqlboiler/queries"`,
-			`"github.com/razor-1/sqlboiler/queries/qm"`,
-			`"github.com/razor-1/sqlboiler/queries/qmhelper"`,
-			`"github.com/razor-1/sqlboiler/strmangle"`,
+			`"github.com/razor-1/sqlboiler/v3/boil"`,
+			`"github.com/razor-1/sqlboiler/v3/queries"`,
+			`"github.com/razor-1/sqlboiler/v3/queries/qm"`,
+			`"github.com/razor-1/sqlboiler/v3/queries/qmhelper"`,
+			`"github.com/razor-1/sqlboiler/v3/strmangle"`,
 		},
 	}
 
 	col.Singleton = Map{
 		"boil_queries": {
 			ThirdParty: List{
-				`"github.com/razor-1/sqlboiler/drivers"`,
-				`"github.com/razor-1/sqlboiler/queries"`,
-				`"github.com/razor-1/sqlboiler/queries/qm"`,
+				`"github.com/razor-1/sqlboiler/v3/drivers"`,
+				`"github.com/razor-1/sqlboiler/v3/queries"`,
+				`"github.com/razor-1/sqlboiler/v3/queries/qm"`,
 			},
 		},
 		"boil_types": {
@@ -224,8 +224,8 @@ func NewDefaultImports() Collection {
 			},
 			ThirdParty: List{
 				`"github.com/pkg/errors"`,
-				`"github.com/razor-1/sqlboiler/boil"`,
-				`"github.com/razor-1/sqlboiler/strmangle"`,
+				`"github.com/razor-1/sqlboiler/v3/boil"`,
+				`"github.com/razor-1/sqlboiler/v3/strmangle"`,
 			},
 		},
 	}
@@ -237,10 +237,10 @@ func NewDefaultImports() Collection {
 			`"testing"`,
 		},
 		ThirdParty: List{
-			`"github.com/razor-1/sqlboiler/boil"`,
-			`"github.com/razor-1/sqlboiler/queries"`,
-			`"github.com/razor-1/sqlboiler/randomize"`,
-			`"github.com/razor-1/sqlboiler/strmangle"`,
+			`"github.com/razor-1/sqlboiler/v3/boil"`,
+			`"github.com/razor-1/sqlboiler/v3/queries"`,
+			`"github.com/razor-1/sqlboiler/v3/randomize"`,
+			`"github.com/razor-1/sqlboiler/v3/strmangle"`,
 		},
 	}
 
@@ -259,7 +259,7 @@ func NewDefaultImports() Collection {
 			},
 			ThirdParty: List{
 				`"github.com/spf13/viper"`,
-				`"github.com/razor-1/sqlboiler/boil"`,
+				`"github.com/razor-1/sqlboiler/v3/boil"`,
 			},
 		},
 		"boil_queries_test": {
@@ -272,7 +272,7 @@ func NewDefaultImports() Collection {
 				`"regexp"`,
 			},
 			ThirdParty: List{
-				`"github.com/razor-1/sqlboiler/boil"`,
+				`"github.com/razor-1/sqlboiler/v3/boil"`,
 			},
 		},
 		"boil_suites_test": {

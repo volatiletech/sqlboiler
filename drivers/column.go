@@ -3,7 +3,7 @@ package drivers
 import (
 	"strings"
 
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 // Column holds information about a database column.

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 const alphabetAll = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

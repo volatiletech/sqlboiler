@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/v3/drivers"
 )
 
 func TestAliasesTables(t *testing.T) {

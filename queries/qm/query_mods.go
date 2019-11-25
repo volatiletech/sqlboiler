@@ -3,8 +3,8 @@ package qm
 import (
 	"strings"
 
-	"github.com/razor-1/sqlboiler/queries"
-	"github.com/razor-1/sqlboiler/queries/qmhelper"
+	"github.com/razor-1/sqlboiler/v3/queries"
+	"github.com/razor-1/sqlboiler/v3/queries/qmhelper"
 )
 
 // QueryMod modifies a query object.

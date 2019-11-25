@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/razor-1/sqlboiler/boilingcore"
-	"github.com/razor-1/sqlboiler/drivers"
-	"github.com/razor-1/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/v3/boilingcore"
+	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v3/importers"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

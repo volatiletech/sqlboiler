@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
-	"github.com/razor-1/sqlboiler/drivers"
-	"github.com/razor-1/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v3/importers"
 )
 
 func init() {
@@ -490,8 +490,8 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/razor-1/sqlboiler/strmangle"`,
-				`"github.com/razor-1/sqlboiler/drivers"`,
+				`"github.com/razor-1/sqlboiler/v3/strmangle"`,
+				`"github.com/razor-1/sqlboiler/v3/drivers"`,
 			},
 		},
 	}
@@ -518,8 +518,8 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/razor-1/sqlboiler/drivers/sqlboiler-mysql/driver"`,
-				`"github.com/razor-1/sqlboiler/randomize"`,
+				`"github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-mysql/driver"`,
+				`"github.com/razor-1/sqlboiler/v3/randomize"`,
 				`_ "github.com/go-sql-driver/mysql"`,
 			},
 		},
@@ -582,13 +582,13 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"time"`},
 		},
 		"types.JSON": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
 		},
 		"types.Decimal": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
 		},
 		"types.NullDecimal": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
 		},
 	}
 	return col, err

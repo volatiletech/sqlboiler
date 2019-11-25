@@ -6,8 +6,8 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
-	"github.com/razor-1/sqlboiler/importers"
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 // These constants are used in the config map passed into the driver

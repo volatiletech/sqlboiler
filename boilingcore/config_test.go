@@ -3,7 +3,7 @@ package boilingcore
 import (
 	"testing"
 
-	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/v3/drivers"
 )
 
 func TestConfig_OutputDirDepth(t *testing.T) {

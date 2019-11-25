@@ -1,9 +1,9 @@
 package mocks
 
 import (
-	"github.com/razor-1/sqlboiler/drivers"
-	"github.com/razor-1/sqlboiler/importers"
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 func init() {

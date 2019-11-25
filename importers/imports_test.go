@@ -175,7 +175,7 @@ func TestAddTypeImports(t *testing.T) {
 			`"fmt"`,
 		},
 		ThirdParty: List{
-			`"github.com/razor-1/sqlboiler/boil"`,
+			`"github.com/razor-1/sqlboiler/v3/boil"`,
 		},
 	}
 
@@ -187,7 +187,7 @@ func TestAddTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/null"`,
-			`"github.com/razor-1/sqlboiler/boil"`,
+			`"github.com/razor-1/sqlboiler/v3/boil"`,
 		},
 	}
 
@@ -218,7 +218,7 @@ func TestAddTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/null"`,
-			`"github.com/razor-1/sqlboiler/boil"`,
+			`"github.com/razor-1/sqlboiler/v3/boil"`,
 		},
 	}
 

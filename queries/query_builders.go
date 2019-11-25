@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
 var (

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/razor-1/sqlboiler/drivers"
-	"github.com/razor-1/sqlboiler/drivers/sqlboiler-mssql/driver"
+	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-mssql/driver"
 )
 
 func main() {

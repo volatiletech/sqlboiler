@@ -14,7 +14,7 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/razor-1/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/v3/importers"
 )
 
 var (

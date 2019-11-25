@@ -224,11 +224,11 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"templates/17_upsert.go.tpl":                        templates17_upsertGoTpl,
-	"templates/singleton/mysql_upsert.go.tpl":           templatesSingletonMysql_upsertGoTpl,
-	"templates_test/singleton/mysql_main_test.go.tpl":   templates_testSingletonMysql_main_testGoTpl,
+	"templates/17_upsert.go.tpl": templates17_upsertGoTpl,
+	"templates/singleton/mysql_upsert.go.tpl": templatesSingletonMysql_upsertGoTpl,
+	"templates_test/singleton/mysql_main_test.go.tpl": templates_testSingletonMysql_main_testGoTpl,
 	"templates_test/singleton/mysql_suites_test.go.tpl": templates_testSingletonMysql_suites_testGoTpl,
-	"templates_test/upsert.go.tpl":                      templates_testUpsertGoTpl,
+	"templates_test/upsert.go.tpl": templates_testUpsertGoTpl,
 }
 
 // AssetDir returns the file names below a certain
@@ -270,7 +270,6 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
-
 var _bintree = &bintree{nil, map[string]*bintree{
 	"templates": &bintree{nil, map[string]*bintree{
 		"17_upsert.go.tpl": &bintree{templates17_upsertGoTpl, map[string]*bintree{}},
@@ -280,7 +279,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	}},
 	"templates_test": &bintree{nil, map[string]*bintree{
 		"singleton": &bintree{nil, map[string]*bintree{
-			"mysql_main_test.go.tpl":   &bintree{templates_testSingletonMysql_main_testGoTpl, map[string]*bintree{}},
+			"mysql_main_test.go.tpl": &bintree{templates_testSingletonMysql_main_testGoTpl, map[string]*bintree{}},
 			"mysql_suites_test.go.tpl": &bintree{templates_testSingletonMysql_suites_testGoTpl, map[string]*bintree{}},
 		}},
 		"upsert.go.tpl": &bintree{templates_testUpsertGoTpl, map[string]*bintree{}},
@@ -333,3 +332,4 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
+

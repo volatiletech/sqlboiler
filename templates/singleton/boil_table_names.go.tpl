@@ -8,16 +8,23 @@ var TableNames = struct {
 	{{end -}}
 }
 
-var typeNameToTableName = map[string]string {
+var TypeNameToTableName = map[string]string {
 	{{range $table := .Tables -}}
 	{{- $alias := $.Aliases.Table $table.Name -}}
 	"{{$alias.UpSingular}}": TableNames.{{titleCase $table.Name}},
 	{{end -}}
 }
 
-var typeNameToTableColumns = map[string][]string{
+var TypeNameToTableColumns = map[string][]string{
 	{{range $table := .Tables -}}
 	{{- $alias := $.Aliases.Table $table.Name -}}
 	"{{$alias.UpSingular}}": {{$alias.DownSingular}}AllColumns,
 	{{end -}}
+}
+
+var TableNameToTableColumns = map[string][]string{
+{{range $table := .Tables -}}
+	{{- $alias := $.Aliases.Table $table.Name -}}
+	TableNames.{{titleCase $table.Name}}: {{$alias.DownSingular}}AllColumns,
+{{end -}}
 }

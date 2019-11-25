@@ -46,7 +46,7 @@ type {{$alias.UpSingular}}JoinedResponse struct {
 	{{end -}}
 }
 
-var {{$alias.DownSingular}}RelationshipColumns = relationMap{
+var {{$alias.UpSingular}}RelationshipColumns = relationMap{
 	{{range .Table.FKeys -}}
 		{{- $fAlias := $.Aliases.Table .ForeignTable -}}
 		{{- $relAlias := $alias.Relationship .Name -}}

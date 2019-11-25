@@ -9,12 +9,12 @@
 	}
 
 	allColumns := make([]string, len(joinable)+1)
-	allColumns[0] = fullyQualifiedColumns(TableNames.{{titleCase .Table.Name}}, {{$alias.DownSingular}}AllColumns)
+	allColumns[0] = FullyQualifiedColumns(TableNames.{{titleCase .Table.Name}})
 	queryMods := make([]qm.QueryMod, len(joinable)+2)
 	queryMods[0] = qm.From(TableNames.{{titleCase .Table.Name}})
 	for i, join := range joinable {
-		allColumns[i+1] = fullyQualifiedColumns(typeNameToTableName[join], typeNameToTableColumns[join])
-		queryMods[i+2] = leftJoin(TableNames.{{titleCase .Table.Name}}, join, {{$alias.DownSingular}}RelationshipColumns)
+		allColumns[i+1] = FullyQualifiedColumns(TypeNameToTableName[join])
+		queryMods[i+2] = leftJoin(TableNames.{{titleCase .Table.Name}}, join, {{$alias.UpSingular}}RelationshipColumns)
 	}
 	queryMods[1] = qm.Select(strings.Join(allColumns, ","))
 

@@ -238,7 +238,7 @@ func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) er
 				// as null. to avoid scanning errors, we bind into a version of the struct where every field is a nullable type
 				// and then here we need to convert back to the normal type, if there was in fact a relationship
 				if cf.Type().String() == baseType.String()+nullTypeSuffix {
-					fromNull, err := loadJoinFromNull(baseType, cf)
+					fromNull, err := LoadJoinFromNull(baseType, cf)
 					if err == nil {
 						f.Set(fromNull.Addr())
 					}
@@ -254,7 +254,7 @@ func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) er
 
 // move fields from the all-null version back to the "real" version of this type
 // return an error if every field is null; that means there was no relationship (the nullable foreign key was set to null)
-func loadJoinFromNull(baseType reflect.Type, nullVal reflect.Value) (baseVal reflect.Value, err error) {
+func LoadJoinFromNull(baseType reflect.Type, nullVal reflect.Value) (baseVal reflect.Value, err error) {
 	const valid = "Valid"
 	baseVal = reflect.Indirect(reflect.New(baseType))
 	haveValid := false

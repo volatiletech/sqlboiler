@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql/driver"
+	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/drivers/sqlboiler-psql/driver"
 )
 
 func main() {

@@ -12,9 +12,9 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/strmangle"
-	"github.com/volatiletech/sqlboiler/templatebin"
+	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/templatebin"
 )
 
 // templateData for sqlboiler templates
@@ -273,7 +273,7 @@ var templateFunctions = template.FuncMap{
 	"parseEnumName":       strmangle.ParseEnumName,
 	"parseEnumVals":       strmangle.ParseEnumVals,
 	"isEnumNormal":        strmangle.IsEnumNormal,
-	"stripWhitespace":  strmangle.StripWhitespace,
+	"stripWhitespace":     strmangle.StripWhitespace,
 	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
 	"onceNew":             newOnce,
 	"oncePut":             once.Put,

@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/importers"
 	"github.com/spf13/cast"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/importers"
 )
 
 // Config for the running of the commands

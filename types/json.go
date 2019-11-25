@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/volatiletech/sqlboiler/randomize"
+	"github.com/razor-1/sqlboiler/randomize"
 )
 
 // JSON is an alias for json.RawMessage, which is

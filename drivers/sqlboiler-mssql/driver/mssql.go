@@ -10,9 +10,9 @@ import (
 	// Side effect import go-mssqldb
 	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/importers"
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/razor-1/sqlboiler/drivers"
+	"github.com/razor-1/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/strmangle"
 )
 
 func init() {
@@ -463,8 +463,8 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/volatiletech/sqlboiler/strmangle"`,
-				`"github.com/volatiletech/sqlboiler/drivers"`,
+				`"github.com/razor-1/sqlboiler/strmangle"`,
+				`"github.com/razor-1/sqlboiler/drivers"`,
 			},
 		},
 	}
@@ -488,8 +488,8 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql/driver"`,
-				`"github.com/volatiletech/sqlboiler/randomize"`,
+				`"github.com/razor-1/sqlboiler/drivers/sqlboiler-mssql/driver"`,
+				`"github.com/razor-1/sqlboiler/randomize"`,
 				`_ "github.com/denisenkom/go-mssqldb"`,
 			},
 		},
@@ -548,10 +548,10 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"time"`},
 		},
 		"types.Decimal": {
-			Standard: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+			Standard: importers.List{`"github.com/razor-1/sqlboiler/types"`},
 		},
 		"types.NullDecimal": {
-			Standard: importers.List{`"github.com/volatiletech/sqlboiler/types"`},
+			Standard: importers.List{`"github.com/razor-1/sqlboiler/types"`},
 		},
 	}
 	return col, err

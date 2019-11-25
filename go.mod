@@ -7,6 +7,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20191001013358-cfbb681360f0
 	github.com/ericlagergren/decimal v0.0.0-20190912144844-2c3e3e1ef942
+	github.com/friendsofgo/errors v0.9.2 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/lib/pq v1.2.0
@@ -16,7 +17,5 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d
 	github.com/volatiletech/null v8.0.0+incompatible
-	github.com/volatiletech/sqlboiler v0.0.0-00010101000000-000000000000
+	github.com/volatiletech/sqlboiler v3.6.1+incompatible // indirect
 )
-
-replace github.com/volatiletech/sqlboiler => /Users/jon/gocode/src/github.com/razor-1/sqlboiler

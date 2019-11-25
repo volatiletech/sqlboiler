@@ -1,7 +1,7 @@
 import (
 	"fmt"
 	"strings"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/razor-1/sqlboiler/queries/qm"
 )
 
 // M type is for providing columns and column values to UpdateAll.

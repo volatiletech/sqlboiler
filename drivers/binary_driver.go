@@ -8,7 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/pkg/errors"
-	"github.com/volatiletech/sqlboiler/importers"
+	"github.com/razor-1/sqlboiler/importers"
 )
 
 type binaryDriver string

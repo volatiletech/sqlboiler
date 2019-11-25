@@ -28,6 +28,8 @@ github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZm
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/ericlagergren/decimal v0.0.0-20190912144844-2c3e3e1ef942 h1:Wm7GcUEhq0kioHEMLVVR9lyRezJsyzl9uLGnsQkijMU=
 github.com/ericlagergren/decimal v0.0.0-20190912144844-2c3e3e1ef942/go.mod h1:ZWP59etEywfyMG2lAqnoi3t8uoiZCiTmLtwt6iESIsQ=
+github.com/friendsofgo/errors v0.9.2 h1:X6NYxef4efCBdwI7BgS820zFaN7Cphrmb+Pljdzjtgk=
+github.com/friendsofgo/errors v0.9.2/go.mod h1:yCvFW5AkDIL9qn7suHVLiI/gH228n7PC4Pn44IGoTOI=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
@@ -125,6 +127,8 @@ github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d h1:gI4/tqP6lC
 github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d/go.mod h1:jspfvgf53t5NLUT4o9L1IX0kIBNKamGq1tWc/MgWK9Q=
 github.com/volatiletech/null v8.0.0+incompatible h1:7wP8m5d/gZ6kW/9GnrLtMCRre2dlEnaQ9Km5OXlK4zg=
 github.com/volatiletech/null v8.0.0+incompatible/go.mod h1:0wD98JzdqB+rLyZ70fN05VDbXbafIb0KU0MdVhCzmOQ=
+github.com/volatiletech/sqlboiler v3.6.1+incompatible h1:EI9MwhgyXiqKbvZaomzL8scDs/k+21QAyo9z7GXBZQU=
+github.com/volatiletech/sqlboiler v3.6.1+incompatible/go.mod h1:jLfDkkHWPbS2cWRLkyC20vQWaIQsASEY7gM7zSo11Yw=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
@@ -160,6 +164,7 @@ golang.org/x/time v0.0.0-20190308202827-9d24e82272b4/go.mod h1:tRJNPiyCQ0inRvYxb
 golang.org/x/tools v0.0.0-20180221164845-07fd8470d635/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 golang.org/x/tools v0.0.0-20190114222345-bf090417da8b/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 golang.org/x/tools v0.0.0-20190311212946-11955173bddd/go.mod h1:LCzVGOaR6xXOjkQ3onu1FJEFr0SW1gC7cKk1uF8kGRs=
+golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/appengine v1.1.0 h1:igQkv0AAhEIvTEpD5LIpAfav2eeVO9HBTjvKHVJPRSs=
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
 google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=

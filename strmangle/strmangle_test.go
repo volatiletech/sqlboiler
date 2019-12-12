@@ -652,3 +652,28 @@ func TestRemoveDuplicates(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestIgnore(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		table      string
+		column     string
+		ignoreList map[string]struct{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "ignore column", args: args{column: "b", ignoreList: map[string]struct{}{"b": {}}}, want: true},
+		{name: "ignore table.column", args: args{column: "a.b", ignoreList: map[string]struct{}{"a.b": {}}}, want: true},
+		{name: "don't ignore", args: args{column: "a.b", ignoreList: map[string]struct{}{"a.c": {}}}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Ignore(tt.args.table, tt.args.column, tt.args.ignoreList); got != tt.want {
+				t.Errorf("Ignore() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

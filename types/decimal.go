@@ -1,11 +1,19 @@
 package types
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 
 	"github.com/ericlagergren/decimal"
+)
+
+var (
+	_ driver.Valuer = Decimal{}
+	_ driver.Valuer = NullDecimal{}
+	_ sql.Scanner   = &Decimal{}
+	_ sql.Scanner   = &NullDecimal{}
 )
 
 // Decimal is a DECIMAL in sql. Its zero value is valid for use with both

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Add 'where in' helpers for all primitive Go types (thanks @nwidger)
+- Add a usage example of accessing the .R field (thanks @tooolbox)
 
 ### Fixed
 

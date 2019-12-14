@@ -921,9 +921,13 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 
 #### Skipping Automatic Timestamps
 
-If for a given query you do not want timestamp columns to be updated
-then you can use `boil.SkipTimestamps` on the context you pass in to the query
-to prevent them from being updated.
+If for a given query you do not want timestamp columns to be re-computed prior
+to an insert or update then you can use `boil.SkipTimestamps` on the context you
+pass in to the query to prevent them from being updated.
+
+Keep in mind this has no effect on whether or not the column is included in the
+insert/update, it simply stops them from being set to `time.Now()` in the struct
+before being sent to the database (if they were going to be sent).
 
 #### Overriding Automatic Timestamps
 

@@ -147,7 +147,7 @@ func (s *State) Run() error {
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		StructTagCasing:   s.Config.StructTagCasing,
-		IgnoreFields:      make(map[string]struct{}),
+		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
 		Dialect:           s.Dialect,
 		Schema:            s.Schema,
@@ -159,11 +159,11 @@ func (s *State) Run() error {
 		StringFuncs: templateStringMappers,
 	}
 
-	for _, v := range s.Config.IgnoreFields {
+	for _, v := range s.Config.TagIgnore {
 		if !rgxValidTableColumn.MatchString(v) {
 			return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
 		}
-		data.IgnoreFields[v] = struct{}{}
+		data.TagIgnore[v] = struct{}{}
 	}
 
 	if err := generateSingletonOutput(s, data); err != nil {

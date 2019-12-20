@@ -50,8 +50,8 @@ func TestNew(t *testing.T) {
 			drivers.ConfigSchema:    "schema",
 			drivers.ConfigBlacklist: []string{"hangars"},
 		},
-		Imports:      importers.NewDefaultImports(),
-		IgnoreFields: []string{"pass"},
+		Imports:   importers.NewDefaultImports(),
+		TagIgnore: []string{"pass"},
 	}
 
 	state, err = New(config)

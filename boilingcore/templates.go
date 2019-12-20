@@ -51,8 +51,8 @@ type templateData struct {
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
 
-	// Contains field names that should have tags values omitted
-	IgnoreFields map[string]struct{}
+	// Contains field names that should have tags values set to '-'
+	TagIgnore map[string]struct{}
 
 	// OutputDirDepth is used to find sqlboiler config file
 	OutputDirDepth int

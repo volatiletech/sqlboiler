@@ -96,6 +96,7 @@ func newBoilRuleset() *inflect.Ruleset {
 	rs.AddSingular("as", "as")
 	rs.AddSingular("us", "us")
 	rs.AddSingular("is", "is")
+	rs.AddSingular("schemas", "schema")
 	rs.AddSingular("news", "news")
 	rs.AddSingular("ta", "tum")
 	rs.AddSingular("ia", "ium")

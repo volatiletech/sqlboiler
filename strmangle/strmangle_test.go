@@ -144,6 +144,7 @@ func TestSingular(t *testing.T) {
 		{"friends", "friend"},
 		{"areas", "area"},
 		{"hello_there_people", "hello_there_person"},
+		{"schemas", "schema"},
 	}
 
 	for i, test := range tests {

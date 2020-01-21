@@ -166,6 +166,7 @@ func TestPlural(t *testing.T) {
 		{"friends", "friends"},
 		{"area", "areas"},
 		{"hello_there_person", "hello_there_people"},
+		{"schema", "schemas"},
 	}
 
 	for i, test := range tests {

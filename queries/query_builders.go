@@ -371,10 +371,10 @@ ManualParen:
 			// for _, u := range model.Users(qm.WhereIn("id IN ?",uids...)).AllP(db) {
 			//    ...
 			// }
-			// instead when we see empty IN we produce FALSE so it can still be chained
+			// instead when we see empty IN we produce 1=9 so it can still be chained
 			// with other queries
 			if ln == 0 {
-				buf.WriteString("(FALSE)")
+				buf.WriteString("(1=0)")
 			} else {
 				matches := rgxInClause.FindStringSubmatch(where.clause)
 				// If we can't find any matches attempt a simple replace with 1 group.

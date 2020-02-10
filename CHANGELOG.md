@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add a whitelist of table.column names to set "-" struct tags for to ignore
+  them during serialization (thanks @bogdanpradnj)
 - Add 'where in' helpers for all primitive Go types (thanks @nwidger)
 - Add a usage example of accessing the .R field (thanks @tooolbox)
 

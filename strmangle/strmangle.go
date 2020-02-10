@@ -314,6 +314,19 @@ func TitleCase(n string) string {
 	return ret
 }
 
+// Ignore sets "-" for the tags values, so the fields will be ignored during parsing
+func Ignore(table, column string, ignoreList map[string]struct{}) bool {
+	_, ok := ignoreList[column]
+	if ok {
+		return true
+	}
+	_, ok = ignoreList[fmt.Sprintf("%s.%s", table, column)]
+	if ok {
+		return true
+	}
+	return false
+}
+
 // CamelCase takes a variable name in the format of "var_name" and converts
 // it into a go styled variable name of "varName".
 // camelCase also fully uppercases "ID" components of names, for example

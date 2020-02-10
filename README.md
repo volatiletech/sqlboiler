@@ -324,6 +324,7 @@ not to pass them through the command line or environment variables:
 | no-auto-timestamps  | false     |
 | no-rows-affected    | false     |
 | no-driver-templates | false     |
+| tag-ignore          | []        |
 
 Example:
 

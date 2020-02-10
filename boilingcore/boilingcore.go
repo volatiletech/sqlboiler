@@ -31,6 +31,8 @@ const (
 var (
 	// Tags must be in a format like: json, xml, etc.
 	rgxValidTag = regexp.MustCompile(`[a-zA-Z_\.]+`)
+	// Column names must be in format column_name or table_name.column_name
+	rgxValidTableColumn = regexp.MustCompile(`^[\w]+\.[\w]+$|^[\w]+$`)
 )
 
 // State holds the global data needed by most pieces to run
@@ -145,6 +147,7 @@ func (s *State) Run() error {
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		StructTagCasing:   s.Config.StructTagCasing,
+		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
 		Dialect:           s.Dialect,
 		Schema:            s.Schema,
@@ -154,6 +157,13 @@ func (s *State) Run() error {
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
+	}
+
+	for _, v := range s.Config.TagIgnore {
+		if !rgxValidTableColumn.MatchString(v) {
+			return errors.New("Invalid column name %q supplied, only specify column name or table.column, eg: created_at, user.password")
+		}
+		data.TagIgnore[v] = struct{}{}
 	}
 
 	if err := generateSingletonOutput(s, data); err != nil {

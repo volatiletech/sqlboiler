@@ -1,10 +1,14 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
+{{- $orig_tbl_name := .Table.Name -}}
 
 // {{$alias.UpSingular}} is an object representing the database table.
 type {{$alias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
-	{{if eq $.StructTagCasing "title" -}}
+	{{- $orig_col_name := $column.Name -}}
+	{{if ignore $orig_tbl_name $orig_col_name $.TagIgnore -}}
+	{{$colAlias}} {{$column.Type}} `{{generateIgnoreTags $.Tags}}boil:"{{$column.Name}}" json:"-" toml:"-" yaml:"-"`
+	{{else if eq $.StructTagCasing "title" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | titleCase}}" yaml:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{else if eq $.StructTagCasing "camel" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`

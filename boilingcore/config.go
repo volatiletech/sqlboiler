@@ -30,6 +30,7 @@ type Config struct {
 	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
 	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
 	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
+	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 

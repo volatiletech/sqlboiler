@@ -101,6 +101,11 @@ func (n *NullDecimal) UnmarshalJSON(data []byte) error {
 	return n.Big.UnmarshalJSON(data)
 }
 
+// IsZero implements qmhelper.Nullable
+func (n NullDecimal) IsZero() bool {
+	return n.Big == nil
+}
+
 // Randomize implements sqlboiler's randomize interface
 func (n *NullDecimal) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	n.Big = randomDecimal(nextInt, fieldType, shouldBeNull)

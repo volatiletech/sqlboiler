@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix an idempotency issue with primary key column ordering
 - Fix the plural/singular helpers for the word schema (thanks @Mushus)
 - Fix some panics in Remove relationship set operations
+- Fix panic when using WhereNullEQ with NullDecimal: implemented
+  qmhelper.Nullable for NullDecimal
 
 ## [v3.6.1] - 2019-11-08
 

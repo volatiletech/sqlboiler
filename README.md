@@ -1495,7 +1495,7 @@ err := p1.Insert(ctx, db, boil.Infer()) // Insert the first pilot with name "Lar
 // p1 now has an ID field set to 1
 
 var p2 models.Pilot
-p2.Name "Boris"
+p2.Name = "Boris"
 err := p2.Insert(ctx, db, boil.Infer()) // Insert the second pilot with name "Boris"
 // p2 now has an ID field set to 2
 

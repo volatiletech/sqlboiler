@@ -375,62 +375,63 @@ ManualParen:
 			// with other queries
 			if ln == 0 {
 				buf.WriteString("(1=0)")
-			} else {
-				matches := rgxInClause.FindStringSubmatch(where.clause)
-				// If we can't find any matches attempt a simple replace with 1 group.
-				// Clauses that fit this criteria will not be able to contain ? in their
-				// column name side, however if this case is being hit then the regexp
-				// probably needs adjustment, or the user is passing in invalid clauses.
-				if matches == nil {
-					clause, count := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, where.clause, startAt, 1, ln)
-					if !manualParens {
-						buf.WriteByte('(')
-					}
-					buf.WriteString(clause)
-					if !manualParens {
-						buf.WriteByte(')')
-					}
-					args = append(args, where.args...)
-					startAt += count
-					break
-				}
-
-				leftSide := strings.TrimSpace(matches[1])
-				rightSide := strings.TrimSpace(matches[2])
-				// If matches are found, we have to parse the left side (column side)
-				// of the clause to determine how many columns they are using.
-				// This number determines the groupAt for the convert function.
-				cols := strings.Split(leftSide, ",")
-				cols = strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, cols)
-				groupAt := len(cols)
-
-				var leftClause string
-				var leftCount int
-				if q.dialect.UseIndexPlaceholders {
-					leftClause, leftCount = convertQuestionMarks(strings.Join(cols, ","), startAt)
-				} else {
-					// Count the number of cols that are question marks, so we know
-					// how much to offset convertInQuestionMarks by
-					for _, v := range cols {
-						if v == "?" {
-							leftCount++
-						}
-					}
-					leftClause = strings.Join(cols, ",")
-				}
-				rightClause, rightCount := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
+				break
+			}
+			matches := rgxInClause.FindStringSubmatch(where.clause)
+			// If we can't find any matches attempt a simple replace with 1 group.
+			// Clauses that fit this criteria will not be able to contain ? in their
+			// column name side, however if this case is being hit then the regexp
+			// probably needs adjustment, or the user is passing in invalid clauses.
+			if matches == nil {
+				clause, count := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, where.clause, startAt, 1, ln)
 				if !manualParens {
 					buf.WriteByte('(')
 				}
-				buf.WriteString(leftClause)
-				buf.WriteString(" IN ")
-				buf.WriteString(rightClause)
+				buf.WriteString(clause)
 				if !manualParens {
 					buf.WriteByte(')')
 				}
-				startAt += leftCount + rightCount
 				args = append(args, where.args...)
+				startAt += count
+				break
 			}
+
+			leftSide := strings.TrimSpace(matches[1])
+			rightSide := strings.TrimSpace(matches[2])
+			// If matches are found, we have to parse the left side (column side)
+			// of the clause to determine how many columns they are using.
+			// This number determines the groupAt for the convert function.
+			cols := strings.Split(leftSide, ",")
+			cols = strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, cols)
+			groupAt := len(cols)
+
+			var leftClause string
+			var leftCount int
+			if q.dialect.UseIndexPlaceholders {
+				leftClause, leftCount = convertQuestionMarks(strings.Join(cols, ","), startAt)
+			} else {
+				// Count the number of cols that are question marks, so we know
+				// how much to offset convertInQuestionMarks by
+				for _, v := range cols {
+					if v == "?" {
+						leftCount++
+					}
+				}
+				leftClause = strings.Join(cols, ",")
+			}
+			rightClause, rightCount := convertInQuestionMarks(q.dialect.UseIndexPlaceholders, rightSide, startAt+leftCount, groupAt, ln-leftCount)
+			if !manualParens {
+				buf.WriteByte('(')
+			}
+			buf.WriteString(leftClause)
+			buf.WriteString(" IN ")
+			buf.WriteString(rightClause)
+			if !manualParens {
+				buf.WriteByte(')')
+			}
+			startAt += leftCount + rightCount
+			args = append(args, where.args...)
+
 		default:
 			panic("unknown where type")
 		}

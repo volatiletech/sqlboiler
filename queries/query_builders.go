@@ -431,7 +431,6 @@ ManualParen:
 			}
 			startAt += leftCount + rightCount
 			args = append(args, where.args...)
-
 		default:
 			panic("unknown where type")
 		}

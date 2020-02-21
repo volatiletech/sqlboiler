@@ -245,7 +245,7 @@ func WhereIn(clause string, args ...interface{}) QueryMod {
 		val := reflect.ValueOf(args[0])
 		slice := make([]interface{}, val.Len())
 		for i := 0; i < val.Len(); i++ {
-			slice[i] = val.Index(i)
+			slice[i] = val.Index(i).Interface()
 		}
 		return WhereIn(clause, slice...)
 	}

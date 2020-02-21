@@ -32,10 +32,10 @@ func TestWhereIn(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for n, test := range tests {
 		actual := test.Input()
 		if !reflect.DeepEqual(actual, test.Expected) {
-			t.Fatalf("actual %+v does not match expected %+v", actual, test.Expected)
+			t.Fatalf("test %d: actual %+v does not match expected %+v", n, actual, test.Expected)
 		}
 	}
 }

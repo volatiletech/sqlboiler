@@ -1,6 +1,7 @@
 package qm
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/volatiletech/sqlboiler/queries"
@@ -237,6 +238,18 @@ func (qm whereInQueryMod) Apply(q *queries.Query) {
 // WhereIn allows you to specify a "x IN (set)" clause for your where statement
 // Example clauses: "column in ?", "(column1,column2) in ?"
 func WhereIn(clause string, args ...interface{}) QueryMod {
+	// Allow people to use WhereIn with any type slice.  If we only have one
+	// element within `args` and it's a slice, convert the slice to slice of interfaces
+	// so we can splat it.
+	if len(args) == 1 && reflect.TypeOf(args[0]).Kind() == reflect.Slice {
+		val := reflect.ValueOf(args[0])
+		slice := make([]interface{}, val.Len())
+		for i := 0; i < val.Len(); i++ {
+			slice[i] = val.Index(i)
+		}
+		return WhereIn(clause, slice...)
+	}
+
 	return whereInQueryMod{
 		clause: clause,
 		args:   args,

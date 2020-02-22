@@ -247,7 +247,10 @@ func WhereIn(clause string, args ...interface{}) QueryMod {
 		for i := 0; i < val.Len(); i++ {
 			slice[i] = val.Index(i).Interface()
 		}
-		return WhereIn(clause, slice...)
+		return whereInQueryMod{
+			clause: clause,
+			args:   slice,
+		}
 	}
 
 	return whereInQueryMod{

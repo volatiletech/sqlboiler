@@ -115,6 +115,10 @@ func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
 	return exec.Exec(qs, args...)
 }
 
+func (q *Query) GetSQL() (string){
+	return q.rawSQL.sql;
+}
+
 // QueryRow executes the query for the One finisher and returns a row
 func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
 	qs, args := BuildQuery(q)

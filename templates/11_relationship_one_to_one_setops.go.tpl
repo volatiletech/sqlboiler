@@ -166,7 +166,9 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.R.{{$relAlias.Local}} = nil
+	if o.R != nil {
+		o.R.{{$relAlias.Local}} = nil
+	}
 	if related == nil || related.R == nil {
 		return nil
 	}

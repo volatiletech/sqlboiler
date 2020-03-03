@@ -1,11 +1,19 @@
 package types
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 
 	"github.com/ericlagergren/decimal"
+)
+
+var (
+	_ driver.Valuer = Decimal{}
+	_ driver.Valuer = NullDecimal{}
+	_ sql.Scanner   = &Decimal{}
+	_ sql.Scanner   = &NullDecimal{}
 )
 
 // Decimal is a DECIMAL in sql. Its zero value is valid for use with both
@@ -91,6 +99,11 @@ func (n *NullDecimal) UnmarshalJSON(data []byte) error {
 	}
 
 	return n.Big.UnmarshalJSON(data)
+}
+
+// IsZero implements qmhelper.Nullable
+func (n NullDecimal) IsZero() bool {
+	return n.Big == nil
 }
 
 // Randomize implements sqlboiler's randomize interface

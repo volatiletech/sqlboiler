@@ -51,6 +51,9 @@ type templateData struct {
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
 
+	// Contains field names that should have tags values set to '-'
+	TagIgnore map[string]struct{}
+
 	// OutputDirDepth is used to find sqlboiler config file
 	OutputDirDepth int
 
@@ -260,6 +263,7 @@ var templateFunctions = template.FuncMap{
 	// Casing
 	"titleCase": strmangle.TitleCase,
 	"camelCase": strmangle.CamelCase,
+	"ignore":    strmangle.Ignore,
 
 	// String Slice ops
 	"join":               func(sep string, slice []string) string { return strings.Join(slice, sep) },

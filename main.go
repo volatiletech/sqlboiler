@@ -107,6 +107,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
+	rootCmd.PersistentFlags().StringSliceP("tag-ignore", "", nil, "List of column names that should have tags values set to '-' (ignored during parsing)")
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
@@ -176,6 +177,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoDriverTemplates: viper.GetBool("no-driver-templates"),
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
+		TagIgnore:         viper.GetStringSlice("tag-ignore"),
 		TemplateDirs:      viper.GetStringSlice("templates"),
 		Tags:              viper.GetStringSlice("tag"),
 		Replacements:      viper.GetStringSlice("replace"),

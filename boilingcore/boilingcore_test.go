@@ -50,7 +50,8 @@ func TestNew(t *testing.T) {
 			drivers.ConfigSchema:    "schema",
 			drivers.ConfigBlacklist: []string{"hangars"},
 		},
-		Imports: importers.NewDefaultImports(),
+		Imports:   importers.NewDefaultImports(),
+		TagIgnore: []string{"pass"},
 	}
 
 	state, err = New(config)
@@ -172,12 +173,12 @@ func TestProcessTypeReplacements(t *testing.T) {
 					Nullable: true,
 				},
 				{
-					Name: "domain",
-					Type: "int",
-					DBType: "numeric",
-					Default: "some db nonsense",
+					Name:       "domain",
+					Type:       "int",
+					DBType:     "numeric",
+					Default:    "some db nonsense",
 					DomainName: &domainStr,
-					Nullable: false,
+					Nullable:   false,
 				},
 			},
 		},

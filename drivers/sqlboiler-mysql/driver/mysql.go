@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/friendsofgo/errors"
+	"github.com/go-sql-driver/mysql"
 	"github.com/volatiletech/sqlboiler/drivers"
 	"github.com/volatiletech/sqlboiler/importers"
 )
@@ -279,7 +279,8 @@ func (m *MySQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  table_name = ? and constraint_name = ? and table_schema = ?;`
+	where  table_name = ? and constraint_name = ? and table_schema = ?
+	order by kcu.ordinal_position;`
 
 	var rows *sql.Rows
 	if rows, err = m.conn.Query(queryColumns, tableName, pkey.Name, schema); err != nil {

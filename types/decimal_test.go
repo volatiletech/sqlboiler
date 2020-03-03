@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ericlagergren/decimal"
+	"github.com/volatiletech/sqlboiler/queries/qmhelper"
 )
 
 func TestDecimal_Value(t *testing.T) {
@@ -173,5 +174,20 @@ func TestNullDecimal_JSON(t *testing.T) {
 	if s.N.Cmp(want) != 0 {
 		fmt.Println(want, s.N)
 		t.Error("N was wrong:", s.N)
+	}
+}
+
+func TestNullDecimal_IsZero(t *testing.T) {
+	t.Parallel()
+
+	var nullable qmhelper.Nullable = NullDecimal{}
+
+	if !nullable.IsZero() {
+		t.Error("it should be zero")
+	}
+
+	nullable = NullDecimal{Big: new(decimal.Big)}
+	if nullable.IsZero() {
+		t.Error("it should not be zero")
 	}
 }

@@ -3,6 +3,23 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add a whitelist of table.column names to set "-" struct tags for to ignore
+  them during serialization (thanks @bogdanpradnj)
+- Add 'where in' helpers for all primitive Go types (thanks @nwidger)
+- Add a usage example of accessing the .R field (thanks @tooolbox)
+
+### Fixed
+
+- Fix an idempotency issue with primary key column ordering
+- Fix the plural/singular helpers for the word schema (thanks @Mushus)
+- Fix some panics in Remove relationship set operations
+- Fix panic when using WhereNullEQ with NullDecimal: implemented
+  qmhelper.Nullable for NullDecimal
+
 ## [v3.6.1] - 2019-11-08
 
 ### Fixed

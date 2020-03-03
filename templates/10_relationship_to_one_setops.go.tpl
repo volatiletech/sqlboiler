@@ -175,7 +175,9 @@ func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}({{if $.NoContext}}exec b
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.R.{{$rel.Foreign}} = nil
+	if o.R != nil {
+		o.R.{{$rel.Foreign}} = nil
+	}
 	if related == nil || related.R == nil {
 		return nil
 	}

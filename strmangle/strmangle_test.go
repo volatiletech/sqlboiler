@@ -144,6 +144,7 @@ func TestSingular(t *testing.T) {
 		{"friends", "friend"},
 		{"areas", "area"},
 		{"hello_there_people", "hello_there_person"},
+		{"schemas", "schema"},
 	}
 
 	for i, test := range tests {
@@ -165,6 +166,7 @@ func TestPlural(t *testing.T) {
 		{"friends", "friends"},
 		{"area", "areas"},
 		{"hello_there_person", "hello_there_people"},
+		{"schema", "schemas"},
 	}
 
 	for i, test := range tests {
@@ -650,5 +652,30 @@ func TestRemoveDuplicates(t *testing.T) {
 	}
 	if err := hasDups(slice); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestIgnore(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		table      string
+		column     string
+		ignoreList map[string]struct{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "ignore column", args: args{column: "b", ignoreList: map[string]struct{}{"b": {}}}, want: true},
+		{name: "ignore table.column", args: args{column: "a.b", ignoreList: map[string]struct{}{"a.b": {}}}, want: true},
+		{name: "don't ignore", args: args{column: "a.b", ignoreList: map[string]struct{}{"a.c": {}}}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Ignore(tt.args.table, tt.args.column, tt.args.ignoreList); got != tt.want {
+				t.Errorf("Ignore() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

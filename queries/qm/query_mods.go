@@ -65,6 +65,10 @@ type loadQueryMod struct {
 	mods         []QueryMod
 }
 
+type loadJoinedQueryMod struct {
+	mods []QueryMod
+}
+
 // Apply implements QueryMod.Apply.
 func (qm loadQueryMod) Apply(q *queries.Query) {
 	queries.AppendLoad(q, qm.relationship)
@@ -72,6 +76,10 @@ func (qm loadQueryMod) Apply(q *queries.Query) {
 	if len(qm.mods) != 0 {
 		queries.SetLoadMods(q, qm.relationship, queryMods(qm.mods))
 	}
+}
+
+func (qm loadJoinedQueryMod) Apply(q *queries.Query) {
+	queries.SetLoadJoin(q)
 }
 
 // Load allows you to specify foreign key relationships to eager load
@@ -105,7 +113,16 @@ func Load(relationship string, mods ...QueryMod) QueryMod {
 	}
 }
 
+func LoadJoined() QueryMod {
+	return loadJoinedQueryMod{}
+}
+
 type innerJoinQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+type leftOuterJoinQueryMod struct {
 	clause string
 	args   []interface{}
 }
@@ -115,9 +132,20 @@ func (qm innerJoinQueryMod) Apply(q *queries.Query) {
 	queries.AppendInnerJoin(q, qm.clause, qm.args...)
 }
 
+func (qm leftOuterJoinQueryMod) Apply(q *queries.Query) {
+	queries.AppendLeftJoin(q, qm.clause, qm.args...)
+}
+
 // InnerJoin on another table
 func InnerJoin(clause string, args ...interface{}) QueryMod {
 	return innerJoinQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
+func LeftOuterJoin(clause string, args ...interface{}) QueryMod {
+	return leftOuterJoinQueryMod{
 		clause: clause,
 		args:   args,
 	}

@@ -345,115 +345,131 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 	return fkeys, nil
 }
 
+func (m *MySQLDriver) nullColumnType(dbType string, fullDBType string) string {
+	unsigned := strings.Contains(fullDBType, "unsigned")
+	var colType string
+	switch dbType {
+	case "tinyint":
+		// map tinyint(1) to bool if TinyintAsBool is true
+		if !m.tinyIntAsInt && fullDBType == "tinyint(1)" {
+			colType = "null.Bool"
+		} else if unsigned {
+			colType = "null.Uint8"
+		} else {
+			colType = "null.Int8"
+		}
+	case "smallint":
+		if unsigned {
+			colType = "null.Uint16"
+		} else {
+			colType = "null.Int16"
+		}
+	case "mediumint":
+		if unsigned {
+			colType = "null.Uint32"
+		} else {
+			colType = "null.Int32"
+		}
+	case "int", "integer":
+		if unsigned {
+			colType = "null.Uint"
+		} else {
+			colType = "null.Int"
+		}
+	case "bigint":
+		if unsigned {
+			colType = "null.Uint64"
+		} else {
+			colType = "null.Int64"
+		}
+	case "float":
+		colType = "null.Float32"
+	case "double", "double precision", "real":
+		colType = "null.Float64"
+	case "boolean", "bool":
+		colType = "null.Bool"
+	case "date", "datetime", "timestamp":
+		colType = "null.Time"
+	case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+		colType = "null.Bytes"
+	case "numeric", "decimal", "dec", "fixed":
+		colType = "types.NullDecimal"
+	case "json":
+		colType = "null.JSON"
+	default:
+		colType = "null.String"
+	}
+
+	return colType
+}
+
+func (m *MySQLDriver) columnType(dbType string, fullDBType string) string {
+	unsigned := strings.Contains(fullDBType, "unsigned")
+	var colType string
+	switch dbType {
+	case "tinyint":
+		// map tinyint(1) to bool if TinyintAsBool is true
+		if !m.tinyIntAsInt && fullDBType == "tinyint(1)" {
+			colType = "bool"
+		} else if unsigned {
+			colType = "uint8"
+		} else {
+			colType = "int8"
+		}
+	case "smallint":
+		if unsigned {
+			colType = "uint16"
+		} else {
+			colType = "int16"
+		}
+	case "mediumint":
+		if unsigned {
+			colType = "uint32"
+		} else {
+			colType = "int32"
+		}
+	case "int", "integer":
+		if unsigned {
+			colType = "uint"
+		} else {
+			colType = "int"
+		}
+	case "bigint":
+		if unsigned {
+			colType = "uint64"
+		} else {
+			colType = "int64"
+		}
+	case "float":
+		colType = "float32"
+	case "double", "double precision", "real":
+		colType = "float64"
+	case "boolean", "bool":
+		colType = "bool"
+	case "date", "datetime", "timestamp":
+		colType = "time.Time"
+	case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+		colType = "[]byte"
+	case "numeric", "decimal", "dec", "fixed":
+		colType = "types.Decimal"
+	case "json":
+		colType = "types.JSON"
+	default:
+		colType = "string"
+	}
+
+	return colType
+}
+
 // TranslateColumnType converts mysql database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
-	unsigned := strings.Contains(c.FullDBType, "unsigned")
+	c.NullType = m.nullColumnType(c.DBType, c.FullDBType)
 	if c.Nullable {
-		switch c.DBType {
-		case "tinyint":
-			// map tinyint(1) to bool if TinyintAsBool is true
-			if !m.tinyIntAsInt && c.FullDBType == "tinyint(1)" {
-				c.Type = "null.Bool"
-			} else if unsigned {
-				c.Type = "null.Uint8"
-			} else {
-				c.Type = "null.Int8"
-			}
-		case "smallint":
-			if unsigned {
-				c.Type = "null.Uint16"
-			} else {
-				c.Type = "null.Int16"
-			}
-		case "mediumint":
-			if unsigned {
-				c.Type = "null.Uint32"
-			} else {
-				c.Type = "null.Int32"
-			}
-		case "int", "integer":
-			if unsigned {
-				c.Type = "null.Uint"
-			} else {
-				c.Type = "null.Int"
-			}
-		case "bigint":
-			if unsigned {
-				c.Type = "null.Uint64"
-			} else {
-				c.Type = "null.Int64"
-			}
-		case "float":
-			c.Type = "null.Float32"
-		case "double", "double precision", "real":
-			c.Type = "null.Float64"
-		case "boolean", "bool":
-			c.Type = "null.Bool"
-		case "date", "datetime", "timestamp":
-			c.Type = "null.Time"
-		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
-			c.Type = "null.Bytes"
-		case "numeric", "decimal", "dec", "fixed":
-			c.Type = "types.NullDecimal"
-		case "json":
-			c.Type = "null.JSON"
-		default:
-			c.Type = "null.String"
-		}
+		c.Type = c.NullType
 	} else {
-		switch c.DBType {
-		case "tinyint":
-			// map tinyint(1) to bool if TinyintAsBool is true
-			if !m.tinyIntAsInt && c.FullDBType == "tinyint(1)" {
-				c.Type = "bool"
-			} else if unsigned {
-				c.Type = "uint8"
-			} else {
-				c.Type = "int8"
-			}
-		case "smallint":
-			if unsigned {
-				c.Type = "uint16"
-			} else {
-				c.Type = "int16"
-			}
-		case "mediumint":
-			if unsigned {
-				c.Type = "uint32"
-			} else {
-				c.Type = "int32"
-			}
-		case "int", "integer":
-			if unsigned {
-				c.Type = "uint"
-			} else {
-				c.Type = "int"
-			}
-		case "bigint":
-			if unsigned {
-				c.Type = "uint64"
-			} else {
-				c.Type = "int64"
-			}
-		case "float":
-			c.Type = "float32"
-		case "double", "double precision", "real":
-			c.Type = "float64"
-		case "boolean", "bool":
-			c.Type = "bool"
-		case "date", "datetime", "timestamp":
-			c.Type = "time.Time"
-		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
-			c.Type = "[]byte"
-		case "numeric", "decimal", "dec", "fixed":
-			c.Type = "types.Decimal"
-		case "json":
-			c.Type = "types.JSON"
-		default:
-			c.Type = "string"
-		}
+		c.Type = m.columnType(c.DBType, c.FullDBType)
 	}
 
 	return c

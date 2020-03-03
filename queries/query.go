@@ -27,6 +27,7 @@ type Query struct {
 
 	load     []string
 	loadMods map[string]Applicator
+	loadJoin bool
 
 	delete     bool
 	update     map[string]interface{}
@@ -213,6 +214,10 @@ func SetLoad(q *Query, relationships ...string) {
 	q.load = append([]string(nil), relationships...)
 }
 
+func SetLoadJoin(q *Query) {
+	q.loadJoin = true
+}
+
 // AppendLoad on the query.
 func AppendLoad(q *Query, relationships string) {
 	q.load = append(q.load, relationships)
@@ -285,6 +290,11 @@ func SetFrom(q *Query, from ...string) {
 // AppendInnerJoin on the query.
 func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
+}
+
+// AppendInnerJoin on the query.
+func AppendLeftJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterLeft, args: args})
 }
 
 // AppendHaving on the query.

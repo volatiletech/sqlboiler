@@ -1,3 +1,9 @@
+import (
+	"fmt"
+	"strings"
+	"github.com/volatiletech/sqlboiler/queries/qm"
+)
+
 // M type is for providing columns and column values to UpdateAll.
 type M map[string]interface{}
 
@@ -18,6 +24,13 @@ type updateCache struct {
 	valueMapping []uint64
 }
 
+type fkRelationship struct {
+	Table  string
+	Column string
+}
+
+type relationMap map[string]fkRelationship
+
 func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	buf := strmangle.GetBuffer()
 
@@ -37,6 +50,74 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	strmangle.PutBuffer(buf)
 	return str
 }
+
+// bind needs the fully qualified column names to handle possible duplicate column names in different tables
+// this is a a helper that takes a slice of column names and a table name and creates a query that makes
+// them all unique, in the form of `table`.`column` AS "table.column"
+func FullyQualifiedColumns(tableName string) string {
+	columns, ok := TableNameToTableColumns[tableName]
+	if !ok {
+		return ""
+	}
+	components := make([]string, len(columns))
+	for i, column := range columns {
+		components[i] = fmt.Sprintf("`%s`.`%s` AS \"%s.%s\"", tableName, column, tableName, column)
+	}
+
+	return strings.Join(components, ",")
+}
+
+func GetJoinClause(targetTable, targetColumn, sourceTable, sourceColumn string) string {
+    return fmt.Sprintf("`%s` ON `%s`.`%s`=`%s`.`%s`", targetTable, sourceTable, sourceColumn, targetTable, targetColumn)
+}
+
+// construct a simple join clause
+func JoinClause(sourceTable string, sourceColumn string, relationMap relationMap) (clause string, err error) {
+	relation, ok := relationMap[sourceColumn]
+	if !ok {
+		err = errors.New("Cannot find source column in relationMap")
+		return
+	}
+
+	clause = GetJoinClause(relation.Table, relation.Column, sourceTable, sourceColumn)
+	return
+}
+
+// given the name of a type, find which column in our table has a foreign key relationship
+// this is done by finding the table name and then looking for it in the relationmap
+func getSourceColumn(typeName string, rColumns relationMap) (sourceColumn string, err error) {
+	table, ok := TypeNameToTableName[typeName]
+	if !ok {
+		err = errors.New("No table name for that type name")
+		return
+	}
+
+	for sc, relation := range rColumns {
+		if relation.Table == table {
+			sourceColumn = sc
+			return
+		}
+	}
+	err = errors.New("No source column found for that type name")
+	return
+}
+
+
+// given a type that the relationship points to, build an InnerJoin query mod
+func leftJoin(sourceTable string, typeName string, rColumns relationMap) qm.QueryMod {
+	sourceColumn, err := getSourceColumn(typeName, rColumns)
+	if err != nil {
+		return nil
+	}
+
+	clause, err := JoinClause(sourceTable, sourceColumn, rColumns)
+	if err != nil {
+		return nil
+	}
+
+	return qm.LeftOuterJoin(clause)
+}
+
 
 {{/*
 The following is a little bit of black magic and deserves some explanation
@@ -75,8 +156,9 @@ It only titlecases the EnumValue portion if it's snake-cased.
 // Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}}
 const (
 	{{- range $val := $vals -}}
+		{{- $valStripped := stripWhitespace $val -}}
 	{{- if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end -}}
-	{{if shouldTitleCaseEnum $val}}{{titleCase $val}}{{else}}{{$val}}{{end}} = "{{$val}}"
+	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} = "{{$val}}"
 	{{end -}}
 )
 {{- else}}

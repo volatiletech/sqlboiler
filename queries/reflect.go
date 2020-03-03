@@ -38,6 +38,7 @@ const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
 	loaderStructName       = "L"
+	nullTypeSuffix         = "Null"
 	sentinel               = uint64(255)
 )
 
@@ -134,6 +135,19 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return err
 	}
+	currentObj := obj
+
+	if q.loadJoin {
+		currentObj, err = eagerLoadJoin(q, obj, bkind)
+		if err != nil {
+			return err
+		}
+		// using a new bind type, so re-populate
+		structType, sliceType, bkind, err = bindChecks(currentObj)
+		if err != nil {
+			return err
+		}
+	}
 
 	var rows *sql.Rows
 	if ctx != nil {
@@ -144,7 +158,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
-	if err = bind(rows, obj, structType, sliceType, bkind); err != nil {
+	if err = bind(rows, currentObj, structType, sliceType, bkind); err != nil {
 		if innerErr := rows.Close(); innerErr != nil {
 			return errors.Wrapf(err, "error on rows.Close after bind error: %+v", innerErr)
 		}
@@ -158,11 +172,123 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 		return errors.Wrap(err, "error from rows in bind")
 	}
 
-	if len(q.load) != 0 {
+	if len(q.load) != 0 && !q.loadJoin {
 		return eagerLoad(ctx, exec, q.load, q.loadMods, obj, bkind)
 	}
 
+	if q.loadJoin {
+		// we have to take the data that was bound into the load join struct and get it into
+		// the expected struct type
+		objVal := reflect.Indirect(reflect.ValueOf(obj))
+		currentObjVal := reflect.Indirect(reflect.ValueOf(currentObj))
+		if bkind == kindPtrSliceStruct {
+			objType := reflect.TypeOf(obj).Elem().Elem().Elem()
+			for i := 0; i < currentObjVal.Len(); i++ {
+				newObj := reflect.Indirect(reflect.New(objType))
+				processLoadJoinStruct(reflect.Indirect(currentObjVal.Index(i)), newObj)
+				objVal.Set(reflect.Append(objVal, newObj.Addr()))
+			}
+		} else if bkind == kindStruct {
+			// currentObj will have a field with the same type as the type of objVal
+			processLoadJoinStruct(currentObjVal, objVal)
+		} else {
+			return errors.New("unsupported bindKind for loadJoin: " + string(bkind))
+		}
+	}
+
 	return nil
+}
+
+// processLoadJoinStruct uses reflection to populate a struct of a type from a generated table
+// from a struct of the load join type
+func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) error {
+	for i := 0; i < currentObjVal.NumField(); i++ {
+		coField := currentObjVal.Field(i)
+		if coField.Type() == objVal.Type() {
+			objVal.Set(coField)
+			break
+		}
+	}
+	// take the loadjoin struct and map it into the original obj struct (populate *R)
+	relationshipStruct := objVal.FieldByName(relationshipStructName)
+	if !relationshipStruct.IsValid() {
+		return errors.New("cannot find relationship struct")
+	}
+	rStruct := reflect.Indirect(reflect.New(relationshipStruct.Type().Elem()))
+	for i := 0; i < rStruct.NumField(); i++ {
+		f := rStruct.Field(i)
+		if f.Kind() == reflect.Ptr {
+			baseType := f.Type().Elem()
+			// currentObj is where the data is. we need to get the value of the same type from currentObj
+			// and set it in our new rStruct
+			for j := 0; j < currentObjVal.NumField(); j++ {
+				cf := currentObjVal.Field(j)
+				myType := cf.Type().String()
+				if myType != "" {
+				}
+				baseTypeName := baseType.String()
+				if baseTypeName != "" {
+				}
+				if cf.Type() == baseType {
+					f.Set(cf.Addr())
+					break
+				}
+				// we need to use a temporary, all-null struct in order for outer joins to work
+				// this is because if a nullable foreign key is null, the outer join will return all columns of the db
+				// as null. to avoid scanning errors, we bind into a version of the struct where every field is a nullable type
+				// and then here we need to convert back to the normal type, if there was in fact a relationship
+				if cf.Type().String() == baseType.String()+nullTypeSuffix {
+					fromNull, err := LoadJoinFromNull(baseType, cf)
+					if err == nil {
+						f.Set(fromNull.Addr())
+					}
+					break
+				}
+			}
+		}
+	}
+	// set the R struct to be our new value
+	relationshipStruct.Set(rStruct.Addr())
+	return nil
+}
+
+// move fields from the all-null version back to the "real" version of this type
+// return an error if every field is null; that means there was no relationship (the nullable foreign key was set to null)
+func LoadJoinFromNull(baseType reflect.Type, nullVal reflect.Value) (baseVal reflect.Value, err error) {
+	const valid = "Valid"
+	baseVal = reflect.Indirect(reflect.New(baseType))
+	haveValid := false
+
+	for i := 0; i < nullVal.NumField(); i++ {
+		bf := baseVal.Field(i)
+		nf := nullVal.Field(i)
+		// every null field is of a null.X type, which is a struct of the real type and a "Valid" bool
+		nullValid := nf.FieldByName(valid)
+		if !nullValid.Bool() {
+			continue
+		}
+		haveValid = true
+		// the base field might be a nullable, in which case we just copy it over
+		if bf.Type() == nf.Type() {
+			bf.Set(nf)
+		} else {
+			for nullStructCtr := 0; nullStructCtr < nf.NumField(); nullStructCtr++ {
+				// find the other field - not named "Valid" - in the null struct
+				nullStructField := nf.Field(nullStructCtr)
+				fieldName := nf.Type().Field(nullStructCtr).Name
+				if fieldName != valid {
+					// set it in the "real" (non-null) object
+					bf.Set(nullStructField)
+					break
+				}
+			}
+		}
+	}
+
+	if !haveValid {
+		err = errors.New("all values were null")
+	}
+	return
 }
 
 // bindChecks resolves information about the bind target, and errors if it's not an object
@@ -283,9 +409,6 @@ Rows:
 		case kindPtrSliceStruct:
 			newStruct = reflect.New(structType)
 			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
-		}
-		if err != nil {
-			return err
 		}
 
 		if err := rows.Scan(pointers...); err != nil {

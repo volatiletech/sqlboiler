@@ -274,6 +274,7 @@ var templateFunctions = template.FuncMap{
 	"parseEnumName":       strmangle.ParseEnumName,
 	"parseEnumVals":       strmangle.ParseEnumVals,
 	"isEnumNormal":        strmangle.IsEnumNormal,
+	"stripWhitespace":  strmangle.StripWhitespace,
 	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
 	"onceNew":             newOnce,
 	"oncePut":             once.Put,

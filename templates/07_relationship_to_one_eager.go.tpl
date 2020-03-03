@@ -1,3 +1,28 @@
+{{- $alias := .Aliases.Table .Table.Name -}}
+{{- if .Table.FKeys }}
+	func ({{$alias.DownSingular}}L) LoadJoin() (*queries.Query, *{{$alias.UpSingular}}JoinedResponse, error) {
+	joinable := []string{
+		{{- range .Table.FKeys -}}
+			{{- $relAlias := $alias.Relationship .Name -}}
+			"{{$relAlias.Foreign}}",
+		{{- end -}}
+	}
+
+	allColumns := make([]string, len(joinable)+1)
+	allColumns[0] = FullyQualifiedColumns(TableNames.{{titleCase .Table.Name}})
+	queryMods := make([]qm.QueryMod, len(joinable)+2)
+	queryMods[0] = qm.From(TableNames.{{titleCase .Table.Name}})
+	for i, join := range joinable {
+		allColumns[i+1] = FullyQualifiedColumns(TypeNameToTableName[join])
+		queryMods[i+2] = leftJoin(TableNames.{{titleCase .Table.Name}}, join, {{$alias.UpSingular}}RelationshipColumns)
+	}
+	queryMods[1] = qm.Select(strings.Join(allColumns, ","))
+
+	q := NewQuery(queryMods...)
+	return q, &{{$alias.UpSingular}}JoinedResponse{}, nil
+	}
+{{end -}}
+
 {{- if .Table.IsJoinTable -}}
 {{- else -}}
 	{{- range $fkey := .Table.FKeys -}}

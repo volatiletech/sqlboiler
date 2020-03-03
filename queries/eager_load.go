@@ -11,6 +11,10 @@ import (
 	"github.com/volatiletech/sqlboiler/strmangle"
 )
 
+const (
+	loadJoinMethodName = "LoadJoin"
+)
+
 type loadRelationshipState struct {
 	ctx    context.Context
 	exec   boil.Executor
@@ -67,6 +71,64 @@ func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, mods ma
 	return nil
 }
 
+func getObjType(obj interface{}, bkind bindKind) reflect.Type {
+	typ := reflect.TypeOf(obj).Elem()
+	if bkind == kindPtrSliceStruct {
+		typ = typ.Elem().Elem()
+	}
+	return typ
+}
+
+func eagerLoadJoin(q *Query, obj interface{}, bkind bindKind) (newObj interface{}, err error) {
+	// build a join query to fully populate this object
+	typ := getObjType(obj, bkind)
+
+	ln, found := typ.FieldByName(loaderStructName)
+	// It's possible a Loaders struct doesn't exist on the struct.
+	if !found {
+		err = errors.Errorf("attempted to load %s but no L struct was found", typ)
+		return
+	}
+
+	loadJoinQueryMethod, found := ln.Type.MethodByName(loadJoinMethodName)
+	if !found {
+		err = errors.New("Cannot find expected load join method: " + loadJoinMethodName)
+		return
+	}
+
+	isSlice := false
+	if bkind == kindPtrSliceStruct || bkind == kindSliceStruct {
+		isSlice = true
+	}
+
+	val := reflect.Indirect(reflect.New(typ))
+	args := []reflect.Value{
+		val.FieldByName(loaderStructName),
+	}
+	ret := loadJoinQueryMethod.Func.Call(args)
+	if len(ret) == 3 {
+		if intf := ret[2].Interface(); intf != nil {
+			err = errors.Wrapf(intf.(error), "failed to join load %s", loadJoinMethodName)
+			return
+		}
+	}
+	if intf := ret[0].Interface(); intf != nil {
+		newQuery := intf.(*Query)
+		q.selectCols = newQuery.selectCols
+		q.joins = newQuery.joins
+		if isSlice {
+			newType := reflect.SliceOf(reflect.TypeOf(ret[1].Interface()))
+			newObj = reflect.New(newType).Interface()
+		} else {
+			newObj = ret[1].Interface()
+		}
+		return
+	}
+
+	err = errors.New("unexpected error: did not get a query from the load join method: " + loadJoinMethodName)
+	return
+}
+
 // loadRelationships dynamically calls the template generated eager load
 // functions of the form:
 //
@@ -92,10 +154,7 @@ func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, mods ma
 // we gather all the things up we want to load into, load them, and then move
 // to the next level of the graph.
 func (l loadRelationshipState) loadRelationships(depth int, obj interface{}, bkind bindKind) error {
-	typ := reflect.TypeOf(obj).Elem()
-	if bkind == kindPtrSliceStruct {
-		typ = typ.Elem().Elem()
-	}
+	typ := getObjType(obj, bkind)
 
 	loadingFrom := reflect.ValueOf(obj)
 	if loadingFrom.IsNil() {

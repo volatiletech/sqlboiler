@@ -123,6 +123,60 @@ func InnerJoin(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+type leftOuterJoinQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm leftOuterJoinQueryMod) Apply(q *queries.Query) {
+	queries.AppendLeftOuterJoin(q, qm.clause, qm.args...)
+}
+
+// LeftOuterJoin on another table
+func LeftOuterJoin(clause string, args ...interface{}) QueryMod {
+	return leftOuterJoinQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
+type rightOuterJoinQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm rightOuterJoinQueryMod) Apply(q *queries.Query) {
+	queries.AppendRightOuterJoin(q, qm.clause, qm.args...)
+}
+
+// RightOuterJoin on another table
+func RightOuterJoin(clause string, args ...interface{}) QueryMod {
+	return rightOuterJoinQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
+type fullOuterJoinQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm fullOuterJoinQueryMod) Apply(q *queries.Query) {
+	queries.AppendFullOuterJoin(q, qm.clause, qm.args...)
+}
+
+// FullOuterJoin on another table
+func FullOuterJoin(clause string, args ...interface{}) QueryMod {
+	return fullOuterJoinQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
 type withQueryMod struct {
 	clause string
 	args   []interface{}

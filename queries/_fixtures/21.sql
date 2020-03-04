@@ -1,0 +1,1 @@
+SELECT "c".* FROM cats c RIGHT JOIN dogs d on d.cat_id = cats.id;

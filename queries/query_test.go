@@ -458,6 +458,135 @@ func TestAppendInnerJoin(t *testing.T) {
 	}
 }
 
+func TestAppendLeftOuterJoin(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	AppendLeftOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+	AppendLeftOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+
+	if len(q.joins) != 2 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
+	}
+
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid leftJoin on string: %#v", q.joins)
+	}
+	if q.joins[1].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid leftJoin on string: %#v", q.joins)
+	}
+
+	if len(q.joins[0].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[0].args))
+	}
+	if len(q.joins[1].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[1].args))
+	}
+
+	if q.joins[0].args[0] != 2 && q.joins[0].args[1] != 5 {
+		t.Errorf("Invalid args values, got %#v", q.joins[0].args)
+	}
+
+	q.joins = []join{{kind: JoinOuterLeft,
+		clause: "thing=$1 AND stuff=$2",
+		args:   []interface{}{2, 5},
+	}}
+
+	if len(q.joins) != 1 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
+	}
+
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid leftJoin on string: %#v", q.joins)
+	}
+}
+
+func TestAppendRightOuterJoin(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	AppendRightOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+	AppendRightOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+
+	if len(q.joins) != 2 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
+	}
+
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid rightJoin on string: %#v", q.joins)
+	}
+	if q.joins[1].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid rightJoin on string: %#v", q.joins)
+	}
+
+	if len(q.joins[0].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[0].args))
+	}
+	if len(q.joins[1].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[1].args))
+	}
+
+	if q.joins[0].args[0] != 2 && q.joins[0].args[1] != 5 {
+		t.Errorf("Invalid args values, got %#v", q.joins[0].args)
+	}
+
+	q.joins = []join{{kind: JoinOuterRight,
+		clause: "thing=$1 AND stuff=$2",
+		args:   []interface{}{2, 5},
+	}}
+
+	if len(q.joins) != 1 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
+	}
+
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid rightJoin on string: %#v", q.joins)
+	}
+}
+
+func TestAppendFullOuterJoin(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	AppendFullOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+	AppendFullOuterJoin(q, "thing=$1 AND stuff=$2", 2, 5)
+
+	if len(q.joins) != 2 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
+	}
+
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid fullJoin on string: %#v", q.joins)
+	}
+	if q.joins[1].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid fullJoin on string: %#v", q.joins)
+	}
+
+	if len(q.joins[0].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[0].args))
+	}
+	if len(q.joins[1].args) != 2 {
+		t.Errorf("Expected len 2, got %d", len(q.joins[1].args))
+	}
+
+	if q.joins[0].args[0] != 2 && q.joins[0].args[1] != 5 {
+		t.Errorf("Invalid args values, got %#v", q.joins[0].args)
+	}
+
+	q.joins = []join{{kind: JoinOuterFull,
+		clause: "thing=$1 AND stuff=$2",
+		args:   []interface{}{2, 5},
+	}}
+
+	if len(q.joins) != 1 {
+		t.Errorf("Expected len 1, got %d", len(q.joins))
+	}
+
+	if q.joins[0].clause != "thing=$1 AND stuff=$2" {
+		t.Errorf("Got invalid fullJoin on string: %#v", q.joins)
+	}
+}
+
 func TestAppendWith(t *testing.T) {
 	t.Parallel()
 
@@ -497,6 +626,6 @@ func TestAppendWith(t *testing.T) {
 	}
 
 	if q.withs[0].clause != "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)" {
-		t.Errorf("Got invalid innerJoin on string: %#v", q.withs)
+		t.Errorf("Got invalid with on string: %#v", q.withs)
 	}
 }

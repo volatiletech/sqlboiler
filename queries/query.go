@@ -18,6 +18,7 @@ const (
 	JoinOuterLeft
 	JoinOuterRight
 	JoinNatural
+	JoinOuterFull
 )
 
 // Query holds the state for the built up query
@@ -285,6 +286,21 @@ func SetFrom(q *Query, from ...string) {
 // AppendInnerJoin on the query.
 func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
+}
+
+// AppendLeftOuterJoin on the query.
+func AppendLeftOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterLeft, args: args})
+}
+
+// AppendRightOuterJoin on the query.
+func AppendRightOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterRight, args: args})
+}
+
+// AppendFullOuterJoin on the query.
+func AppendFullOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterFull, args: args})
 }
 
 // AppendHaving on the query.

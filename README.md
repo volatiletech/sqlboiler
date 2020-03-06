@@ -802,6 +802,12 @@ The most common causes of problems and panics are:
     global database handle using `boil.SetDB()`.
 - Naming collisions, if the code fails to compile because there are naming collisions, look at the
   [aliasing](#aliases) feature.
+- Race conditions in tests or when using global variable models and using
+  relationship set helpers in multiple goroutines. Note that Set/Add/Remove
+  relationship helpers modify their input parameters to maintain parity between
+  the `.R` struct relationships and the database foreign keys but this can
+  produce subtle race conditions. Test for this using the `-race` flag on the
+  go tool.
 - A field not being inserted (usually a default true boolean), `boil.Infer` looks at the zero
   value of your Go type (it doesn't care what the default value in the database is) to determine
   if it should insert your field or not. In the case of a default true boolean value, when you

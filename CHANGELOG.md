@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   them during serialization (thanks @bogdanpradnj)
 - Add 'where in' helpers for all primitive Go types (thanks @nwidger)
 - Add a usage example of accessing the .R field (thanks @tooolbox)
+- Add a check that safely sidesteps empty WhereIn queries like in other ORMs.
+  (thanks @rekki)
 
 ### Fixed
 

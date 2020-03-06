@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add a usage example of accessing the .R field (thanks @tooolbox)
 - Add a check that safely sidesteps empty WhereIn queries like in other ORMs.
   (thanks @rekki)
+- Add LeftOuter/RightOuter/FullOuter join query mods. Keep in mind this has no
+  direct Bind() support as of yet so as with inner joins you -must- use custom
+  data structs. (thanks @tzachshabtay)
 
 ### Fixed
 

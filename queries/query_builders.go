@@ -367,6 +367,16 @@ ManualParen:
 			buf.WriteByte(')')
 		case whereKindIn:
 			ln := len(where.args)
+			// WHERE IN () is invalid sql, so it is difficult to simply run code like:
+			// for _, u := range model.Users(qm.WhereIn("id IN ?",uids...)).AllP(db) {
+			//    ...
+			// }
+			// instead when we see empty IN we produce 1=0 so it can still be chained
+			// with other queries
+			if ln == 0 {
+				buf.WriteString("(1=0)")
+				break
+			}
 			matches := rgxInClause.FindStringSubmatch(where.clause)
 			// If we can't find any matches attempt a simple replace with 1 group.
 			// Clauses that fit this criteria will not be able to contain ? in their

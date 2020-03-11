@@ -122,8 +122,8 @@ func TestBuildQuery(t *testing.T) {
 		},
 		{&Query{from: []string{"t"}, distinct: "id"}, nil},
 		{&Query{from: []string{"t"}, distinct: "id", count: true}, nil},
-		{&Query{from: []string{"t"}, distinct: "id", joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
-		{&Query{from: []string{"t"}, distinct: "id", count: true, joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
+		{&Query{from: []string{"t"}, distinct: "id, t.*", joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
+		{&Query{from: []string{"t"}, distinct: "id, t.*", count: true, joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
 	}
 
 	for i, test := range tests {

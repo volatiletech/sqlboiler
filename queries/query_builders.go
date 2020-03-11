@@ -66,7 +66,13 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	hasDistinct := q.distinct != ""
 	if hasDistinct {
 		buf.WriteString("DISTINCT ")
+		if q.count {
+			buf.WriteString("(")
+		}
 		buf.WriteString(q.distinct)
+		if q.count {
+			buf.WriteString(")")
+		}
 	} else if hasJoins && hasSelectCols && !q.count {
 		selectColsWithAs := writeAsStatements(q)
 		// Don't identQuoteSlice - writeAsStatements does this

@@ -1,0 +1,1 @@
+SELECT DISTINCT id FROM "t" INNER JOIN dogs d on d.cat_id = t.id;

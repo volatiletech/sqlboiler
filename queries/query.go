@@ -43,6 +43,7 @@ type Query struct {
 	limit      int
 	offset     int
 	forlock    string
+	distinct   string
 }
 
 // Applicator exists only to allow
@@ -236,6 +237,11 @@ func SetSelect(q *Query, sel []string) {
 // GetSelect from the query
 func GetSelect(q *Query) []string {
 	return q.selectCols
+}
+
+// SetDistinct on the query.
+func SetDistinct(q *Query, distinct string) {
+	q.distinct = distinct
 }
 
 // SetCount on the query.

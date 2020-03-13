@@ -333,6 +333,17 @@ func TestSetCount(t *testing.T) {
 	}
 }
 
+func TestSetDistinct(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetDistinct(q, "id")
+
+	if q.distinct != "id" {
+		t.Errorf("expected id, got %v", q.distinct)
+	}
+}
+
 func TestSetUpdate(t *testing.T) {
 	t.Parallel()
 

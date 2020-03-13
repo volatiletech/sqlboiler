@@ -177,6 +177,22 @@ func FullOuterJoin(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+type distinctQueryMod struct {
+	clause string
+}
+
+// Apply implements QueryMod.Apply.
+func (qm distinctQueryMod) Apply(q *queries.Query) {
+	queries.SetDistinct(q, qm.clause)
+}
+
+// Distinct allows you to filter duplicates
+func Distinct(clause string) QueryMod {
+	return distinctQueryMod{
+		clause: clause,
+	}
+}
+
 type withQueryMod struct {
 	clause string
 	args   []interface{}

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add LeftOuter/RightOuter/FullOuter join query mods. Keep in mind this has no
   direct Bind() support as of yet so as with inner joins you -must- use custom
   data structs. (thanks @tzachshabtay)
+- Add `distinct` query mod (thanks @tzachshabtay)
 
 ### Fixed
 

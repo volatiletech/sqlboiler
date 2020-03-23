@@ -38,8 +38,9 @@ const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
 	loaderStructName       = "L"
-	nullTypeSuffix         = "Null"
 	sentinel               = uint64(255)
+	boilTag                = "boil"
+	nullJoinTagValue       = "nulljoin"
 )
 
 // BindP executes the query and inserts the
@@ -113,12 +114,12 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 // For custom objects that want to use eager loading, please see the
 // loadRelationships function.
 func Bind(rows *sql.Rows, obj interface{}) error {
-	structType, sliceType, singular, err := bindChecks(obj)
+	structType, _, singular, err := bindChecks(obj)
 	if err != nil {
 		return err
 	}
-
-	return bind(rows, obj, structType, sliceType, singular)
+	_, err = bind(rows, obj, structType, singular)
+	return err
 }
 
 // Bind executes the query and inserts the
@@ -131,7 +132,7 @@ func Bind(rows *sql.Rows, obj interface{}) error {
 //
 // Also see documentation for Bind()
 func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) error {
-	structType, sliceType, bkind, err := bindChecks(obj)
+	structType, _, bkind, err := bindChecks(obj)
 	if err != nil {
 		return err
 	}
@@ -143,7 +144,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 			return err
 		}
 		// using a new bind type, so re-populate
-		structType, sliceType, bkind, err = bindChecks(currentObj)
+		structType, _, bkind, err = bindChecks(currentObj)
 		if err != nil {
 			return err
 		}
@@ -158,7 +159,8 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
-	if err = bind(rows, currentObj, structType, sliceType, bkind); err != nil {
+	var nullTables []string
+	if nullTables, err = bind(rows, currentObj, structType, bkind); err != nil {
 		if innerErr := rows.Close(); innerErr != nil {
 			return errors.Wrapf(err, "error on rows.Close after bind error: %+v", innerErr)
 		}
@@ -185,12 +187,18 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 			objType := reflect.TypeOf(obj).Elem().Elem().Elem()
 			for i := 0; i < currentObjVal.Len(); i++ {
 				newObj := reflect.Indirect(reflect.New(objType))
-				processLoadJoinStruct(reflect.Indirect(currentObjVal.Index(i)), newObj)
+				err = processLoadJoinStruct(reflect.Indirect(currentObjVal.Index(i)), newObj, nullTables)
+				if err != nil {
+					return err
+				}
 				objVal.Set(reflect.Append(objVal, newObj.Addr()))
 			}
 		} else if bkind == kindStruct {
 			// currentObj will have a field with the same type as the type of objVal
-			processLoadJoinStruct(currentObjVal, objVal)
+			err = processLoadJoinStruct(currentObjVal, objVal, nullTables)
+			if err != nil {
+				return err
+			}
 		} else {
 			return errors.New("unsupported bindKind for loadJoin: " + string(bkind))
 		}
@@ -201,14 +209,30 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 
 // processLoadJoinStruct uses reflection to populate a struct of a type from a generated table
 // from a struct of the load join type
-func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) error {
-	for i := 0; i < currentObjVal.NumField(); i++ {
+func processLoadJoinStruct(currentObjVal, objVal reflect.Value, nullTables []string) error {
+	numFields := currentObjVal.NumField()
+	for i := 0; i < numFields; i++ {
 		coField := currentObjVal.Field(i)
 		if coField.Type() == objVal.Type() {
 			objVal.Set(coField)
 			break
 		}
 	}
+
+	nilRTypes := make(map[string]bool)
+	if len(nullTables) > 0 {
+		// we need to see which types in the R struct should be nil pointers (nullable join was null)
+		joinRespType := currentObjVal.Type()
+		numFields = joinRespType.NumField()
+		for i := 0; i < numFields; i++ {
+			f := joinRespType.Field(i)
+			table, _, nulljoin := parseBoilTag(f)
+			if nulljoin && inSlice(table, nullTables) {
+				nilRTypes[f.Type.Name()] = true
+			}
+		}
+	}
+
 	// take the loadjoin struct and map it into the original obj struct (populate *R)
 	relationshipStruct := objVal.FieldByName(relationshipStructName)
 	if !relationshipStruct.IsValid() {
@@ -219,29 +243,19 @@ func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) er
 		f := rStruct.Field(i)
 		if f.Kind() == reflect.Ptr {
 			baseType := f.Type().Elem()
+			fieldTypeName := f.Type().Elem().Name()
+			if _, ok := nilRTypes[fieldTypeName]; ok {
+				f.Set(reflect.Zero(f.Type()))
+				continue
+			}
+
 			// currentObj is where the data is. we need to get the value of the same type from currentObj
 			// and set it in our new rStruct
-			for j := 0; j < currentObjVal.NumField(); j++ {
+			numFields = currentObjVal.NumField()
+			for j := 0; j < numFields; j++ {
 				cf := currentObjVal.Field(j)
-				myType := cf.Type().String()
-				if myType != "" {
-				}
-				baseTypeName := baseType.String()
-				if baseTypeName != "" {
-				}
 				if cf.Type() == baseType {
 					f.Set(cf.Addr())
-					break
-				}
-				// we need to use a temporary, all-null struct in order for outer joins to work
-				// this is because if a nullable foreign key is null, the outer join will return all columns of the db
-				// as null. to avoid scanning errors, we bind into a version of the struct where every field is a nullable type
-				// and then here we need to convert back to the normal type, if there was in fact a relationship
-				if cf.Type().String() == baseType.String()+nullTypeSuffix {
-					fromNull, err := LoadJoinFromNull(baseType, cf)
-					if err == nil {
-						f.Set(fromNull.Addr())
-					}
 					break
 				}
 			}
@@ -250,45 +264,6 @@ func processLoadJoinStruct(currentObjVal reflect.Value, objVal reflect.Value) er
 	// set the R struct to be our new value
 	relationshipStruct.Set(rStruct.Addr())
 	return nil
-}
-
-// move fields from the all-null version back to the "real" version of this type
-// return an error if every field is null; that means there was no relationship (the nullable foreign key was set to null)
-func LoadJoinFromNull(baseType reflect.Type, nullVal reflect.Value) (baseVal reflect.Value, err error) {
-	const valid = "Valid"
-	baseVal = reflect.Indirect(reflect.New(baseType))
-	haveValid := false
-
-	for i := 0; i < nullVal.NumField(); i++ {
-		bf := baseVal.Field(i)
-		nf := nullVal.Field(i)
-		// every null field is of a null.X type, which is a struct of the real type and a "Valid" bool
-		nullValid := nf.FieldByName(valid)
-		if !nullValid.Bool() {
-			continue
-		}
-		haveValid = true
-		// the base field might be a nullable, in which case we just copy it over
-		if bf.Type() == nf.Type() {
-			bf.Set(nf)
-		} else {
-			for nullStructCtr := 0; nullStructCtr < nf.NumField(); nullStructCtr++ {
-				// find the other field - not named "Valid" - in the null struct
-				nullStructField := nf.Field(nullStructCtr)
-				fieldName := nf.Type().Field(nullStructCtr).Name
-				if fieldName != valid {
-					// set it in the "real" (non-null) object
-					bf.Set(nullStructField)
-					break
-				}
-			}
-		}
-	}
-
-	if !haveValid {
-		err = errors.New("all values were null")
-	}
-	return
 }
 
 // bindChecks resolves information about the bind target, and errors if it's not an object
@@ -346,10 +321,66 @@ func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Typ
 	}
 }
 
-func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, bkind bindKind) error {
+//find all items in slice that start with "needle."
+func sliceTableIndex(slice []string, needle string) (map[int]bool, error) {
+	indexes := make(map[int]bool)
+	for idx, val := range slice {
+		if strings.HasPrefix(val, needle+".") {
+			indexes[idx] = true
+		}
+	}
+
+	var err error
+	if len(indexes) == 0 {
+		err = errors.New("needle not found in slice")
+	}
+
+	return indexes, err
+}
+
+func parseBoilTag(field reflect.StructField) (table string, bind, nulljoin bool) {
+	tag := field.Tag.Get(boilTag)
+	if len(tag) == 0 {
+		return
+	}
+	tagItems := strings.Split(tag, ",")
+	if len(tagItems) < 2 {
+		return
+	}
+	table = tagItems[0]
+	bind = tagItems[1] == "bind"
+	if len(tagItems) > 2 {
+		nulljoin = tagItems[2] == nullJoinTagValue
+	}
+
+	return
+}
+
+func getNullableColumnIndexes(cols []string, structType reflect.Type) map[int]bool {
+	indexes := make(map[int]bool)
+
+	numFields := structType.NumField()
+	for i := 0; i < numFields; i++ {
+		f := structType.Field(i)
+		table, _, nulljoin := parseBoilTag(f)
+		if nulljoin && len(table) > 0 {
+			// this is a hit. add all the indexes to the map we will return
+			colIndexes, err := sliceTableIndex(cols, table)
+			if err == nil {
+				for colIndex, _ := range colIndexes {
+					indexes[colIndex] = true
+				}
+			}
+		}
+	}
+
+	return indexes
+}
+
+func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKind) ([]string, error) {
 	cols, err := rows.Columns()
 	if err != nil {
-		return errors.Wrap(err, "bind failed to get column names")
+		return nil, errors.Wrap(err, "bind failed to get column names")
 	}
 
 	var ptrSlice reflect.Value
@@ -366,6 +397,9 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	typKey := makeTypeKey(structType)
 	colsKey := makeColsKey(structType, cols)
 
+	//see if this has the "nulljoin" option on the tag
+	nullableIndexes := getNullableColumnIndexes(cols, structType)
+
 	mut.RLock()
 	mapping, ok = bindingMaps[colsKey]
 	if !ok {
@@ -378,7 +412,7 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	if !ok {
 		mapping, err = BindMapping(structType, strMapping, cols)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		mut.Lock()
@@ -395,6 +429,7 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	}
 
 	foundOne := false
+	nullCols := make([]string, 0)
 Rows:
 	for rows.Next() {
 		foundOne = true
@@ -411,8 +446,34 @@ Rows:
 			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
 
+		if len(nullableIndexes) > 0 {
+			nullablePointers := make([]interface{}, len(pointers))
+			for i := 0; i < len(nullablePointers); i++ {
+				if _, ok := nullableIndexes[i]; ok {
+					nullablePointers[i] = new(sql.RawBytes)
+				} else {
+					nullablePointers[i] = pointers[i]
+				}
+			}
+			// preflight Scan to check for nulls
+			if err := rows.Scan(nullablePointers...); err != nil {
+				return nil, errors.Wrap(err, "failed to bind nullable pointers to obj")
+			}
+
+			// see if anything that could be null actually was
+			for nullIndex, _ := range nullableIndexes {
+				rb := nullablePointers[nullIndex].(*sql.RawBytes)
+				// it's not a nil pointer, but a pointer to an empty byte slice:
+				if *rb == nil {
+					// change pointers at this index to allow a null value in the real Scan below
+					pointers[nullIndex] = new(sql.RawBytes)
+					nullCols = append(nullCols, cols[nullIndex])
+				}
+			}
+		}
+
 		if err := rows.Scan(pointers...); err != nil {
-			return errors.Wrap(err, "failed to bind pointers to obj")
+			return nil, errors.Wrap(err, "failed to bind pointers to obj")
 		}
 
 		switch bkind {
@@ -426,10 +487,66 @@ Rows:
 	}
 
 	if bkind == kindStruct && !foundOne {
-		return sql.ErrNoRows
+		return nil, sql.ErrNoRows
 	}
 
-	return nil
+	return findNullTables(cols, nullCols), nil
+}
+
+// findNullTables: if every value for a given table was nil, then add it to our list of null tables
+// this is used to set table.R.ForeignTable = nil instead of having it populate with zero values
+// both string slices passed to this function will contain entries like "table.column"
+func findNullTables(allColumns, nullColumns []string) []string {
+	nullTables := make([]string, 0)
+
+	allColumnsMap := tableColumnMap(allColumns)
+	nullColumnsMap := tableColumnMap(nullColumns)
+
+	for table, columns := range nullColumnsMap {
+		// if all the columns in the null map are the same as all the columns in the table, then it's a null table
+		if len(columns) == len(allColumnsMap[table]) {
+			equal := true
+			for _, nullCol := range columns {
+				if !inSlice(nullCol, allColumnsMap[table]) {
+					equal = false
+				}
+			}
+			if equal {
+				nullTables = append(nullTables, table)
+			}
+		}
+	}
+
+	return nullTables
+}
+
+// see if needle is in haystack
+func inSlice(needle string, haystack []string) bool {
+	for _, haystackEntry := range haystack {
+		if needle == haystackEntry {
+			return true
+		}
+	}
+
+	return false
+}
+
+// make a map of table to columns
+func tableColumnMap(columns []string) map[string][]string {
+	tables := make(map[string][]string)
+	for _, col := range columns {
+		colsplit := strings.Split(col, ".")
+		if len(colsplit) != 2 {
+			continue
+		}
+		if _, ok := tables[colsplit[0]]; !ok {
+			tables[colsplit[0]] = []string{colsplit[1]}
+		} else {
+			tables[colsplit[0]] = append(tables[colsplit[0]], colsplit[1])
+		}
+	}
+
+	return tables
 }
 
 // BindMapping creates a mapping that helps look up the pointer for the
@@ -545,7 +662,7 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 }
 
 func getBoilTag(field reflect.StructField) (name string, recurse bool) {
-	tag := field.Tag.Get("boil")
+	tag := field.Tag.Get(boilTag)
 
 	if len(tag) == 0 {
 		return "", false

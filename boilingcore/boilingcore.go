@@ -462,9 +462,6 @@ func matchColumn(c, m drivers.Column) bool {
 	if !matches(m.Type, c.Type) {
 		return false
 	}
-	if !matches(m.NullType, c.NullType) {
-		return false
-	}
 	if !matches(m.DBType, c.DBType) {
 		return false
 	}
@@ -502,7 +499,6 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	ret := dst
 	if len(src.Type) != 0 {
 		ret.Type = src.Type
-		ret.NullType = src.NullType
 	}
 	if len(src.DBType) != 0 {
 		ret.DBType = src.DBType

@@ -103,8 +103,9 @@ func getSourceColumn(typeName string, rColumns relationMap) (sourceColumn string
 }
 
 
-// given a type that the relationship points to, build an InnerJoin query mod
-func leftJoin(sourceTable string, typeName string, rColumns relationMap) qm.QueryMod {
+// given a type that the relationship points to, build a query mod
+// it's an inner join if the relationship isn't nullable, otherwise it's a left outer join
+func loadJoinQueryMod(sourceTable, typeName string, rColumns relationMap, nullable bool) qm.QueryMod {
 	sourceColumn, err := getSourceColumn(typeName, rColumns)
 	if err != nil {
 		return nil
@@ -115,9 +116,12 @@ func leftJoin(sourceTable string, typeName string, rColumns relationMap) qm.Quer
 		return nil
 	}
 
-	return qm.LeftOuterJoin(clause)
+	if nullable {
+		return qm.LeftOuterJoin(clause)
+	} else {
+		return qm.InnerJoin(clause)
+	}
 }
-
 
 {{/*
 The following is a little bit of black magic and deserves some explanation

@@ -7,14 +7,20 @@
 			"{{$relAlias.Foreign}}",
 		{{- end -}}
 	}
+	nullable := []bool{
+		{{- range .Table.FKeys -}}
+			{{if .Nullable}}true{{else}}false{{end}},
+		{{- end -}}
+	}
 
 	allColumns := make([]string, len(joinable)+1)
 	allColumns[0] = FullyQualifiedColumns(TableNames.{{titleCase .Table.Name}})
 	queryMods := make([]qm.QueryMod, len(joinable)+2)
 	queryMods[0] = qm.From(TableNames.{{titleCase .Table.Name}})
+
 	for i, join := range joinable {
 		allColumns[i+1] = FullyQualifiedColumns(TypeNameToTableName[join])
-		queryMods[i+2] = leftJoin(TableNames.{{titleCase .Table.Name}}, join, {{$alias.UpSingular}}RelationshipColumns)
+		queryMods[i+2] = loadJoinQueryMod(TableNames.{{titleCase .Table.Name}}, join, {{$alias.UpSingular}}RelationshipColumns, nullable[i])
 	}
 	queryMods[1] = qm.Select(strings.Join(allColumns, ","))
 

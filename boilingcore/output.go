@@ -109,12 +109,9 @@ func executeTemplates(e executeTemplateData) error {
 	imps.ThirdParty = e.importSet.ThirdParty
 	if e.combineImportsOnType {
 		colTypes := make([]string, len(e.data.Table.Columns))
-		nullColTypes := make([]string, len(e.data.Table.Columns))
 		for i, ct := range e.data.Table.Columns {
 			colTypes[i] = ct.Type
-			nullColTypes[i] = ct.NullType
 		}
-		colTypes = append(colTypes, nullColTypes...)
 
 		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)
 	}

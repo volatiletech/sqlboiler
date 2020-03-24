@@ -11,7 +11,6 @@ import (
 type Column struct {
 	Name      string `json:"name" toml:"name"`
 	Type      string `json:"type" toml:"type"`
-	NullType  string `json:"null_type" toml:"null_type"`
 	DBType    string `json:"db_type" toml:"db_type"`
 	Default   string `json:"default" toml:"default"`
 	Nullable  bool   `json:"nullable" toml:"nullable"`

@@ -466,9 +466,8 @@ func (m *MySQLDriver) columnType(dbType string, fullDBType string) string {
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
-	c.NullType = m.nullColumnType(c.DBType, c.FullDBType)
 	if c.Nullable {
-		c.Type = c.NullType
+		c.Type = m.nullColumnType(c.DBType, c.FullDBType)
 	} else {
 		c.Type = m.columnType(c.DBType, c.FullDBType)
 	}

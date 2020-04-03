@@ -18,8 +18,9 @@ var (
 	smartQuoteRgx = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9\-]*"?(\."?[_a-z][_a-z0-9]*"?)*(\.\*)?$`)
 
 	rgxEnum            = regexp.MustCompile(`^enum(\.[a-z0-9_]+)?\((,?'[^']+')+\)$`)
-	rgxEnumIsOK        = regexp.MustCompile(`^(?i)[a-z][a-z0-9_]*$`)
+	rgxEnumIsOK        = regexp.MustCompile(`^(?i)[a-z][a-z0-9_\s]*$`)
 	rgxEnumShouldTitle = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
+	rgxWhitespace      = regexp.MustCompile(`\s`)
 )
 
 var uppercaseWords = map[string]struct{}{
@@ -698,6 +699,11 @@ func IsEnumNormal(values []string) bool {
 	}
 
 	return true
+}
+
+//StripWhitespace removes all whitespace from a string
+func StripWhitespace(value string) string {
+	return rgxWhitespace.ReplaceAllString(value, "")
 }
 
 // ShouldTitleCaseEnum checks a value to see if it's title-case-able

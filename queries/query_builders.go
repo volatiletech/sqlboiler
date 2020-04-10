@@ -185,35 +185,41 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	return buf, args
 }
 
+func writeParameterizedModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}, keyword, delim string, clauses []argClause) {
+	argsLen := len(*args)
+	modBuf := strmangle.GetBuffer()
+	fmt.Fprintf(modBuf, keyword)
+
+	for i, j := range clauses {
+		if i > 0 {
+			modBuf.WriteString(delim)
+		}
+		modBuf.WriteString(j.clause)
+		*args = append(*args, j.args...)
+	}
+
+	var resp string
+	if q.dialect.UseIndexPlaceholders {
+		resp, _ = convertQuestionMarks(modBuf.String(), argsLen+1)
+	} else {
+		resp = modBuf.String()
+	}
+
+	buf.WriteString(resp)
+	strmangle.PutBuffer(modBuf)
+}
+
 func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	if len(q.groupBy) != 0 {
 		fmt.Fprintf(buf, " GROUP BY %s", strings.Join(q.groupBy, ", "))
 	}
 
 	if len(q.having) != 0 {
-		argsLen := len(*args)
-		havingBuf := strmangle.GetBuffer()
-		fmt.Fprintf(havingBuf, " HAVING ")
-		for i, j := range q.having {
-			if i > 0 {
-				fmt.Fprintf(havingBuf, " AND ")
-			}
-			fmt.Fprintf(havingBuf, j.clause)
-			*args = append(*args, j.args...)
-		}
-		var resp string
-		if q.dialect.UseIndexPlaceholders {
-			resp, _ = convertQuestionMarks(havingBuf.String(), argsLen+1)
-		} else {
-			resp = havingBuf.String()
-		}
-		fmt.Fprintf(buf, resp)
-		strmangle.PutBuffer(havingBuf)
+		writeParameterizedModifiers(q, buf, args, " HAVING ", " AND ", q.having)
 	}
 
 	if len(q.orderBy) != 0 {
-		buf.WriteString(" ORDER BY ")
-		buf.WriteString(strings.Join(q.orderBy, ", "))
+		writeParameterizedModifiers(q, buf, args, " ORDER BY ", ", ", q.orderBy)
 	}
 
 	if !q.dialect.UseTopClause {
@@ -240,7 +246,12 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 				buf.WriteString(" ORDER BY (SELECT NULL)")
 			}
 
-			fmt.Fprintf(buf, " OFFSET %d", q.offset)
+			// This seems to be the latest version of mssql's syntax for offset
+			// (the suffix ROWS)
+			// This is true for latest sql server as well as their cloud offerings & the upcoming sql server 2019
+			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-2017
+			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
+			fmt.Fprintf(buf, " OFFSET %d ROWS", q.offset)
 
 			if q.limit != 0 {
 				fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", q.limit)
@@ -445,7 +456,7 @@ func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, g
 	}
 
 	if foundAt == -1 {
-		return strings.Replace(clause, `\?`, "?", -1), 0
+		return strings.ReplaceAll(clause, `\?`, "?"), 0
 	}
 
 	paramBuf.WriteString(clause[:foundAt])
@@ -455,7 +466,7 @@ func convertInQuestionMarks(UseIndexPlaceholders bool, clause string, startAt, g
 	paramBuf.WriteString(clause[foundAt+1:])
 
 	// Remove all backslashes from escaped question-marks
-	ret := strings.Replace(paramBuf.String(), `\?`, "?", -1)
+	ret := strings.ReplaceAll(paramBuf.String(), `\?`, "?")
 	return ret, total
 }
 

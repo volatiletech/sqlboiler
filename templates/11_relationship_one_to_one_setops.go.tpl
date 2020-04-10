@@ -70,10 +70,18 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 		)
 		values := []interface{}{o.{{$col}}, related.{{$foreignPKeyCols | stringMap (aliasCols $ftable) | join ", related."}}{{"}"}}
 
+		{{if $.NoContext -}}
 		if boil.DebugMode {
 			fmt.Fprintln(boil.DebugWriter, updateQuery)
 			fmt.Fprintln(boil.DebugWriter, values)
 		}
+		{{else -}}
+		if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		{{end -}}
 
 		{{if $.NoContext -}}
 		if _, err = exec.Exec(updateQuery, values...); err != nil {
@@ -158,7 +166,9 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.R.{{$relAlias.Local}} = nil
+	if o.R != nil {
+		o.R.{{$relAlias.Local}} = nil
+	}
 	if related == nil || related.R == nil {
 		return nil
 	}

@@ -1,11 +1,19 @@
 package types
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 
 	"github.com/ericlagergren/decimal"
+)
+
+var (
+	_ driver.Valuer = Decimal{}
+	_ driver.Valuer = NullDecimal{}
+	_ sql.Scanner   = &Decimal{}
+	_ sql.Scanner   = &NullDecimal{}
 )
 
 // Decimal is a DECIMAL in sql. Its zero value is valid for use with both
@@ -54,6 +62,15 @@ func (d *Decimal) Scan(val interface{}) error {
 	return nil
 }
 
+// UnmarshalJSON allows marshalling JSON into a null pointer
+func (d *Decimal) UnmarshalJSON(data []byte) error {
+	if d.Big == nil {
+		d.Big = new(decimal.Big)
+	}
+
+	return d.Big.UnmarshalJSON(data)
+}
+
 // Randomize implements sqlboiler's randomize interface
 func (d *Decimal) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	d.Big = randomDecimal(nextInt, fieldType, false)
@@ -73,6 +90,20 @@ func (n *NullDecimal) Scan(val interface{}) error {
 
 	n.Big = newD
 	return nil
+}
+
+// UnmarshalJSON allows marshalling JSON into a null pointer
+func (n *NullDecimal) UnmarshalJSON(data []byte) error {
+	if n.Big == nil {
+		n.Big = new(decimal.Big)
+	}
+
+	return n.Big.UnmarshalJSON(data)
+}
+
+// IsZero implements qmhelper.Nullable
+func (n NullDecimal) IsZero() bool {
+	return n.Big == nil
 }
 
 // Randomize implements sqlboiler's randomize interface

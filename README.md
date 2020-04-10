@@ -323,6 +323,8 @@ not to pass them through the command line or environment variables:
 | no-tests            | false     |
 | no-auto-timestamps  | false     |
 | no-rows-affected    | false     |
+| no-driver-templates | false     |
+| tag-ignore          | []        |
 
 Example:
 
@@ -920,9 +922,13 @@ Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 
 #### Skipping Automatic Timestamps
 
-If for a given query you do not want timestamp columns to be updated
-then you can use `boil.SkipTimestamps` on the context you pass in to the query
-to prevent them from being updated.
+If for a given query you do not want timestamp columns to be re-computed prior
+to an insert or update then you can use `boil.SkipTimestamps` on the context you
+pass in to the query to prevent them from being updated.
+
+Keep in mind this has no effect on whether or not the column is included in the
+insert/update, it simply stops them from being set to `time.Now()` in the struct
+before being sent to the database (if they were going to be sent).
 
 #### Overriding Automatic Timestamps
 
@@ -1039,6 +1045,7 @@ InnerJoin("pilots p on jets.pilot_id=?", 10)
 InnerJoin(models.TableNames.Pilots + " p on " + models.TableNames.Jets + "." + models.JetColumns.PilotID + "=?", 10)
 
 GroupBy("name")
+GroupBy("name like ? DESC, name", "John")
 GroupBy(models.PilotColumns.Name)
 OrderBy("age, height")
 OrderBy(models.PilotColumns.Age, models.PilotColumns.Height)
@@ -1251,6 +1258,11 @@ for i := 0; i < len(jets); i++ {
 jets, _ := models.Jets(Load("Pilot")).All(ctx, db)
 // Type safe relationship names exist too:
 jets, _ := models.Jets(Load(models.JetRels.Pilot)).All(ctx, db)
+
+// Then access the loaded sructs using the special Relation field
+for _, j := range jets {
+  _ = j.R.Pilot
+}
 ```
 
 Eager loading can be combined with other query mods, and it can also eager load recursively.

@@ -9,7 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+
 	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
@@ -87,7 +88,7 @@ func Struct(s *Seed, str interface{}, colTypes map[string]string, canBeNull bool
 
 		var found bool
 		for _, v := range blacklist {
-			if strmangle.TitleCase(v) == fieldTyp.Name {
+			if strmangle.TitleCase(v) == fieldTyp.Name || v == fieldTyp.Tag.Get("boil") {
 				found = true
 				break
 			}
@@ -171,8 +172,7 @@ func randomizeField(s *Seed, field reflect.Value, fieldType string, canBeNull bo
 
 // getStructNullValue for the matching type.
 func getStructNullValue(s *Seed, fieldType string, typ reflect.Type) interface{} {
-	switch typ {
-	case typeTime:
+	if typ == typeTime {
 		// MySQL does not support 0 value time.Time, so use rand
 		return Date(s.NextInt)
 	}
@@ -184,8 +184,7 @@ func getStructNullValue(s *Seed, fieldType string, typ reflect.Type) interface{}
 // The randomness is really an incrementation of the global seed,
 // this is done to avoid duplicate key violations.
 func getStructRandValue(s *Seed, fieldType string, typ reflect.Type) interface{} {
-	switch typ {
-	case typeTime:
+	if typ == typeTime {
 		return Date(s.NextInt)
 	}
 

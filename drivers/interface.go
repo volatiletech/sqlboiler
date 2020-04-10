@@ -5,7 +5,8 @@ package drivers
 import (
 	"sort"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+
 	"github.com/razor-1/sqlboiler/v3/importers"
 	"github.com/razor-1/sqlboiler/v3/strmangle"
 )

@@ -3,6 +3,9 @@ If you're having a generation problem please answer these questions before submi
 ### What version of SQLBoiler are you using (`sqlboiler --version`)?
 
 
+### What is your database and version (eg. Postgresql 10)
+
+
 ### If this happened at generation time what was the full SQLBoiler command you used to generate your models? (if not applicable leave blank)
 
 
@@ -16,3 +19,4 @@ If you're having a generation problem please answer these questions before submi
 
 
 ### Further information. What did you do, what did you expect?
+

@@ -10,10 +10,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/friendsofgo/errors"
 
-	"github.com/pkg/errors"
 	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v3/importers"
 	"github.com/razor-1/sqlboiler/v3/strmangle"
 
 	// Side-effect import sql driver
@@ -344,7 +344,8 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  constraint_name = $1 and table_name = $2 and table_schema = $3;`
+	where  constraint_name = $1 and table_name = $2 and table_schema = $3
+	order by kcu.ordinal_position;`
 
 	var rows *sql.Rows
 	if rows, err = p.conn.Query(queryColumns, pkey.Name, tableName, schema); err != nil {
@@ -467,7 +468,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			var dbType string
 			c.Type, dbType = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-			c.DBType = c.DBType + dbType
+			c.DBType += dbType
 		case "USER-DEFINED":
 			switch c.UDTName {
 			case "hstore":
@@ -526,7 +527,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			var dbType string
 			c.Type, dbType = getArrayType(c)
 			// Make DBType something like ARRAYinteger for parsing with randomize.Struct
-			c.DBType = c.DBType + dbType
+			c.DBType += dbType
 		case "USER-DEFINED":
 			switch c.UDTName {
 			case "hstore":
@@ -633,7 +634,7 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 			},
 			ThirdParty: importers.List{
 				`"github.com/kat-co/vala"`,
-				`"github.com/pkg/errors"`,
+				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
 				`"github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-psql/driver"`,
 				`"github.com/razor-1/sqlboiler/v3/randomize"`,

@@ -5,9 +5,10 @@ package drivers
 
 import (
 	"os"
+	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
 )
 
 // Config is a map with helper functions
@@ -45,6 +46,12 @@ func (c Config) MustInt(key string) int {
 		integer = t
 	case float64:
 		integer = int(t)
+	case string:
+		var err error
+		integer, err = strconv.Atoi(t)
+		if err != nil {
+			panic(errors.Errorf("failed to parse key %s (%s) to int: %v", key, t, err))
+		}
 	default:
 		panic(errors.Errorf("found key %s in config, but it was not an int (%T)", key, i))
 	}
@@ -100,6 +107,12 @@ func (c Config) Int(key string) (int, bool) {
 		integer = t
 	case float64:
 		integer = int(t)
+	case string:
+		var err error
+		integer, err = strconv.Atoi(t)
+		if err != nil {
+			return 0, false
+		}
 	default:
 		return 0, false
 	}

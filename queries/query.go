@@ -31,15 +31,15 @@ type Query struct {
 
 	delete     bool
 	update     map[string]interface{}
-	withs      []with
+	withs      []argClause
 	selectCols []string
 	count      bool
 	from       []string
 	joins      []join
 	where      []where
 	groupBy    []string
-	orderBy    []string
-	having     []having
+	orderBy    []argClause
+	having     []argClause
 	limit      int
 	offset     int
 	forlock    string
@@ -75,7 +75,7 @@ type in struct {
 	args        []interface{}
 }
 
-type having struct {
+type argClause struct {
 	clause string
 	args   []interface{}
 }
@@ -87,11 +87,6 @@ type rawSQL struct {
 
 type join struct {
 	kind   joinKind
-	clause string
-	args   []interface{}
-}
-
-type with struct {
 	clause string
 	args   []interface{}
 }
@@ -144,9 +139,10 @@ func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
 // ExecContext executes a query that does not need a row returned
 func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql.Result, error) {
 	qs, args := BuildQuery(q)
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, qs)
-		fmt.Fprintln(boil.DebugWriter, args)
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, qs)
+		fmt.Fprintln(writer, args)
 	}
 	return exec.ExecContext(ctx, qs, args...)
 }
@@ -154,9 +150,10 @@ func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql
 // QueryRowContext executes the query for the One finisher and returns a row
 func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) *sql.Row {
 	qs, args := BuildQuery(q)
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, qs)
-		fmt.Fprintln(boil.DebugWriter, args)
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, qs)
+		fmt.Fprintln(writer, args)
 	}
 	return exec.QueryRowContext(ctx, qs, args...)
 }
@@ -164,9 +161,10 @@ func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) 
 // QueryContext executes the query for the All finisher and returns multiple rows
 func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*sql.Rows, error) {
 	qs, args := BuildQuery(q)
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, qs)
-		fmt.Fprintln(boil.DebugWriter, args)
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, qs)
+		fmt.Fprintln(writer, args)
 	}
 	return exec.QueryContext(ctx, qs, args...)
 }
@@ -301,7 +299,7 @@ func AppendLeftJoin(q *Query, clause string, args ...interface{}) {
 
 // AppendHaving on the query.
 func AppendHaving(q *Query, clause string, args ...interface{}) {
-	q.having = append(q.having, having{clause: clause, args: args})
+	q.having = append(q.having, argClause{clause: clause, args: args})
 }
 
 // AppendWhere on the query.
@@ -366,11 +364,11 @@ func AppendGroupBy(q *Query, clause string) {
 }
 
 // AppendOrderBy on the query.
-func AppendOrderBy(q *Query, clause string) {
-	q.orderBy = append(q.orderBy, clause)
+func AppendOrderBy(q *Query, clause string, args ...interface{}) {
+	q.orderBy = append(q.orderBy, argClause{clause: clause, args: args})
 }
 
 // AppendWith on the query.
 func AppendWith(q *Query, clause string, args ...interface{}) {
-	q.withs = append(q.withs, with{clause: clause, args: args})
+	q.withs = append(q.withs, argClause{clause: clause, args: args})
 }

@@ -3,6 +3,62 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add a whitelist of table.column names to set "-" struct tags for to ignore
+  them during serialization (thanks @bogdanpradnj)
+- Add 'where in' helpers for all primitive Go types (thanks @nwidger)
+- Add a usage example of accessing the .R field (thanks @tooolbox)
+
+### Fixed
+
+- Fix an idempotency issue with primary key column ordering
+- Fix the plural/singular helpers for the word schema (thanks @Mushus)
+- Fix some panics in Remove relationship set operations
+- Fix panic when using WhereNullEQ with NullDecimal: implemented
+  qmhelper.Nullable for NullDecimal
+
+## [v3.6.1] - 2019-11-08
+
+### Fixed
+
+- Fix bug where mysql instead of mssql got the fix for offset rows which broke
+  mysql users. (thanks @kkoudev)
+
+## [v3.6.0] - 2019-10-21
+
+### Added
+
+- Log lines now can be controlled by context (both their presence and output)
+  see the new boil.WithDebug/boil.WithDebugWriter (thanks @zikaeroh)
+- OrderBy can now optionally take arguments (thanks @emwalker)
+- Driver templates can now be disabled to allow further re-use of the existing
+  drivers without having to recompile custom ones. (thanks @kurt-stolle)
+- Add "whereIn" helpers for int64 (thanks @sadayuki-matsuno)
+
+### Fixed
+
+- Fix bug in mssql offset clause, it now properly includes the "ROWS" suffix
+  as required by the official T-SQL spec.
+- Fix unmarshalling json into a 0-value Decimal or NullDecimal type when
+  the `*big.Decimal` itself is nil (thanks @ericlagergren)
+- Fix a bug where mysql/sqlite3 would make spurious select id from table
+  calls on insert when the id was already known.
+- Fix various quality issues such as Replace(..., -1) -> ReplaceAll, use of
+  EqualFold, etc. (thanks @sosiska)
+- Fix an issue where using environment variables to configure sqlboiler's
+  drivers the port would fail to parse (thanks @letientai299)
+
+### Changed
+
+- Changed the github.com/pkg/errors library for github.com/friendsofgo/errors
+  This change is backwards compatible, it simply needs the new dependency
+  to be downloaded. It also provides compatible with the new Go 1.13 error
+  handling idioms with which we'd like for users to be able to use.
+  (thanks @jwilner)
+
 ## [v3.5.0] - 2019-08-26
 
 ### Added

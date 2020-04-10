@@ -8,17 +8,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/razor-1/sqlboiler/v3/boilingcore"
 	"github.com/razor-1/sqlboiler/v3/drivers"
 	"github.com/razor-1/sqlboiler/v3/importers"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+
 )
 
 //go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
 
-const sqlBoilerVersion = "3.5.0"
+const sqlBoilerVersion = "3.6.1"
 
 var (
 	flagConfigFile string
@@ -77,7 +79,7 @@ func main() {
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
-			`Complete documentation is available at http://github.com/razor-1/sqlboiler`,
+			`Complete documentation is available at http://github.com/volatiletech/sqlboiler`,
 		Example:       `sqlboiler psql`,
 		PreRunE:       preRun,
 		RunE:          run,
@@ -101,11 +103,13 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-rows-affected", "", false, "Disable rows affected in the generated API")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
+	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
+	rootCmd.PersistentFlags().StringSliceP("tag-ignore", "", nil, "List of column names that should have tags values set to '-' (ignored during parsing)")
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
@@ -161,25 +165,27 @@ func preRun(cmd *cobra.Command, args []string) error {
 	drivers.RegisterBinary(driverName, driverPath)
 
 	cmdConfig = &boilingcore.Config{
-		DriverName:       driverName,
-		OutFolder:        viper.GetString("output"),
-		PkgName:          viper.GetString("pkgname"),
-		Debug:            viper.GetBool("debug"),
-		AddGlobal:        viper.GetBool("add-global-variants"),
-		AddPanic:         viper.GetBool("add-panic-variants"),
-		NoContext:        viper.GetBool("no-context"),
-		NoTests:          viper.GetBool("no-tests"),
-		NoHooks:          viper.GetBool("no-hooks"),
-		NoRowsAffected:   viper.GetBool("no-rows-affected"),
-		NoAutoTimestamps: viper.GetBool("no-auto-timestamps"),
-		Wipe:             viper.GetBool("wipe"),
-		StructTagCasing:  strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
-		TemplateDirs:     viper.GetStringSlice("templates"),
-		Tags:             viper.GetStringSlice("tag"),
-		Replacements:     viper.GetStringSlice("replace"),
-		Aliases:          boilingcore.ConvertAliases(viper.Get("aliases")),
-		TypeReplaces:     boilingcore.ConvertTypeReplace(viper.Get("types")),
-		Version:          sqlBoilerVersion,
+		DriverName:        driverName,
+		OutFolder:         viper.GetString("output"),
+		PkgName:           viper.GetString("pkgname"),
+		Debug:             viper.GetBool("debug"),
+		AddGlobal:         viper.GetBool("add-global-variants"),
+		AddPanic:          viper.GetBool("add-panic-variants"),
+		NoContext:         viper.GetBool("no-context"),
+		NoTests:           viper.GetBool("no-tests"),
+		NoHooks:           viper.GetBool("no-hooks"),
+		NoRowsAffected:    viper.GetBool("no-rows-affected"),
+		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
+		NoDriverTemplates: viper.GetBool("no-driver-templates"),
+		Wipe:              viper.GetBool("wipe"),
+		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
+		TagIgnore:         viper.GetStringSlice("tag-ignore"),
+		TemplateDirs:      viper.GetStringSlice("templates"),
+		Tags:              viper.GetStringSlice("tag"),
+		Replacements:      viper.GetStringSlice("replace"),
+		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
+		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
+		Version:           sqlBoilerVersion,
 	}
 
 	if cmdConfig.Debug {
@@ -251,20 +257,20 @@ func postRun(cmd *cobra.Command, args []string) error {
 func allKeys(prefix string) []string {
 	keys := make(map[string]bool)
 
-	prefix = prefix + "."
+	prefix += "."
 
 	for _, e := range os.Environ() {
 		splits := strings.SplitN(e, "=", 2)
-		key := strings.Replace(strings.ToLower(splits[0]), "_", ".", -1)
+		key := strings.ReplaceAll(strings.ToLower(splits[0]), "_", ".")
 
 		if strings.HasPrefix(key, prefix) {
-			keys[strings.Replace(key, prefix, "", -1)] = true
+			keys[strings.ReplaceAll(key, prefix, "")] = true
 		}
 	}
 
 	for _, key := range viper.AllKeys() {
 		if strings.HasPrefix(key, prefix) {
-			keys[strings.Replace(key, prefix, "", -1)] = true
+			keys[strings.ReplaceAll(key, prefix, "")] = true
 		}
 	}
 

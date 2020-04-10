@@ -96,7 +96,7 @@ func SchemaTable(lq, rq string, useSchema bool, schema string, table string) str
 
 // IdentQuote attempts to quote simple identifiers in SQL statements
 func IdentQuote(lq rune, rq rune, s string) string {
-	if strings.ToLower(s) == "null" || s == "?" {
+	if strings.EqualFold(s, "null") || s == "?" {
 		return s
 	}
 
@@ -313,6 +313,19 @@ func TitleCase(n string) string {
 	mut.Unlock()
 
 	return ret
+}
+
+// Ignore sets "-" for the tags values, so the fields will be ignored during parsing
+func Ignore(table, column string, ignoreList map[string]struct{}) bool {
+	_, ok := ignoreList[column]
+	if ok {
+		return true
+	}
+	_, ok = ignoreList[fmt.Sprintf("%s.%s", table, column)]
+	if ok {
+		return true
+	}
+	return false
 }
 
 // CamelCase takes a variable name in the format of "var_name" and converts

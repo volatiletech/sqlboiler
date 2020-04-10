@@ -9,7 +9,8 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+
 	"github.com/razor-1/sqlboiler/v3/strmangle"
 )
 
@@ -201,7 +202,7 @@ func NewDefaultImports() Collection {
 			`"time"`,
 		},
 		ThirdParty: List{
-			`"github.com/pkg/errors"`,
+			`"github.com/friendsofgo/errors"`,
 			`"github.com/razor-1/sqlboiler/v3/boil"`,
 			`"github.com/razor-1/sqlboiler/v3/queries"`,
 			`"github.com/razor-1/sqlboiler/v3/queries/qm"`,
@@ -223,7 +224,7 @@ func NewDefaultImports() Collection {
 				`"strconv"`,
 			},
 			ThirdParty: List{
-				`"github.com/pkg/errors"`,
+				`"github.com/friendsofgo/errors"`,
 				`"github.com/razor-1/sqlboiler/v3/boil"`,
 				`"github.com/razor-1/sqlboiler/v3/strmangle"`,
 			},

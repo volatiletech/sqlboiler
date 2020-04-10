@@ -9,7 +9,8 @@ import (
 
 	// Side effect import go-mssqldb
 	_ "github.com/denisenkom/go-mssqldb"
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+
 	"github.com/razor-1/sqlboiler/v3/drivers"
 	"github.com/razor-1/sqlboiler/v3/importers"
 	"github.com/razor-1/sqlboiler/v3/strmangle"
@@ -298,7 +299,8 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 	queryColumns := `
 	SELECT column_name
 	FROM   information_schema.key_column_usage
-	WHERE  table_name = ? AND constraint_name = ? AND table_schema = ?;`
+	WHERE  table_name = ? AND constraint_name = ? AND table_schema = ?
+	ORDER BY ordinal_position;`
 
 	var rows *sql.Rows
 	if rows, err = m.conn.Query(queryColumns, tableName, pkey.Name, schema); err != nil {
@@ -486,7 +488,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			},
 			ThirdParty: importers.List{
 				`"github.com/kat-co/vala"`,
-				`"github.com/pkg/errors"`,
+				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
 				`"github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-mssql/driver"`,
 				`"github.com/razor-1/sqlboiler/v3/randomize"`,

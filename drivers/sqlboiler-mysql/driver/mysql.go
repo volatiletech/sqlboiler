@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
-	"github.com/pkg/errors"
+
 	"github.com/razor-1/sqlboiler/v3/drivers"
 	"github.com/razor-1/sqlboiler/v3/importers"
 )
@@ -279,7 +280,8 @@ func (m *MySQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 	queryColumns := `
 	select kcu.column_name
 	from   information_schema.key_column_usage as kcu
-	where  table_name = ? and constraint_name = ? and table_schema = ?;`
+	where  table_name = ? and constraint_name = ? and table_schema = ?
+	order by kcu.ordinal_position;`
 
 	var rows *sql.Rows
 	if rows, err = m.conn.Query(queryColumns, tableName, pkey.Name, schema); err != nil {
@@ -465,9 +467,8 @@ func (m *MySQLDriver) columnType(dbType string, fullDBType string) string {
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
 func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
-	c.NullType = m.nullColumnType(c.DBType, c.FullDBType)
 	if c.Nullable {
-		c.Type = c.NullType
+		c.Type = m.nullColumnType(c.DBType, c.FullDBType)
 	} else {
 		c.Type = m.columnType(c.DBType, c.FullDBType)
 	}
@@ -516,7 +517,7 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 			},
 			ThirdParty: importers.List{
 				`"github.com/kat-co/vala"`,
-				`"github.com/pkg/errors"`,
+				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
 				`"github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-mysql/driver"`,
 				`"github.com/razor-1/sqlboiler/v3/randomize"`,

@@ -6,7 +6,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+
 	"github.com/razor-1/sqlboiler/v3/boil"
 	"github.com/razor-1/sqlboiler/v3/strmangle"
 )

@@ -1,10 +1,14 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
+{{- $orig_tbl_name := .Table.Name -}}
 
 // {{$alias.UpSingular}} is an object representing the database table
 type {{$alias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
-	{{if eq $.StructTagCasing "title" -}}
+	{{- $orig_col_name := $column.Name -}}
+	{{if ignore $orig_tbl_name $orig_col_name $.TagIgnore -}}
+	{{$colAlias}} {{$column.Type}} `{{generateIgnoreTags $.Tags}}boil:"{{$column.Name}}" json:"-" toml:"-" yaml:"-"`
+	{{else if eq $.StructTagCasing "title" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | titleCase}}" yaml:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{else if eq $.StructTagCasing "camel" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`
@@ -19,30 +23,15 @@ type {{$alias.UpSingular}} struct {
 	{{end -}}
 }
 
-// an all-null version of the type, for use in outer join queries where it may not exist
-type {{$alias.UpSingular}}Null struct {
-{{- range $column := .Table.Columns -}}
-	{{- $colAlias := $alias.Column $column.Name -}}
-	{{if eq $.StructTagCasing "title" -}}
-		{{$colAlias}} {{$column.NullType}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | titleCase}}" yaml:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}"`
-	{{else if eq $.StructTagCasing "camel" -}}
-		{{$colAlias}} {{$column.NullType}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`
-	{{else -}}
-		{{$colAlias}} {{$column.NullType}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
-	{{end -}}
-{{end -}}
-}
 
 {{if .Table.FKeys -}}
 	{{- $uniqueForeignTables := .Table.ForeignTables -}}
 type {{$alias.UpSingular}}JoinedResponse struct {
-	{{$alias.UpSingular}} `boil:"{{.Table.Name}},bind"`
-	{{- range .Table.FKeys -}}
+	{{$alias.UpSingular}} {{$alias.UpSingular}} `boil:"{{.Table.Name}},bind"`
+	{{ range .Table.FKeys -}}
 	{{- $relAlias := $alias.Relationship .Name -}}
 	{{- $fTableAlias := $.Aliases.Table .ForeignTable -}}
-	{{- if eq $relAlias.Foreign $fTableAlias.UpSingular }}
-		{{$relAlias.Foreign}}{{if .Nullable}}Null{{end}} `boil:"{{.ForeignTable}},bind"`
-	{{- end -}}
+	{{$relAlias.Foreign}} {{$fTableAlias.UpSingular}} `boil:"{{.ForeignTable}},bind{{if .Nullable}},nulljoin{{end}}"`
 	{{end -}}
 }
 
@@ -87,7 +76,7 @@ func (w {{$name}}) LT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, 
 func (w {{$name}}) LTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
 func (w {{$name}}) GT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-{{if or (eq .Type "int") (eq .Type "string") -}}
+{{if isPrimitive .Type -}}
 func (w {{$name}}) IN(slice []{{.Type}}) qm.QueryMod {
   values := make([]interface{}, 0, len(slice))
   for _, value := range slice {

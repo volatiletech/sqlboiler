@@ -11,7 +11,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pkg/errors"
+	"github.com/friendsofgo/errors"
+
 	"github.com/razor-1/sqlboiler/v3/drivers"
 	"github.com/razor-1/sqlboiler/v3/strmangle"
 	"github.com/razor-1/sqlboiler/v3/templatebin"
@@ -37,18 +38,22 @@ type templateData struct {
 	RQ string
 
 	// Control various generation features
-	AddGlobal        bool
-	AddPanic         bool
-	NoContext        bool
-	NoHooks          bool
-	NoAutoTimestamps bool
-	NoRowsAffected   bool
+	AddGlobal         bool
+	AddPanic          bool
+	NoContext         bool
+	NoHooks           bool
+	NoAutoTimestamps  bool
+	NoRowsAffected    bool
+	NoDriverTemplates bool
 
 	// Tags control which tags are added to the struct
 	Tags []string
 
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
+
+	// Contains field names that should have tags values set to '-'
+	TagIgnore map[string]struct{}
 
 	// OutputDirDepth is used to find sqlboiler config file
 	OutputDirDepth int
@@ -250,7 +255,7 @@ var templateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
 	"id":        strmangle.Identifier,
-	"goVarname": func(s string) string { return goVarnameReplacer.Replace(s) },
+	"goVarname": goVarnameReplacer.Replace,
 
 	// Pluralization
 	"singular": strmangle.Singular,
@@ -259,6 +264,7 @@ var templateFunctions = template.FuncMap{
 	// Casing
 	"titleCase": strmangle.TitleCase,
 	"camelCase": strmangle.CamelCase,
+	"ignore":    strmangle.Ignore,
 
 	// String Slice ops
 	"join":               func(sep string, slice []string) string { return strings.Join(slice, sep) },
@@ -289,7 +295,7 @@ var templateFunctions = template.FuncMap{
 	"whereClause": strmangle.WhereClause,
 
 	// Alias and text helping
-	"aliasCols":      func(ta TableAlias) func(string) string { return func(s string) string { return ta.Column(s) } },
+	"aliasCols":      func(ta TableAlias) func(string) string { return ta.Column },
 	"usesPrimitives": usesPrimitives,
 	"isPrimitive":    isPrimitive,
 

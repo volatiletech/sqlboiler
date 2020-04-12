@@ -1,4 +1,6 @@
-{{- $alias := .Aliases.Table .Table.Name}}
+{{- $alias := .Aliases.Table .Table.Name -}}
+{{- $canSoftDelete := .Table.CanSoftDelete -}}
+{{- $soft := and .SoftDeletes $canSoftDelete }}
 func test{{$alias.UpPlural}}Delete(t *testing.T) {
 	t.Parallel()
 
@@ -17,12 +19,12 @@ func test{{$alias.UpPlural}}Delete(t *testing.T) {
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = o.Delete({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Delete({{if not .NoContext}}ctx, {{end -}} tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	}
 
 	{{else -}}
-	if rowsAff, err := o.Delete({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if rowsAff, err := o.Delete({{if not .NoContext}}ctx, {{end -}} tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
@@ -58,12 +60,12 @@ func test{{$alias.UpPlural}}QueryDeleteAll(t *testing.T) {
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = {{$alias.UpPlural}}().DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = {{$alias.UpPlural}}().DeleteAll({{if not .NoContext}}ctx, {{end -}} tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	}
 
 	{{else -}}
-	if rowsAff, err := {{$alias.UpPlural}}().DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if rowsAff, err := {{$alias.UpPlural}}().DeleteAll({{if not .NoContext}}ctx, {{end -}} tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
@@ -101,12 +103,12 @@ func test{{$alias.UpPlural}}SliceDeleteAll(t *testing.T) {
 	slice := {{$alias.UpSingular}}Slice{{"{"}}o{{"}"}}
 
 	{{if .NoRowsAffected -}}
-	if err = slice.DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = slice.DeleteAll({{if not .NoContext}}ctx, {{end -}} tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	}
 
 	{{else -}}
-	if rowsAff, err := slice.DeleteAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if rowsAff, err := slice.DeleteAll({{if not .NoContext}}ctx, {{end -}} tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)

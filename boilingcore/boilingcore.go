@@ -141,6 +141,7 @@ func (s *State) Run() error {
 		PkgName:           s.Config.PkgName,
 		AddGlobal:         s.Config.AddGlobal,
 		AddPanic:          s.Config.AddPanic,
+		SoftDeletes:       s.Config.SoftDeletes,
 		NoContext:         s.Config.NoContext,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,

@@ -106,13 +106,15 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 	if singular {
 		foreign := resultSlice[0]
 		object.R.{{$rel.Foreign}} = foreign
+		{{if not $.NoBackReferencing -}}
 		if foreign.R == nil {
 			foreign.R = &{{$ftable.DownSingular}}R{}
 		}
-		{{if $fkey.Unique -}}
+		    {{if $fkey.Unique -}}
 		foreign.R.{{$rel.Local}} = object
-		{{else -}}
+		    {{else -}}
 		foreign.R.{{$rel.Local}} = append(foreign.R.{{$rel.Local}}, object)
+		    {{end -}}
 		{{end -}}
 		return nil
 	}
@@ -125,14 +127,16 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 			if queries.Equal(local.{{$col}}, foreign.{{$fcol}}) {
 			{{end -}}
 				local.R.{{$rel.Foreign}} = foreign
+				{{if not $.NoBackReferencing -}}
 				if foreign.R == nil {
 					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
-				{{if $fkey.Unique -}}
+				    {{if $fkey.Unique -}}
 				foreign.R.{{$rel.Local}} = local
-				{{else -}}
+				    {{else -}}
 				foreign.R.{{$rel.Local}} = append(foreign.R.{{$rel.Local}}, local)
-				{{end -}}
+				    {{end -}}
+                {{end -}}
 				break
 			}
 		}

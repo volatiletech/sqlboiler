@@ -110,11 +110,11 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 		if foreign.R == nil {
 			foreign.R = &{{$ftable.DownSingular}}R{}
 		}
-		    {{if $fkey.Unique -}}
+			{{if $fkey.Unique -}}
 		foreign.R.{{$rel.Local}} = object
-		    {{else -}}
+			{{else -}}
 		foreign.R.{{$rel.Local}} = append(foreign.R.{{$rel.Local}}, object)
-		    {{end -}}
+			{{end -}}
 		{{end -}}
 		return nil
 	}
@@ -131,12 +131,12 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 				if foreign.R == nil {
 					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
-				    {{if $fkey.Unique -}}
+					{{if $fkey.Unique -}}
 				foreign.R.{{$rel.Local}} = local
-				    {{else -}}
+					{{else -}}
 				foreign.R.{{$rel.Local}} = append(foreign.R.{{$rel.Local}}, local)
-				    {{end -}}
-                {{end -}}
+					{{end -}}
+				{{end -}}
 				break
 			}
 		}

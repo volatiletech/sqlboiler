@@ -140,7 +140,7 @@ func PSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode str
 func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1 and table_type = 'BASE TABLE'`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)

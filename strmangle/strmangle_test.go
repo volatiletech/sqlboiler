@@ -536,6 +536,7 @@ func TestParseEnum(t *testing.T) {
 		{"enum('one','two')", "", []string{"one", "two"}},
 		{"enum.working('one')", "working", []string{"one"}},
 		{"enum.wor_king('one','two')", "wor_king", []string{"one", "two"}},
+		{"enum('with space','two')", "", []string{"with space", "two"}},
 	}
 
 	for i, test := range tests {
@@ -562,6 +563,7 @@ func TestIsEnumNormal(t *testing.T) {
 		{[]string{"o1ne", "two2"}, true},
 		{[]string{"one", "t#wo2"}, false},
 		{[]string{"1one", "two2"}, false},
+		{[]string{"with space", "two"}, true},
 	}
 
 	for i, test := range tests {

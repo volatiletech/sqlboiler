@@ -59,6 +59,13 @@ func (w {{$name}}) IN(slice []{{.Type}}) qm.QueryMod {
   }
   return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
+func (w {{$name}}) NIN(slice []{{.Type}}) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+	  values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+  }
 {{end -}}
 	{{- end -}}
 {{- end}}

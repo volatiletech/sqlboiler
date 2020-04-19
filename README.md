@@ -1265,7 +1265,7 @@ jets, _ := models.Jets(Load("Pilot")).All(ctx, db)
 // Type safe relationship names exist too:
 jets, _ := models.Jets(Load(models.JetRels.Pilot)).All(ctx, db)
 
-// Then access the loaded sructs using the special Relation field
+// Then access the loaded structs using the special Relation field
 for _, j := range jets {
   _ = j.R.Pilot
 }

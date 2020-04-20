@@ -94,10 +94,12 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	if singular {
 		foreign := resultSlice[0]
 		object.R.{{$relAlias.Local}} = foreign
+		{{if not $.NoBackReferencing -}}
 		if foreign.R == nil {
 			foreign.R = &{{$ftable.DownSingular}}R{}
 		}
 		foreign.R.{{$relAlias.Foreign}} = object
+		{{end -}}
 	}
 
 	for _, local := range slice {
@@ -108,10 +110,12 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 			if queries.Equal(local.{{$col}}, foreign.{{$fcol}}) {
 			{{end -}}
 				local.R.{{$relAlias.Local}} = foreign
+				{{if not $.NoBackReferencing -}}
 				if foreign.R == nil {
 					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
 				foreign.R.{{$relAlias.Foreign}} = local
+				{{end -}}
 				break
 			}
 		}

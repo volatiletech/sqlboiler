@@ -44,6 +44,7 @@ type templateData struct {
 	NoAutoTimestamps  bool
 	NoRowsAffected    bool
 	NoDriverTemplates bool
+	NoBackReferencing bool
 
 	// Tags control which tags are added to the struct
 	Tags []string

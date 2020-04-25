@@ -39,7 +39,7 @@ type templateData struct {
 	// Control various generation features
 	AddGlobal         bool
 	AddPanic          bool
-	SoftDeletes       bool
+	AddSoftDeletes    bool
 	NoContext         bool
 	NoHooks           bool
 	NoAutoTimestamps  bool

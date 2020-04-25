@@ -9,7 +9,7 @@
 func (o *{{$ltable.UpSingular}}) {{$relAlias.Local}}(mods ...qm.QueryMod) ({{$ftable.DownSingular}}Query) {
 	queryMods := []qm.QueryMod{
 		qm.Where("{{$rel.ForeignColumn | $.Quotes}} = ?", o.{{$ltable.Column $rel.Column}}),
-        {{if and $.SoftDeletes $canSoftDelete -}}
+        {{if and $.AddSoftDeletes $canSoftDelete -}}
         qmhelper.WhereIsNull("deleted_at"),
         {{- end}}
 	}

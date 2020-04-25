@@ -97,7 +97,7 @@ func (o *{{$alias.UpSingular}}Slice) ReloadAll({{if .NoContext}}exec boil.Execut
 	}
 
 	sql := "SELECT {{$schemaTable}}.* FROM {{$schemaTable}} WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(*o)){{if and .SoftDeletes $canSoftDelete}} +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(*o)){{if and .AddSoftDeletes $canSoftDelete}} +
 		"and {{"deleted_at" | $.Quotes}} is null"
 		{{- end}}
 

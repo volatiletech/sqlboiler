@@ -22,7 +22,7 @@ type Config struct {
 	Debug             bool     `toml:"debug,omitempty" json:"debug,omitempty"`
 	AddGlobal         bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
 	AddPanic          bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
-	SoftDeletes       bool     `toml:"soft_deletes,omitempty" json:"soft_deletes,omitempty"`
+	AddSoftDeletes    bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
 	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`

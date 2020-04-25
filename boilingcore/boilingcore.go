@@ -147,6 +147,7 @@ func (s *State) Run() error {
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
+		NoBackReferencing: s.Config.NoBackReferencing,
 		StructTagCasing:   s.Config.StructTagCasing,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,

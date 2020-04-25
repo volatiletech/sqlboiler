@@ -75,8 +75,9 @@ It only titlecases the EnumValue portion if it's snake-cased.
 // Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}}
 const (
 	{{- range $val := $vals -}}
+	{{- $valStripped := stripWhitespace $val -}}
 	{{- if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end -}}
-	{{if shouldTitleCaseEnum $val}}{{titleCase $val}}{{else}}{{$val}}{{end}} = "{{$val}}"
+	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} = "{{$val}}"
 	{{end -}}
 )
 {{- else}}

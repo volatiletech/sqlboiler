@@ -268,12 +268,12 @@ go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
 
 #### Configuration
 
-Create a configuration file. Because the project uses [viper](https://github.com/spf13/viper), TOML, JSON and YAML
-are all supported. Environment variables are also able to be used.
+Create a configuration file. Because the project uses
+[viper](https://github.com/spf13/viper), TOML, JSON and YAML are all usable
+but only TOML is supported. Environment variables are also able to be used.
 
-The configuration file should be named `sqlboiler.toml` for TOML, `sqlboiler.json` for JSON and
-`sqlboiler.yaml` or `sqlboiler.yml` for YAML and is searched for in the following directories in this
-order:
+The configuration file should be named `sqlboiler.toml` and is searched for in
+the following directories in this order:
 
 - `./`
 - `$XDG_CONFIG_HOME/sqlboiler/`
@@ -281,21 +281,40 @@ order:
 
 We will assume TOML for the rest of the documentation.
 
-We require you pass in your `psql` and `mysql` database configuration via the configuration file rather than env vars.
-There is no command line argument support for database configuration. Values given under the `postgres` and `mysql`
-block are passed directly to the psql and mysql drivers. Here is a rundown of all the different
-values that can go in that section:
+##### Database Driver Configuration
 
-| Name | Required | Postgres Default | MySQL Default
-| --- | --- | --- | --- |
-| dbname    | yes       | none      | none   |
-| host      | yes       | none      | none   |
-| port      | no        | 5432      | 3306   |
-| user      | yes       | none      | none   |
-| pass      | no        | none      | none   |
-| sslmode   | no        | "require" | "true" |
-| whitelist | no        | []        | []     |
-| blacklist | no        | []        | []     |
+The configuration for a specific driver (in these examples we'll use `psql`)
+must all be prefixed by the driver name. You must use a configuration file or
+environment variables for configuring the database driver; there are no
+command-line options for providing driver-specific configuration.
+
+In the configuration file for postgresql for example you would do:
+
+```toml
+[psql]
+dbname = "your_database_name"
+```
+
+When you use an environment variable it must also be prefixed by the driver
+name:
+
+```sh
+PSQL_DBNAME="your_database_name"
+```
+
+The values that exist for the drivers:
+
+| Name | Required | Postgres Default | MySQL Default | MSSQL Default |
+| ---- | -------- | ---------------- | ------------- | ------------- |
+| schema    | no        | "public"  | none   | "dbo"  |
+| dbname    | yes       | none      | none   | none   |
+| host      | yes       | none      | none   | none   |
+| port      | no        | 5432      | 3306   | 1433   |
+| user      | yes       | none      | none   | none   |
+| pass      | no        | none      | none   | none   |
+| sslmode   | no        | "require" | "true" | "true" |
+| whitelist | no        | []        | []     | []     |
+| blacklist | no        | []        | []     | []     |
 
 Example of whitelist/blacklist:
 
@@ -306,6 +325,8 @@ Example of whitelist/blacklist:
 # are no longer generated because of whitelists or blacklists may cause problems.
 blacklist = ["migrations", "addresses.name"]
 ```
+
+##### Generic config options
 
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
@@ -326,9 +347,13 @@ not to pass them through the command line or environment variables:
 | no-driver-templates | false     |
 | tag-ignore          | []        |
 
-Example:
+##### Full Example
 
 ```toml
+output   = "my_models"
+wipe     = true
+no_tests = true
+
 [psql]
   dbname = "dbname"
   host   = "localhost"
@@ -1265,7 +1290,7 @@ jets, _ := models.Jets(Load("Pilot")).All(ctx, db)
 // Type safe relationship names exist too:
 jets, _ := models.Jets(Load(models.JetRels.Pilot)).All(ctx, db)
 
-// Then access the loaded sructs using the special Relation field
+// Then access the loaded structs using the special Relation field
 for _, j := range jets {
   _ = j.R.Pilot
 }

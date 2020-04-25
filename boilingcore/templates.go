@@ -45,6 +45,7 @@ type templateData struct {
 	NoAutoTimestamps  bool
 	NoRowsAffected    bool
 	NoDriverTemplates bool
+	NoBackReferencing bool
 
 	// Tags control which tags are added to the struct
 	Tags []string
@@ -279,6 +280,7 @@ var templateFunctions = template.FuncMap{
 	"parseEnumName":       strmangle.ParseEnumName,
 	"parseEnumVals":       strmangle.ParseEnumVals,
 	"isEnumNormal":        strmangle.IsEnumNormal,
+	"stripWhitespace":     strmangle.StripWhitespace,
 	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
 	"onceNew":             newOnce,
 	"oncePut":             once.Put,

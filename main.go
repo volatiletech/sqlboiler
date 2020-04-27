@@ -11,14 +11,14 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/boilingcore"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/importers"
+	"github.com/volatiletech/sqlboiler/v4/boilingcore"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
 //go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
 
-const sqlBoilerVersion = "3.6.1"
+const sqlBoilerVersion = "4.0.0"
 
 var (
 	flagConfigFile string
@@ -178,7 +178,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoRowsAffected:    viper.GetBool("no-rows-affected"),
 		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
 		NoDriverTemplates: viper.GetBool("no-driver-templates"),
-		NoBackReferencing:   viper.GetBool("no-back-referencing"),
+		NoBackReferencing: viper.GetBool("no-back-referencing"),
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		TagIgnore:         viper.GetStringSlice("tag-ignore"),

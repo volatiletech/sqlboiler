@@ -175,7 +175,7 @@ func TestAddTypeImports(t *testing.T) {
 			`"fmt"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/sqlboiler/boil"`,
+			`"github.com/volatiletech/sqlboiler/v4/boil"`,
 		},
 	}
 
@@ -186,8 +186,8 @@ func TestAddTypeImports(t *testing.T) {
 			`"time"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/null"`,
-			`"github.com/volatiletech/sqlboiler/boil"`,
+			`"github.com/volatiletech/null/v8"`,
+			`"github.com/volatiletech/sqlboiler/v4/boil"`,
 		},
 	}
 
@@ -200,7 +200,7 @@ func TestAddTypeImports(t *testing.T) {
 	imps := NewDefaultImports()
 
 	imps.BasedOnType = Map{
-		"null.Time": Set{ThirdParty: List{`"github.com/volatiletech/null"`}},
+		"null.Time": Set{ThirdParty: List{`"github.com/volatiletech/null/v8"`}},
 		"time.Time": Set{Standard: List{`"time"`}},
 	}
 
@@ -217,8 +217,8 @@ func TestAddTypeImports(t *testing.T) {
 			`"time"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/null"`,
-			`"github.com/volatiletech/sqlboiler/boil"`,
+			`"github.com/volatiletech/null/v8"`,
+			`"github.com/volatiletech/sqlboiler/v4/boil"`,
 		},
 	}
 
@@ -234,11 +234,11 @@ func TestMergeSet(t *testing.T) {
 
 	a := Set{
 		Standard:   List{"fmt"},
-		ThirdParty: List{"github.com/volatiletech/sqlboiler", "github.com/volatiletech/null"},
+		ThirdParty: List{"github.com/volatiletech/sqlboiler/v4", "github.com/volatiletech/null/v8"},
 	}
 	b := Set{
 		Standard:   List{"os"},
-		ThirdParty: List{"github.com/volatiletech/sqlboiler"},
+		ThirdParty: List{"github.com/volatiletech/sqlboiler/v4"},
 	}
 
 	c := mergeSet(a, b)
@@ -246,8 +246,8 @@ func TestMergeSet(t *testing.T) {
 	if c.Standard[0] != "fmt" && c.Standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.Standard)
 	}
-	if c.ThirdParty[0] != "github.com/volatiletech/null" && c.ThirdParty[1] != "github.com/volatiletech/sqlboiler" {
-		t.Errorf("Wanted: github.com/volatiletech/sqlboiler, github.com/volatiletech/null got: %#v", c.ThirdParty)
+	if c.ThirdParty[0] != "github.com/volatiletech/null/v8" && c.ThirdParty[1] != "github.com/volatiletech/sqlboiler/v4" {
+		t.Errorf("Wanted: github.com/volatiletech/sqlboiler, github.com/volatiletech/null/v8 got: %#v", c.ThirdParty)
 	}
 }
 

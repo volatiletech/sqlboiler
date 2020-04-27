@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/ericlagergren/decimal"
-	"github.com/volatiletech/sqlboiler/queries/qmhelper"
+	"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"
 )
 
 func TestDecimal_Value(t *testing.T) {

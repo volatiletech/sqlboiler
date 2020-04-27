@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/volatiletech/sqlboiler/importers"
+	"github.com/volatiletech/sqlboiler/v4/importers"
 
-	"github.com/volatiletech/sqlboiler/drivers"
-	_ "github.com/volatiletech/sqlboiler/drivers/mocks"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	_ "github.com/volatiletech/sqlboiler/v4/drivers/mocks"
 )
 
 var state *State

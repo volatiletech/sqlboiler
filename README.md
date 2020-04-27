@@ -19,6 +19,11 @@ or some other migration tool to manage this part of the database's life-cycle.
 
 v3 has been released, please upgrade when possible, v2 is on life support only now.
 
+# Note on v3 vs v4
+
+v4 is identical virtually identical to v3 (it has 1 or 2 more features) but
+was turned into modules.
+
 ## Why another ORM
 
 While attempting to migrate a legacy Rails database, we realized how much ActiveRecord benefited us in terms of development velocity.
@@ -111,6 +116,7 @@ Table of Contents
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
+- Automatic DeletedAt
 - Table and column whitelist/blacklist
 - Relationships/Associations
 - Eager loading (recursive)
@@ -399,18 +405,22 @@ sqlboiler psql
 Flags:
       --add-global-variants        Enable generation for global variants
       --add-panic-variants         Enable generation for panic variants
+      --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler
       --no-auto-timestamps         Disable automatic timestamps for created_at/updated_at
+      --no-back-referencing        Disable back referencing in the loaded relationship structs
       --no-context                 Disable context.Context usage in the generated code
+      --no-driver-templates        Disable parsing of templates defined by the database driver
       --no-hooks                   Disable hooks feature for your models
       --no-rows-affected           Disable rows affected in the generated API
       --no-tests                   Disable generated go test files
   -o, --output string              The name of the folder to output to (default "models")
   -p, --pkgname string             The name you wish to assign to your generated package (default "models")
-      --struct-tag-casing string   Decides the casing for go structure tag names. camel or snake (default "snake")
+      --struct-tag-casing string   Decides the casing for go structure tag names. camel, title or snake (default snake) (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
+      --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
       --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
       --version                    Print the version
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
@@ -840,6 +850,10 @@ The most common causes of problems and panics are:
   field in Go so sqlboiler assumes you do not want to insert that field and you want the default
   value from the database. Use a whitelist/greylist to add that field to the list of fields
   to insert.
+- decimal library showing errors like: `pq: encode: unknown type types.NullDecimal`
+  is a result of a too-new and broken version of the github.com/ericlargergren/decimal
+  package, use the following version in your go.mod:
+  github.com/ericlagergren/decimal v0.0.0-20181231230500-73749d4874d5
 
 For errors with other causes, it may be simple to debug yourself by looking at the generated code.
 Setting `boil.DebugMode` to `true` can help with this. You can change the output using `boil.DebugWriter` (defaults to `os.Stdout`).
@@ -975,6 +989,23 @@ before being sent to the database (if they were going to be sent).
   * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
   will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
   * The `updated_at` column will always be set to `time.Now()`.
+
+### Automatic DeletedAt (Soft Delete)
+
+Soft deletes are a way of deleting records in a database for the average query
+without actually removing the data. This type of thing is important in certain
+scenarios where data retention is important. It is typically done by adding a
+`deleted` bool or a `deleted_at` timestamp to each table in the database
+that can be soft deleted and subsequent queries on that table should always
+make sure that `deleted != true` or `deleted_at is null` to prevent showing
+"deleted" data.
+
+SQLBoiler uses the `deleted_at` variant to provide this functionality. If your
+table has a nullable timestamp field named `deleted_at` it will be a candidate
+for soft-deletion.
+
+*NOTE*: As of writing soft-delete is opt-in via `--add-soft-deletes` and is
+liable to change in future versions.
 
 ### Query Building
 

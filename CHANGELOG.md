@@ -3,6 +3,33 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.0.0] - 2020-04-26
+
+**NOTE:** Your database drivers must be rebuilt upon moving to this release
+
+### Added
+
+- Add a `--add-soft-deletes` that changes the templates to use soft deletion
+  (thanks @namco1992)
+- Add a `--no-back-referencing` flag to disable setting backreferences in
+  relationship helpers and eager loading. (thanks @namco1992)
+- Add not in helpers (thanks @RichardLindhout)
+
+### Changed
+
+- Changed dependency scheme to go modules
+- Changed randomize/strmangle to be external dependencies to avoid module
+  cycles with the null package.
+- Changed the way comparisons work for keying caches which dramatically speeds
+  up cache lookups (thanks @zikaeroh)
+
+### Fixed
+
+- Fix postgres tests failing on partioned tables (thanks @troyanov)
+- Fix enums with spaces being disallowed (thanks @razor-1)
+- Fix postgresql looking at other types of tables (eg. views) and reporting that
+  they do not have primary keys (thanks @chochihim)
+
 ## [v3.7.1] - 2020-04-26
 
 ### Fixed

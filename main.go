@@ -11,14 +11,14 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/boilingcore"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/importers"
+	"github.com/volatiletech/sqlboiler/v4/boilingcore"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
 //go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
 
-const sqlBoilerVersion = "3.7.1"
+const sqlBoilerVersion = "4.0.0"
 
 var (
 	flagConfigFile string
@@ -102,8 +102,10 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-rows-affected", "", false, "Disable rows affected in the generated API")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
+	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
+	rootCmd.PersistentFlags().BoolP("add-soft-deletes", "", false, "Enable soft deletion by updating deleted_at timestamp")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
@@ -169,12 +171,14 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Debug:             viper.GetBool("debug"),
 		AddGlobal:         viper.GetBool("add-global-variants"),
 		AddPanic:          viper.GetBool("add-panic-variants"),
+		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
 		NoContext:         viper.GetBool("no-context"),
 		NoTests:           viper.GetBool("no-tests"),
 		NoHooks:           viper.GetBool("no-hooks"),
 		NoRowsAffected:    viper.GetBool("no-rows-affected"),
 		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
 		NoDriverTemplates: viper.GetBool("no-driver-templates"),
+		NoBackReferencing: viper.GetBool("no-back-referencing"),
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		TagIgnore:         viper.GetStringSlice("tag-ignore"),

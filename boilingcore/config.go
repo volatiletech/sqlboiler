@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cast"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/importers"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
 // Config for the running of the commands
@@ -22,12 +22,14 @@ type Config struct {
 	Debug             bool     `toml:"debug,omitempty" json:"debug,omitempty"`
 	AddGlobal         bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
 	AddPanic          bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
+	AddSoftDeletes    bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
 	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
 	NoAutoTimestamps  bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
 	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
 	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
+	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
 	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
 	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`

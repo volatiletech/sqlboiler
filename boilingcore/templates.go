@@ -12,9 +12,9 @@ import (
 	"text/template"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/strmangle"
-	"github.com/volatiletech/sqlboiler/templatebin"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v4/templatebin"
+	"github.com/volatiletech/strmangle"
 )
 
 // templateData for sqlboiler templates
@@ -39,11 +39,13 @@ type templateData struct {
 	// Control various generation features
 	AddGlobal         bool
 	AddPanic          bool
+	AddSoftDeletes    bool
 	NoContext         bool
 	NoHooks           bool
 	NoAutoTimestamps  bool
 	NoRowsAffected    bool
 	NoDriverTemplates bool
+	NoBackReferencing bool
 
 	// Tags control which tags are added to the struct
 	Tags []string
@@ -278,6 +280,7 @@ var templateFunctions = template.FuncMap{
 	"parseEnumName":       strmangle.ParseEnumName,
 	"parseEnumVals":       strmangle.ParseEnumVals,
 	"isEnumNormal":        strmangle.IsEnumNormal,
+	"stripWhitespace":     strmangle.StripWhitespace,
 	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
 	"onceNew":             newOnce,
 	"oncePut":             once.Put,

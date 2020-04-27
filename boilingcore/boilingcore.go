@@ -12,10 +12,10 @@ import (
 	"strings"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/importers"
-	"github.com/volatiletech/sqlboiler/strmangle"
-	"github.com/volatiletech/sqlboiler/templatebin"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/sqlboiler/v4/templatebin"
+	"github.com/volatiletech/strmangle"
 )
 
 const (
@@ -141,11 +141,13 @@ func (s *State) Run() error {
 		PkgName:           s.Config.PkgName,
 		AddGlobal:         s.Config.AddGlobal,
 		AddPanic:          s.Config.AddPanic,
+		AddSoftDeletes:    s.Config.AddSoftDeletes,
 		NoContext:         s.Config.NoContext,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
+		NoBackReferencing: s.Config.NoBackReferencing,
 		StructTagCasing:   s.Config.StructTagCasing,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,

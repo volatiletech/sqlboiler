@@ -13,16 +13,19 @@ import (
 	"unicode"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/boil"
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/strmangle"
 )
 
-var (
-	bindAccepts = []reflect.Kind{reflect.Ptr, reflect.Slice, reflect.Ptr, reflect.Struct}
+type colBindingKey struct {
+	typ     reflect.Type
+	colsKey string
+}
 
+var (
 	mut         sync.RWMutex
-	bindingMaps = make(map[string][]uint64)
-	structMaps  = make(map[string]map[string]uint64)
+	bindingMaps = make(map[colBindingKey][]uint64)
+	structMaps  = make(map[reflect.Type]map[string]uint64)
 )
 
 // Identifies what kind of object we're binding to
@@ -237,13 +240,12 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 	var mapping []uint64
 	var ok bool
 
-	typKey := makeTypeKey(structType)
 	colsKey := makeColsKey(structType, cols)
 
 	mut.RLock()
 	mapping, ok = bindingMaps[colsKey]
 	if !ok {
-		if strMapping, sok = structMaps[typKey]; !sok {
+		if strMapping, sok = structMaps[structType]; !sok {
 			strMapping = MakeStructMapping(structType)
 		}
 	}
@@ -257,7 +259,7 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 
 		mut.Lock()
 		if !sok {
-			structMaps[typKey] = strMapping
+			structMaps[structType] = strMapping
 		}
 		bindingMaps[colsKey] = mapping
 		mut.Unlock()
@@ -439,30 +441,18 @@ func getBoilTag(field reflect.StructField) (name string, recurse bool) {
 	return nameFragment, true
 }
 
-func makeTypeKey(typ reflect.Type) string {
+func makeColsKey(typ reflect.Type, cols []string) colBindingKey {
 	buf := strmangle.GetBuffer()
-	buf.WriteString(typ.String())
-	for i, n := 0, typ.NumField(); i < n; i++ {
-		field := typ.Field(i)
-		buf.WriteString(field.Name)
-		buf.WriteString(field.Type.String())
-	}
-	hash := buf.String()
-	strmangle.PutBuffer(buf)
-
-	return hash
-}
-
-func makeColsKey(typ reflect.Type, cols []string) string {
-	buf := strmangle.GetBuffer()
-	buf.WriteString(typ.String())
 	for _, s := range cols {
 		buf.WriteString(s)
 	}
 	hash := buf.String()
 	strmangle.PutBuffer(buf)
 
-	return hash
+	return colBindingKey{
+		typ:     typ,
+		colsKey: hash,
+	}
 }
 
 // Equal is different to reflect.DeepEqual in that it's both less efficient

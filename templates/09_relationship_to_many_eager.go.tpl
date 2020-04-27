@@ -8,7 +8,8 @@
 		{{- $fcol := $ftable.Column $rel.ForeignColumn -}}
 		{{- $usesPrimitives := usesPrimitives $.Tables $rel.Table $rel.Column $rel.ForeignTable $rel.ForeignColumn -}}
 		{{- $arg := printf "maybe%s" $ltable.UpSingular -}}
-		{{- $schemaForeignTable := $rel.ForeignTable | $.SchemaTable}}
+		{{- $schemaForeignTable := $rel.ForeignTable | $.SchemaTable -}}
+		{{- $canSoftDelete := (getTable $.Tables $rel.ForeignTable).CanSoftDelete }}
 // Load{{$relAlias.Local}} allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
@@ -59,9 +60,18 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		qm.From("{{$schemaForeignTable}}"),
 		qm.InnerJoin("{{$schemaJoinTable}} as {{id 0 | $.Quotes}} on {{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}} = {{id 0 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}}"),
 		qm.WhereIn("{{id 0 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in ?", args...),
+		{{if and $.AddSoftDeletes $canSoftDelete -}}
+		qmhelper.WhereIsNull("{{$schemaForeignTable}}.{{"deleted_at" | $.Quotes}}"),
+		{{- end}}
 	)
 		{{else -}}
-	query := NewQuery(qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`), qm.WhereIn(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{.ForeignColumn}} in ?`, args...))
+	query := NewQuery(
+	    qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`),
+	    qm.WhereIn(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{.ForeignColumn}} in ?`, args...),
+	    {{if and $.AddSoftDeletes $canSoftDelete -}}
+	    qmhelper.WhereIsNull(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.deleted_at`),
+	    {{- end}}
+    )
 		{{end -}}
 	if mods != nil {
 		mods.Apply(query)
@@ -122,6 +132,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	{{- end}}
 	if singular {
 		object.R.{{$relAlias.Local}} = resultSlice
+		{{if not $.NoBackReferencing -}}
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
 				foreign.R = &{{$ftable.DownSingular}}R{}
@@ -132,6 +143,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 			foreign.R.{{$relAlias.Foreign}} = object
 			{{end -}}
 		}
+		{{end -}}
 		return nil
 	}
 
@@ -145,10 +157,12 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 			if queries.Equal(local.{{$col}}, localJoinCol) {
 			{{end -}}
 				local.R.{{$relAlias.Local}} = append(local.R.{{$relAlias.Local}}, foreign)
+				{{if not $.NoBackReferencing -}}
 				if foreign.R == nil {
 					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
 				foreign.R.{{$relAlias.Foreign}} = append(foreign.R.{{$relAlias.Foreign}}, local)
+				{{end -}}
 				break
 			}
 		}
@@ -162,10 +176,12 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 			if queries.Equal(local.{{$col}}, foreign.{{$fcol}}) {
 			{{end -}}
 				local.R.{{$relAlias.Local}} = append(local.R.{{$relAlias.Local}}, foreign)
+				{{if not $.NoBackReferencing -}}
 				if foreign.R == nil {
 					foreign.R = &{{$ftable.DownSingular}}R{}
 				}
 				foreign.R.{{$relAlias.Foreign}} = local
+				{{end -}}
 				break
 			}
 		}

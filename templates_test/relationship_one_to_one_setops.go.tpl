@@ -8,6 +8,7 @@
 		{{- $colField := $ltable.Column $rel.Column -}}
 		{{- $fcolField := $ftable.Column $rel.ForeignColumn -}}
 		{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns }}
+		{{- $canSoftDelete := (getTable $.Tables .ForeignTable).CanSoftDelete }}
 func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
@@ -80,7 +81,7 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 			t.Error("foreign key was wrong value", a.{{$colField}}, x.{{$fcolField}})
 		}
 
-		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete({{if not $.NoContext}}ctx, {{end -}} tx {{- if and $.AddSoftDeletes $canSoftDelete}}, true{{end}}); err != nil {
 			t.Fatal("failed to delete x", err)
 		}
 	}

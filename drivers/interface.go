@@ -6,8 +6,8 @@ import (
 	"sort"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/importers"
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/strmangle"
 )
 
 // These constants are used in the config map passed into the driver

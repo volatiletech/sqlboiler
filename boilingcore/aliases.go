@@ -3,8 +3,8 @@ package boilingcore
 import (
 	"fmt"
 
-	"github.com/volatiletech/sqlboiler/drivers"
-	"github.com/volatiletech/sqlboiler/strmangle"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/strmangle"
 )
 
 // Aliases defines aliases for the generation run
@@ -42,7 +42,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 
 	for _, t := range tables {
 		if t.IsJoinTable {
-			jt, ok := a.Tables[t.Name];
+			jt, ok := a.Tables[t.Name]
 			if !ok {
 				a.Tables[t.Name] = TableAlias{Relationships: make(map[string]RelationshipAlias)}
 			} else if jt.Relationships == nil {

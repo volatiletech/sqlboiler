@@ -71,11 +71,11 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 // If you neglect checking the rows.Err silent failures may occur in your
 // application.
 //
-// Valid types to bind to are: *Struct, []*Struct, and []Struct. Keep in mind
-// if you use []Struct that Bind will be doing copy-by-value as a method
-// of keeping heap memory usage low which means if your Struct contains
-// reference types/pointers you will see incorrect results, do not use
-// []Struct with a Struct with reference types.
+// Valid types to bind to are: *Struct, []*Struct, and []Struct. If your Struct
+// contains reference types / pointers, these must implement the Scan interface.
+// See the StructField struct in queries/reflect_test.go for an example. If any
+// of the pointers in the struct are uninitialized, they will be initialized
+// automatically.
 //
 // Bind rules:
 //   - Struct tags control bind, in the form of: `boil:"name,bind"`
@@ -223,6 +223,27 @@ func bindChecks(obj interface{}) (structType reflect.Type, sliceType reflect.Typ
 	}
 }
 
+func initStruct(t reflect.Type, v reflect.Value) {
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		ft := t.Field(i)
+		if ft.Type.Kind() == reflect.Ptr {
+			fv := f
+			if !f.Elem().IsValid() {
+				fv = reflect.New(ft.Type.Elem())
+			}
+			initStruct(ft.Type.Elem(), fv.Elem())
+			f.Set(fv)
+		}
+	}
+}
+
+func initNewStruct(t reflect.Type) reflect.Value {
+	np := reflect.New(t)
+	initStruct(t, np.Elem())
+	return np
+}
+
 func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, bkind bindKind) error {
 	cols, err := rows.Columns()
 	if err != nil {
@@ -265,11 +286,6 @@ func bind(rows *sql.Rows, obj interface{}, structType, sliceType reflect.Type, b
 		mut.Unlock()
 	}
 
-	var oneStruct reflect.Value
-	if bkind == kindSliceStruct {
-		oneStruct = reflect.Indirect(reflect.New(structType))
-	}
-
 	foundOne := false
 Rows:
 	for rows.Next() {
@@ -279,11 +295,15 @@ Rows:
 
 		switch bkind {
 		case kindStruct:
-			pointers = PtrsFromMapping(reflect.Indirect(reflect.ValueOf(obj)), mapping)
+			existingStruct := reflect.Indirect(reflect.ValueOf(obj))
+			initStruct(structType, existingStruct)
+			pointers = PtrsFromMapping(existingStruct, mapping)
 		case kindSliceStruct:
-			pointers = PtrsFromMapping(oneStruct, mapping)
+			newStruct = initNewStruct(structType)
+			newStruct = reflect.Indirect(newStruct)
+			pointers = PtrsFromMapping(newStruct, mapping)
 		case kindPtrSliceStruct:
-			newStruct = reflect.New(structType)
+			newStruct = initNewStruct(structType)
 			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
 		if err != nil {
@@ -297,9 +317,7 @@ Rows:
 		switch bkind {
 		case kindStruct:
 			break Rows
-		case kindSliceStruct:
-			ptrSlice.Set(reflect.Append(ptrSlice, oneStruct))
-		case kindPtrSliceStruct:
+		case kindSliceStruct, kindPtrSliceStruct:
 			ptrSlice.Set(reflect.Append(ptrSlice, newStruct))
 		}
 	}

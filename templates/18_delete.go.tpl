@@ -131,6 +131,13 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 }
 
+{{if .AddGlobal -}}
+func (q {{$alias.DownSingular}}Query) DeleteAllG({{if not .NoContext}}ctx context.Context{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	return q.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}})
+}
+
+{{end -}}
+
 {{if .AddPanic -}}
 // DeleteAllP deletes all rows, and panics on error.
 func (q {{$alias.DownSingular}}Query) DeleteAllP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if not .NoRowsAffected}}int64{{end -}} {

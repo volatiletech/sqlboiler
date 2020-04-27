@@ -60,6 +60,7 @@ func Struct(s *Seed, str interface{}, colTypes map[string]string, canBeNull bool
 	copyBlacklist := make([]string, len(blacklist))
 	copy(copyBlacklist, blacklist)
 	blacklist = copyBlacklist
+	blacklist = append(blacklist, "deleted_at")
 
 	sort.Strings(blacklist)
 

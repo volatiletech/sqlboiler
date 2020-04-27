@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v3.7.1] - 2020-04-26
+
+### Fixed
+
+- Fix bug in --version command reporting old version
+
 ## [v3.7.0] - 2020-03-31
 
 ### Added

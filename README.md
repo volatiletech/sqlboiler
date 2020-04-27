@@ -22,7 +22,8 @@ v3 has been released, please upgrade when possible, v2 is on life support only n
 # Note on v3 vs v4
 
 v4 is identical virtually identical to v3 (it has 1 or 2 more features) but
-was turned into modules.
+was turned into modules. The installation instructions are the biggest
+difference but it's largely left up to the user to decide how to install it.
 
 ## Why another ORM
 
@@ -265,6 +266,9 @@ available.
 #### Download
 
 ```shell
+# Note: You must run this outside of your Go module directory. This must be done
+# in GOPATH mode to get the correct result. If you'd like to pin the version
+# manually via Go modules you can attempt other installation instructions.
 go get -u -t github.com/volatiletech/sqlboiler
 
 # Also install the driver of your choice, there exists psql, mysql, mssql

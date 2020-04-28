@@ -21,7 +21,7 @@ v3 has been released, please upgrade when possible, v2 is on life support only n
 
 # Note on v3 vs v4
 
-v4 is identical virtually identical to v3 (it has 1 or 2 more features) but
+v4 is virtually identical to v3 (it has 1 or 2 more features) but
 was turned into modules. The installation instructions are the biggest
 difference but it's largely left up to the user to decide how to install it.
 

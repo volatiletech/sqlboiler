@@ -70,7 +70,7 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 		currTime := time.Now().In(boil.GetLocation())
 		o.DeletedAt = null.TimeFrom(currTime)
 		wl := []string{"deleted_at"}
-		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}",
+		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 2 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{end}}",
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
 		valueMapping, err := queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, append(wl, {{$alias.DownSingular}}PrimaryKeyColumns...))
@@ -132,8 +132,8 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 }
 
 {{if .AddGlobal -}}
-func (q {{$alias.DownSingular}}Query) DeleteAllG({{if not .NoContext}}ctx context.Context{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
-	return q.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}})
+func (q {{$alias.DownSingular}}Query) DeleteAllG({{if not .NoContext}}ctx context.Context{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	return q.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}{{if $soft}}, hardDelete{{end}})
 }
 
 {{end -}}
@@ -141,7 +141,7 @@ func (q {{$alias.DownSingular}}Query) DeleteAllG({{if not .NoContext}}ctx contex
 {{if .AddPanic -}}
 // DeleteAllP deletes all rows, and panics on error.
 func (q {{$alias.DownSingular}}Query) DeleteAllP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.DeleteAll({{if not .NoContext}}ctx, {{end -}} exec)
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.DeleteAll({{if not .NoContext}}ctx, {{end -}} exec{{if $soft}}, hardDelete{{end}})
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -201,7 +201,7 @@ func (q {{$alias.DownSingular}}Query) DeleteAll({{if .NoContext}}exec boil.Execu
 {{if .AddGlobal -}}
 // DeleteAllG deletes all rows in the slice.
 func (o {{$alias.UpSingular}}Slice) DeleteAllG({{if not .NoContext}}ctx context.Context{{if $soft}}, hardDelete bool{{end}}{{else}}{{if $soft}}hardDelete bool{{end}}{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
-	return o.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}})
+	return o.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}{{if $soft}}, hardDelete{{end}})
 }
 
 {{end -}}
@@ -209,7 +209,7 @@ func (o {{$alias.UpSingular}}Slice) DeleteAllG({{if not .NoContext}}ctx context.
 {{if .AddPanic -}}
 // DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
 func (o {{$alias.UpSingular}}Slice) DeleteAllP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.DeleteAll({{if not .NoContext}}ctx, {{end -}} exec)
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.DeleteAll({{if not .NoContext}}ctx, {{end -}} exec{{if $soft}}, hardDelete{{end}})
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -224,7 +224,7 @@ func (o {{$alias.UpSingular}}Slice) DeleteAllP({{if .NoContext}}exec boil.Execut
 {{if and .AddGlobal .AddPanic -}}
 // DeleteAllGP deletes all rows in the slice, and panics on error.
 func (o {{$alias.UpSingular}}Slice) DeleteAllGP({{if not .NoContext}}ctx context.Context{{if $soft}}, hardDelete bool{{end}}{{else}}{{if $soft}}hardDelete bool{{end}}{{end}}) {{if not .NoRowsAffected}}int64{{end -}} {
-	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}})
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := o.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}{{if $soft}}, hardDelete{{end}})
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -273,7 +273,7 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
 		}
 		wl := []string{"deleted_at"}
 		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE " +
-			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}1{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
 		args = append([]interface{}{currTime}, args...)

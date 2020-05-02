@@ -52,6 +52,7 @@ Table of Contents
     * [Why another ORM](#why-another-orm)
     * [About SQL Boiler](#about-sql-boiler)
       * [Features](#features)
+      * [Missing Features](#missing-features)
       * [Supported Databases](#supported-databases)
       * [A Small Taste](#a-small-taste)
     * [Requirements &amp; Pro Tips](#requirements--pro-tips)
@@ -130,6 +131,11 @@ Table of Contents
 - 1d arrays, json, hstore & more
 - Enum types
 - Out of band driver support
+
+### Missing features
+
+- Multi-column foreign key support
+- View/Materialized view support
 
 ### Supported Databases
 

@@ -185,7 +185,7 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 // converts the SQL types to Go types, for example: "varchar" to "string"
 func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
 	var columns []drivers.Column
-	args := []interface{}{tableName, schema}
+	args := []interface{}{tableName, tableName, schema, schema, schema, schema, tableName, tableName, schema}
 
 	query := `
 	select
@@ -198,10 +198,12 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			select c.column_name
 			from information_schema.table_constraints tc
 			inner join information_schema.key_column_usage kcu
-				on tc.constraint_name = kcu.constraint_name and tc.table_name = kcu.table_name and tc.table_schema = kcu.table_schema
-			where c.table_name = tc.table_name and c.column_name = kcu.column_name and c.table_schema = kcu.constraint_schema and 
+				on tc.constraint_name = kcu.constraint_name
+			where tc.table_name = ? and kcu.table_name = ? and tc.table_schema = ? and kcu.table_schema = ? and
+				c.column_name = kcu.column_name and 
 				(tc.constraint_type = 'PRIMARY KEY' or tc.constraint_type = 'UNIQUE') and
-				(select count(*) from information_schema.key_column_usage where table_schema = kcu.table_schema and constraint_schema = kcu.table_schema and table_name = tc.table_name and constraint_name = tc.constraint_name) = 1
+				(select count(*) from information_schema.key_column_usage where table_schema = ? and
+				 constraint_schema = ? and table_name = ? and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
 	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'`

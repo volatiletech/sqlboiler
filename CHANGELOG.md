@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.1.0]
+
+### Added
+
+- Add support for postgresql `oid` type (thanks @ImVexed)
+- Add a new `--relation-tag` option to control the tag name of the relationship
+  struct in generated structs - this can expose loaded relationships to APIs
+  (thanks @speatzle)
+
+### Fixed
+
+- Fix issue that caused horrible mysql generation performance (thanks @oderwat)
+
 ## [v4.0.1] - 2020-05-02
 
 ### Fixed

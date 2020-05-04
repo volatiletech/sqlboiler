@@ -151,6 +151,7 @@ func (s *State) Run() error {
 		StructTagCasing:   s.Config.StructTagCasing,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
+		RelationTag:       s.Config.RelationTag,
 		Dialect:           s.Dialect,
 		Schema:            s.Schema,
 		LQ:                strmangle.QuoteCharacter(s.Dialect.LQ),

@@ -50,6 +50,9 @@ type templateData struct {
 	// Tags control which tags are added to the struct
 	Tags []string
 
+	// RelationTag controls the value of the tags for the Relationship struct
+	RelationTag string
+
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
 

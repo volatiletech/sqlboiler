@@ -18,7 +18,7 @@ type {{$alias.UpSingular}} struct {
 	{{end -}}
 	{{- if .Table.IsJoinTable -}}
 	{{- else}}
-	R *{{$alias.DownSingular}}R `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *{{$alias.DownSingular}}R `{{generateTags $.Tags $.RelationTag}}boil:"{{$.RelationTag}}" json:"{{$.RelationTag}}" toml:"{{$.RelationTag}}" yaml:"{{$.RelationTag}}"`
 	L {{$alias.DownSingular}}L `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
 	{{end -}}
 }
@@ -124,19 +124,19 @@ type {{$alias.DownSingular}}R struct {
 	{{range .Table.FKeys -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
 	{{- $relAlias := $alias.Relationship .Name -}}
-	{{$relAlias.Foreign}} *{{$ftable.UpSingular}}
+	{{$relAlias.Foreign}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias.Foreign}}boil:"{{$relAlias.Foreign}}" json:"{{$relAlias.Foreign}}" toml:"{{$relAlias.Foreign}}" yaml:"{{$relAlias.Foreign}}"`
 	{{end -}}
 
 	{{range .Table.ToOneRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
 	{{- $relAlias := $ftable.Relationship .Name -}}
-	{{$relAlias.Local}} *{{$ftable.UpSingular}}
+	{{$relAlias.Local}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias.Local}}boil:"{{$relAlias.Local}}" json:"{{$relAlias.Local}}" toml:"{{$relAlias.Local}}" yaml:"{{$relAlias.Local}}"`
 	{{end -}}
 
 	{{range .Table.ToManyRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
 	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
-	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}}
+	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}} `{{generateTags $.Tags $relAlias.Local}}boil:"{{$relAlias.Local}}" json:"{{$relAlias.Local}}" toml:"{{$relAlias.Local}}" yaml:"{{$relAlias.Local}}"`
 	{{end -}}{{/* range tomany */}}
 }
 

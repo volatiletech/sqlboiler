@@ -430,6 +430,8 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.Int64"
 		case "integer", "serial":
 			c.Type = "null.Int"
+		case "oid":
+			c.Type = "null.Uint32"
 		case "smallint", "smallserial":
 			c.Type = "null.Int16"
 		case "decimal", "numeric":
@@ -489,6 +491,8 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "int64"
 		case "integer", "serial":
 			c.Type = "int"
+		case "oid":
+			c.Type = "uint32"
 		case "smallint", "smallserial":
 			c.Type = "int16"
 		case "decimal", "numeric":
@@ -558,7 +562,7 @@ func getArrayType(c drivers.Column) (string, string) {
 	// which is not guaranteed to be correct.
 	if c.ArrType != nil {
 		switch *c.ArrType {
-		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial":
+		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
 			return "types.Int64Array", *c.ArrType
 		case "bytea":
 			return "types.BytesArray", *c.ArrType

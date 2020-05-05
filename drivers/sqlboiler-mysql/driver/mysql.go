@@ -195,7 +195,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	if(extra = 'auto_increment','auto_increment', 
 		if(version() like "%MariaDB%" and c.column_default = 'NULL', '',
 		if(version() like "%MariaDB%" and c.data_type in ('varchar','char','binary','date','datetime','time'), 
-			replace(substring(c.column_default,2,length(c.column_default)-2),"''","'")
+			replace(substring(c.column_default,2,length(c.column_default)-2),"''","'"),
 				c.column_default))),
 	c.is_nullable = 'YES',
 		exists (

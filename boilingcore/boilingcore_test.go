@@ -65,7 +65,17 @@ func TestNew(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 
-	cmd := exec.Command("go", "test", "-c")
+	cmd := exec.Command("go", "mod", "init", "github.com/volatiletech/sqlboiler-test")
+	cmd.Dir = state.Config.OutFolder
+	cmd.Stderr = buf
+
+	if err = cmd.Run(); err != nil {
+		t.Errorf("go mod init cmd execution failed: %s", err)
+		outputCompileErrors(buf, state.Config.OutFolder)
+		fmt.Println()
+	}
+
+	cmd = exec.Command("go", "test", "-c")
 	cmd.Dir = state.Config.OutFolder
 	cmd.Stderr = buf
 

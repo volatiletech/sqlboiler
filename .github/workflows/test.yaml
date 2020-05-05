@@ -27,39 +27,39 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: mysqlpassword
       mssql:
-        image: microsoft-mssql-server:2019-latest
+        image: mcr.microsoft.com/mssql/server:2019-latest
         ports:
           - 1433:1433
         env:
           ACCEPT_EULA: 'Y'
           SA_PASSWORD: 'Sqlboiler@1234'
     steps:
-      - name: install_tools
-        run: >
-          apt-get update
-          && apt-get install -y apt-transport-https software-properties-common python3-software-properties
-          && apt-add-repository ppa:git-core/ppa
-          && apt-get update
-          && apt-get install -y curl locales
+      # - name: install_tools
+      #   run: >
+      #     apt-get update
+      #     && apt-get install -y apt-transport-https software-properties-common python3-software-properties
+      #     && apt-add-repository ppa:git-core/ppa
+      #     && apt-get update
+      #     && apt-get install -y curl locales
 
-      # Set up locales for sqlcmd (otherwise it breaks)
-      - name: setup_locales
-        run: >
-          locale-gen en_US.UTF-8
-          && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
-          && echo "LANG=en_US.UTF-8" >> /etc/default/locale
+      # # Set up locales for sqlcmd (otherwise it breaks)
+      # - name: setup_locales
+      #   run: >
+      #     locale-gen en_US.UTF-8
+      #     && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
+      #     && echo "LANG=en_US.UTF-8" >> /etc/default/locale
 
-      # Install database clients
-      # MySQL 8.0 is still in development, so we're using 5.7 which is already
-      # available in Ubuntu 18.04
-      - name: install_clients
-        run: >
-          curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-          && echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' > /etc/apt/sources.list.d/psql.list
-          && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-          && curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/msprod.list
-          && apt-get update
-          && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-12.2 mysql-client-5.7 mssql-tools unixodbc-dev
+      # # Install database clients
+      # # MySQL 8.0 is still in development, so we're using 5.7 which is already
+      # # available in Ubuntu 18.04
+      # - name: install_clients
+      #   run: >
+      #     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+      #     && echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' > /etc/apt/sources.list.d/psql.list
+      #     && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+      #     && curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/msprod.list
+      #     && apt-get update
+      #     && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-12.2 mysql-client-5.7 mssql-tools unixodbc-dev
 
       - name: psql_creds
         run: >
@@ -72,28 +72,31 @@ jobs:
           && chmod 600 $HOME/.my.cnf
 
       - name: psql_wait
-        run: >
+        run: |
+          set -o errexit;
           c=0;
           for i in `seq 30`; do
-            echo "Waiting for psql"
+            echo "psql_wait"
             psql --host localhost --username postgres --dbname template1 -c 'select * from information_schema.tables;' > /dev/null && c=0 && break || c=$? && sleep 1
           done;
           exit $c
 
       - name: mysql_wait
-        run: >
+        run: |
+          set -o errexit;
           c=0;
           for i in `seq 30`; do
-            echo "Waiting for mysql"
+            echo "mysql_wait"
             mysql --execute 'select * from information_schema.tables;' > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
           done;
           exit $c
 
       - name: mssql_wait
-        run: >
+        run: |
+          set -o errexit;
           c=0;
           for i in `seq 30`; do
-            echo "Waiting for mssql"
+            echo "mssql_wait"
             sqlcmd -H localhost -U sa -P Sqlboiler@1234 -Q "select * from information_schema.tables;" > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
           done;
           exit $c
@@ -107,24 +110,24 @@ jobs:
           cd $GITHUB_WORKSPACE
           && ./boil.sh test-user psql
           && ./boil.sh test-db psql
-          && ./boil.sh driver-test-user psql
           && ./boil.sh driver-test-db psql
+          && ./boil.sh driver-test-user psql
 
       - name: mysql_db
         run: >
           cd $GITHUB_WORKSPACE
           && ./boil.sh test-user mysql
           && ./boil.sh test-db mysql
-          && ./boil.sh driver-test-user mysql
           && ./boil.sh driver-test-db mysql
+          && ./boil.sh driver-test-user mysql
 
       - name: mssql_db
         run: >
           cd $GITHUB_WORKSPACE
           && ./boil.sh test-user mssql
           && ./boil.sh test-db mssql
-          && ./boil.sh driver-test-user mssql
           && ./boil.sh driver-test-db mssql
+          && ./boil.sh driver-test-user mssql
 
       - name: go
         uses: actions/setup-go@v1

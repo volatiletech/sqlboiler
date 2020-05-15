@@ -38,9 +38,17 @@ func (q {{$alias.DownSingular}}Query) OneP({{if .NoContext}}exec boil.Executor{{
 func (q {{$alias.DownSingular}}Query) One({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (*{{$alias.UpSingular}}, error) {
 	o := &{{$alias.UpSingular}}{}
 
+	{{if .AddReset}}
+	reset := q.AddReset()
+	reset.Save()
+	{{end}}
+	
 	queries.SetLimit(q.Query, 1)
 
 	err := q.Bind({{if .NoContext}}nil{{else}}ctx{{end}}, exec, o)
+	{{- if .AddReset}}
+	reset.Reset()
+	{{end}}
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
@@ -95,7 +103,15 @@ func (q {{$alias.DownSingular}}Query) AllP({{if .NoContext}}exec boil.Executor{{
 func (q {{$alias.DownSingular}}Query) All({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) ({{$alias.UpSingular}}Slice, error) {
 	var o []*{{$alias.UpSingular}}
 
+	{{if .AddReset}}
+	reset := q.AddReset()
+	reset.Save()
+	{{end}}
+
 	err := q.Bind({{if .NoContext}}nil{{else}}ctx{{end}}, exec, &o)
+	{{- if .AddReset}}
+	reset.Reset()
+	{{end}}
 	if err != nil {
 		return nil, errors.Wrap(err, "{{.PkgName}}: failed to assign all query results to {{$alias.UpSingular}} slice")
 	}
@@ -151,6 +167,11 @@ func (q {{$alias.DownSingular}}Query) CountP({{if .NoContext}}exec boil.Executor
 func (q {{$alias.DownSingular}}Query) Count({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (int64, error) {
 	var count int64
 
+	{{if .AddReset}}
+	reset := q.AddReset()
+	reset.Save()
+	{{end}}
+
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 
@@ -159,6 +180,9 @@ func (q {{$alias.DownSingular}}Query) Count({{if .NoContext}}exec boil.Executor{
 	{{else -}}
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	{{end -}}
+	{{- if .AddReset}}
+	reset.Reset()
+	{{end}}
 	if err != nil {
 		return 0, errors.Wrap(err, "{{.PkgName}}: failed to count {{.Table.Name}} rows")
 	}
@@ -204,6 +228,12 @@ func (q {{$alias.DownSingular}}Query) ExistsP({{if .NoContext}}exec boil.Executo
 func (q {{$alias.DownSingular}}Query) Exists({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (bool, error) {
 	var count int64
 
+	{{if .AddReset}}
+	reset := q.AddReset()
+	reset.Save()
+	{{end}}
+	
+
 	queries.SetSelect(q.Query, nil)
 	queries.SetCount(q.Query)
 	queries.SetLimit(q.Query, 1)
@@ -213,6 +243,9 @@ func (q {{$alias.DownSingular}}Query) Exists({{if .NoContext}}exec boil.Executor
 	{{else -}}
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	{{end -}}
+	{{- if .AddReset}}
+	reset.Reset()
+	{{end}}
 	if err != nil {
 		return false, errors.Wrap(err, "{{.PkgName}}: failed to check if {{.Table.Name}} exists")
 	}

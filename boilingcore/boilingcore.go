@@ -142,6 +142,7 @@ func (s *State) Run() error {
 		AddGlobal:         s.Config.AddGlobal,
 		AddPanic:          s.Config.AddPanic,
 		AddSoftDeletes:    s.Config.AddSoftDeletes,
+		AddReset:          s.Config.AddReset,
 		NoContext:         s.Config.NoContext,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,

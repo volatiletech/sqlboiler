@@ -420,6 +420,10 @@ func (s *State) processTypeReplacements() error {
 		for i := range s.Tables {
 			t := s.Tables[i]
 
+			if !shouldReplaceInTable(t, r) {
+				continue
+			}
+
 			for j := range t.Columns {
 				c := t.Columns[j]
 				if matchColumn(c, r.Match) {
@@ -519,6 +523,22 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 	}
 
 	return ret
+}
+
+// shouldReplaceInTable checks if tables were specified in types.match in the config.
+// If tables were set, it checks if the given table is among the specified tables.
+func shouldReplaceInTable(t drivers.Table, r TypeReplace) bool {
+	if len(r.Tables) == 0 {
+		return true
+	}
+
+	for _, replaceInTable := range r.Tables {
+		if replaceInTable == t.Name {
+			return true
+		}
+	}
+
+	return false
 }
 
 // initOutFolders creates the folders that will hold the generated output.

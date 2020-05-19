@@ -2,10 +2,8 @@
 
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/volatiletech/sqlboiler/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/volatiletech/sqlboiler?status.svg)](https://godoc.org/github.com/volatiletech/sqlboiler)
-[![Mail](https://img.shields.io/badge/mail%20list-sqlboiler-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler)
-[![Mail-Annc](https://img.shields.io/badge/mail%20list-sqlboiler--announce-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler-announce)
 [![Slack](https://img.shields.io/badge/slack-%23general-lightgrey.svg)](https://sqlboiler.from-the.cloud)
-[![CircleCI](https://circleci.com/gh/volatiletech/sqlboiler.svg?style=shield)](https://circleci.com/gh/volatiletech/sqlboiler)
+![ActionsCI](https://github.com/volatiletech/sqlboiler/workflows/test/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/volatiletech/sqlboiler)](http://goreportcard.com/report/volatiletech/sqlboiler)
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.

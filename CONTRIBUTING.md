@@ -43,12 +43,6 @@ with the Github code review tools. Then it will be merged into dev, and later go
 ## Developer getting started
 
 1. Add a [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
-1. You may need to install go-bindata first. Refer to this repo. https://github.com/kevinburke/go-bindata
-
-   ```
-   go get -u github.com/kevinburke/go-bindata/...
-   ```
-
 1. Write your changes
 1. If you changed template files, run the following command to re-generate the binddata.
 

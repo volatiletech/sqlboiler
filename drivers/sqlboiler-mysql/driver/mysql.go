@@ -17,7 +17,7 @@ func init() {
 	drivers.RegisterFromInit("mysql", &MySQLDriver{})
 }
 
-//go:generate go-bindata -nometadata -pkg driver -prefix override override/...
+//go:generate go run github.com/go-bindata/go-bindata/v3/go-bindata -nometadata -pkg driver -prefix override override/...
 
 // Assemble is more useful for calling into the library so you don't
 // have to instantiate an empty type.

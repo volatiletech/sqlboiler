@@ -8,6 +8,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e
 	github.com/ericlagergren/decimal v0.0.0-20181231230500-73749d4874d5
 	github.com/friendsofgo/errors v0.9.2
+	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/lib/pq v1.2.1-0.20191011153232-f91d3411e481
 	github.com/spf13/cast v1.3.1

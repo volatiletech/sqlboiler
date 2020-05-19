@@ -20,7 +20,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-//go:generate go-bindata -nometadata -pkg driver -prefix override override/...
+//go:generate go run github.com/go-bindata/go-bindata/v3/go-bindata -nometadata -pkg driver -prefix override override/...
 
 func init() {
 	drivers.RegisterFromInit("psql", &PostgresDriver{})

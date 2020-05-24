@@ -111,6 +111,8 @@ func main() {
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
 	rootCmd.PersistentFlags().StringP("relation-tag", "r", "-", "Relationship struct tag name")
 	rootCmd.PersistentFlags().StringSliceP("tag-ignore", "", nil, "List of column names that should have tags values set to '-' (ignored during parsing)")
+	rootCmd.PersistentFlags().StringSliceP("build-tags", "", nil, "List of go build tags that should be added to all non-test .go files")
+	rootCmd.PersistentFlags().StringSliceP("test-build-tags", "", nil, "List of go build tags that should be added to all test .go files")
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
@@ -183,6 +185,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		TagIgnore:         viper.GetStringSlice("tag-ignore"),
+		BuildTags:         viper.GetStringSlice("build-tags"),
+		TestBuildTags:     viper.GetStringSlice("test-build-tags"),
 		RelationTag:       viper.GetString("relation-tag"),
 		TemplateDirs:      viper.GetStringSlice("templates"),
 		Tags:              viper.GetStringSlice("tag"),

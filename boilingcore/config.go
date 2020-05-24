@@ -34,6 +34,8 @@ type Config struct {
 	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
 	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
+	BuildTags         []string `toml:"build_tags,omitempty" json:"build_tags,omitempty"`
+	TestBuildTags     []string `toml:"test_build_tags,omitempty" json:"test_build_tags,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 

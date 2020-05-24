@@ -116,6 +116,13 @@ func executeTemplates(e executeTemplateData) error {
 		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)
 	}
 
+	var buildTags []string
+	if e.isTest {
+		buildTags = e.state.Config.TestBuildTags
+	} else {
+		buildTags = e.state.Config.BuildTags
+	}
+
 	for dir, dirExts := range e.dirExtensions {
 		for ext, tplNames := range dirExts {
 			out := templateByteBuffer
@@ -127,6 +134,7 @@ func executeTemplates(e executeTemplateData) error {
 				if len(dir) != 0 {
 					pkgName = filepath.Base(dir)
 				}
+				writeBuildTags(out, buildTags)
 				writeFileDisclaimer(out)
 				writePackageName(out, pkgName)
 				writeImports(out, imps)
@@ -161,6 +169,13 @@ func executeSingletonTemplates(e executeTemplateData) error {
 		return nil
 	}
 
+	var buildTags []string
+	if e.isTest {
+		buildTags = e.state.Config.TestBuildTags
+	} else {
+		buildTags = e.state.Config.BuildTags
+	}
+
 	out := templateByteBuffer
 	for _, tplName := range e.templates.Templates() {
 		normalized, isSingleton, isGo, usePkg := outputFilenameParts(tplName)
@@ -183,6 +198,7 @@ func executeSingletonTemplates(e executeTemplateData) error {
 			if !usePkg {
 				pkgName = filepath.Base(dir)
 			}
+			writeBuildTags(out, buildTags)
 			writeFileDisclaimer(out)
 			writePackageName(out, pkgName)
 			writeImports(out, imps)
@@ -198,6 +214,15 @@ func executeSingletonTemplates(e executeTemplateData) error {
 	}
 
 	return nil
+}
+
+// writeBuildTags writes go builds tags with a trailing newline
+// so users may customize their builds and tests builds more easily.
+func writeBuildTags(out *bytes.Buffer, tags []string) {
+	// Only write the +build line if tags have been supplied
+	if len(tags) != 0 {
+		_, _ = fmt.Fprintf(out, "// +build %s\n", strings.Join(tags, ","))
+	}
 }
 
 // writeFileDisclaimer writes the disclaimer at the top with a trailing

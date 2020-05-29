@@ -262,7 +262,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 				end
 			) as column_type
 		) ct
-		where c.table_name = $2 and c.table_schema = $1`
+		where c.table_name = $2 and c.table_schema = $1 and c.is_generated = 'NEVER'`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)

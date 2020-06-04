@@ -251,6 +251,23 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			}
 		}
 	}
+	if len(s.Config.ExtraTemplateDirs) != 0 {
+		for _, dir := range s.Config.ExtraTemplateDirs {
+			abs, err := filepath.Abs(dir)
+			if err != nil {
+				return nil, errors.Wrap(err, "could not find abs dir of templates directory")
+			}
+
+			base := filepath.Base(abs)
+			root := filepath.Dir(abs)
+			tpls, err := findTemplates(root, base)
+			if err != nil {
+				return nil, err
+			}
+
+			mergeTemplates(templates, tpls)
+		}
+	}
 
 	if !s.Config.NoDriverTemplates {
 		driverTemplates, err := s.Driver.Templates()

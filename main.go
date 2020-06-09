@@ -93,7 +93,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
 	rootCmd.PersistentFlags().StringSliceP("templates", "", nil, "A templates directory, overrides the bindata'd template folders in sqlboiler")
-	rootCmd.PersistentFlags().StringSliceP("extra-templates", "", nil, "A templates directory, does not override the bindata'd template folders in sqlboiler")
+	rootCmd.PersistentFlags().StringSliceP("extra-templates", "", nil, "The additional templates directory, that does not override the bindata's template folders in sqlboiler")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")

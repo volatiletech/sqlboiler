@@ -418,6 +418,7 @@ Flags:
       --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
+      --extra-templates string     The additional templates directory, that does not override the bindata's template folders in sqlboiler
   -h, --help                       help for sqlboiler
       --no-auto-timestamps         Disable automatic timestamps for created_at/updated_at
       --no-back-referencing        Disable back referencing in the loaded relationship structs
@@ -735,12 +736,21 @@ output_dir/
 
 **Note**: Because the `--templates` flag overrides the internal bindata of `sqlboiler`, if you still
 wish to generate the default templates it's recommended that you include the path to sqlboiler's templates
-as well.
+as well. 
+Either you can use `--extra-templates` to specify additional (to those included in internal bindata) templates directories.
 
 ```toml
 templates = [
   "/path/to/sqlboiler/templates",
   "/path/to/sqlboiler/templates_test",
+  "/path/to/your_project/more_templates"
+]
+```
+
+Or
+
+```toml
+extra_templates = [
   "/path/to/your_project/more_templates"
 ]
 ```

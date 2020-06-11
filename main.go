@@ -15,7 +15,6 @@ import (
 	"github.com/razor-1/sqlboiler/v3/boilingcore"
 	"github.com/razor-1/sqlboiler/v3/drivers"
 	"github.com/razor-1/sqlboiler/v3/importers"
-
 )
 
 //go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
@@ -79,7 +78,7 @@ func main() {
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +
-			`Complete documentation is available at http://github.com/volatiletech/sqlboiler`,
+			`Complete documentation is available at http://github.com/razor-1/sqlboiler`,
 		Example:       `sqlboiler psql`,
 		PreRunE:       preRun,
 		RunE:          run,

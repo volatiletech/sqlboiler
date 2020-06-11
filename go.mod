@@ -7,7 +7,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20191001013358-cfbb681360f0
 	github.com/ericlagergren/decimal v0.0.0-20190912144844-2c3e3e1ef942
-	github.com/friendsofgo/errors v0.9.2 // indirect
+	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/lib/pq v1.2.0

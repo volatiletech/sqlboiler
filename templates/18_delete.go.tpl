@@ -2,6 +2,7 @@
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
 {{- $canSoftDelete := .Table.CanSoftDelete -}}
 {{- $colNames := .Table.Columns | columnNames -}}
+{{- $hasUpdatedAt := containsAny $colNames "updated_at" -}}
 {{- $soft := and .AddSoftDeletes $canSoftDelete }}
 {{if .AddGlobal -}}
 // DeleteG deletes a single {{$alias.UpSingular}} record.
@@ -71,7 +72,7 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 		currTime := time.Now().In(boil.GetLocation())
 		o.DeletedAt = null.TimeFrom(currTime)
 		{{ $pkeyStartIndex := 2 }}
-		{{if containsAny $colNames "updated_at" -}}
+		{{if $hasUpdatedAt -}}
 		o.UpdatedAt = currTime
 		wl := []string{"deleted_at", "updated_at"}
 		{{ $pkeyStartIndex = 3 }}
@@ -173,7 +174,7 @@ func (q {{$alias.DownSingular}}Query) DeleteAll({{if .NoContext}}exec boil.Execu
 		queries.SetDelete(q.Query)
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
-		queries.SetUpdate(q.Query, M{"deleted_at": currTime})
+		queries.SetUpdate(q.Query, M{"deleted_at": currTime{{if $hasUpdatedAt}}, "updated_at": currTime{{end}}})
 	}
 	{{else -}}
 	queries.SetDelete(q.Query)
@@ -279,13 +280,18 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
 			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$alias.DownSingular}}PrimaryKeyMapping)
 			args = append(args, pkeyArgs...)
 			obj.DeletedAt = null.TimeFrom(currTime)
+			{{- if $hasUpdatedAt }}
+			obj.UpdatedAt = currTime
+			{{ end -}}
 		}
-		wl := []string{"deleted_at"}
+		wl := []string{"deleted_at"{{if $hasUpdatedAt}}, "updated_at"{{end}}}
+		{{ $pkeyStartIndex := 2 }}
+		{{- if $hasUpdatedAt}}{{ $pkeyStartIndex = 3}}{{end -}}
 		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE " +
-			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}1{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}{{$pkeyStartIndex}}{{else}}1{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
-		args = append([]interface{}{currTime}, args...)
+		args = append([]interface{}{currTime{{if $hasUpdatedAt}}, currTime{{end}}}, args...)
 	}
 	{{else -}}
 	var args []interface{}

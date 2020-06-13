@@ -53,12 +53,13 @@ func test{{$alias.UpPlural}}SoftDeleteWithUpdatedAt(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	
 	if oDeleted.DeletedAt.Time != oDeleted.UpdatedAt {
 		t.Error("DeletedAt != UpdatedAt")
 	}
 }
 
-func test{{$alias.UpPlural}}QuerySoftDeleteWithUpdatedAtAll(t *testing.T) {
+func test{{$alias.UpPlural}}QuerySoftDeleteAllWithUpdatedAt(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
@@ -97,9 +98,23 @@ func test{{$alias.UpPlural}}QuerySoftDeleteWithUpdatedAtAll(t *testing.T) {
 	if count != 0 {
 		t.Error("want zero records, got:", count)
 	}
+
+	oDeleted := &{{$alias.UpSingular}}{}
+	{{$pkeyArgs := .Table.PKey.Columns | stringMap (aliasCols $alias) | prefixStringSlice (printf "%s." "o") | join ", " -}}
+	err = {{$alias.DownSingular}}Query{NewQuery(
+		qm.From("{{$schemaTable}}"),
+		qm.Where("{{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", {{$pkeyArgs}}),
+	)}.Bind(ctx, tx, oDeleted)
+	if err != nil {
+		t.Error(err)
+	}
+	
+	if oDeleted.DeletedAt.Time != oDeleted.UpdatedAt {
+		t.Error("DeletedAt != UpdatedAt")
+	}
 }
 
-func test{{$alias.UpPlural}}SliceSoftDeleteWithUpdatedAtAll(t *testing.T) {
+func test{{$alias.UpPlural}}SliceSoftDeleteAllWithUpdatedAt(t *testing.T) {
 	t.Parallel()
 
 	seed := randomize.NewSeed()
@@ -139,6 +154,20 @@ func test{{$alias.UpPlural}}SliceSoftDeleteWithUpdatedAtAll(t *testing.T) {
 
 	if count != 0 {
 		t.Error("want zero records, got:", count)
+	}
+
+	oDeleted := &{{$alias.UpSingular}}{}
+	{{$pkeyArgs := .Table.PKey.Columns | stringMap (aliasCols $alias) | prefixStringSlice (printf "%s." "o") | join ", " -}}
+	err = {{$alias.DownSingular}}Query{NewQuery(
+		qm.From("{{$schemaTable}}"),
+		qm.Where("{{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", {{$pkeyArgs}}),
+	)}.Bind(ctx, tx, oDeleted)
+	if err != nil {
+		t.Error(err)
+	}
+	
+	if oDeleted.DeletedAt.Time != oDeleted.UpdatedAt {
+		t.Error("DeletedAt != UpdatedAt")
 	}
 }
 

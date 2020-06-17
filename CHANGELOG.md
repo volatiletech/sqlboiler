@@ -16,6 +16,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Fix the psql driver to correctly ignore generated columns (thanks @chochihim)
+- Fix an issue with mariadb ssl-mode when running generated tests
+  (thanks @tooolbox)
 
 ## [v4.1.2] - 2020-05-18
 

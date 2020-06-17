@@ -9,6 +9,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Add types.DecimalContext to control the context with which new decimals
   are created. This is important if your application uses a special context
   with more precision or requires the Go operating mode for example.
+- Add alias struct case type (uses the columns alias) (thanks @Darkclainer)
 
 ## [v4.1.2] - 2020-05-18
 

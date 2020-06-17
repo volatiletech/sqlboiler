@@ -13,6 +13,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Add alias struct case type (uses the columns alias) (thanks @Darkclainer)
 - Add ability to type replace on tables (thanks @stephenafamo)
 
+### Fixed
+
+- Fix the psql driver to correctly ignore generated columns (thanks @chochihim)
+
 ## [v4.1.2] - 2020-05-18
 
 ### Fixed

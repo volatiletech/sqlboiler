@@ -11,6 +11,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
   with more precision or requires the Go operating mode for example.
 - Add WhereNotIn/AndNotIn/OrNotIn query mods to help solve a bug
 - Add alias struct case type (uses the columns alias) (thanks @Darkclainer)
+- Add ability to type replace on tables (thanks @stephenafamo)
 
 ## [v4.1.2] - 2020-05-18
 

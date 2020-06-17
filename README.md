@@ -621,10 +621,17 @@ The way to accomplish this is through the config file.
 [[types]]
   # The match is a drivers.Column struct, and matches on almost all fields.
   # Notable exception for the unique bool. Matches are done
-  # with "logical and" meaning it must match all specified matchers. Boolean values
-  # are only checked if all the string specifiers match first, and they
-  # must always match.
+  # with "logical and" meaning it must match all specified matchers.
+  # Boolean values are only checked if all the string specifiers match first,
+  # and they must always match.
+  #
   # Not shown here: db_type is the database type and a very useful matcher
+  # We can also whitelist tables for this replace by adding to the types.match:
+  # tables = ['users', 'videos']
+  #
+  # Note there is precedence for types.match, more specific things should appear
+  # further down in the config as once a matching rule is found it is executed
+  # immediately.
   [types.match]
     type = "null.String"
     nullable = true

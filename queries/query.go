@@ -60,6 +60,7 @@ const (
 	whereKindLeftParen
 	whereKindRightParen
 	whereKindIn
+	whereKindNotIn
 )
 
 type where struct {
@@ -322,6 +323,11 @@ func AppendWhere(q *Query, clause string, args ...interface{}) {
 // AppendIn on the query.
 func AppendIn(q *Query, clause string, args ...interface{}) {
 	q.where = append(q.where, where{kind: whereKindIn, clause: clause, args: args})
+}
+
+// AppendNotIn on the query.
+func AppendNotIn(q *Query, clause string, args ...interface{}) {
+	q.where = append(q.where, where{kind: whereKindNotIn, clause: clause, args: args})
 }
 
 // SetLastWhereAsOr sets the or separator for the tail "WHERE" in the slice

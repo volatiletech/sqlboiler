@@ -366,7 +366,7 @@ func (qm whereNotInQueryMod) Apply(q *queries.Query) {
 
 // WhereNotIn allows you to specify a "x NOT IN (set)" clause for your where
 // statement. Example clauses: "column not in ?",
-// "(column1,column2) in ?"
+// "(column1,column2) not in ?"
 func WhereNotIn(clause string, args ...interface{}) QueryMod {
 	return whereNotInQueryMod{
 		clause: clause,

@@ -1,6 +1,7 @@
 package boilingcore
 
 import (
+	"log"
 	"strings"
 
 	"github.com/volatiletech/sqlboiler/v4/drivers"
@@ -38,12 +39,23 @@ import (
 // fk == table = industry.Industry | industry.Industry
 // fk != table = industry.ParentIndustry | industry.Industry
 func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
-	foreignFn = strmangle.Singular(trimSuffixes(fk.Column))
-	fkeyNotTableName := foreignFn != strmangle.Singular(fk.ForeignTable)
-	foreignFn = strmangle.TitleCase(foreignFn)
+	fkColumnTrimmedSuffixes := strmangle.Singular(trimSuffixes(fk.Column))
+	fkeyNotTableName := fkColumnTrimmedSuffixes != strmangle.Singular(fk.ForeignTable)
+	singularForeignTable := strmangle.Singular(fk.ForeignTable)
+
+	if fkColumnTrimmedSuffixes == singularForeignTable {
+		foreignFn = strmangle.TitleCase(strmangle.Singular(fk.Table) + "_" + fkColumnTrimmedSuffixes)
+		if fk.Column != singularForeignTable {
+			foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
+		}
+	} else if fkColumnTrimmedSuffixes == fk.Column && strings.HasSuffix(fk.Column, "_by") {
+		foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes + "_" + strmangle.Singular(fk.ForeignTable))
+	} else {
+		foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
+	}
 
 	if fkeyNotTableName {
-		localFn = foreignFn
+		localFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
 	}
 
 	plurality := strmangle.Plural
@@ -51,6 +63,10 @@ func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 		plurality = strmangle.Singular
 	}
 	localFn += strmangle.TitleCase(plurality(fk.Table))
+
+	log.Printf("%+v\n", fk)
+	log.Println("foreignFn:", foreignFn)
+	log.Println("localFn:", localFn)
 
 	return localFn, foreignFn
 }

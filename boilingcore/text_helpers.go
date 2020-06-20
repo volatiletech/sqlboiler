@@ -1,7 +1,6 @@
 package boilingcore
 
 import (
-	"log"
 	"strings"
 
 	"github.com/volatiletech/sqlboiler/v4/drivers"
@@ -63,10 +62,6 @@ func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 		plurality = strmangle.Singular
 	}
 	localFn += strmangle.TitleCase(plurality(fk.Table))
-
-	log.Printf("%+v\n", fk)
-	log.Println("foreignFn:", foreignFn)
-	log.Println("localFn:", localFn)
 
 	return localFn, foreignFn
 }

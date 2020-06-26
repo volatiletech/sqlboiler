@@ -10,18 +10,18 @@ SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 It is a "database-first" ORM as opposed to "code-first" (like gorm/gorp).
 That means you must first create your database schema. Please use something
-like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate)
+like [sql-migrate](https://github.com/rubenv/sql-migrate)
 or some other migration tool to manage this part of the database's life-cycle.
 
-# Note on v2 vs v3
+# Note on versions
 
-v3 has been released, please upgrade when possible, v2 is on life support only now.
+v1, v2, and v3 are no longer maintained.
 
-# Note on v3 vs v4
+v3 is the last GOPATH-compatible version.
 
-v4 is virtually identical to v3 (it has 1 or 2 more features) but
-was turned into modules. The installation instructions are the biggest
-difference but it's largely left up to the user to decide how to install it.
+v4 has no real breaking changes between v3 and itself other than Go modules
+and is the only maintained version. Note this does not work with GOPATH
+projects.
 
 ## Why another ORM
 
@@ -139,9 +139,9 @@ Table of Contents
 
 | Database          | Driver Location |
 | ----------------- | --------------- |
-| PostgreSQL        | [https://github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
-| MySQL             | [https://github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
-| MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
+| PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
+| MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
+| MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
 | SQLite3           | https://github.com/volatiletech/sqlboiler-sqlite3
 | CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb
 
@@ -156,7 +156,7 @@ For a comprehensive list of available operations and examples please see [Featur
 ```go
 import (
   // Import this so we don't have to use qm.Limit etc.
-  . "github.com/volatiletech/sqlboiler/queries/qm"
+  . "github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Open handle to database like normal
@@ -220,7 +220,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ### Requirements
 
-* Go 1.6 minimum, and Go 1.7 for compatibility tests.
+* Go 1.13, older Go versions are not supported.
 * Table names and column names should use `snake_case` format.
   * We require `snake_case` table names and column names. This is a recommended default in Postgres,
   and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
@@ -259,6 +259,9 @@ fmt.Println(len(users.R.FavoriteMovies))
 If you like learning via a video medium, sqlboiler has a number of screencasts
 available.
 
+*NOTE:* These videos predate modules (v4), the installation/import paths will be
+different though everything else should remain similar.
+
 [SQLBoiler: Getting Started](https://www.youtube.com/watch?v=y5utRS9axfg)
 
 [SQLBoiler: What's New in v3](https://www.youtube.com/watch?v=-B-OPsYRZJA)
@@ -269,15 +272,29 @@ available.
 
 #### Download
 
-```shell
-# Note: You must run this outside of your Go module directory. This must be done
-# in GOPATH mode to get the correct result. If you'd like to pin the version
-# manually via Go modules you can attempt other installation instructions.
-go get -u -t github.com/volatiletech/sqlboiler
+To install the latest versions run the commands below. Thes GO111MODULE
+environment variable is to ensure that you don't accidentally add this to
+your current directory's module. See go issue:
+https://github.com/golang/go/issues/30515
 
-# Also install the driver of your choice, there exists psql, mysql, mssql
-# These are separate binaries.
-go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+```shell
+# Install sqlboiler v4
+GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
+# Install an sqlboiler driver - these are seperate binaries, here we are
+# choosing postgresql
+GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+```
+
+To install `sqlboiler` as a dependency in your project use the commands below
+inside of your go module's directory tree. This will install the dependencies
+into your `go.mod` file at the correct version.
+
+```shell
+# Do not forget the trailing /v4
+go get github.com/volatiletech/sqlboiler/v4
+# Assuming you're going to use the null package for its additional null types
+# Do not forget the trailing /v8
+go get github.com/volatiletech/null/v8
 ```
 
 #### Configuration
@@ -366,7 +383,7 @@ not to pass them through the command line or environment variables:
 ```toml
 output   = "my_models"
 wipe     = true
-no_tests = true
+no-tests = true
 
 [psql]
   dbname = "dbname"
@@ -1072,7 +1089,7 @@ safe, but be careful!
 
 ```go
 // Dot import so we can access query mods directly instead of prefixing with "qm."
-import . "github.com/volatiletech/sqlboiler/queries/qm"
+import . "github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 // Use a raw query against a generated struct (Pilot in this example)
 // If this query mod exists in your call, it will override the others.
@@ -1212,7 +1229,7 @@ in combination with your own custom, non-generated model.
 
 ### Binding
 
-For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/volatiletech/sqlboiler/queries#Bind).
+For a comprehensive ruleset for `Bind()` you can refer to our [pkg.go.dev](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/queries#Bind).
 
 The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
@@ -1490,7 +1507,7 @@ tx.Rollback()
 
 It's also worth noting that there's a way to take advantage of `boil.SetDB()`
 by using the
-[boil.BeginTx()](https://godoc.org/github.com/volatiletech/sqlboiler/boil#BeginTx)
+[boil.BeginTx()](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil#BeginTx)
 function. This opens a transaction using the globally stored database.
 
 ### Debug Logging
@@ -1565,7 +1582,7 @@ greylist in cases where you want to insert a Go zero value.
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
-[boil.Columns.InsertColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.InsertColumnSet)
+[boil.Columns.InsertColumnSet](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil/#Columns.InsertColumnSet)
 for more details.
 
 ```go
@@ -1617,7 +1634,7 @@ documentation above for more details.
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
-[boil.Columns.UpdateColumnSet](https://godoc.org/github.com/volatiletech/sqlboiler/boil/#Columns.UpdateColumnSet)
+[boil.Columns.UpdateColumnSet](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil/#Columns.UpdateColumnSet)
 for more details.
 
 ```go

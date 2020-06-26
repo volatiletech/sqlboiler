@@ -1032,6 +1032,12 @@ for soft-deletion.
 *NOTE*: As of writing soft-delete is opt-in via `--add-soft-deletes` and is
 liable to change in future versions.
 
+*NOTE*: The `Delete` helpers will _not_ set `updated_at` currently. The current
+philosophy is that deleting the object is simply metadata and since it returns
+in no queries (other than raw ones) the updated_at will no longer be relevant.
+This could change in future versions if people disagree with this but it is
+the current behavior.
+
 ### Query Building
 
 We generate "Starter" methods for you. These methods are named as the plural versions of your model,

@@ -101,6 +101,7 @@ Table of Contents
         * [How do I use the types.BytesArray for Postgres bytea arrays?](#how-do-i-use-typesbytesarray-for-postgres-bytea-arrays)
         * [Why aren't my time.Time or null.Time fields working in MySQL?](#why-arent-my-timetime-or-nulltime-fields-working-in-mysql)
         * [Where is the homepage?](#where-is-the-homepage)
+        * [Why are the auto-generated tests failing?](#why-are-the-auto-generated-tests-failing)
   * [Benchmarks](#benchmarks)
 
 ## About SQL Boiler
@@ -1910,6 +1911,25 @@ You *must* use a DSN flag in MySQL connections, see: [Requirements](#requirement
 
 The homepage for the [SQLBoiler](https://github.com/volatiletech/sqlboiler) [Golang ORM](https://github.com/volatiletech/sqlboiler)
 generator is located at: https://github.com/volatiletech/sqlboiler
+
+#### Why are the auto-generated tests failing?
+
+The tests generated for your models package with sqlboiler are fairly
+error-prone. They are usually broken by constraints in the database
+that sqlboiler can't hope to understand.
+
+During regular run-time this isn't an issue because your code will throw errors
+and you will fix it however the auto-generated tests can only report those
+errors and it seems like something is wrong when in reality the only issue is
+that the auto generated tests can't understand that your `text` column is
+validated by a regex that says it must be composed solely of the 'b' character
+repeated 342 times.
+
+These tests are broken especially by foreign key constraints because of the
+parallelism we use. There's also no understanding in the tests of dependencies
+based on these foreign keys. As such there is a process that removes the foreign
+keys from your schema when they are run, if this process messes up you will get
+errors relating to foreign key constraints.
 
 ## Benchmarks
 

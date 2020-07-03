@@ -273,7 +273,7 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
 		}
 		wl := []string{"deleted_at"}
 		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE " +
-			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}1{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
 		args = append([]interface{}{currTime}, args...)

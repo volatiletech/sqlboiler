@@ -12,6 +12,8 @@ type {{$alias.UpSingular}} struct {
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | titleCase}}" yaml:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{else if eq $.StructTagCasing "camel" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`
+	{{else if eq $.StructTagCasing "alias" -}}
+	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $colAlias}}boil:"{{$column.Name}}" json:"{{$colAlias}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$colAlias}}" yaml:"{{$colAlias}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{else -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{end -}}
@@ -64,7 +66,7 @@ func (w {{$name}}) NIN(slice []{{.Type}}) qm.QueryMod {
 	for _, value := range slice {
 	  values = append(values, value)
 	}
-	return qm.WhereIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
   }
 {{end -}}
 	{{- end -}}

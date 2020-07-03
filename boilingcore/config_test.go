@@ -1,6 +1,7 @@
 package boilingcore
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/volatiletech/sqlboiler/v4/drivers"
@@ -186,6 +187,7 @@ func TestConvertTypeReplace(t *testing.T) {
 		"udt_name":       "d",
 		"full_db_type":   "e",
 		"arr_type":       "f",
+		"tables":         []string{"g", "h"},
 		"auto_generated": true,
 		"nullable":       true,
 	}
@@ -247,5 +249,8 @@ func TestConvertTypeReplace(t *testing.T) {
 	}
 	if got := r.Imports.ThirdParty[0]; got != "github.com/abc" {
 		t.Error("standard import wrong:", got)
+	}
+	if got := r.Tables; !reflect.DeepEqual(r.Tables, []string{"g", "h"}) {
+		t.Error("tables in types.match wrong:", got)
 	}
 }

@@ -444,7 +444,7 @@ Flags:
       --no-tests                   Disable generated go test files
   -o, --output string              The name of the folder to output to (default "models")
   -p, --pkgname string             The name you wish to assign to your generated package (default "models")
-      --struct-tag-casing string   Decides the casing for go structure tag names. camel, title or snake (default snake) (default "snake")
+      --struct-tag-casing string   Decides the casing for go structure tag names. camel, title, alias or snake (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
       --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
       --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
@@ -639,10 +639,17 @@ The way to accomplish this is through the config file.
 [[types]]
   # The match is a drivers.Column struct, and matches on almost all fields.
   # Notable exception for the unique bool. Matches are done
-  # with "logical and" meaning it must match all specified matchers. Boolean values
-  # are only checked if all the string specifiers match first, and they
-  # must always match.
+  # with "logical and" meaning it must match all specified matchers.
+  # Boolean values are only checked if all the string specifiers match first,
+  # and they must always match.
+  #
   # Not shown here: db_type is the database type and a very useful matcher
+  # We can also whitelist tables for this replace by adding to the types.match:
+  # tables = ['users', 'videos']
+  #
+  # Note there is precedence for types.match, more specific things should appear
+  # further down in the config as once a matching rule is found it is executed
+  # immediately.
   [types.match]
     type = "null.String"
     nullable = true

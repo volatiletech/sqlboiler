@@ -10,6 +10,13 @@ import (
 )
 
 var (
+	// DecimalContext is a global context that will be used when creating
+	// decimals. It should be set once before any sqlboiler and then
+	// assumed to be read-only after sqlboiler's first use.
+	DecimalContext decimal.Context
+)
+
+var (
 	_ driver.Valuer = Decimal{}
 	_ driver.Valuer = NullDecimal{}
 	_ sql.Scanner   = &Decimal{}
@@ -95,7 +102,7 @@ func (n *NullDecimal) Scan(val interface{}) error {
 // UnmarshalJSON allows marshalling JSON into a null pointer
 func (n *NullDecimal) UnmarshalJSON(data []byte) error {
 	if n.Big == nil {
-		n.Big = new(decimal.Big)
+		n.Big = decimal.WithContext(DecimalContext)
 	}
 
 	return n.Big.UnmarshalJSON(data)
@@ -117,7 +124,7 @@ func randomDecimal(nextInt func() int64, fieldType string, shouldBeNull bool) *d
 	}
 
 	randVal := fmt.Sprintf("%d.%d", nextInt()%10, nextInt()%10)
-	random, success := new(decimal.Big).SetString(randVal)
+	random, success := decimal.WithContext(DecimalContext).SetString(randVal)
 	if !success {
 		panic("randVal could not be turned into a decimal")
 	}
@@ -152,15 +159,15 @@ func decimalScan(d *decimal.Big, val interface{}, canNull bool) (*decimal.Big, e
 	switch t := val.(type) {
 	case float64:
 		if d == nil {
-			d = new(decimal.Big)
+			d = decimal.WithContext(DecimalContext)
 		}
 		d.SetFloat64(t)
 		return d, nil
 	case int64:
-		return decimal.New(t, 0), nil
+		return decimal.WithContext(DecimalContext).SetMantScale(t, 0), nil
 	case string:
 		if d == nil {
-			d = new(decimal.Big)
+			d = decimal.WithContext(DecimalContext)
 		}
 		if _, ok := d.SetString(t); !ok {
 			if err := d.Context.Err(); err != nil {
@@ -171,7 +178,7 @@ func decimalScan(d *decimal.Big, val interface{}, canNull bool) (*decimal.Big, e
 		return d, nil
 	case []byte:
 		if d == nil {
-			d = new(decimal.Big)
+			d = decimal.WithContext(DecimalContext)
 		}
 		if err := d.UnmarshalText(t); err != nil {
 			return nil, err

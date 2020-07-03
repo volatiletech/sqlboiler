@@ -4,6 +4,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- Add types.DecimalContext to control the context with which new decimals
+  are created. This is important if your application uses a special context
+  with more precision or requires the Go operating mode for example.
+- Add WhereNotIn/AndNotIn/OrNotIn query mods to help solve a bug
+- Add alias struct case type (uses the columns alias) (thanks @Darkclainer)
+- Add ability to type replace on tables (thanks @stephenafamo)
+
+### Changed
+
+- Change the way column cache keys are created and looked up, improving memory
+  performance of sqlboiler's caching layer (thanks @zikaeroh)
+
+### Fixed
+
+- Fix the psql driver to correctly ignore generated columns (thanks @chochihim)
+- Fix an issue with mariadb ssl-mode when running generated tests
+  (thanks @tooolbox)
+- Fix $1 placeholder in mysql DeleteAll() when using soft delete
+  (thanks @mfzy602)
+- Fix boilingcore tests to use current module via replace instead of the
+  published v4 module
+
 ## [v4.1.2] - 2020-05-18
 
 ### Fixed

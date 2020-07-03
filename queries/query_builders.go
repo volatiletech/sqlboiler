@@ -383,7 +383,7 @@ ManualParen:
 			notFirstExpression = false
 		case whereKindRightParen:
 			buf.WriteByte(')')
-		case whereKindIn:
+		case whereKindIn, whereKindNotIn:
 			ln := len(where.args)
 			// WHERE IN () is invalid sql, so it is difficult to simply run code like:
 			// for _, u := range model.Users(qm.WhereIn("id IN ?",uids...)).AllP(db) {
@@ -392,7 +392,11 @@ ManualParen:
 			// instead when we see empty IN we produce 1=0 so it can still be chained
 			// with other queries
 			if ln == 0 {
-				buf.WriteString("(1=0)")
+				if where.kind == whereKindIn {
+					buf.WriteString("(1=0)")
+				} else if where.kind == whereKindNotIn {
+					buf.WriteString("(1=1)")
+				}
 				break
 			}
 			matches := rgxInClause.FindStringSubmatch(where.clause)
@@ -442,7 +446,11 @@ ManualParen:
 				buf.WriteByte('(')
 			}
 			buf.WriteString(leftClause)
-			buf.WriteString(" IN ")
+			if where.kind == whereKindIn {
+				buf.WriteString(" IN ")
+			} else if where.kind == whereKindNotIn {
+				buf.WriteString(" NOT IN ")
+			}
 			buf.WriteString(rightClause)
 			if !manualParens {
 				buf.WriteByte(')')

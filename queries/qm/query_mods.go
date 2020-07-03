@@ -354,6 +354,68 @@ func OrIn(clause string, args ...interface{}) QueryMod {
 	}
 }
 
+type whereNotInQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm whereNotInQueryMod) Apply(q *queries.Query) {
+	queries.AppendIn(q, qm.clause, qm.args...)
+}
+
+// WhereNotIn allows you to specify a "x NOT IN (set)" clause for your where
+// statement. Example clauses: "column not in ?",
+// "(column1,column2) not in ?"
+func WhereNotIn(clause string, args ...interface{}) QueryMod {
+	return whereNotInQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
+type andNotInQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm andNotInQueryMod) Apply(q *queries.Query) {
+	queries.AppendIn(q, qm.clause, qm.args...)
+}
+
+// AndNotIn allows you to specify a "x NOT IN (set)" clause separated by an
+// AndNotIn for your where statement. AndNotIn is a duplicate of the WhereNotIn
+// function, but allows for more natural looking query mod chains, for example:
+// (WhereNotIn("column1 not in ?"), AndIn("column2 not in ?"), OrIn("column3 not
+// in ?"))
+func AndNotIn(clause string, args ...interface{}) QueryMod {
+	return andNotInQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
+type orNotInQueryMod struct {
+	clause string
+	args   []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm orNotInQueryMod) Apply(q *queries.Query) {
+	queries.AppendIn(q, qm.clause, qm.args...)
+	queries.SetLastInAsOr(q)
+}
+
+// OrNotIn allows you to specify a NOT IN clause separated by
+// an OR for your where statement
+func OrNotIn(clause string, args ...interface{}) QueryMod {
+	return orNotInQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
 // Expr groups where query mods. It's detrimental to use this with any other
 // type of Query Mod because the effects will always only affect where clauses.
 //

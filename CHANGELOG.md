@@ -18,6 +18,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Fix the psql driver to correctly ignore generated columns (thanks @chochihim)
 - Fix an issue with mariadb ssl-mode when running generated tests
   (thanks @tooolbox)
+- Fix $1 placeholder in mysql DeleteAll() when using soft delete
+  (thanks @mfzy602)
+- Fix boilingcore tests to use current module via replace instead of the
+  published v4 module
 
 ## [v4.1.2] - 2020-05-18
 

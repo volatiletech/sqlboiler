@@ -13,6 +13,11 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Add alias struct case type (uses the columns alias) (thanks @Darkclainer)
 - Add ability to type replace on tables (thanks @stephenafamo)
 
+### Changed
+
+- Change the way column cache keys are created and looked up, improving memory
+  performance of sqlboiler's caching layer (thanks @zikaeroh)
+
 ### Fixed
 
 - Fix the psql driver to correctly ignore generated columns (thanks @chochihim)

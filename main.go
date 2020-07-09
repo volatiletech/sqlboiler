@@ -189,6 +189,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Replacements:      viper.GetStringSlice("replace"),
 		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
 		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
+		Orders:            boilingcore.ConvertOrders(viper.Get("orders")),
 		Version:           sqlBoilerVersion,
 	}
 

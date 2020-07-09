@@ -137,6 +137,7 @@ func (s *State) Run() error {
 	data := &templateData{
 		Tables:            s.Tables,
 		Aliases:           s.Config.Aliases,
+		Orders:            s.Config.Orders,
 		DriverName:        s.Config.DriverName,
 		PkgName:           s.Config.PkgName,
 		AddGlobal:         s.Config.AddGlobal,
@@ -191,6 +192,7 @@ func (s *State) Run() error {
 		}
 
 		data.Table = table
+		data.Table.Columns = data.Orders.sortColumns(data.Table.Columns)
 
 		// Generate the regular templates
 		if err := generateOutput(s, regularDirExtMap, data); err != nil {

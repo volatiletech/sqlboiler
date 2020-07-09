@@ -39,6 +39,7 @@ type Config struct {
 
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
+	Orders       Orders        `toml:"orders,omitempty" json:"orders,omitempty"`
 
 	Version string `toml:"version" json:"version"`
 }
@@ -256,4 +257,22 @@ func columnFromInterface(i interface{}) (col drivers.Column) {
 	}
 
 	return col
+}
+
+// ConvertOrders is necessary because viper
+// All unspecified columns default to 0
+//   [orders]
+//     id = -1
+//     created_at = 3
+//     updated_at = 4
+//     deleted_at = 5
+//
+func ConvertOrders(i interface{}) (o Orders) {
+	if i == nil {
+		return o
+	}
+	columns := cast.ToStringMapInt(i)
+	return Orders{
+		Columns: columns,
+	}
 }

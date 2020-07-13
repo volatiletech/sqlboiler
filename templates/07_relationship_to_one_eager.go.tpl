@@ -1,10 +1,10 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- if .Table.FKeys }}
 	func ({{$alias.DownSingular}}L) LoadJoin() (*queries.Query, *{{$alias.UpSingular}}JoinedResponse, error) {
-	joinable := []string{
+	joinableTypes := []string{
 		{{- range .Table.FKeys -}}
-			{{- $relAlias := $alias.Relationship .Name -}}
-			"{{$relAlias.Foreign}}",
+			{{- $fTableAlias := $.Aliases.Table .ForeignTable -}}
+			"{{$fTableAlias.UpSingular}}",
 		{{- end -}}
 	}
 	nullable := []bool{
@@ -13,14 +13,14 @@
 		{{- end -}}
 	}
 
-	allColumns := make([]string, len(joinable)+1)
+	allColumns := make([]string, len(joinableTypes)+1)
 	allColumns[0] = FullyQualifiedColumns(TableNames.{{titleCase .Table.Name}})
-	queryMods := make([]qm.QueryMod, len(joinable)+2)
+	queryMods := make([]qm.QueryMod, len(joinableTypes)+2)
 	queryMods[0] = qm.From(TableNames.{{titleCase .Table.Name}})
 
-	for i, join := range joinable {
-		allColumns[i+1] = FullyQualifiedColumns(TypeNameToTableName[join])
-		queryMods[i+2] = loadJoinQueryMod(TableNames.{{titleCase .Table.Name}}, join, {{$alias.UpSingular}}RelationshipColumns, nullable[i])
+	for i, joinType := range joinableTypes {
+		allColumns[i+1] = FullyQualifiedColumns(TypeNameToTableName[joinType])
+		queryMods[i+2] = loadJoinQueryMod(TableNames.{{titleCase .Table.Name}}, joinType, {{$alias.UpSingular}}RelationshipColumns, nullable[i])
 	}
 	queryMods[1] = qm.Select(strings.Join(allColumns, ","))
 

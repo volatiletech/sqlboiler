@@ -573,7 +573,7 @@ we see it in the code for our domain. Note the use of the foreign key name to
 refer to the relationship in the configuration key.
 
 ```toml
-[aliases.tables.videos.relationships.videos_author_id_fkey]
+[aliases.tables.videos.relationships.videos_user_id_fkey]
 # The local side would originally be inferred as AuthorVideos, which
 # is probably good enough to not want to mess around with this feature, avoid it where possible.
 local   = "AuthoredVideos"

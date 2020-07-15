@@ -87,7 +87,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 				continue
 			}
 
-			local, foreign := txtNameToOne(k)
+			local, foreign := txtNameToOne(k, a)
 			if len(r.Local) == 0 {
 				r.Local = local
 			}

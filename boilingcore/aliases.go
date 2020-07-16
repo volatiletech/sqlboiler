@@ -88,11 +88,11 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 				continue
 			}
 
-			var nameSingular string
+			var aliasNameSingular string
 			if t, ok := a.Tables[k.ForeignTable]; ok {
-				nameSingular = t.NameSingular
+				aliasNameSingular = t.NameSingular
 			}
-			local, foreign := txtNameToOne(k, nameSingular)
+			local, foreign := txtNameToOne(k, aliasNameSingular)
 			if len(r.Local) == 0 {
 				r.Local = local
 			}

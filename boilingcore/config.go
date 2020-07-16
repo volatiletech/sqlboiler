@@ -104,6 +104,9 @@ func ConvertAliases(i interface{}) (a Aliases) {
 
 		var ta TableAlias
 
+		if s := t["name_singular"]; s != nil {
+			ta.NameSingular = s.(string)
+		}
 		if s := t["up_plural"]; s != nil {
 			ta.UpPlural = s.(string)
 		}

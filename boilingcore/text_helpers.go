@@ -37,11 +37,11 @@ import (
 //
 // fk == table = industry.Industry | industry.Industry
 // fk != table = industry.ParentIndustry | industry.Industry
-func txtNameToOne(fk drivers.ForeignKey, a *Aliases) (localFn, foreignFn string) {
-	fkColumnTrimmedSuffixes := strmangle.Singular(trimSuffixes(fk.Column))
-	var fkNotTableName bool
-	if t, ok := a.Tables[fk.ForeignTable]; ok {
-		fkNotTableName = fkColumnTrimmedSuffixes != t.DownSingular
+func txtNameToOne(fk drivers.ForeignKey, nameSingular string) (localFn, foreignFn string) {
+	foreignFn = strmangle.Singular(trimSuffixes(fk.Column))
+	var fkeyNotTableName bool
+	if 0 < len(nameSingular) {
+		fkeyNotTableName = foreignFn != nameSingular
 	} else {
 		fkNotTableName = fkColumnTrimmedSuffixes != strmangle.Singular(fk.ForeignTable)
 	}

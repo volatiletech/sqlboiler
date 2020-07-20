@@ -204,8 +204,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	keys := allKeys(driverName)
 	for _, key := range keys {
-		prefixedKey := fmt.Sprintf("%s.%s", driverName, key)
-		cmdConfig.DriverConfig[key] = viper.Get(prefixedKey)
+		if key != "blacklist" && key != "whitelist" {
+			prefixedKey := fmt.Sprintf("%s.%s", driverName, key)
+			cmdConfig.DriverConfig[key] = viper.Get(prefixedKey)
+		}
 	}
 
 	cmdConfig.Imports = configureImports()

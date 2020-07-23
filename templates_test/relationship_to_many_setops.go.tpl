@@ -24,7 +24,7 @@ func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 	}
 	foreigners := []*{{$ftable.UpSingular}}{&b, &c, &d, &e}
 	for i, x := range foreigners {
-        subSeed := randomize.Seed(i)
+		subSeed := randomize.Seed(i)
 		if err = randomize.Struct(&subSeed, x, {{$ftable.DownSingular}}DBTypes, false, strmangle.SetComplement({{$ftable.DownSingular}}PrimaryKeyColumns, {{$ftable.DownSingular}}ColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}

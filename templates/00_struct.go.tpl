@@ -6,6 +6,8 @@ type {{$alias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
 	{{- $orig_col_name := $column.Name -}}
+	{{- range $column.Comment | splitLines -}} // {{ . }}
+	{{end -}}
 	{{if ignore $orig_tbl_name $orig_col_name $.TagIgnore -}}
 	{{$colAlias}} {{$column.Type}} `{{generateIgnoreTags $.Tags}}boil:"{{$column.Name}}" json:"-" toml:"-" yaml:"-"`
 	{{else if eq $.StructTagCasing "title" -}}

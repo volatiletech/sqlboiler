@@ -13,6 +13,7 @@ type Column struct {
 	Type      string `json:"type" toml:"type"`
 	DBType    string `json:"db_type" toml:"db_type"`
 	Default   string `json:"default" toml:"default"`
+	Comment   string `json:"comment" toml:"comment"`
 	Nullable  bool   `json:"nullable" toml:"nullable"`
 	Unique    bool   `json:"unique" toml:"unique"`
 	Validated bool   `json:"validated" toml:"validated"`

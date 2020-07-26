@@ -207,6 +207,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		c.domain_name,
 		c.column_default,
 
+		col_description((c.table_schema||'.'||c.table_name)::regclass::oid, ordinal_position) as column_comment,
+
 		c.is_nullable = 'YES' as is_nullable,
 		(case
 			when (select
@@ -292,10 +294,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colFullType, udtName string
+		var colName, colType, colFullType, udtName, comment string
 		var defaultValue, arrayType, domainName *string
 		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &nullable, &identity, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -306,6 +308,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			ArrType:    arrayType,
 			DomainName: domainName,
 			UDTName:    udtName,
+			Comment:    comment,
 			Nullable:   nullable,
 			Unique:     unique,
 		}

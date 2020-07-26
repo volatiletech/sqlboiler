@@ -207,7 +207,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		c.domain_name,
 		c.column_default,
 
-		col_description((c.table_schema||'.'||c.table_name)::regclass::oid, ordinal_position) as column_comment,
+		COALESCE(col_description((c.table_schema||'.'||c.table_name)::regclass::oid, ordinal_position), '') as column_comment,
 
 		c.is_nullable = 'YES' as is_nullable,
 		(case

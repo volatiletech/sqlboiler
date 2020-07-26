@@ -302,7 +302,12 @@ var templateFunctions = template.FuncMap{
 	"aliasCols":      func(ta TableAlias) func(string) string { return ta.Column },
 	"usesPrimitives": usesPrimitives,
 	"isPrimitive":    isPrimitive,
-	"splitLines":     func(a string) []string { return strings.Split(a, "\n") },
+	"splitLines": func(a string) []string {
+		if a == "" {
+			return nil
+		}
+		return strings.Split(a, "\n")
+	},
 
 	// dbdrivers ops
 	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,

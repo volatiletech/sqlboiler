@@ -191,6 +191,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	select
 	c.column_name,
 	c.column_type,
+	c.column_comment,
 	if(c.data_type = 'enum', c.column_type, c.data_type),
 	if(extra = 'auto_increment','auto_increment',
 		if(version() like "%MariaDB%" and c.column_default = 'NULL', '',
@@ -242,7 +243,8 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 		var colName, colType, colFullType string
 		var nullable, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colType, &defaultValue, &nullable, &unique); err != nil {
+		var colComment string
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -250,6 +252,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			Name:       colName,
 			FullDBType: colFullType, // example: tinyint(1) instead of tinyint
 			DBType:     colType,
+			Comment:    colComment,
 			Nullable:   nullable,
 			Unique:     unique,
 		}
@@ -361,7 +364,7 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		switch c.DBType {
 		case "tinyint":
 			// map tinyint(1) to bool if TinyintAsBool is true
-			if !m.tinyIntAsInt && c.FullDBType == "tinyint(1)" {
+			if (!m.tinyIntAsInt && c.FullDBType == "tinyint(1)") || strings.Contains(c.Comment, "tinyint_as_bool") {
 				c.Type = "null.Bool"
 			} else if unsigned {
 				c.Type = "null.Uint8"
@@ -413,7 +416,7 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		switch c.DBType {
 		case "tinyint":
 			// map tinyint(1) to bool if TinyintAsBool is true
-			if !m.tinyIntAsInt && c.FullDBType == "tinyint(1)" {
+			if (!m.tinyIntAsInt && c.FullDBType == "tinyint(1)") || strings.Contains(c.Comment, "tinyint_as_bool") {
 				c.Type = "bool"
 			} else if unsigned {
 				c.Type = "uint8"

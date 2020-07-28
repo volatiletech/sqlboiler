@@ -16,6 +16,7 @@ type Column struct {
 	Nullable  bool   `json:"nullable" toml:"nullable"`
 	Unique    bool   `json:"unique" toml:"unique"`
 	Validated bool   `json:"validated" toml:"validated"`
+	Comment   string `json:"comment" toml:"comment"`
 
 	// Postgres only extension bits
 	// ArrType is the underlying data type of the Postgres

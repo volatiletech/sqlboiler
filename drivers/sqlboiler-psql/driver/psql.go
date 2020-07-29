@@ -419,7 +419,6 @@ func (p *PostgresDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.Pr
 		queryColumns.WriteString(fmt.Sprintf("$%d", i+3))
 	}
 	queryColumns.WriteString(`) order by kcu.constraint_name, kcu.ordinal_position;`)
-	fmt.Println(queryColumns)
 
 	var rows *sql.Rows
 	if rows, err = p.conn.Query(queryColumns.String(), queryArgs...); err != nil {

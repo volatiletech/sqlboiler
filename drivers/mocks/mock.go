@@ -227,33 +227,20 @@ func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.PrimaryK
 // UniqueKeyInfo returns mock unique key info for the passed in table name
 func (m *MockDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.PrimaryKey, error) {
 	return map[string][]*drivers.PrimaryKey{
-		"pilots": {{
-			Name:    "pilot_id_ukey",
-			Columns: []string{"id"},
-		}},
-		"airports": {{
-			Name:    "airport_id_ukey",
-			Columns: []string{"id"},
-		}},
 		"jets": {{
-			Name:    "jet_id_ukey",
-			Columns: []string{"id"},
-		}},
-		"licenses": {{
-			Name:    "license_id_ukey",
-			Columns: []string{"id"},
+			Name:    "jets_pilot_id_ukey",
+			Columns: []string{"pilot_id"},
+		}, {
+			Name:    "jets_manifest_ukey",
+			Columns: []string{"manifest"},
 		}},
 		"hangars": {{
-			Name:    "hangar_id_ukey",
-			Columns: []string{"id"},
+			Name:    "hangars_name_ukey",
+			Columns: []string{"name"},
 		}},
 		"languages": {{
-			Name:    "language_id_ukey",
-			Columns: []string{"id"},
-		}},
-		"pilot_languages": {{
-			Name:    "pilot_languages_ukey",
-			Columns: []string{"pilot_id", "language_id"},
+			Name:    "languages_language_ukey",
+			Columns: []string{"language"},
 		}},
 	}[tableName], nil
 }

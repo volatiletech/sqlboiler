@@ -39,7 +39,7 @@ import (
 // fk != table = industry.ParentIndustry | industry.Industry
 func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 	fkColumnTrimmedSuffixes := strmangle.Singular(trimSuffixes(fk.Column))
-	fkeyNotTableName := fkColumnTrimmedSuffixes != strmangle.Singular(fk.ForeignTable)
+	fkNotTableName := fkColumnTrimmedSuffixes != strmangle.Singular(fk.ForeignTable)
 	singularForeignTable := strmangle.Singular(fk.ForeignTable)
 
 	if fkColumnTrimmedSuffixes == singularForeignTable {
@@ -47,13 +47,13 @@ func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
 		if fk.Column != singularForeignTable {
 			foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
 		}
-	} else if fkColumnTrimmedSuffixes == fk.Column && strings.HasSuffix(fk.Column, "_by") {
+	} else if fkColumnTrimmedSuffixes == fk.Column {
 		foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes + "_" + strmangle.Singular(fk.ForeignTable))
 	} else {
 		foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
 	}
 
-	if fkeyNotTableName {
+	if fkNotTableName {
 		localFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
 	}
 

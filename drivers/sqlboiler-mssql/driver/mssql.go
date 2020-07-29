@@ -353,6 +353,9 @@ func (m *MSSQLDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.Prima
 		ukeysName = append(ukeysName, keyName)
 	}
 
+	if len(ukeysName) == 0 {
+		return nil, nil
+	}
 
 	queryColumns := `
 	select kcu.constraint_name, kcu.column_name

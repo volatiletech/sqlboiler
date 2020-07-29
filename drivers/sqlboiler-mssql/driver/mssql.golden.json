@@ -1621,7 +1621,7 @@
 			},
 			"uniq_keys": [
 				{
-					"name": "UQ__videos__BE37D4552E7AFE4F",
+					"name": "UK_videos_sponsor",
 					"columns": [
 						"sponsor_id"
 					]

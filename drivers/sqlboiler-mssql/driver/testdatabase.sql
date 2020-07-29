@@ -22,8 +22,9 @@ create table videos (
 	id int identity (1,1) primary key not null,
 	
 	user_id int not null,
-	sponsor_id int unique,
+	sponsor_id int,
 
+	constraint UK_videos_sponsor UNIQUE(sponsor_id),
 	constraint FK_videos_users foreign key (user_id) references users (id),
 	constraint FK_videos_sponsors foreign key (sponsor_id) references sponsors (id)
 );

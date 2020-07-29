@@ -4,6 +4,7 @@
 package driver
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/base64"
 	"fmt"
@@ -382,7 +383,7 @@ func (p *PostgresDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.Pr
 	query := `
 	select tc.constraint_name
 	from information_schema.table_constraints as tc
-	where tc.table_name = ? and tc.constraint_type = 'UNIQUE' and tc.table_schema = ?;`
+	where tc.table_name = $1 and tc.constraint_type = 'UNIQUE' and tc.table_schema = $2;`
 
 	var ukeysName []string
 	var ukeyRows *sql.Rows
@@ -400,21 +401,28 @@ func (p *PostgresDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.Pr
 		ukeysName = append(ukeysName, keyName)
 	}
 
+	if len(ukeysName) == 0 {
+		return nil, nil
+	}
 
-	queryColumns := `
+	queryColumns :=bytes.NewBufferString(`
 	select kcu.constraint_name, kcu.column_name
 	from information_schema.key_column_usage as kcu
-	where table_name = ? and constraint_name in (?` +  strings.Repeat(",?", len(ukeysName)-1) + `) and table_schema = ?
-	order by kcu.constraint_name, kcu.ordinal_position;`
+	where table_name=$1 and table_schema = $2 and constraint_name in (`)
 
-	queryArgs := []interface{}{tableName}
-	for _, keyName := range ukeysName {
+	queryArgs := []interface{}{tableName, schema}
+	for i, keyName := range ukeysName {
 		queryArgs = append(queryArgs, keyName)
+		if i > 0 {
+			queryColumns.WriteString(",")
+		}
+		queryColumns.WriteString(fmt.Sprintf("$%d", i+3))
 	}
-	queryArgs = append(queryArgs, schema)
+	queryColumns.WriteString(`) order by kcu.constraint_name, kcu.ordinal_position;`)
+	fmt.Println(queryColumns)
 
 	var rows *sql.Rows
-	if rows, err = p.conn.Query(queryColumns, queryArgs...); err != nil {
+	if rows, err = p.conn.Query(queryColumns.String(), queryArgs...); err != nil {
 		return nil, err
 	}
 	defer rows.Close()

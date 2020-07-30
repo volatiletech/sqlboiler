@@ -1129,7 +1129,7 @@ Where("(name=? and age=?) or (age=?)", "John", 5, 6)
 Where(
   Expr(
     models.PilotWhere.Name.EQ("John"),
-    Or2(models.PilotWhere.Age.Eq(5),
+    Or2(models.PilotWhere.Age.EQ(5)),
   ),
   Or2(models.PilotAge),
 )
@@ -1140,7 +1140,7 @@ WhereIn(fmt.Sprintf("%s, %s in ?", models.PilotColumns.Name, models.PilotColumns
 AndIn("weight in ?", 84)
 AndIn(models.PilotColumns.Weight + " in ?", 84)
 OrIn("height in ?", 183, 177, 204)
-OrIn(models.PilotColumns.Height + " in ?"), 183, 177, 204)
+OrIn(models.PilotColumns.Height + " in ?", 183, 177, 204)
 
 InnerJoin("pilots p on jets.pilot_id=?", 10)
 InnerJoin(models.TableNames.Pilots + " p on " + models.TableNames.Jets + "." + models.JetColumns.PilotID + "=?", 10)

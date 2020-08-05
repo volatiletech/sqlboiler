@@ -104,7 +104,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 		}
 
 		ret = strmangle.SetComplement(ret, nzUniques)
-		cache.query = buildUpsertQueryMySQL(dialect, "{{.Table.Name}}", update, insert)
+		cache.query = buildUpsertQueryMySQL(dialect, "{{$schemaTable}}", update, insert)
 		cache.retQuery = fmt.Sprintf(
 			"SELECT %s FROM {{.LQ}}{{.Table.Name}}{{.RQ}} WHERE %s",
 			strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, ret), ","),

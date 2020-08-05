@@ -99,7 +99,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 
-		cache.query = buildUpsertQueryMSSQL(dialect, "{{.Table.Name}}", {{$alias.DownSingular}}PrimaryKeyColumns, update, insert, ret)
+		cache.query = buildUpsertQueryMSSQL(dialect, "{{$schemaTable}}", {{$alias.DownSingular}}PrimaryKeyColumns, update, insert, ret)
 
 		whitelist := make([]string, len({{$alias.DownSingular}}PrimaryKeyColumns))
 		copy(whitelist, {{$alias.DownSingular}}PrimaryKeyColumns)

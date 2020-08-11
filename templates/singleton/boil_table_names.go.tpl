@@ -1,9 +1,9 @@
 var TableNames = struct {
-	{{range $table := .Tables -}}
-	{{titleCase $table.Name}} string
+	{{range $tblAlias := .Aliases.Tables -}}
+	{{$tblAlias.UpPlural}} string
 	{{end -}}
 }{
-	{{range $table := .Tables -}}
-	{{titleCase $table.Name}}: "{{$table.Name}}",
+	{{range $tblName, $tblAlias := .Aliases.Tables -}}
+	{{$tblAlias.UpPlural}}: "{{$tblName}}",
 	{{end -}}
 }

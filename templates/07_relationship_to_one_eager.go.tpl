@@ -1,11 +1,20 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- if .Table.FKeys }}
 	func ({{$alias.DownSingular}}L) LoadJoin() (*queries.Query, *{{$alias.UpSingular}}JoinedResponse, error) {
-	joinableTypes := []string{
+
+	allJoinableTypes := []string{
 		{{- range .Table.FKeys -}}
 			{{- $fTableAlias := $.Aliases.Table .ForeignTable -}}
 			"{{$fTableAlias.UpSingular}}",
 		{{- end -}}
+	}
+	joinableUnique := make(map[string]bool, len(allJoinableTypes))
+	joinableTypes := make([]string, 0, len(allJoinableTypes))
+	for _, joinableType := range allJoinableTypes {
+		if _, ok := joinableUnique[joinableType]; !ok {
+			joinableTypes = append(joinableTypes, joinableType)
+			joinableUnique[joinableType] = true
+		}
 	}
 	nullable := []bool{
 		{{- range .Table.FKeys -}}

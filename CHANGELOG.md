@@ -6,8 +6,13 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Add comments to generated code from db for psql driver (thanks @vladvelici)
+
 ### Fixed
 
+- Fix upsert bug using schema names in mysql/mssql (thanks @emmanuel099)
 - Fix blacklist/whitelist as environment variables being clobbered by incorrect
   values (thanks @Amandeepsinghghai)
 

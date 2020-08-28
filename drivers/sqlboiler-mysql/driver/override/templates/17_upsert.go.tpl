@@ -99,7 +99,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
 
-		if len(update) == 0 {
+		if !updateColumns.IsNone() && len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
 

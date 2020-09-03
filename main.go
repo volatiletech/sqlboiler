@@ -106,6 +106,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("add-soft-deletes", "", false, "Enable soft deletion by updating deleted_at timestamp")
+	rootCmd.PersistentFlags().BoolP("add-enum-types", "", false, "Enable generation of types for enums")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
@@ -173,6 +174,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		AddGlobal:         viper.GetBool("add-global-variants"),
 		AddPanic:          viper.GetBool("add-panic-variants"),
 		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
+		AddEnumTypes:      viper.GetBool("add-enum-types"),
 		NoContext:         viper.GetBool("no-context"),
 		NoTests:           viper.GetBool("no-tests"),
 		NoHooks:           viper.GetBool("no-hooks"),

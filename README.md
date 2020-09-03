@@ -439,6 +439,7 @@ Flags:
       --add-global-variants        Enable generation for global variants
       --add-panic-variants         Enable generation for panic variants
       --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
+      --add-enum-types             Enable generation of types for enums
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler

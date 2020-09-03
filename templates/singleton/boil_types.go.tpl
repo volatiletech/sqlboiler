@@ -60,6 +60,7 @@ MySQL output looks like:    TableNameColNameEnumValue = "enumvalue"
 
 It only titlecases the EnumValue portion if it's snake-cased.
 */}}
+
 {{$once := onceNew}}
 {{- range $table := .Tables -}}
 	{{- range $col := $table.Columns | filterColumnsByEnum -}}
@@ -72,12 +73,17 @@ It only titlecases the EnumValue portion if it's snake-cased.
 				{{$_ := oncePut $once $name}}
 			{{- end -}}
 {{- if and (gt (len $vals) 0) (isEnumNormal $vals)}}
+
+{{- if $.AddEnumTypes}}
+type {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}} string
+{{end -}}
+
 // Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}}
 const (
 	{{- range $val := $vals -}}
 	{{- $valStripped := stripWhitespace $val -}}
 	{{- if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end -}}
-	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} = "{{$val}}"
+	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} {{if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}} = "{{$val}}"
 	{{end -}}
 )
 {{- else}}

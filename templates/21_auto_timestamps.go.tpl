@@ -1,5 +1,6 @@
 {{- define "timestamp_insert_helper" -}}
 	{{- if not .NoAutoTimestamps -}}
+	{{- $alias := .Aliases.Table .Table.Name -}}
 	{{- $colNames := .Table.Columns | columnNames -}}
 	{{if containsAny $colNames "created_at" "updated_at"}}
 		{{if not .NoContext -}}
@@ -7,25 +8,26 @@
 		{{end -}}
 		currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
+		    {{- $colAlias := $alias.Column $col.Name -}}
 			{{- if eq $col.Name "created_at" -}}
 				{{- if eq $col.Type "time.Time" }}
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
+		if o.{{$colAlias}}.IsZero() {
+			o.{{$colAlias}} = currTime
 		}
 				{{- else}}
-		if queries.MustTime(o.CreatedAt).IsZero() {
-			queries.SetScanner(&o.CreatedAt, currTime)
+		if queries.MustTime(o.{{$colAlias}}).IsZero() {
+			queries.SetScanner(&o.{{$colAlias}}, currTime)
 		}
 				{{- end -}}
 			{{- end -}}
 			{{- if eq $col.Name "updated_at" -}}
 				{{- if eq $col.Type "time.Time"}}
-		if o.UpdatedAt.IsZero() {
-			o.UpdatedAt = currTime
+		if o.{{$colAlias}}.IsZero() {
+			o.{{$colAlias}} = currTime
 		}
 				{{- else}}
-		if queries.MustTime(o.UpdatedAt).IsZero() {
-			queries.SetScanner(&o.UpdatedAt, currTime)
+		if queries.MustTime(o.{{$colAlias}}).IsZero() {
+			queries.SetScanner(&o.{{$colAlias}}, currTime)
 		}
 				{{- end -}}
 			{{- end -}}
@@ -38,6 +40,7 @@
 {{- end -}}
 {{- define "timestamp_update_helper" -}}
 	{{- if not .NoAutoTimestamps -}}
+	{{- $alias := .Aliases.Table .Table.Name -}}
 	{{- $colNames := .Table.Columns | columnNames -}}
 	{{if containsAny $colNames "updated_at"}}
 		{{if not .NoContext -}}
@@ -45,11 +48,12 @@
 		{{end -}}
 		currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
+	        {{- $colAlias := $alias.Column $col.Name -}}
 			{{- if eq $col.Name "updated_at" -}}
 				{{- if eq $col.Type "time.Time"}}
-		o.UpdatedAt = currTime
+		o.{{$colAlias}} = currTime
 				{{- else}}
-		queries.SetScanner(&o.UpdatedAt, currTime)
+		queries.SetScanner(&o.{{$colAlias}}, currTime)
 				{{- end -}}
 			{{- end -}}
 		{{end}}
@@ -61,6 +65,7 @@
 {{end -}}
 {{- define "timestamp_upsert_helper" -}}
 	{{- if not .NoAutoTimestamps -}}
+	{{- $alias := .Aliases.Table .Table.Name -}}
 	{{- $colNames := .Table.Columns | columnNames -}}
 	{{if containsAny $colNames "created_at" "updated_at"}}
 		{{if not .NoContext -}}
@@ -68,22 +73,23 @@
 		{{end -}}
 	currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
+		    {{- $colAlias := $alias.Column $col.Name -}}
 			{{- if eq $col.Name "created_at" -}}
 				{{- if eq $col.Type "time.Time"}}
-	if o.CreatedAt.IsZero() {
-		o.CreatedAt = currTime
+	if o.{{$colAlias}}.IsZero() {
+		o.{{$colAlias}} = currTime
 	}
 				{{- else}}
-	if queries.MustTime(o.CreatedAt).IsZero() {
-		queries.SetScanner(&o.CreatedAt, currTime)
+	if queries.MustTime(o.{{$colAlias}}).IsZero() {
+		queries.SetScanner(&o.{{$colAlias}}, currTime)
 	}
 				{{- end -}}
 			{{- end -}}
 			{{- if eq $col.Name "updated_at" -}}
 				{{- if eq $col.Type "time.Time"}}
-	o.UpdatedAt = currTime
+	o.{{$colAlias}} = currTime
 				{{- else}}
-	queries.SetScanner(&o.UpdatedAt, currTime)
+	queries.SetScanner(&o.{{$colAlias}}, currTime)
 				{{- end -}}
 			{{- end -}}
 		{{end}}

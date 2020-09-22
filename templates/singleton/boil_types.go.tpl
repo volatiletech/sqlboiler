@@ -1,3 +1,4 @@
+{{- /*gotype: github.com/volatiletech/sqlboiler/v4/boilingcore.templateData*/ -}}
 // M type is for providing columns and column values to UpdateAll.
 type M map[string]interface{}
 
@@ -67,6 +68,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 		{{- $name := parseEnumName $col.DBType -}}
 		{{- $vals := parseEnumVals $col.DBType -}}
 		{{- $isNamed := ne (len $name) 0}}
+        {{- $enumName := "" -}}
 		{{- if and $isNamed (onceHas $once $name) -}}
 		{{- else -}}
 			{{- if $isNamed -}}
@@ -74,38 +76,63 @@ It only titlecases the EnumValue portion if it's snake-cased.
 			{{- end -}}
 {{- if and (gt (len $vals) 0) (isEnumNormal $vals)}}
 
-{{- if $.AddEnumTypes}}
-type {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}} string
-{{end -}}
+{{- if $isNamed -}}
+    {{ $enumName = titleCase $name}}
+{{- else -}}
+    {{ $enumName = titleCase $table.Name $col.Name}}
+{{- end -}}
 
-// Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}}
-const (
-	{{- range $val := $vals -}}
-	{{- $valStripped := stripWhitespace $val -}}
-	{{- if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end -}}
-	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} {{if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}} = "{{$val}}"
-	{{end -}}
-)
-{{- if $.AddEnumTypes}}
+{{if $.AddEnumTypes}}
+type {{$enumName}} string
 
-func (receiver {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}) IsValid() error {
+func (e {{$enumName}}) IsValid() error {
+{{- /* $first is being used to add a comma to all enumValues, but the first one.*/ -}}
 {{- $first := true -}}
-	switch receiver {
-	case {{ range $val := $vals -}}{{if $first}}{{$first = false}}{{else}}, {{end}}{{ $valStripped := stripWhitespace $val -}}{{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} {{end}}:
+{{- /* $enumValues will contain a comma separated string holding all enum consts */ -}}
+{{- $enumValues := "" -}}
+{{ range $val := $vals -}}
+	{{- if $first -}}
+        {{- $first = false -}}
+    {{- else -}}
+        {{- $enumValues = printf "%s%s" $enumValues ", " -}}
+    {{- end -}}
+
+    {{- $valStripped := stripWhitespace $val -}}
+    {{- $enumValue := $valStripped -}}
+    {{- if shouldTitleCaseEnum $valStripped -}}
+        {{- $enumValue := titleCase $valStripped -}}
+    {{- end -}}
+
+    {{- $enumValues = printf "%s%s%s" $enumValues $enumName $enumValue -}}
+{{- end}}
+	switch e {
+	case {{$enumValues}}:
 		return nil
 	default:
-		return fmt.Errorf("%s is not a valid {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}", receiver)
+		return fmt.Errorf("%s is not a valid {{$enumName}}", e)
 	}
 }
 
-func (receiver {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}) String() string {
-	return string(receiver)
+func (e {{$enumName}}) String() string {
+	return string(e)
 }
 {{end -}}
 
+// Enum values for {{$enumName}}
+const (
+	{{range $val := $vals -}}
+	{{- $valStripped := stripWhitespace $val -}}
+	{{- $enumValue := $valStripped -}}
+	{{- if shouldTitleCaseEnum $valStripped -}}
+		{{$enumValue := titleCase $valStripped}}
+	{{end -}}
+	{{$enumName}}{{$enumValue}} {{$enumName}} = "{{$val}}"
+	{{end}}
+)
+
 {{- else}}
-// Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}} are not proper Go identifiers, cannot emit constants
+// Enum values for {{$enumName}} are not proper Go identifiers, cannot emit constants
 {{- end -}}
-		{{- end -}}
-	{{- end -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}

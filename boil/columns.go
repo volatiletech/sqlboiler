@@ -11,7 +11,8 @@ import (
 // to query for each kind on the column type itself, see IsInfer
 // as example.
 const (
-	columnsInfer int = iota
+	columnsNone int = iota
+	columnsInfer
 	columnsWhitelist
 	columnsGreylist
 	columnsBlacklist
@@ -24,6 +25,19 @@ const (
 type Columns struct {
 	Kind int
 	Cols []string
+}
+
+// None creates an empty column list.
+func None() Columns {
+	return Columns{
+		Kind: columnsNone,
+	}
+}
+
+// IsNone checks to see if no columns should be inferred.
+// This method is here simply to not have to export the columns types.
+func (c Columns) IsNone() bool {
+	return c.Kind == columnsNone
 }
 
 // Infer is a placeholder that means there is no other list, simply
@@ -96,6 +110,10 @@ func (c Columns) IsGreylist() bool {
 // Note that a default column's zero value is based on the Go type and does
 // not take into account the default value in the database.
 //
+//  None:
+//   insert: empty
+//   return: empty
+//
 //  Infer:
 //   insert: columns-without-default + non-zero-default-columns
 //   return: columns-with-defaults - insert
@@ -113,6 +131,9 @@ func (c Columns) IsGreylist() bool {
 //    return: columns-with-defaults - insert
 func (c Columns) InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []string) ([]string, []string) {
 	switch c.Kind {
+	case columnsNone:
+		return nil, nil
+
 	case columnsInfer:
 		insert := make([]string, len(noDefaults))
 		copy(insert, noDefaults)
@@ -152,12 +173,15 @@ func (c Columns) InsertColumnSet(cols, defaults, noDefaults, nonZeroDefaults []s
 // which isn't useful in an update since then you can't find the original
 // record you were trying to update.
 //
+//  None:      empty
 //  Infer:     all - pkey-columns
 //  whitelist: whitelist
 //  blacklist: all - pkeys - blacklist
 //  greylist:  all - pkeys + greylist
 func (c Columns) UpdateColumnSet(allColumns, pkeyCols []string) []string {
 	switch c.Kind {
+	case columnsNone:
+		return nil
 	case columnsInfer:
 		return strmangle.SetComplement(allColumns, pkeyCols)
 	case columnsWhitelist:

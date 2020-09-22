@@ -84,7 +84,21 @@ It only titlecases the EnumValue portion if it's snake-cased.
 
 {{if $.AddEnumTypes}}
 type {{$enumName}} string
+{{end}}
 
+// Enum values for {{$enumName}}
+const (
+{{range $val := $vals -}}
+	{{- $valStripped := stripWhitespace $val -}}
+	{{- $enumValue := $valStripped -}}
+	{{- if shouldTitleCaseEnum $valStripped -}}
+		{{$enumValue := titleCase $valStripped}}
+	{{end -}}
+	{{$enumName}}{{$enumValue}} {{if $.AddEnumTypes}}{{$enumName}}{{end}} = "{{$val}}"
+{{end}}
+)
+
+{{if $.AddEnumTypes}}
 func (e {{$enumName}}) IsValid() error {
 {{- /* $first is being used to add a comma to all enumValues, but the first one.*/ -}}
 {{- $first := true -}}
@@ -118,21 +132,10 @@ func (e {{$enumName}}) String() string {
 }
 {{end -}}
 
-// Enum values for {{$enumName}}
-const (
-	{{range $val := $vals -}}
-	{{- $valStripped := stripWhitespace $val -}}
-	{{- $enumValue := $valStripped -}}
-	{{- if shouldTitleCaseEnum $valStripped -}}
-		{{$enumValue := titleCase $valStripped}}
-	{{end -}}
-	{{$enumName}}{{$enumValue}} {{$enumName}} = "{{$val}}"
-	{{end}}
-)
 
-{{- else}}
+{{else}}
 // Enum values for {{$enumName}} are not proper Go identifiers, cannot emit constants
 {{- end -}}
 {{- end -}}
 {{- end -}}
-{{- end -}}
+{{ end -}}

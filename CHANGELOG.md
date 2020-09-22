@@ -16,6 +16,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Fix longstanding naming conflict when not using suffixes for foreign keys
   (thanks @yuzuy)
+- Fix auto-generated timestamp columns not respecting aliases
+  (thanks @while-loop)
 - Fix upsert bug using schema names in mysql/mssql (thanks @emmanuel099)
 - Fix blacklist/whitelist as environment variables being clobbered by incorrect
   values (thanks @Amandeepsinghghai)

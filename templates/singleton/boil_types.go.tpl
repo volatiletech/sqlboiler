@@ -86,6 +86,23 @@ const (
 	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} {{if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}} = "{{$val}}"
 	{{end -}}
 )
+{{- if $.AddEnumTypes}}
+
+func (receiver {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}) IsValid() error {
+{{- $first := true -}}
+	switch receiver {
+	case {{ range $val := $vals -}}{{if $first}}{{$first = false}}{{else}}, {{end}}{{ $valStripped := stripWhitespace $val -}}{{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} {{end}}:
+		return nil
+	default:
+		return fmt.Errorf("%s is not a valid {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}", receiver)
+	}
+}
+
+func (receiver {{ if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end}}) String() string {
+	return string(receiver)
+}
+{{end -}}
+
 {{- else}}
 // Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}} are not proper Go identifiers, cannot emit constants
 {{- end -}}

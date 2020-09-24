@@ -296,6 +296,7 @@ clean() {
     set -o xtrace
     rm -f ./sqlboiler
     rm -f ./sqlboiler-*
+    rm -f ./sqlboiler*.exe
 }
 
 # ====================================

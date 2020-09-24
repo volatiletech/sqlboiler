@@ -77,6 +77,15 @@ func test{{$alias.UpPlural}}Hooks(t *testing.T) {
 	}
 	{{$alias.DownSingular}}AfterInsertHooks = []{{$alias.UpSingular}}Hook{}
 
+	Add{{$alias.UpSingular}}Hook(boil.BeforeSelectHook, {{$alias.DownSingular}}BeforeSelectHook)
+	if err = o.doBeforeSelectHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
+		t.Errorf("Unable to execute doBeforeSelectHooks: %s", err)
+	}
+	if !reflect.DeepEqual(o, empty) {
+		t.Errorf("Expected BeforeSelectHook function to empty object, but got: %#v", o)
+	}
+	{{$alias.DownSingular}}BeforeSelectHooks = []{{$alias.UpSingular}}Hook{}
+
 	Add{{$alias.UpSingular}}Hook(boil.AfterSelectHook, {{$alias.DownSingular}}AfterSelectHook)
 	if err = o.doAfterSelectHooks({{if not .NoContext}}ctx, {{end -}} nil); err != nil {
 		t.Errorf("Unable to execute doAfterSelectHooks: %s", err)

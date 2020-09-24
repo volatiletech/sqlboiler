@@ -32,6 +32,7 @@ type HookPoint int
 // the hook point constants
 const (
 	BeforeInsertHook HookPoint = iota + 1
+	BeforeSelectHook
 	BeforeUpdateHook
 	BeforeDeleteHook
 	BeforeUpsertHook

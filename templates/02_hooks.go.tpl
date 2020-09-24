@@ -2,6 +2,7 @@
 {{- $alias := .Aliases.Table .Table.Name}}
 
 var {{$alias.DownSingular}}BeforeInsertHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeSelectHooks []{{$alias.UpSingular}}Hook
 var {{$alias.DownSingular}}BeforeUpdateHooks []{{$alias.UpSingular}}Hook
 var {{$alias.DownSingular}}BeforeDeleteHooks []{{$alias.UpSingular}}Hook
 var {{$alias.DownSingular}}BeforeUpsertHooks []{{$alias.UpSingular}}Hook
@@ -21,6 +22,23 @@ func (o *{{$alias.UpSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.E
 
 	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}BeforeInsertHooks {
+		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// doBeforeSelectHooks executes all "before select" hooks.
+func (o *{{$alias.UpSingular}}) doBeforeSelectHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
+	{{if not .NoContext -}}
+	if boil.HooksAreSkipped(ctx) {
+		return nil
+	}
+
+	{{end -}}
+	for _, hook := range {{$alias.DownSingular}}BeforeSelectHooks {
 		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
 			return err
 		}
@@ -170,6 +188,8 @@ func Add{{$alias.UpSingular}}Hook(hookPoint boil.HookPoint, {{$alias.DownSingula
 	switch hookPoint {
 		case boil.BeforeInsertHook:
 			{{$alias.DownSingular}}BeforeInsertHooks = append({{$alias.DownSingular}}BeforeInsertHooks, {{$alias.DownSingular}}Hook)
+		case boil.BeforeSelectHook:
+			{{$alias.DownSingular}}BeforeSelectHooks = append({{$alias.DownSingular}}BeforeSelectHooks, {{$alias.DownSingular}}Hook)
 		case boil.BeforeUpdateHook:
 			{{$alias.DownSingular}}BeforeUpdateHooks = append({{$alias.DownSingular}}BeforeUpdateHooks, {{$alias.DownSingular}}Hook)
 		case boil.BeforeDeleteHook:

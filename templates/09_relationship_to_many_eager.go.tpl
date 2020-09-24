@@ -86,6 +86,16 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		return errors.Wrap(err, "failed to eager load {{.ForeignTable}}")
 	}
 
+	{{if not $.NoHooks -}}
+	if len({{$ftable.DownSingular}}BeforeSelectHooks) != 0 {
+		// hooks are defined on the object, which doesn't exist yet...
+	    dummy := &{{$ftable.UpSingular}}{}
+        if err := dummy.doBeforeSelectHooks({{if $.NoContext}}e{{else}}ctx, e{{end}}); err != nil {
+            return err
+        }
+	}
+	{{- end}}
+
 	var resultSlice []*{{$ftable.UpSingular}}
 	{{if .ToJoinTable -}}
 	{{- $foreignTable := getTable $.Tables .ForeignTable -}}

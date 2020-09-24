@@ -40,6 +40,12 @@ func (q {{$alias.DownSingular}}Query) One({{if .NoContext}}exec boil.Executor{{e
 
 	queries.SetLimit(q.Query, 1)
 
+	{{if not .NoHooks -}}
+	if err := o.doBeforeSelectHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+		return o, err
+	}
+	{{- end}}
+
 	err := q.Bind({{if .NoContext}}nil{{else}}ctx{{end}}, exec, o)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
@@ -94,6 +100,14 @@ func (q {{$alias.DownSingular}}Query) AllP({{if .NoContext}}exec boil.Executor{{
 // All returns all {{$alias.UpSingular}} records from the query.
 func (q {{$alias.DownSingular}}Query) All({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) ({{$alias.UpSingular}}Slice, error) {
 	var o []*{{$alias.UpSingular}}
+
+	{{if not .NoHooks -}}
+	// hooks are defined on the object, which doesn't exist yet...
+    dummy := &{{$alias.UpSingular}}{}
+	if err := dummy.doBeforeSelectHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+		return o, err
+	}
+	{{- end}}
 
 	err := q.Bind({{if .NoContext}}nil{{else}}ctx{{end}}, exec, &o)
 	if err != nil {

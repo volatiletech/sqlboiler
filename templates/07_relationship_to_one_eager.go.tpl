@@ -84,6 +84,16 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 		return errors.Wrap(err, "failed to eager load {{$ftable.UpSingular}}")
 	}
 
+	{{if not $.NoHooks -}}
+	if len({{$ltable.DownSingular}}BeforeSelectHooks) != 0 {
+		// hooks are defined on the object, which doesn't exist yet...
+	    dummy := &{{$ftable.UpSingular}}{}
+        if err := dummy.doBeforeSelectHooks({{if $.NoContext}}e{{else}}ctx, e{{end}}); err != nil {
+            return err
+        }
+	}
+	{{- end}}
+
 	var resultSlice []*{{$ftable.UpSingular}}
 	if err = queries.Bind(results, &resultSlice); err != nil {
 		return errors.Wrap(err, "failed to bind eager loaded slice {{$ftable.UpSingular}}")

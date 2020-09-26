@@ -220,7 +220,6 @@ func NewDefaultImports() Collection {
 		},
 		"boil_types": {
 			Standard: List{
-				`"fmt"`,
 				`"strconv"`,
 			},
 			ThirdParty: List{

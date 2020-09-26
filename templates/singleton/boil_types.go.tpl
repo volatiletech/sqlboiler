@@ -1,4 +1,3 @@
-{{- /*gotype: github.com/volatiletech/sqlboiler/v4/boilingcore.templateData*/ -}}
 // M type is for providing columns and column values to UpdateAll.
 type M map[string]interface{}
 
@@ -123,7 +122,7 @@ func (e {{$enumName}}) IsValid() error {
 	case {{$enumValues}}:
 		return nil
 	default:
-		return fmt.Errorf("%s is not a valid {{$enumName}}", e)
+		return errors.New("enum is not valid")
 	}
 }
 

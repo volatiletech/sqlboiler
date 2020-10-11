@@ -36,7 +36,7 @@ type Decimal struct {
 }
 
 // NullDecimal is the same as Decimal, but allows the Big pointer to be nil.
-// See docmentation for Decimal for more details.
+// See documentation for Decimal for more details.
 //
 // When going into a database, if Big is nil it's value will be "null".
 type NullDecimal struct {

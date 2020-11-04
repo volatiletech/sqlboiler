@@ -14,6 +14,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fix an issue where order of columns can change during eager loading which
+  could cause errors (thanks @inoc603)
 - Fix longstanding naming conflict when not using suffixes for foreign keys
   (thanks @yuzuy)
 - Fix auto-generated timestamp columns not respecting aliases

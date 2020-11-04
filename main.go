@@ -18,7 +18,7 @@ import (
 
 //go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
 
-const sqlBoilerVersion = "4.2.0"
+const sqlBoilerVersion = "4.3.0"
 
 var (
 	flagConfigFile string

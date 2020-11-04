@@ -24,6 +24,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [v4.2.0] - 2020-07-03
 
+### Added
+
 - Add types.DecimalContext to control the context with which new decimals
   are created. This is important if your application uses a special context
   with more precision or requires the Go operating mode for example.

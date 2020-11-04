@@ -55,8 +55,9 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 
 		{{if .ToJoinTable -}}
 			{{- $schemaJoinTable := .JoinTable | $.SchemaTable -}}
+			{{- $foreignTable := getTable $.Tables .ForeignTable -}}
 	query := NewQuery(
-		qm.Select("{{$schemaForeignTable}}.*, {{id 0 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}}"),
+		qm.Select("{{$foreignTable.Columns | columnNames | prefixStringSlice (print $schemaForeignTable ".") | join ", "}}, {{id 0 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}}"),
 		qm.From("{{$schemaForeignTable}}"),
 		qm.InnerJoin("{{$schemaJoinTable}} as {{id 0 | $.Quotes}} on {{$schemaForeignTable}}.{{.ForeignColumn | $.Quotes}} = {{id 0 | $.Quotes}}.{{.JoinForeignColumn | $.Quotes}}"),
 		qm.WhereIn("{{id 0 | $.Quotes}}.{{.JoinLocalColumn | $.Quotes}} in ?", args...),

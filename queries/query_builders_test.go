@@ -328,6 +328,38 @@ func TestWhereClause(t *testing.T) {
 	}
 }
 
+func TestNotInClause(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		q      Query
+		expect string
+		args   []interface{}
+	}{
+		{
+			q: Query{
+				where: []where{{kind: whereKindNotIn, clause: "a not in ?", args: []interface{}{}, orSeparator: true}},
+			},
+			expect: ` WHERE (1=1)`,
+		},
+		{
+			q: Query{
+				where: []where{{kind: whereKindNotIn, clause: "a not in ?", args: []interface{}{1}, orSeparator: true}},
+			},
+			expect: ` WHERE ("a" NOT IN ($1))`,
+			args:   []interface{}{1},
+		},
+	}
+	for i, test := range tests {
+		test.q.dialect = &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true}
+		result, args := whereClause(&test.q, 1)
+		if result != test.expect {
+			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
+		}
+		if !reflect.DeepEqual(args, test.args) {
+			t.Errorf("%d) Mismatch between expected args:\n%#v\n%#v\n", i, test.args, args)
+		}
+	}
+}
 func TestInClause(t *testing.T) {
 	t.Parallel()
 

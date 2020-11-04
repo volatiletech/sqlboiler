@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	rgxIdentifier = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(?:\."?[_a-z][_a-z0-9]*"?)*$`)
-	rgxInClause   = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
+	rgxIdentifier  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(?:\."?[_a-z][_a-z0-9]*"?)*$`)
+	rgxInClause    = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
+	rgxNotInClause = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])NOT\s+IN([\s|\(|\?].*)$`)
 )
 
 // BuildQuery builds a query object into the query string
@@ -399,7 +400,14 @@ ManualParen:
 				}
 				break
 			}
-			matches := rgxInClause.FindStringSubmatch(where.clause)
+
+			var matches []string
+			if where.kind == whereKindIn {
+				matches = rgxInClause.FindStringSubmatch(where.clause)
+			} else {
+				matches = rgxNotInClause.FindStringSubmatch(where.clause)
+			}
+
 			// If we can't find any matches attempt a simple replace with 1 group.
 			// Clauses that fit this criteria will not be able to contain ? in their
 			// column name side, however if this case is being hit then the regexp

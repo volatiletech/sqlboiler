@@ -361,7 +361,7 @@ type whereNotInQueryMod struct {
 
 // Apply implements QueryMod.Apply.
 func (qm whereNotInQueryMod) Apply(q *queries.Query) {
-	queries.AppendIn(q, qm.clause, qm.args...)
+	queries.AppendNotIn(q, qm.clause, qm.args...)
 }
 
 // WhereNotIn allows you to specify a "x NOT IN (set)" clause for your where
@@ -381,7 +381,7 @@ type andNotInQueryMod struct {
 
 // Apply implements QueryMod.Apply.
 func (qm andNotInQueryMod) Apply(q *queries.Query) {
-	queries.AppendIn(q, qm.clause, qm.args...)
+	queries.AppendNotIn(q, qm.clause, qm.args...)
 }
 
 // AndNotIn allows you to specify a "x NOT IN (set)" clause separated by an
@@ -403,7 +403,7 @@ type orNotInQueryMod struct {
 
 // Apply implements QueryMod.Apply.
 func (qm orNotInQueryMod) Apply(q *queries.Query) {
-	queries.AppendIn(q, qm.clause, qm.args...)
+	queries.AppendNotIn(q, qm.clause, qm.args...)
 	queries.SetLastInAsOr(q)
 }
 

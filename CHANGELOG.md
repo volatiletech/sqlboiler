@@ -14,6 +14,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fix qm.WhereNotIn/qm.AndNotIn/qm.OrNotIn generating the wrong types of
+  clauses (thanks @peterIdowns)
 - Fix an issue where order of columns can change during eager loading which
   could cause errors (thanks @inoc603)
 - Fix longstanding naming conflict when not using suffixes for foreign keys

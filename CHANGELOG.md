@@ -9,7 +9,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Add comments to generated code from db for psql driver (thanks @vladvelici)
-- Add boil.None() to help with `DO NOTHING` upserst in mssql/mysql
+- Add boil.None() to help with `DO NOTHING` upserts in mssql/mysql
   (thanks @emmanual099)
 
 ### Fixed

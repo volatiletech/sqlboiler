@@ -4,6 +4,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.3.1] - 2020-11-16
+
+### Fixed
+
+- Fix case sensitive table name lookup in psql driver (thanks @severedsea)
+
 ## [v4.3.0] - 2020-11-03
 
 ### Added

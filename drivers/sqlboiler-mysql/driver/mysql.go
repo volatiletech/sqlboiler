@@ -193,9 +193,9 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	c.column_type,
 	if(c.data_type = 'enum', c.column_type, c.data_type),
 	if(extra = 'auto_increment','auto_increment',
-		if(version() like "%MariaDB%" and c.column_default = 'NULL', '',
-		if(version() like "%MariaDB%" and c.data_type in ('varchar','char','binary','date','datetime','time'),
-			replace(substring(c.column_default,2,length(c.column_default)-2),"''","'"),
+		if(version() like '%MariaDB%' and c.column_default = 'NULL', '',
+		if(version() like '%MariaDB%' and c.data_type in ('varchar','char','binary','date','datetime','time'),
+			replace(substring(c.column_default,2,length(c.column_default)-2),'\'\'','\''),
 				c.column_default))),
 	c.is_nullable = 'YES',
 		exists (

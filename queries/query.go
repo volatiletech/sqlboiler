@@ -44,6 +44,7 @@ type Query struct {
 	offset     int
 	forlock    string
 	distinct   string
+	comment    string
 }
 
 // Applicator exists only to allow
@@ -268,6 +269,11 @@ func SetOffset(q *Query, offset int) {
 // SetFor on the query.
 func SetFor(q *Query, clause string) {
 	q.forlock = clause
+}
+
+// SetComment on the query.
+func SetComment(q *Query, comment string) {
+	q.comment = comment
 }
 
 // SetUpdate on the query.

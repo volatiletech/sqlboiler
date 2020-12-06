@@ -554,6 +554,22 @@ func For(clause string) QueryMod {
 	}
 }
 
+type commentQueryMod struct {
+	comment string
+}
+
+// Apply implements QueryMod.Apply.
+func (qm commentQueryMod) Apply(q *queries.Query) {
+	queries.SetComment(q, qm.comment)
+}
+
+// Comment inserts a custom comment at the begin of your query
+func Comment(comment string) QueryMod {
+	return commentQueryMod{
+		comment: comment,
+	}
+}
+
 // Rels is an alias for strings.Join to make it easier to use relationship name
 // constants in Load.
 func Rels(r ...string) string {

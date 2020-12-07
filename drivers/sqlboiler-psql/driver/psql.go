@@ -38,6 +38,7 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 type PostgresDriver struct {
 	connStr string
 	conn    *sql.DB
+	version int
 }
 
 // Templates that should be added/overridden
@@ -89,6 +90,11 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 			err = e
 		}
 	}()
+
+	p.version, err = p.getVersion()
+	if err != nil {
+		return nil, errors.Wrap(err, "sqlboiler-psql failed to get database version")
+	}
 
 	dbinfo = &drivers.DBInfo{
 		Schema: schema,
@@ -381,7 +387,12 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey
 
-	query := `
+	whereConditions := []string{"pgn.nspname = $2", "pgc.relname = $1", "pgcon.contype = 'f'"}
+	if p.version >= 120000 {
+		whereConditions = append(whereConditions, "pgasrc.attgenerated = ''", "pgadst.attgenerated = ''")
+	}
+
+	query := fmt.Sprintf(`
 	select
 		pgcon.conname,
 		pgc.relname as source_table,
@@ -394,8 +405,10 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid
 		inner join pg_attribute pgasrc on pgc.oid = pgasrc.attrelid and pgasrc.attnum = ANY(pgcon.conkey)
 		inner join pg_attribute pgadst on pgcon.confrelid = pgadst.attrelid and pgadst.attnum = ANY(pgcon.confkey)
-	where pgn.nspname = $2 and pgc.relname = $1 and pgcon.contype = 'f'
-	order by pgcon.conname, source_table, source_column, dest_table, dest_column`
+	where %s
+	order by pgcon.conname, source_table, source_column, dest_table, dest_column`,
+		strings.Join(whereConditions, " and "),
+	)
 
 	var rows *sql.Rows
 	var err error
@@ -779,4 +792,19 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 	}
 
 	return col, nil
+}
+
+// getVersion gets the version of underlying database
+func (p *PostgresDriver) getVersion() (int, error) {
+	type versionInfoType struct {
+		ServerVersionNum int `json:"server_version_num"`
+	}
+	versionInfo := &versionInfoType{}
+
+	row := p.conn.QueryRow("SHOW server_version_num")
+	if err := row.Scan(&versionInfo.ServerVersionNum); err != nil {
+		return 0, err
+	}
+
+	return versionInfo.ServerVersionNum, nil
 }

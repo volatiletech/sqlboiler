@@ -6,6 +6,11 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Added
+
+- Add support for a qm.Comment query mod to add comments to queries that will
+  be given to the server for tracing purposes (thanks @Pilatuz)
+
 ### Fixed
 
 - Fix compatibility with ANSI_QUOTES in mysql (thanks @alexsander-souza)

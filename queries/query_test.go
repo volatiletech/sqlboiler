@@ -640,3 +640,14 @@ func TestAppendWith(t *testing.T) {
 		t.Errorf("Got invalid with on string: %#v", q.withs)
 	}
 }
+
+func TestSetComment(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	SetComment(q, "my comment")
+
+	if q.comment != "my comment" {
+		t.Errorf("Got invalid comment: %s", q.comment)
+	}
+}

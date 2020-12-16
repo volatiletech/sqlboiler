@@ -48,6 +48,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 	var args []interface{}
 
+	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
 	buf.WriteString("SELECT ")
@@ -138,6 +139,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	var args []interface{}
 	buf := strmangle.GetBuffer()
 
+	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
 	buf.WriteString("DELETE FROM ")
@@ -160,6 +162,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 	var args []interface{}
 
+	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
 	buf.WriteString("UPDATE ")
@@ -584,6 +587,19 @@ func parseFromClause(toks []string) (alias, name string, ok bool) {
 	}
 
 	return alias, name, ok
+}
+
+func writeComment(q *Query, buf *bytes.Buffer) {
+	if len(q.comment) == 0 {
+		return
+	}
+
+	lines := strings.Split(q.comment, "\n")
+	for _, line := range lines {
+		buf.WriteString("-- ")
+		buf.WriteString(line)
+		buf.WriteByte('\n')
+	}
 }
 
 func writeCTEs(q *Query, buf *bytes.Buffer, args *[]interface{}) {

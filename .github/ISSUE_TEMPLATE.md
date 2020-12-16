@@ -1,3 +1,8 @@
+<!--
+If you are asking a question and are not reporting a bug or requesting a feature
+please use the new Github Discussions feature we've enabled.
+-->
+
 If you're having a generation problem please answer these questions before submitting your issue. Thanks!
 
 ### What version of SQLBoiler are you using (`sqlboiler --version`)?

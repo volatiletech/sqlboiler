@@ -254,7 +254,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 						(
 							select typelem
 							from pg_type
-							where pg_type.typtype = 'b' and pg_type.typname = ('_' || c.udt_name)
+							inner join pg_namespace ON pg_type.typnamespace = pg_namespace.oid
+							where pg_type.typtype = 'b' and pg_type.typname = ('_' || c.udt_name) and pg_namespace.nspname=$1
 							limit 1
 						)
 						order by pg_enum.enumsortorder

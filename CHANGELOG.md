@@ -6,6 +6,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Change go-bindata to v3.22.0
+
 ### Fixed
 
 - Fix inclusion of foreign key constraints that target generated pg columns

@@ -12,9 +12,9 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/lib/pq v1.2.0
 	github.com/pkg/errors v0.8.1
+	github.com/razor-1/null/v9 v9.0.5
 	github.com/spf13/cast v1.3.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
-	github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d
-	github.com/volatiletech/null v8.0.0+incompatible
+	github.com/volatiletech/inflect v0.0.1
 )

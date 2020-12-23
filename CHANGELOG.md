@@ -10,6 +10,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Fix inclusion of foreign key constraints that target generated pg columns
   (thanks @chochihim)
+- Fix generation failure bug in delete template when using --no-context
+  --add-global-variants and --add-soft-deletes
 
 ## [v4.4.0] - 2020-12-16
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/volatiletech/null"
+	"github.com/razor-1/null/v9"
 )
 
 type testObj struct {

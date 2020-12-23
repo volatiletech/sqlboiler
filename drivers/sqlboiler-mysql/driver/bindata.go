@@ -24,7 +24,7 @@ import (
 func bindataRead(data []byte, name string) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 
 	var buf bytes.Buffer
@@ -32,7 +32,7 @@ func bindataRead(data []byte, name string) ([]byte, error) {
 	clErr := gz.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 	if clErr != nil {
 		return nil, err
@@ -271,6 +271,9 @@ var _bindata = map[string]func() (*asset, error){
 	"templates_test/upsert.go.tpl":                      templates_testUpsertGoTpl,
 }
 
+// AssetDebug is true if the assets were built with the debug flag enabled.
+const AssetDebug = false
+
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
@@ -312,18 +315,18 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"templates": &bintree{nil, map[string]*bintree{
-		"17_upsert.go.tpl": &bintree{templates17_upsertGoTpl, map[string]*bintree{}},
-		"singleton": &bintree{nil, map[string]*bintree{
-			"mysql_upsert.go.tpl": &bintree{templatesSingletonMysql_upsertGoTpl, map[string]*bintree{}},
+	"templates": {nil, map[string]*bintree{
+		"17_upsert.go.tpl": {templates17_upsertGoTpl, map[string]*bintree{}},
+		"singleton": {nil, map[string]*bintree{
+			"mysql_upsert.go.tpl": {templatesSingletonMysql_upsertGoTpl, map[string]*bintree{}},
 		}},
 	}},
-	"templates_test": &bintree{nil, map[string]*bintree{
-		"singleton": &bintree{nil, map[string]*bintree{
-			"mysql_main_test.go.tpl":   &bintree{templates_testSingletonMysql_main_testGoTpl, map[string]*bintree{}},
-			"mysql_suites_test.go.tpl": &bintree{templates_testSingletonMysql_suites_testGoTpl, map[string]*bintree{}},
+	"templates_test": {nil, map[string]*bintree{
+		"singleton": {nil, map[string]*bintree{
+			"mysql_main_test.go.tpl": {templates_testSingletonMysql_main_testGoTpl, map[string]*bintree{}},
+			"mysql_suites_test.go.tpl": {templates_testSingletonMysql_suites_testGoTpl, map[string]*bintree{}},
 		}},
-		"upsert.go.tpl": &bintree{templates_testUpsertGoTpl, map[string]*bintree{}},
+		"upsert.go.tpl": {templates_testUpsertGoTpl, map[string]*bintree{}},
 	}},
 }}
 

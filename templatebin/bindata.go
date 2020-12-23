@@ -64,7 +64,7 @@ import (
 func bindataRead(data []byte, name string) ([]byte, error) {
 	gz, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 
 	var buf bytes.Buffer
@@ -72,7 +72,7 @@ func bindataRead(data []byte, name string) ([]byte, error) {
 	clErr := gz.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("read %q: %v", name, err)
+		return nil, fmt.Errorf("read %q: %w", name, err)
 	}
 	if clErr != nil {
 		return nil, err
@@ -1151,6 +1151,9 @@ var _bindata = map[string]func() (*asset, error){
 	"templates_test/singleton/boil_suites_test.go.tpl":     templates_testSingletonBoil_suites_testGoTpl,
 }
 
+// AssetDebug is true if the assets were built with the debug flag enabled.
+const AssetDebug = false
+
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
@@ -1192,58 +1195,58 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"templates": &bintree{nil, map[string]*bintree{
-		"00_struct.go.tpl":                         &bintree{templates00_structGoTpl, map[string]*bintree{}},
-		"01_types.go.tpl":                          &bintree{templates01_typesGoTpl, map[string]*bintree{}},
-		"02_hooks.go.tpl":                          &bintree{templates02_hooksGoTpl, map[string]*bintree{}},
-		"03_finishers.go.tpl":                      &bintree{templates03_finishersGoTpl, map[string]*bintree{}},
-		"04_relationship_to_one.go.tpl":            &bintree{templates04_relationship_to_oneGoTpl, map[string]*bintree{}},
-		"05_relationship_one_to_one.go.tpl":        &bintree{templates05_relationship_one_to_oneGoTpl, map[string]*bintree{}},
-		"06_relationship_to_many.go.tpl":           &bintree{templates06_relationship_to_manyGoTpl, map[string]*bintree{}},
-		"07_relationship_to_one_eager.go.tpl":      &bintree{templates07_relationship_to_one_eagerGoTpl, map[string]*bintree{}},
-		"08_relationship_one_to_one_eager.go.tpl":  &bintree{templates08_relationship_one_to_one_eagerGoTpl, map[string]*bintree{}},
-		"09_relationship_to_many_eager.go.tpl":     &bintree{templates09_relationship_to_many_eagerGoTpl, map[string]*bintree{}},
-		"10_relationship_to_one_setops.go.tpl":     &bintree{templates10_relationship_to_one_setopsGoTpl, map[string]*bintree{}},
-		"11_relationship_one_to_one_setops.go.tpl": &bintree{templates11_relationship_one_to_one_setopsGoTpl, map[string]*bintree{}},
-		"12_relationship_to_many_setops.go.tpl":    &bintree{templates12_relationship_to_many_setopsGoTpl, map[string]*bintree{}},
-		"13_all.go.tpl":                            &bintree{templates13_allGoTpl, map[string]*bintree{}},
-		"14_find.go.tpl":                           &bintree{templates14_findGoTpl, map[string]*bintree{}},
-		"15_insert.go.tpl":                         &bintree{templates15_insertGoTpl, map[string]*bintree{}},
-		"16_update.go.tpl":                         &bintree{templates16_updateGoTpl, map[string]*bintree{}},
-		"18_delete.go.tpl":                         &bintree{templates18_deleteGoTpl, map[string]*bintree{}},
-		"19_reload.go.tpl":                         &bintree{templates19_reloadGoTpl, map[string]*bintree{}},
-		"20_exists.go.tpl":                         &bintree{templates20_existsGoTpl, map[string]*bintree{}},
-		"21_auto_timestamps.go.tpl":                &bintree{templates21_auto_timestampsGoTpl, map[string]*bintree{}},
-		"singleton": &bintree{nil, map[string]*bintree{
-			"boil_queries.go.tpl":     &bintree{templatesSingletonBoil_queriesGoTpl, map[string]*bintree{}},
-			"boil_table_names.go.tpl": &bintree{templatesSingletonBoil_table_namesGoTpl, map[string]*bintree{}},
-			"boil_types.go.tpl":       &bintree{templatesSingletonBoil_typesGoTpl, map[string]*bintree{}},
+	"templates": {nil, map[string]*bintree{
+		"00_struct.go.tpl": {templates00_structGoTpl, map[string]*bintree{}},
+		"01_types.go.tpl": {templates01_typesGoTpl, map[string]*bintree{}},
+		"02_hooks.go.tpl": {templates02_hooksGoTpl, map[string]*bintree{}},
+		"03_finishers.go.tpl": {templates03_finishersGoTpl, map[string]*bintree{}},
+		"04_relationship_to_one.go.tpl": {templates04_relationship_to_oneGoTpl, map[string]*bintree{}},
+		"05_relationship_one_to_one.go.tpl": {templates05_relationship_one_to_oneGoTpl, map[string]*bintree{}},
+		"06_relationship_to_many.go.tpl": {templates06_relationship_to_manyGoTpl, map[string]*bintree{}},
+		"07_relationship_to_one_eager.go.tpl": {templates07_relationship_to_one_eagerGoTpl, map[string]*bintree{}},
+		"08_relationship_one_to_one_eager.go.tpl": {templates08_relationship_one_to_one_eagerGoTpl, map[string]*bintree{}},
+		"09_relationship_to_many_eager.go.tpl": {templates09_relationship_to_many_eagerGoTpl, map[string]*bintree{}},
+		"10_relationship_to_one_setops.go.tpl": {templates10_relationship_to_one_setopsGoTpl, map[string]*bintree{}},
+		"11_relationship_one_to_one_setops.go.tpl": {templates11_relationship_one_to_one_setopsGoTpl, map[string]*bintree{}},
+		"12_relationship_to_many_setops.go.tpl": {templates12_relationship_to_many_setopsGoTpl, map[string]*bintree{}},
+		"13_all.go.tpl": {templates13_allGoTpl, map[string]*bintree{}},
+		"14_find.go.tpl": {templates14_findGoTpl, map[string]*bintree{}},
+		"15_insert.go.tpl": {templates15_insertGoTpl, map[string]*bintree{}},
+		"16_update.go.tpl": {templates16_updateGoTpl, map[string]*bintree{}},
+		"18_delete.go.tpl": {templates18_deleteGoTpl, map[string]*bintree{}},
+		"19_reload.go.tpl": {templates19_reloadGoTpl, map[string]*bintree{}},
+		"20_exists.go.tpl": {templates20_existsGoTpl, map[string]*bintree{}},
+		"21_auto_timestamps.go.tpl": {templates21_auto_timestampsGoTpl, map[string]*bintree{}},
+		"singleton": {nil, map[string]*bintree{
+			"boil_queries.go.tpl": {templatesSingletonBoil_queriesGoTpl, map[string]*bintree{}},
+			"boil_table_names.go.tpl": {templatesSingletonBoil_table_namesGoTpl, map[string]*bintree{}},
+			"boil_types.go.tpl": {templatesSingletonBoil_typesGoTpl, map[string]*bintree{}},
 		}},
 	}},
-	"templates_test": &bintree{nil, map[string]*bintree{
-		"00_types.go.tpl":                       &bintree{templates_test00_typesGoTpl, map[string]*bintree{}},
-		"all.go.tpl":                            &bintree{templates_testAllGoTpl, map[string]*bintree{}},
-		"delete.go.tpl":                         &bintree{templates_testDeleteGoTpl, map[string]*bintree{}},
-		"exists.go.tpl":                         &bintree{templates_testExistsGoTpl, map[string]*bintree{}},
-		"find.go.tpl":                           &bintree{templates_testFindGoTpl, map[string]*bintree{}},
-		"finishers.go.tpl":                      &bintree{templates_testFinishersGoTpl, map[string]*bintree{}},
-		"hooks.go.tpl":                          &bintree{templates_testHooksGoTpl, map[string]*bintree{}},
-		"insert.go.tpl":                         &bintree{templates_testInsertGoTpl, map[string]*bintree{}},
-		"relationship_one_to_one.go.tpl":        &bintree{templates_testRelationship_one_to_oneGoTpl, map[string]*bintree{}},
-		"relationship_one_to_one_setops.go.tpl": &bintree{templates_testRelationship_one_to_one_setopsGoTpl, map[string]*bintree{}},
-		"relationship_to_many.go.tpl":           &bintree{templates_testRelationship_to_manyGoTpl, map[string]*bintree{}},
-		"relationship_to_many_setops.go.tpl":    &bintree{templates_testRelationship_to_many_setopsGoTpl, map[string]*bintree{}},
-		"relationship_to_one.go.tpl":            &bintree{templates_testRelationship_to_oneGoTpl, map[string]*bintree{}},
-		"relationship_to_one_setops.go.tpl":     &bintree{templates_testRelationship_to_one_setopsGoTpl, map[string]*bintree{}},
-		"reload.go.tpl":                         &bintree{templates_testReloadGoTpl, map[string]*bintree{}},
-		"select.go.tpl":                         &bintree{templates_testSelectGoTpl, map[string]*bintree{}},
-		"singleton": &bintree{nil, map[string]*bintree{
-			"boil_main_test.go.tpl":    &bintree{templates_testSingletonBoil_main_testGoTpl, map[string]*bintree{}},
-			"boil_queries_test.go.tpl": &bintree{templates_testSingletonBoil_queries_testGoTpl, map[string]*bintree{}},
-			"boil_suites_test.go.tpl":  &bintree{templates_testSingletonBoil_suites_testGoTpl, map[string]*bintree{}},
+	"templates_test": {nil, map[string]*bintree{
+		"00_types.go.tpl": {templates_test00_typesGoTpl, map[string]*bintree{}},
+		"all.go.tpl": {templates_testAllGoTpl, map[string]*bintree{}},
+		"delete.go.tpl": {templates_testDeleteGoTpl, map[string]*bintree{}},
+		"exists.go.tpl": {templates_testExistsGoTpl, map[string]*bintree{}},
+		"find.go.tpl": {templates_testFindGoTpl, map[string]*bintree{}},
+		"finishers.go.tpl": {templates_testFinishersGoTpl, map[string]*bintree{}},
+		"hooks.go.tpl": {templates_testHooksGoTpl, map[string]*bintree{}},
+		"insert.go.tpl": {templates_testInsertGoTpl, map[string]*bintree{}},
+		"relationship_one_to_one.go.tpl": {templates_testRelationship_one_to_oneGoTpl, map[string]*bintree{}},
+		"relationship_one_to_one_setops.go.tpl": {templates_testRelationship_one_to_one_setopsGoTpl, map[string]*bintree{}},
+		"relationship_to_many.go.tpl": {templates_testRelationship_to_manyGoTpl, map[string]*bintree{}},
+		"relationship_to_many_setops.go.tpl": {templates_testRelationship_to_many_setopsGoTpl, map[string]*bintree{}},
+		"relationship_to_one.go.tpl": {templates_testRelationship_to_oneGoTpl, map[string]*bintree{}},
+		"relationship_to_one_setops.go.tpl": {templates_testRelationship_to_one_setopsGoTpl, map[string]*bintree{}},
+		"reload.go.tpl": {templates_testReloadGoTpl, map[string]*bintree{}},
+		"select.go.tpl": {templates_testSelectGoTpl, map[string]*bintree{}},
+		"singleton": {nil, map[string]*bintree{
+			"boil_main_test.go.tpl": {templates_testSingletonBoil_main_testGoTpl, map[string]*bintree{}},
+			"boil_queries_test.go.tpl": {templates_testSingletonBoil_queries_testGoTpl, map[string]*bintree{}},
+			"boil_suites_test.go.tpl": {templates_testSingletonBoil_suites_testGoTpl, map[string]*bintree{}},
 		}},
-		"types.go.tpl":  &bintree{templates_testTypesGoTpl, map[string]*bintree{}},
-		"update.go.tpl": &bintree{templates_testUpdateGoTpl, map[string]*bintree{}},
+		"types.go.tpl": {templates_testTypesGoTpl, map[string]*bintree{}},
+		"update.go.tpl": {templates_testUpdateGoTpl, map[string]*bintree{}},
 	}},
 }}
 

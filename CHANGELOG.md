@@ -12,6 +12,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
   (thanks @chochihim)
 - Fix generation failure bug in delete template when using --no-context
   --add-global-variants and --add-soft-deletes
+- Fix cross-schema psql enum generation bug (thanks @csueiras)
 
 ## [v4.4.0] - 2020-12-16
 

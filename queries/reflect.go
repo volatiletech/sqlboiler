@@ -424,18 +424,19 @@ func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKi
 		mut.Unlock()
 	}
 
-	var oneStruct reflect.Value
-	if bkind == kindSliceStruct {
-		oneStruct = reflect.Indirect(reflect.New(structType))
-	}
-
 	foundOne := false
-	nullCols := make([]string, 0)
+	var nullCols []string
+
 Rows:
 	for rows.Next() {
 		foundOne = true
 		var newStruct reflect.Value
 		var pointers []interface{}
+		nullCols = make([]string, 0)
+		var oneStruct reflect.Value
+		if bkind == kindSliceStruct {
+			oneStruct = reflect.Indirect(reflect.New(structType))
+		}
 
 		switch bkind {
 		case kindStruct:

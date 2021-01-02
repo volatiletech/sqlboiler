@@ -160,7 +160,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 	if err != nil {
 		return errors.Wrap(err, "bind failed to execute query")
 	}
-	var nullTables []string
+	var nullTables [][]string
 	if nullTables, err = bind(rows, currentObj, structType, bkind); err != nil {
 		if innerErr := rows.Close(); innerErr != nil {
 			return errors.Wrapf(err, "error on rows.Close after bind error: %+v", innerErr)
@@ -188,7 +188,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 			objType := reflect.TypeOf(obj).Elem().Elem().Elem()
 			for i := 0; i < currentObjVal.Len(); i++ {
 				newObj := reflect.Indirect(reflect.New(objType))
-				err = processLoadJoinStruct(reflect.Indirect(currentObjVal.Index(i)), newObj, nullTables)
+				err = processLoadJoinStruct(reflect.Indirect(currentObjVal.Index(i)), newObj, nullTables[i])
 				if err != nil {
 					return err
 				}
@@ -196,7 +196,7 @@ func (q *Query) Bind(ctx context.Context, exec boil.Executor, obj interface{}) e
 			}
 		} else if bkind == kindStruct {
 			// currentObj will have a field with the same type as the type of objVal
-			err = processLoadJoinStruct(currentObjVal, objVal, nullTables)
+			err = processLoadJoinStruct(currentObjVal, objVal, nullTables[0])
 			if err != nil {
 				return err
 			}
@@ -378,7 +378,7 @@ func getNullableColumnIndexes(cols []string, structType reflect.Type) map[int]bo
 	return indexes
 }
 
-func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKind) ([]string, error) {
+func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKind) ([][]string, error) {
 	cols, err := rows.Columns()
 	if err != nil {
 		return nil, errors.Wrap(err, "bind failed to get column names")
@@ -425,14 +425,14 @@ func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKi
 	}
 
 	foundOne := false
-	var nullCols []string
+	nullTables := make([][]string, 0)
 
 Rows:
 	for rows.Next() {
 		foundOne = true
 		var newStruct reflect.Value
 		var pointers []interface{}
-		nullCols = make([]string, 0)
+		nullCols := make([]string, 0)
 		var oneStruct reflect.Value
 		if bkind == kindSliceStruct {
 			oneStruct = reflect.Indirect(reflect.New(structType))
@@ -474,6 +474,10 @@ Rows:
 			}
 		}
 
+		//for each row, store the result of findNullTables into nullTables
+		//this is used later to set the corresponding .R pointer to nil
+		nullTables = append(nullTables, findNullTables(cols, nullCols))
+
 		if err := rows.Scan(pointers...); err != nil {
 			return nil, errors.Wrap(err, "failed to bind pointers to obj")
 		}
@@ -492,7 +496,7 @@ Rows:
 		return nil, sql.ErrNoRows
 	}
 
-	return findNullTables(cols, nullCols), nil
+	return nullTables, nil
 }
 
 // findNullTables: if every value for a given table was nil, then add it to our list of null tables

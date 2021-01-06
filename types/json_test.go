@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -115,5 +116,16 @@ func TestJSONScan(t *testing.T) {
 
 	if !bytes.Equal(j, []byte(`"hello"`)) {
 		t.Errorf("bad []byte: %#v ≠ %#v\n", j, string([]byte(`"hello"`)))
+	}
+}
+
+func BenchmarkJSON_Scan(b *testing.B) {
+	data := `"` + strings.Repeat("A", 1024) + `"`
+	for i := 0; i < b.N; i++ {
+		var j JSON
+		err := j.Scan(data)
+		if err != nil {
+			b.Error(err)
+		}
 	}
 }

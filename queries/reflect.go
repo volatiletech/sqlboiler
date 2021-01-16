@@ -566,7 +566,7 @@ func Assign(dst, src interface{}) {
 		src = upgradeNumericTypes(src)
 
 		if err := scan.Scan(src); err != nil {
-			panic(fmt.Sprintf("tried to call Scan on %T with %#v but got err: %+v", dst, val, err))
+			panic(fmt.Sprintf("tried to call Scan on %T with %#v but got err: %+v", dst, src, err))
 		}
 
 	case !isDstScanner && isSrcValuer:

@@ -27,7 +27,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		if object.R == nil {
 			object.R = &{{$ltable.DownSingular}}R{}
 		}
-		args = append(args, object.{{.Column | titleCase}})
+		args = append(args, object.{{$col}})
 	} else {
 		Outer:
 		for _, obj := range slice {
@@ -45,7 +45,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 				}
 			}
 
-			args = append(args, obj.{{.Column | titleCase}})
+			args = append(args, obj.{{$col}})
 		}
 	}
 

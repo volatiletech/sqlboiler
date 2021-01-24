@@ -1040,6 +1040,10 @@ for soft-deletion.
 *NOTE*: As of writing soft-delete is opt-in via `--add-soft-deletes` and is
 liable to change in future versions.
 
+*NOTE*: There is a query mod to bypass soft delete for a specific query by using
+`qm.WithDeleted`, note that there is no way to do this for Exists/Find helpers
+yet.
+
 *NOTE*: The `Delete` helpers will _not_ set `updated_at` currently. The current
 philosophy is that deleting the object is simply metadata and since it returns
 in no queries (other than raw ones) the updated_at will no longer be relevant.

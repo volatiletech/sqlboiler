@@ -576,6 +576,12 @@ func Rels(r ...string) string {
 	return strings.Join(r, ".")
 }
 
+// WithDeleted removes where clauses that sqlboiler soft-delete may have
+// placed in a query.
+func WithDeleted() QueryMod {
+	return removeDeletedQueryMod{}
+}
+
 type removeDeletedQueryMod struct{}
 
 func (removeDeletedQueryMod) Apply(q *queries.Query) {

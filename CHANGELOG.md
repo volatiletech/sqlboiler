@@ -6,6 +6,12 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Add new query mod WithDeleted to sidestep soft deletes in queries that
+  support query mods (note there still is no way to do this for exists/find
+  operations, see #854 for details)
+
 ### Changed
 
 - Change go-bindata to v3.22.0

@@ -651,3 +651,59 @@ func TestSetComment(t *testing.T) {
 		t.Errorf("Got invalid comment: %s", q.comment)
 	}
 }
+
+func TestRemoveSoftDeleteWhere(t *testing.T) {
+	t.Parallel()
+
+	q := &Query{}
+	AppendWhere(q, "a")
+	AppendWhere(q, "b")
+	AppendWhere(q, "deleted_at = false")
+	AppendWhere(q, `"hello"."deleted_at" is null`)
+	RemoveSoftDeleteWhere(q)
+
+	q.removeSoftDeleteWhere()
+
+	if len(q.where) != 3 {
+		t.Error("should have removed one entry:", len(q.where))
+	}
+
+	if q.where[0].clause != "a" {
+		t.Error("a was moved")
+	}
+	if q.where[1].clause != "b" {
+		t.Error("b was moved")
+	}
+	if q.where[2].clause != "deleted_at = false" {
+		t.Error("trick deleted_at was not found")
+	}
+	if t.Failed() {
+		t.Logf("%#v\n", q.where)
+	}
+
+	q = &Query{}
+	AppendWhere(q, "a")
+	AppendWhere(q, "b")
+	AppendWhere(q, `"hello"."deleted_at" is null`)
+	AppendWhere(q, "deleted_at = false")
+	RemoveSoftDeleteWhere(q)
+
+	q.removeSoftDeleteWhere()
+
+	if len(q.where) != 3 {
+		t.Error("should have removed one entry:", len(q.where))
+	}
+
+	if q.where[0].clause != "a" {
+		t.Error("a was moved")
+	}
+	if q.where[1].clause != "b" {
+		t.Error("b was moved")
+	}
+	if q.where[2].clause != "deleted_at = false" {
+		t.Error("trick deleted at did not replace the deleted_at is null entry")
+	}
+	if t.Failed() {
+		t.Logf("%#v\n", q.where)
+	}
+}

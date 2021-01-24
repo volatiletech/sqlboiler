@@ -23,6 +23,8 @@ func BuildQuery(q *Query) (string, []interface{}) {
 	var buf *bytes.Buffer
 	var args []interface{}
 
+	q.removeSoftDeleteWhere()
+
 	switch {
 	case len(q.rawSQL.sql) != 0:
 		return q.rawSQL.sql, q.rawSQL.args

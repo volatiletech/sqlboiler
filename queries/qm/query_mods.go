@@ -575,3 +575,9 @@ func Comment(comment string) QueryMod {
 func Rels(r ...string) string {
 	return strings.Join(r, ".")
 }
+
+type removeDeletedQueryMod struct{}
+
+func (removeDeletedQueryMod) Apply(q *queries.Query) {
+	queries.RemoveSoftDeleteWhere(q)
+}

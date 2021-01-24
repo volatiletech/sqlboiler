@@ -124,6 +124,7 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{from: []string{"t"}, distinct: "id", count: true}, nil},
 		{&Query{from: []string{"t"}, distinct: "id, t.*", joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
 		{&Query{from: []string{"t"}, distinct: "id, t.*", count: true, joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
+		{&Query{from: []string{"t"}, where: []where{{clause: "deleted_at is null"}, {clause: "deleted_at = survives"}}, removeSoftDelete: true}, nil},
 	}
 
 	for i, test := range tests {

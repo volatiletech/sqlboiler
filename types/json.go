@@ -62,20 +62,16 @@ func (j JSON) Value() (driver.Value, error) {
 
 // Scan stores the src in *j.
 func (j *JSON) Scan(src interface{}) error {
-	var source []byte
-
-	switch src.(type) {
+	switch source := src.(type) {
 	case string:
-		source = []byte(src.(string))
+		*j = append((*j)[0:0], source...)
+		return nil
 	case []byte:
-		source = src.([]byte)
+		*j = append((*j)[0:0], source...)
+		return nil
 	default:
 		return errors.New("incompatible type for json")
 	}
-
-	*j = JSON(append((*j)[0:0], source...))
-
-	return nil
 }
 
 // Randomize for sqlboiler

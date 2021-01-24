@@ -17,6 +17,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Fix generation failure bug in delete template when using --no-context
   --add-global-variants and --add-soft-deletes
 - Fix cross-schema psql enum generation bug (thanks @csueiras)
+- Fix bug where column alias was not respected in Load names (thanks @jalan)
 
 ## [v4.4.0] - 2020-12-16
 

@@ -1342,8 +1342,8 @@ languages, err := pilot.Languages().All(ctx, db)
 
 If your relationship involves a join table SQLBoiler will figure it out for you transparently.
 
-It is important to note that you should use `Eager Loading` if you plan
-on loading large collections of rows, to avoid N+1 performance problems.
+At the moment, `Eager Loading` will execute separate queries for each row, so if there are large amount of rows,
+it is best to avoid eager loading and write raw SQL JOIN Query for performance reason.
 
 For example, take the following:
 

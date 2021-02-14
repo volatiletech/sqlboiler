@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -514,6 +515,14 @@ func Equal(a, b interface{}) bool {
 		return false
 	}
 
+	// If either is string and another is numeric, try to parse string as numeric
+	if as, ok := a.(string); ok && isNumeric(b) {
+		a = parseNumeric(as, reflect.TypeOf(b))
+	}
+	if bs, ok := b.(string); ok && isNumeric(a) {
+		b = parseNumeric(bs, reflect.TypeOf(a))
+	}
+
 	a = upgradeNumericTypes(a)
 	b = upgradeNumericTypes(b)
 
@@ -531,6 +540,56 @@ func Equal(a, b interface{}) bool {
 	}
 
 	return false
+}
+
+// isNumeric tests if i is a numeric value.
+func isNumeric(i interface{}) bool {
+	switch i.(type) {
+	case int,
+		int8,
+		int16,
+		int32,
+		int64,
+		uint,
+		uint8,
+		uint16,
+		uint32,
+		uint64,
+		float32,
+		float64:
+		return true
+	}
+	return false
+}
+
+// parseNumeric tries to parse s as t.
+// t must be a numeric type.
+func parseNumeric(s string, t reflect.Type) interface{} {
+	var (
+		res interface{}
+		err error
+	)
+	switch t.Kind() {
+	case reflect.Int,
+		reflect.Int8,
+		reflect.Int16,
+		reflect.Int32,
+		reflect.Int64:
+		res, err = strconv.ParseInt(s, 0, t.Bits())
+	case reflect.Uint,
+		reflect.Uint8,
+		reflect.Uint16,
+		reflect.Uint32,
+		reflect.Uint64:
+		res, err = strconv.ParseUint(s, 0, t.Bits())
+	case reflect.Float32,
+		reflect.Float64:
+		res, err = strconv.ParseFloat(s, t.Bits())
+	}
+	if err != nil {
+		panic(fmt.Sprintf("tries to parse %q as %s but got error: %+v", s, t.String(), err))
+	}
+	return res
 }
 
 // Assign assigns a value to another using reflection.

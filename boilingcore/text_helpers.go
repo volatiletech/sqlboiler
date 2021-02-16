@@ -151,3 +151,19 @@ func isPrimitive(typ string) bool {
 
 	return false
 }
+
+func isNullPrimitive(typ string) bool {
+	switch typ {
+	// Numeric
+	case "null.Int", "null.Int8", "null.Int16", "null.Int32", "null.Int64":
+		return true
+	case "null.Uint", "null.Uint8", "null.Uint16", "null.Uint32", "null.Uint64":
+		return true
+	case "null.Float32", "null.Float64":
+		return true
+	case "null.Byte", "null.String":
+		return true
+	}
+
+	return false
+}

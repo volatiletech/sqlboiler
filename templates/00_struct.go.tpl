@@ -55,7 +55,7 @@ func (w {{$name}}) LT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, 
 func (w {{$name}}) LTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
 func (w {{$name}}) GT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-{{if isPrimitive .Type -}}
+{{if or (isPrimitive .Type) (isNullPrimitive .Type) -}}
 func (w {{$name}}) IN(slice []{{.Type}}) qm.QueryMod {
   values := make([]interface{}, 0, len(slice))
   for _, value := range slice {

@@ -30,7 +30,7 @@ const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
 	loaderStructName       = "L"
-	sentinel               = uint64(255)
+	sentinel               = uint64(65535)
 )
 
 // BindP executes the query and inserts the
@@ -329,8 +329,8 @@ func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.V
 		var ignored interface{}
 		return reflect.ValueOf(&ignored)
 	}
-	for i := 0; i < 8; i++ {
-		v := (mapping >> uint(i*8)) & sentinel
+	for i := 0; i < 16; i++ {
+		v := (mapping >> uint(i*16)) & sentinel
 
 		if v == sentinel {
 			if addressOf && val.Kind() != reflect.Ptr {
@@ -379,11 +379,11 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 		}
 
 		if recurse {
-			makeStructMappingHelper(f.Type, tag, current|uint64(i)<<depth, depth+8, fieldMaps)
+			makeStructMappingHelper(f.Type, tag, current|uint64(i)<<depth, depth+16, fieldMaps)
 			continue
 		}
 
-		fieldMaps[tag] = current | (sentinel << (depth + 8)) | (uint64(i) << depth)
+		fieldMaps[tag] = current | (sentinel << (depth + 16)) | (uint64(i) << depth)
 	}
 }
 

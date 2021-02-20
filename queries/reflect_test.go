@@ -183,9 +183,9 @@ func TestBindPtrSlice(t *testing.T) {
 func testMakeMapping(byt ...byte) uint64 {
 	var x uint64
 	for i, b := range byt {
-		x |= uint64(b) << (uint(i) * 8)
+		x |= uint64(b) << (uint(i) * 16)
 	}
-	x |= uint64(255) << uint(len(byt)*8)
+	x |= uint64(65535) << uint(len(byt)*16)
 	return x
 }
 

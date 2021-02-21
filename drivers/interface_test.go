@@ -3,7 +3,7 @@ package drivers
 import (
 	"testing"
 
-	"github.com/razor-1/sqlboiler/v3/strmangle"
+	"github.com/volatiletech/strmangle"
 )
 
 type testMockDriver struct{}

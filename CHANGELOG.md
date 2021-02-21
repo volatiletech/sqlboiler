@@ -1,9 +1,139 @@
 # Changelog
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic
+Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v4.4.0] - 2020-12-16
+
+### Added
+
+- Add support for a qm.Comment query mod to add comments to queries that will
+  be given to the server for tracing purposes (thanks @Pilatuz)
+
+### Fixed
+
+- Fix compatibility with ANSI_QUOTES in mysql (thanks @alexsander-souza)
+
+## [v4.3.1] - 2020-11-16
+
+### Fixed
+
+- Fix case sensitive table name lookup in psql driver (thanks @severedsea)
+
+## [v4.3.0] - 2020-11-03
+
+### Added
+
+- Add comments to generated code from db for psql driver (thanks @vladvelici)
+- Add boil.None() to help with `DO NOTHING` upsert in mssql/mysql
+  (thanks @emmanual099)
+
+### Fixed
+
+- Fix qm.WhereNotIn/qm.AndNotIn/qm.OrNotIn generating the wrong types of
+  clauses (thanks @peterIdowns)
+- Fix an issue where order of columns can change during eager loading which
+  could cause errors (thanks @inoc603)
+- Fix longstanding naming conflict when not using suffixes for foreign keys
+  (thanks @yuzuy)
+- Fix auto-generated timestamp columns not respecting aliases
+  (thanks @while-loop)
+- Fix upsert bug using schema names in mysql/mssql (thanks @emmanuel099)
+- Fix blacklist/whitelist as environment variables being clobbered by incorrect
+  values (thanks @Amandeepsinghghai)
+
+## [v4.2.0] - 2020-07-03
+
+### Added
+
+- Add types.DecimalContext to control the context with which new decimals
+  are created. This is important if your application uses a special context
+  with more precision or requires the Go operating mode for example.
+- Add WhereNotIn/AndNotIn/OrNotIn query mods to help solve a bug
+- Add alias struct case type (uses the columns alias) (thanks @Darkclainer)
+- Add ability to type replace on tables (thanks @stephenafamo)
+
+### Changed
+
+- Change the way column cache keys are created and looked up, improving memory
+  performance of sqlboiler's caching layer (thanks @zikaeroh)
+
+### Fixed
+
+- Fix the psql driver to correctly ignore generated columns (thanks @chochihim)
+- Fix an issue with mariadb ssl-mode when running generated tests
+  (thanks @tooolbox)
+- Fix $1 placeholder in mysql DeleteAll() when using soft delete
+  (thanks @mfzy602)
+- Fix boilingcore tests to use current module via replace instead of the
+  published v4 module
+
+## [v4.1.2] - 2020-05-18
+
+### Fixed
+
+- Fix $1 placeholder in mysql Delete() when using soft delete
+
+## [v4.1.1] - 2020-05-05
+
+### Fixed
+
+- Fix mysql generation error made by previous commit
+
+## [v4.1.0] - 2020-05-04
+
+### Added
+
+- Add support for postgresql `oid` type (thanks @ImVexed)
+- Add a new `--relation-tag` option to control the tag name of the relationship
+  struct in generated structs - this can expose loaded relationships to APIs
+  (thanks @speatzle)
+
+### Fixed
+
+- Fix issue that caused horrible mysql generation performance (thanks @oderwat)
+
+## [v4.0.1] - 2020-05-02
+
+### Fixed
+
+- Fix missing soft-delete pieces for the P/G variants (thanks @psucodervn)
+
+## [v4.0.0] - 2020-04-26
+
+**NOTE:** Your database drivers must be rebuilt upon moving to this release
+
+### Added
+
+- Add a `--add-soft-deletes` that changes the templates to use soft deletion
+  (thanks @namco1992)
+- Add a `--no-back-referencing` flag to disable setting backreferences in
+  relationship helpers and eager loading. (thanks @namco1992)
+- Add not in helpers (thanks @RichardLindhout)
+
+### Changed
+
+- Changed dependency scheme to go modules
+- Changed randomize/strmangle to be external dependencies to avoid module
+  cycles with the null package.
+- Changed the way comparisons work for keying caches which dramatically speeds
+  up cache lookups (thanks @zikaeroh)
+
+### Fixed
+
+- Fix postgres tests failing on partioned tables (thanks @troyanov)
+- Fix enums with spaces being disallowed (thanks @razor-1)
+- Fix postgresql looking at other types of tables (eg. views) and reporting that
+  they do not have primary keys (thanks @chochihim)
+
+## [v3.7.1] - 2020-04-26
+
+### Fixed
+
+- Fix bug in --version command reporting old version
+
+## [v3.7.0] - 2020-03-31
 
 ### Added
 
@@ -11,6 +141,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   them during serialization (thanks @bogdanpradnj)
 - Add 'where in' helpers for all primitive Go types (thanks @nwidger)
 - Add a usage example of accessing the .R field (thanks @tooolbox)
+- Add a check that safely sidesteps empty WhereIn queries like in other ORMs.
+  (thanks @rekki)
+- Add LeftOuter/RightOuter/FullOuter join query mods. Keep in mind this has no
+  direct Bind() support as of yet so as with inner joins you -must- use custom
+  data structs. (thanks @tzachshabtay)
+- Add `distinct` query mod (thanks @tzachshabtay)
 
 ### Fixed
 

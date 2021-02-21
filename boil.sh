@@ -275,7 +275,7 @@ mssql_run() {
         --publish 1433:1433 \
         --volume "${PWD}/testdata/mssql_test_schema.sql:/testdata/mssql_test_schema.sql" \
         --name mssql \
-        microsoft/mssql-server-linux:2017-latest
+        mcr.microsoft.com/mssql/server:2019-latest
 }
 
 mssql_stop() {

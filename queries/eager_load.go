@@ -8,8 +8,8 @@ import (
 
 	"github.com/friendsofgo/errors"
 
-	"github.com/razor-1/sqlboiler/v3/boil"
-	"github.com/razor-1/sqlboiler/v3/strmangle"
+	"github.com/razor-1/sqlboiler/v4/boil"
+	"github.com/razor-1/sqlboiler/v4/strmangle"
 )
 
 const (

@@ -13,9 +13,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pkg/errors"
-
-	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/friendsofgo/errors"
+	"github.com/razor-1/sqlboiler/v4/importers"
 )
 
 var (

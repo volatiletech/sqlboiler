@@ -35,7 +35,7 @@ import (
 
 	"github.com/ericlagergren/decimal"
 	"github.com/lib/pq/oid"
-	"github.com/razor-1/sqlboiler/v3/randomize"
+	"github.com/razor-1/sqlboiler/v4/randomize"
 )
 
 type parameterStatus struct {

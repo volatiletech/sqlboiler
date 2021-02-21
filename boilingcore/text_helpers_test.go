@@ -3,7 +3,7 @@ package boilingcore
 import (
 	"testing"
 
-	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v4/drivers"
 )
 
 func TestTxtNameToOne(t *testing.T) {
@@ -38,6 +38,13 @@ func TestTxtNameToOne(t *testing.T) {
 		{"videos", "producer_id", false, "users", "id", true, "ProducerVideos", "Producer"},
 		{"videos", "user_id", true, "users", "id", true, "Video", "User"},
 		{"videos", "producer_id", true, "users", "id", true, "ProducerVideo", "Producer"},
+
+		{"videos", "user", false, "users", "id", true, "Videos", "VideoUser"},
+		{"videos", "created_by", false, "users", "id", true, "CreatedByVideos", "CreatedByUser"},
+		{"videos", "director", false, "users", "id", true, "DirectorVideos", "DirectorUser"},
+		{"videos", "user", true, "users", "id", true, "Video", "VideoUser"},
+		{"videos", "created_by", true, "users", "id", true, "CreatedByVideo", "CreatedByUser"},
+		{"videos", "director", true, "users", "id", true, "DirectorVideo", "DirectorUser"},
 
 		{"industries", "industry_id", false, "industries", "id", true, "Industries", "Industry"},
 		{"industries", "parent_id", false, "industries", "id", true, "ParentIndustries", "Parent"},

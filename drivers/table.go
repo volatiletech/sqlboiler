@@ -74,3 +74,12 @@ func (t Table) ForeignTables() map[string]bool {
 
 	return tableMap
 }
+
+func (t Table) CanSoftDelete() bool {
+	for _, column := range t.Columns {
+		if column.Name == "deleted_at" && column.Type == "null.Time" {
+			return true
+		}
+	}
+	return false
+}

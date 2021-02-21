@@ -13,8 +13,16 @@ drop domain if exists uint3;
 create domain uint3 as numeric check(value >= 0 and value < power(2::numeric, 3::numeric));
 
 create table users (
-	id serial primary key not null
+	id serial primary key not null,
+	email_validated  bool null default false,
+	primary_email    varchar(100) unique null
 );
+
+comment on column users.email_validated is 'Has the email address been tested?';
+comment on column users.primary_email is 'The user''s preferred email address.
+
+Use this to send emails to the user.';
+
 
 create table sponsors (
 	id serial primary key not null
@@ -22,7 +30,7 @@ create table sponsors (
 
 create table videos (
 	id serial primary key not null,
-	
+
 	user_id int not null,
 	sponsor_id int unique,
 

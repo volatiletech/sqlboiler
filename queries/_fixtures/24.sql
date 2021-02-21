@@ -1,0 +1,1 @@
+SELECT "cats".* FROM "cats" FULL JOIN dogs d on d.cat_id = cats.id;

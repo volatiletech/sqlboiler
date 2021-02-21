@@ -8,8 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/friendsofgo/errors"
-
-	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/razor-1/sqlboiler/v4/importers"
 )
 
 type binaryDriver string

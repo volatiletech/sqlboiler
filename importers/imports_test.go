@@ -175,7 +175,7 @@ func TestAddTypeImports(t *testing.T) {
 			`"fmt"`,
 		},
 		ThirdParty: List{
-			`"github.com/razor-1/sqlboiler/v3/boil"`,
+			`"github.com/razor-1/sqlboiler/v4/boil"`,
 		},
 	}
 
@@ -187,7 +187,7 @@ func TestAddTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/razor-1/null/v9"`,
-			`"github.com/razor-1/sqlboiler/v3/boil"`,
+			`"github.com/razor-1/sqlboiler/v4/boil"`,
 		},
 	}
 
@@ -218,7 +218,7 @@ func TestAddTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/razor-1/null/v9"`,
-			`"github.com/razor-1/sqlboiler/v3/boil"`,
+			`"github.com/razor-1/sqlboiler/v4/boil"`,
 		},
 	}
 
@@ -234,11 +234,11 @@ func TestMergeSet(t *testing.T) {
 
 	a := Set{
 		Standard:   List{"fmt"},
-		ThirdParty: List{"github.com/razor-1/sqlboiler", "github.com/razor-1/null/v9"},
+		ThirdParty: List{"github.com/razor-1/sqlboiler/v4", "github.com/razor-1/null/v9"},
 	}
 	b := Set{
 		Standard:   List{"os"},
-		ThirdParty: List{"github.com/razor-1/sqlboiler"},
+		ThirdParty: List{"github.com/razor-1/sqlboiler/v4"},
 	}
 
 	c := mergeSet(a, b)
@@ -246,8 +246,8 @@ func TestMergeSet(t *testing.T) {
 	if c.Standard[0] != "fmt" && c.Standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.Standard)
 	}
-	if c.ThirdParty[0] != "github.com/razor-1/null/v9" && c.ThirdParty[1] != "github.com/razor-1/sqlboiler" {
-		t.Errorf("Wanted: github.com/razor-1/sqlboiler, github.com/volatiletech/null got: %#v", c.ThirdParty)
+	if c.ThirdParty[0] != "github.com/razor-1/null/v9" && c.ThirdParty[1] != "github.com/razor-1/sqlboiler/v4" {
+		t.Errorf("Wanted: github.com/razor-1/sqlboiler/v4, github.com/volatiletech/null got: %#v", c.ThirdParty)
 	}
 }
 

@@ -12,10 +12,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/razor-1/sqlboiler/v4/importers"
 
-	"github.com/razor-1/sqlboiler/v3/drivers"
-	_ "github.com/razor-1/sqlboiler/v3/drivers/mocks"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	_ "github.com/razor-1/sqlboiler/v4/drivers/mocks"
 )
 
 var state *State
@@ -65,7 +65,33 @@ func TestNew(t *testing.T) {
 
 	buf := &bytes.Buffer{}
 
-	cmd := exec.Command("go", "test", "-c")
+	cmd := exec.Command("go", "env", "GOMOD")
+	goModFilePath, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("go env GOMOD cmd execution failed: %s", err)
+	}
+
+	cmd = exec.Command("go", "mod", "init", "github.com/volatiletech/sqlboiler-test")
+	cmd.Dir = state.Config.OutFolder
+	cmd.Stderr = buf
+
+	if err = cmd.Run(); err != nil {
+		t.Errorf("go mod init cmd execution failed: %s", err)
+		outputCompileErrors(buf, state.Config.OutFolder)
+		fmt.Println()
+	}
+
+	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/volatiletech/sqlboiler/v4=%s", filepath.Dir(string(goModFilePath))))
+	cmd.Dir = state.Config.OutFolder
+	cmd.Stderr = buf
+
+	if err = cmd.Run(); err != nil {
+		t.Errorf("go mod init cmd execution failed: %s", err)
+		outputCompileErrors(buf, state.Config.OutFolder)
+		fmt.Println()
+	}
+
+	cmd = exec.Command("go", "test", "-c")
 	cmd.Dir = state.Config.OutFolder
 	cmd.Stderr = buf
 
@@ -182,6 +208,18 @@ func TestProcessTypeReplacements(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "named_table",
+			Columns: []drivers.Column{
+				{
+					Name:     "id",
+					Type:     "int",
+					DBType:   "serial",
+					Default:  "some db nonsense",
+					Nullable: false,
+				},
+			},
+		},
 	}
 
 	s.Config.TypeReplaces = []TypeReplace{
@@ -194,6 +232,18 @@ func TestProcessTypeReplacements(t *testing.T) {
 			},
 			Imports: importers.Set{
 				ThirdParty: []string{`"rock.com/excellent"`},
+			},
+		},
+		{
+			Tables: []string{"named_table"},
+			Match: drivers.Column{
+				DBType: "serial",
+			},
+			Replace: drivers.Column{
+				Type: "excellent.NamedType",
+			},
+			Imports: importers.Set{
+				ThirdParty: []string{`"rock.com/excellent-name"`},
 			},
 		},
 		{
@@ -243,6 +293,13 @@ func TestProcessTypeReplacements(t *testing.T) {
 		t.Error("type was wrong:", typ)
 	}
 	if i := s.Config.Imports.BasedOnType["big.Int"].Standard[0]; i != `"math/big"` {
+		t.Error("imports were not adjusted")
+	}
+
+	if typ := s.Tables[1].Columns[0].Type; typ != "excellent.NamedType" {
+		t.Error("type was wrong:", typ)
+	}
+	if i := s.Config.Imports.BasedOnType["excellent.NamedType"].ThirdParty[0]; i != `"rock.com/excellent-name"` {
 		t.Error("imports were not adjusted")
 	}
 }

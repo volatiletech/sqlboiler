@@ -6,19 +6,23 @@ type {{$alias.UpSingular}} struct {
 	{{- range $column := .Table.Columns -}}
 	{{- $colAlias := $alias.Column $column.Name -}}
 	{{- $orig_col_name := $column.Name -}}
+	{{- range $column.Comment | splitLines -}} // {{ . }}
+	{{end -}}
 	{{if ignore $orig_tbl_name $orig_col_name $.TagIgnore -}}
 	{{$colAlias}} {{$column.Type}} `{{generateIgnoreTags $.Tags}}boil:"{{$column.Name}}" json:"-" toml:"-" yaml:"-"`
 	{{else if eq $.StructTagCasing "title" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | titleCase}}" yaml:"{{$column.Name | titleCase}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{else if eq $.StructTagCasing "camel" -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name | camelCase}}" yaml:"{{$column.Name | camelCase}}{{if $column.Nullable}},omitempty{{end}}"`
+	{{else if eq $.StructTagCasing "alias" -}}
+	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $colAlias}}boil:"{{$column.Name}}" json:"{{$colAlias}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$colAlias}}" yaml:"{{$colAlias}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{else -}}
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{end -}}
 	{{end -}}
 	{{- if .Table.IsJoinTable -}}
 	{{- else}}
-	R *{{$alias.DownSingular}}R `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *{{$alias.DownSingular}}R `{{generateTags $.Tags $.RelationTag}}boil:"{{$.RelationTag}}" json:"{{$.RelationTag}}" toml:"{{$.RelationTag}}" yaml:"{{$.RelationTag}}"`
 	L {{$alias.DownSingular}}L `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
 	{{end -}}
 }
@@ -84,6 +88,13 @@ func (w {{$name}}) IN(slice []{{.Type}}) qm.QueryMod {
   }
   return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
+func (w {{$name}}) NIN(slice []{{.Type}}) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+	  values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+  }
 {{end -}}
 	{{- end -}}
 {{- end}}
@@ -142,19 +153,19 @@ type {{$alias.DownSingular}}R struct {
 	{{range .Table.FKeys -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
 	{{- $relAlias := $alias.Relationship .Name -}}
-	{{$relAlias.Foreign}} *{{$ftable.UpSingular}}
+	{{$relAlias.Foreign}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias.Foreign}}boil:"{{$relAlias.Foreign}}" json:"{{$relAlias.Foreign}}" toml:"{{$relAlias.Foreign}}" yaml:"{{$relAlias.Foreign}}"`
 	{{end -}}
 
 	{{range .Table.ToOneRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
 	{{- $relAlias := $ftable.Relationship .Name -}}
-	{{$relAlias.Local}} *{{$ftable.UpSingular}}
+	{{$relAlias.Local}} *{{$ftable.UpSingular}} `{{generateTags $.Tags $relAlias.Local}}boil:"{{$relAlias.Local}}" json:"{{$relAlias.Local}}" toml:"{{$relAlias.Local}}" yaml:"{{$relAlias.Local}}"`
 	{{end -}}
 
 	{{range .Table.ToManyRelationships -}}
 	{{- $ftable := $.Aliases.Table .ForeignTable -}}
 	{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
-	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}}
+	{{$relAlias.Local}} {{printf "%sSlice" $ftable.UpSingular}} `{{generateTags $.Tags $relAlias.Local}}boil:"{{$relAlias.Local}}" json:"{{$relAlias.Local}}" toml:"{{$relAlias.Local}}" yaml:"{{$relAlias.Local}}"`
 	{{end -}}{{/* range tomany */}}
 }
 

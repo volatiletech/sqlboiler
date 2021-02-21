@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v4/drivers"
 )
 
 var writeGoldenFiles = flag.Bool(
@@ -100,6 +100,18 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{from: []string{"cats c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{from: []string{"cats as c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats"}, joins: []join{{JoinOuterLeft, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats c"}, joins: []join{{JoinOuterLeft, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c"}, joins: []join{{JoinOuterLeft, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinOuterLeft, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats"}, joins: []join{{JoinOuterRight, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats c"}, joins: []join{{JoinOuterRight, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c"}, joins: []join{{JoinOuterRight, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinOuterRight, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats"}, joins: []join{{JoinOuterFull, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats c"}, joins: []join{{JoinOuterFull, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c"}, joins: []join{{JoinOuterFull, "dogs d on d.cat_id = cats.id", nil}}}, nil},
+		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinOuterFull, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{
 			from: []string{"t"},
 			withs: []argClause{
@@ -108,6 +120,10 @@ func TestBuildQuery(t *testing.T) {
 			},
 		}, []interface{}{3, 7},
 		},
+		{&Query{from: []string{"t"}, distinct: "id"}, nil},
+		{&Query{from: []string{"t"}, distinct: "id", count: true}, nil},
+		{&Query{from: []string{"t"}, distinct: "id, t.*", joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
+		{&Query{from: []string{"t"}, distinct: "id, t.*", count: true, joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
 	}
 
 	for i, test := range tests {
@@ -312,6 +328,38 @@ func TestWhereClause(t *testing.T) {
 	}
 }
 
+func TestNotInClause(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		q      Query
+		expect string
+		args   []interface{}
+	}{
+		{
+			q: Query{
+				where: []where{{kind: whereKindNotIn, clause: "a not in ?", args: []interface{}{}, orSeparator: true}},
+			},
+			expect: ` WHERE (1=1)`,
+		},
+		{
+			q: Query{
+				where: []where{{kind: whereKindNotIn, clause: "a not in ?", args: []interface{}{1}, orSeparator: true}},
+			},
+			expect: ` WHERE ("a" NOT IN ($1))`,
+			args:   []interface{}{1},
+		},
+	}
+	for i, test := range tests {
+		test.q.dialect = &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true}
+		result, args := whereClause(&test.q, 1)
+		if result != test.expect {
+			t.Errorf("%d) Mismatch between expect and result:\n%s\n%s\n", i, test.expect, result)
+		}
+		if !reflect.DeepEqual(args, test.args) {
+			t.Errorf("%d) Mismatch between expected args:\n%#v\n%#v\n", i, test.args, args)
+		}
+	}
+}
 func TestInClause(t *testing.T) {
 	t.Parallel()
 
@@ -324,8 +372,19 @@ func TestInClause(t *testing.T) {
 			q: Query{
 				where: []where{{kind: whereKindIn, clause: "a in ?", args: []interface{}{}, orSeparator: true}},
 			},
-			expect: ` WHERE ("a" IN ())`,
+			expect: ` WHERE (1=0)`,
 		},
+		{
+			q: Query{
+				where: []where{
+					where{kind: whereKindIn, clause: "a in ?", args: []interface{}{}, orSeparator: true},
+					where{kind: whereKindIn, clause: "a in ?", args: []interface{}{1}, orSeparator: true},
+				},
+			},
+			expect: ` WHERE (1=0) OR ("a" IN ($1))`,
+			args:   []interface{}{1},
+		},
+
 		{
 			q: Query{
 				where: []where{{kind: whereKindIn, clause: "a in ?", args: []interface{}{1}, orSeparator: true}},
@@ -568,5 +627,38 @@ func TestWriteAsStatements(t *testing.T) {
 		if expect[i] != got {
 			t.Errorf(`%d) want: %s, got: %s`, i, expect[i], got)
 		}
+	}
+}
+
+func TestWriteComment(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+	query := Query{
+		dialect: &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true},
+	}
+
+	// empty comment
+	buf.Reset()
+	query.comment = ""
+	writeComment(&query, &buf)
+	if got := buf.String(); got != "" {
+		t.Errorf(`bad empty comment, got: %s`, got)
+	}
+
+	// one line comment
+	buf.Reset()
+	query.comment = "comment"
+	writeComment(&query, &buf)
+	if got := buf.String(); got != "-- comment\n" {
+		t.Errorf(`bad one line comment, got: %s`, got)
+	}
+
+	// two lines comment
+	buf.Reset()
+	query.comment = "first\nsecond"
+	writeComment(&query, &buf)
+	if got := buf.String(); got != "-- first\n-- second\n" {
+		t.Errorf(`bad two lines comment, got: %s`, got)
 	}
 }

@@ -14,6 +14,7 @@ type Aliases struct {
 
 // TableAlias defines the spellings for a table name in Go
 type TableAlias struct {
+	NameSingular string `toml:"name_singular,omitempty" json:"name_singular,omitempty"`
 	UpPlural     string `toml:"up_plural,omitempty" json:"up_plural,omitempty"`
 	UpSingular   string `toml:"up_singular,omitempty" json:"up_singular,omitempty"`
 	DownPlural   string `toml:"down_plural,omitempty" json:"down_plural,omitempty"`
@@ -87,7 +88,12 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 				continue
 			}
 
-			local, foreign := txtNameToOne(k)
+			var aliasNameSingular string
+			if t, ok := a.Tables[k.ForeignTable]; ok {
+				aliasNameSingular = t.NameSingular
+			}
+
+			local, foreign := txtNameToOne(k, aliasNameSingular)
 			if len(r.Local) == 0 {
 				r.Local = local
 			}

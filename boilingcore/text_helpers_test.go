@@ -16,42 +16,44 @@ func TestTxtNameToOne(t *testing.T) {
 		ForeignTable        string
 		ForeignColumn       string
 		ForeignColumnUnique bool
+		AliasTableName      string
 
 		LocalFn   string
 		ForeignFn string
 	}{
-		{"jets", "airport_id", false, "airports", "id", true, "Jets", "Airport"},
-		{"jets", "airport_id", true, "airports", "id", true, "Jet", "Airport"},
+		{"jets", "airport_id", false, "airports", "id", true, "", "Jets", "Airport"},
+		{"jets", "airport_id", true, "airports", "id", true, "", "Jet", "Airport"},
 
-		{"jets", "holiday_id", false, "airports", "id", true, "HolidayJets", "Holiday"},
-		{"jets", "holiday_id", true, "airports", "id", true, "HolidayJet", "Holiday"},
+		{"jets", "holiday_id", false, "airports", "id", true, "", "HolidayJets", "Holiday"},
+		{"jets", "holiday_id", true, "airports", "id", true, "", "HolidayJet", "Holiday"},
 
-		{"jets", "holiday_airport_id", false, "airports", "id", true, "HolidayAirportJets", "HolidayAirport"},
-		{"jets", "holiday_airport_id", true, "airports", "id", true, "HolidayAirportJet", "HolidayAirport"},
+		{"jets", "holiday_airport_id", false, "airports", "id", true, "", "HolidayAirportJets", "HolidayAirport"},
+		{"jets", "holiday_airport_id", true, "airports", "id", true, "", "HolidayAirportJet", "HolidayAirport"},
 
-		{"jets", "jet_id", false, "jets", "id", true, "Jets", "Jet"},
-		{"jets", "jet_id", true, "jets", "id", true, "Jet", "Jet"},
-		{"jets", "plane_id", false, "jets", "id", true, "PlaneJets", "Plane"},
-		{"jets", "plane_id", true, "jets", "id", true, "PlaneJet", "Plane"},
+		{"jets", "jet_id", false, "jets", "id", true, "", "Jets", "Jet"},
+		{"jets", "jet_id", true, "jets", "id", true, "", "Jet", "Jet"},
+		{"jets", "plane_id", false, "jets", "id", true, "", "PlaneJets", "Plane"},
+		{"jets", "plane_id", true, "jets", "id", true, "", "PlaneJet", "Plane"},
 
-		{"videos", "user_id", false, "users", "id", true, "Videos", "User"},
-		{"videos", "producer_id", false, "users", "id", true, "ProducerVideos", "Producer"},
-		{"videos", "user_id", true, "users", "id", true, "Video", "User"},
-		{"videos", "producer_id", true, "users", "id", true, "ProducerVideo", "Producer"},
+		{"videos", "user_id", false, "users", "id", true, "", "Videos", "User"},
+		{"videos", "producer_id", false, "users", "id", true, "", "ProducerVideos", "Producer"},
+		{"videos", "user_id", true, "users", "id", true, "", "Video", "User"},
+		{"videos", "producer_id", true, "users", "id", true, "", "ProducerVideo", "Producer"},
 
-		{"videos", "user", false, "users", "id", true, "Videos", "VideoUser"},
-		{"videos", "created_by", false, "users", "id", true, "CreatedByVideos", "CreatedByUser"},
-		{"videos", "director", false, "users", "id", true, "DirectorVideos", "DirectorUser"},
-		{"videos", "user", true, "users", "id", true, "Video", "VideoUser"},
-		{"videos", "created_by", true, "users", "id", true, "CreatedByVideo", "CreatedByUser"},
-		{"videos", "director", true, "users", "id", true, "DirectorVideo", "DirectorUser"},
+		{"videos", "user", false, "users", "id", true, "", "Videos", "VideoUser"},
+		{"videos", "created_by", false, "users", "id", true, "", "CreatedByVideos", "CreatedByUser"},
+		{"videos", "director", false, "users", "id", true, "", "DirectorVideos", "DirectorUser"},
+		{"videos", "user", true, "users", "id", true, "", "Video", "VideoUser"},
+		{"videos", "created_by", true, "users", "id", true, "", "CreatedByVideo", "CreatedByUser"},
+		{"videos", "director", true, "users", "id", true, "", "DirectorVideo", "DirectorUser"},
 
-		{"industries", "industry_id", false, "industries", "id", true, "Industries", "Industry"},
-		{"industries", "parent_id", false, "industries", "id", true, "ParentIndustries", "Parent"},
-		{"industries", "industry_id", true, "industries", "id", true, "Industry", "Industry"},
-		{"industries", "parent_id", true, "industries", "id", true, "ParentIndustry", "Parent"},
+		{"industries", "industry_id", false, "industries", "id", true, "", "Industries", "Industry"},
+		{"industries", "parent_id", false, "industries", "id", true, "", "ParentIndustries", "Parent"},
+		{"industries", "industry_id", true, "industries", "id", true, "", "Industry", "Industry"},
+		{"industries", "parent_id", true, "industries", "id", true, "", "ParentIndustry", "Parent"},
 
-		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "ResultRaceResultScratchings", "Result"},
+		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "", "ResultRaceResultScratchings", "Result"},
+		{"race_result_scratchings", "results_id", false, "race_results", "id", true, "result", "RaceResultScratchings", "Result"},
 	}
 
 	for i, test := range tests {
@@ -60,7 +62,7 @@ func TestTxtNameToOne(t *testing.T) {
 			ForeignTable: test.ForeignTable, ForeignColumn: test.ForeignColumn, ForeignColumnUnique: test.ForeignColumnUnique,
 		}
 
-		local, foreign := txtNameToOne(fk)
+		local, foreign := txtNameToOne(fk, test.AliasTableName)
 		if local != test.LocalFn {
 			t.Error(i, "local wrong:", local, "want:", test.LocalFn)
 		}

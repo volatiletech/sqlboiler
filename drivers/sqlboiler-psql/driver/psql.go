@@ -620,6 +620,11 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
 			},
 		},
+		"psql_any": {
+			ThirdParty: importers.List{
+				`"github.com/lib/pq"`,
+			},
+		},
 	}
 	col.TestSingleton = importers.Map{
 		"psql_suites_test": {

@@ -247,7 +247,7 @@ func TestMergeSet(t *testing.T) {
 		t.Errorf("Wanted: fmt, os got: %#v", c.Standard)
 	}
 	if c.ThirdParty[0] != "github.com/razor-1/null/v9" && c.ThirdParty[1] != "github.com/razor-1/sqlboiler/v4" {
-		t.Errorf("Wanted: github.com/razor-1/sqlboiler/v4, github.com/volatiletech/null got: %#v", c.ThirdParty)
+		t.Errorf("Wanted: github.com/razor-1/sqlboiler/v4, github.com/razor-1/null/v9 got: %#v", c.ThirdParty)
 	}
 }
 

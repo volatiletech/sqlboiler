@@ -122,11 +122,6 @@ type innerJoinQueryMod struct {
 	args   []interface{}
 }
 
-type leftOuterJoinQueryMod struct {
-	clause string
-	args   []interface{}
-}
-
 // Apply implements QueryMod.Apply.
 func (qm innerJoinQueryMod) Apply(q *queries.Query) {
 	queries.AppendInnerJoin(q, qm.clause, qm.args...)

@@ -1,7 +1,7 @@
 package boil
 
 import (
-	"github.com/razor-1/sqlboiler/v4/strmangle"
+	"github.com/volatiletech/strmangle"
 )
 
 // Columns kinds

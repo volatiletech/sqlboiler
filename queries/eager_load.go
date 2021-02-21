@@ -9,7 +9,7 @@ import (
 	"github.com/friendsofgo/errors"
 
 	"github.com/razor-1/sqlboiler/v4/boil"
-	"github.com/razor-1/sqlboiler/v4/strmangle"
+	"github.com/volatiletech/strmangle"
 )
 
 const (

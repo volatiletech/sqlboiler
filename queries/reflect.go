@@ -393,41 +393,43 @@ func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKi
 	if err != nil {
 		return nil, err
 	}
-/*
-	var strMapping map[string]uint64
-	var sok bool
-	var mapping []uint64
-	var ok bool
+	/*
+		var strMapping map[string]uint64
+		var sok bool
+		var mapping []uint64
+		var ok bool
 
-	typKey := makeTypeKey(structType)
-	colsKey := makeColsKey(structType, cols)
+		typKey := makeTypeKey(structType)
+		colsKey := makeColsKey(structType, cols)
+
+
+
+		mut.RLock()
+		mapping, ok = bindingMaps[colsKey]
+		if !ok {
+			if strMapping, sok = structMaps[typKey]; !sok {
+				strMapping = MakeStructMapping(structType)
+			}
+		}
+		mut.RUnlock()
+
+		if !ok {
+			mapping, err = BindMapping(structType, strMapping, cols)
+			if err != nil {
+				return nil, err
+			}
+
+			mut.Lock()
+			if !sok {
+				structMaps[typKey] = strMapping
+			}
+			bindingMaps[colsKey] = mapping
+			mut.Unlock()
+		}
+	*/
 
 	//see if this has the "nulljoin" option on the tag
 	nullableIndexes := getNullableColumnIndexes(cols, structType)
-
-	mut.RLock()
-	mapping, ok = bindingMaps[colsKey]
-	if !ok {
-		if strMapping, sok = structMaps[typKey]; !sok {
-			strMapping = MakeStructMapping(structType)
-		}
-	}
-	mut.RUnlock()
-
-	if !ok {
-		mapping, err = BindMapping(structType, strMapping, cols)
-		if err != nil {
-			return nil, err
-		}
-
-		mut.Lock()
-		if !sok {
-			structMaps[typKey] = strMapping
-		}
-		bindingMaps[colsKey] = mapping
-		mut.Unlock()
-	}
- */
 
 	foundOne := false
 	nullTables := make([][]string, 0)

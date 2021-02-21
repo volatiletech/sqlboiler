@@ -92,6 +92,7 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 			if t, ok := a.Tables[k.ForeignTable]; ok {
 				aliasNameSingular = t.NameSingular
 			}
+
 			local, foreign := txtNameToOne(k, aliasNameSingular)
 			if len(r.Local) == 0 {
 				r.Local = local

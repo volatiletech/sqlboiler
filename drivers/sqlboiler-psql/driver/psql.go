@@ -10,11 +10,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/friendsofgo/errors"
+	"github.com/razor-1/sqlboiler/v4/importers"
 
-	"github.com/razor-1/sqlboiler/v3/drivers"
-	"github.com/razor-1/sqlboiler/v3/importers"
-	"github.com/razor-1/sqlboiler/v3/strmangle"
+	"github.com/friendsofgo/errors"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	"github.com/volatiletech/strmangle"
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
@@ -140,7 +140,7 @@ func PSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode str
 func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1`)
+	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1 and table_type = 'BASE TABLE'`)
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
@@ -207,6 +207,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		c.domain_name,
 		c.column_default,
 
+		COALESCE(col_description(('"'||c.table_schema||'"."'||c.table_name||'"')::regclass::oid, ordinal_position), '') as column_comment,
+
 		c.is_nullable = 'YES' as is_nullable,
 		(case
 			when (select
@@ -262,7 +264,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 				end
 			) as column_type
 		) ct
-		where c.table_name = $2 and c.table_schema = $1`
+		where c.table_name = $2 and c.table_schema = $1 and c.is_generated = 'NEVER'`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -292,10 +294,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colFullType, udtName string
+		var colName, colType, colFullType, udtName, comment string
 		var defaultValue, arrayType, domainName *string
 		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &nullable, &identity, &unique); err != nil {
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -306,6 +308,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			ArrType:    arrayType,
 			DomainName: domainName,
 			UDTName:    udtName,
+			Comment:    comment,
 			Nullable:   nullable,
 			Unique:     unique,
 		}
@@ -430,6 +433,8 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.Int64"
 		case "integer", "serial":
 			c.Type = "null.Int"
+		case "oid":
+			c.Type = "null.Uint32"
 		case "smallint", "smallserial":
 			c.Type = "null.Int16"
 		case "decimal", "numeric":
@@ -489,6 +494,8 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "int64"
 		case "integer", "serial":
 			c.Type = "int"
+		case "oid":
+			c.Type = "uint32"
 		case "smallint", "smallserial":
 			c.Type = "int16"
 		case "decimal", "numeric":
@@ -558,7 +565,7 @@ func getArrayType(c drivers.Column) (string, string) {
 	// which is not guaranteed to be correct.
 	if c.ArrType != nil {
 		switch *c.ArrType {
-		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial":
+		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
 			return "types.Int64Array", *c.ArrType
 		case "bytea":
 			return "types.BytesArray", *c.ArrType
@@ -609,8 +616,8 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/razor-1/sqlboiler/v3/strmangle"`,
-				`"github.com/razor-1/sqlboiler/v3/drivers"`,
+				`"github.com/volatiletech/strmangle"`,
+				`"github.com/razor-1/sqlboiler/v4/drivers"`,
 			},
 		},
 	}
@@ -636,8 +643,8 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-psql/driver"`,
-				`"github.com/razor-1/sqlboiler/v3/randomize"`,
+				`"github.com/razor-1/sqlboiler/v4/drivers/sqlboiler-psql/driver"`,
+				`"github.com/volatiletech/randomize"`,
 				`_ "github.com/lib/pq"`,
 			},
 		},
@@ -698,76 +705,76 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 			Standard: importers.List{`"time"`},
 		},
 		"types.JSON": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.Decimal": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.BytesArray": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.Int64Array": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.Float64Array": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.BoolArray": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.StringArray": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.DecimalArray": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"types.HStore": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"pgeo.Point": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.Line": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.Lseg": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.Box": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.Path": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.Polygon": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"types.NullDecimal": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"pgeo.Circle": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullPoint": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullLine": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullLseg": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullBox": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullPath": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullPolygon": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 		"pgeo.NullCircle": {
-			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v3/types/pgeo"`},
+			ThirdParty: importers.List{`"github.com/razor-1/sqlboiler/v4/types/pgeo"`},
 		},
 	}
 

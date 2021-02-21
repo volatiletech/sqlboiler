@@ -13,9 +13,8 @@ import (
 	"unicode"
 
 	"github.com/friendsofgo/errors"
-
-	"github.com/razor-1/sqlboiler/v3/boil"
-	"github.com/razor-1/sqlboiler/v3/strmangle"
+	"github.com/razor-1/sqlboiler/v4/boil"
+	"github.com/volatiletech/strmangle"
 )
 
 var (
@@ -390,39 +389,47 @@ func bind(rows *sql.Rows, obj interface{}, structType reflect.Type, bkind bindKi
 		ptrSlice = reflect.Indirect(reflect.ValueOf(obj))
 	}
 
-	var strMapping map[string]uint64
-	var sok bool
-	var mapping []uint64
-	var ok bool
+	mapping, err := getMappingCache(structType).mapping(cols)
+	if err != nil {
+		return nil, err
+	}
+	/*
+		var strMapping map[string]uint64
+		var sok bool
+		var mapping []uint64
+		var ok bool
 
-	typKey := makeTypeKey(structType)
-	colsKey := makeColsKey(structType, cols)
+		typKey := makeTypeKey(structType)
+		colsKey := makeColsKey(structType, cols)
+
+
+
+		mut.RLock()
+		mapping, ok = bindingMaps[colsKey]
+		if !ok {
+			if strMapping, sok = structMaps[typKey]; !sok {
+				strMapping = MakeStructMapping(structType)
+			}
+		}
+		mut.RUnlock()
+
+		if !ok {
+			mapping, err = BindMapping(structType, strMapping, cols)
+			if err != nil {
+				return nil, err
+			}
+
+			mut.Lock()
+			if !sok {
+				structMaps[typKey] = strMapping
+			}
+			bindingMaps[colsKey] = mapping
+			mut.Unlock()
+		}
+	*/
 
 	//see if this has the "nulljoin" option on the tag
 	nullableIndexes := getNullableColumnIndexes(cols, structType)
-
-	mut.RLock()
-	mapping, ok = bindingMaps[colsKey]
-	if !ok {
-		if strMapping, sok = structMaps[typKey]; !sok {
-			strMapping = MakeStructMapping(structType)
-		}
-	}
-	mut.RUnlock()
-
-	if !ok {
-		mapping, err = BindMapping(structType, strMapping, cols)
-		if err != nil {
-			return nil, err
-		}
-
-		mut.Lock()
-		if !sok {
-			structMaps[typKey] = strMapping
-		}
-		bindingMaps[colsKey] = mapping
-		mut.Unlock()
-	}
 
 	foundOne := false
 	nullTables := make([][]string, 0)
@@ -683,6 +690,71 @@ func getBoilTag(field reflect.StructField) (name string, recurse bool) {
 
 	nameFragment := tag[:ind]
 	return nameFragment, true
+}
+
+var (
+	mappingCachesMu sync.Mutex
+	mappingCaches   = make(map[reflect.Type]*mappingCache)
+)
+
+func getMappingCache(typ reflect.Type) *mappingCache {
+	mappingCachesMu.Lock()
+	defer mappingCachesMu.Unlock()
+
+	cache := mappingCaches[typ]
+	if cache != nil {
+		return cache
+	}
+
+	cache = newMappingCache(typ)
+	mappingCaches[typ] = cache
+
+	return cache
+}
+
+type mappingCache struct {
+	typ reflect.Type
+
+	mu          sync.Mutex
+	structMap   map[string]uint64
+	colMappings map[string][]uint64
+}
+
+func newMappingCache(typ reflect.Type) *mappingCache {
+	return &mappingCache{
+		typ:         typ,
+		structMap:   MakeStructMapping(typ),
+		colMappings: make(map[string][]uint64),
+	}
+}
+
+func (b *mappingCache) mapping(cols []string) ([]uint64, error) {
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
+
+	for _, s := range cols {
+		buf.WriteString(s)
+		buf.WriteByte(0)
+	}
+
+	key := buf.Bytes()
+
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	mapping := b.colMappings[string(key)]
+	if mapping != nil {
+		return mapping, nil
+	}
+
+	mapping, err := BindMapping(b.typ, b.structMap, cols)
+	if err != nil {
+		return nil, err
+	}
+
+	b.colMappings[string(key)] = mapping
+
+	return mapping, nil
 }
 
 func makeTypeKey(typ reflect.Type) string {

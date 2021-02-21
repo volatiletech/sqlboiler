@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/razor-1/sqlboiler/v3/boil"
+	"github.com/razor-1/sqlboiler/v4/boil"
 )
 
 var testEagerCounters struct {

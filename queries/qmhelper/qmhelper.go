@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/razor-1/sqlboiler/v3/queries"
+	"github.com/razor-1/sqlboiler/v4/queries"
 )
 
 // Nullable object

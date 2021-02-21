@@ -1,1 +1,1 @@
-WITH cte_0 AS (SELECT * FROM other_t0), cte_1 AS (SELECT * FROM other_t1 WHERE thing=$1 AND stuff=$2) SELECT * FROM "t";
+SELECT "cats".* FROM "cats" LEFT JOIN dogs d on d.cat_id = cats.id;

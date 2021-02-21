@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/razor-1/sqlboiler/v3/boil"
-	"github.com/razor-1/sqlboiler/v3/drivers"
+	"github.com/razor-1/sqlboiler/v4/boil"
+	"github.com/razor-1/sqlboiler/v4/drivers"
 )
 
 // joinKind is the type of join
@@ -18,6 +18,7 @@ const (
 	JoinOuterLeft
 	JoinOuterRight
 	JoinNatural
+	JoinOuterFull
 )
 
 // Query holds the state for the built up query
@@ -43,6 +44,8 @@ type Query struct {
 	limit      int
 	offset     int
 	forlock    string
+	distinct   string
+	comment    string
 }
 
 // Applicator exists only to allow
@@ -59,6 +62,7 @@ const (
 	whereKindLeftParen
 	whereKindRightParen
 	whereKindIn
+	whereKindNotIn
 )
 
 type where struct {
@@ -242,6 +246,11 @@ func GetSelect(q *Query) []string {
 	return q.selectCols
 }
 
+// SetDistinct on the query.
+func SetDistinct(q *Query, distinct string) {
+	q.distinct = distinct
+}
+
 // SetCount on the query.
 func SetCount(q *Query) {
 	q.count = true
@@ -265,6 +274,11 @@ func SetOffset(q *Query, offset int) {
 // SetFor on the query.
 func SetFor(q *Query, clause string) {
 	q.forlock = clause
+}
+
+// SetComment on the query.
+func SetComment(q *Query, comment string) {
+	q.comment = comment
 }
 
 // SetUpdate on the query.
@@ -292,9 +306,19 @@ func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
 }
 
-// AppendInnerJoin on the query.
-func AppendLeftJoin(q *Query, clause string, args ...interface{}) {
+// AppendLeftOuterJoin on the query.
+func AppendLeftOuterJoin(q *Query, clause string, args ...interface{}) {
 	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterLeft, args: args})
+}
+
+// AppendRightOuterJoin on the query.
+func AppendRightOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterRight, args: args})
+}
+
+// AppendFullOuterJoin on the query.
+func AppendFullOuterJoin(q *Query, clause string, args ...interface{}) {
+	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterFull, args: args})
 }
 
 // AppendHaving on the query.
@@ -310,6 +334,11 @@ func AppendWhere(q *Query, clause string, args ...interface{}) {
 // AppendIn on the query.
 func AppendIn(q *Query, clause string, args ...interface{}) {
 	q.where = append(q.where, where{kind: whereKindIn, clause: clause, args: args})
+}
+
+// AppendNotIn on the query.
+func AppendNotIn(q *Query, clause string, args ...interface{}) {
+	q.where = append(q.where, where{kind: whereKindNotIn, clause: clause, args: args})
 }
 
 // SetLastWhereAsOr sets the or separator for the tail "WHERE" in the slice

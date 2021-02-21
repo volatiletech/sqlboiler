@@ -1,7 +1,7 @@
 import (
 	"fmt"
 	"strings"
-	"github.com/razor-1/sqlboiler/v3/queries/qm"
+	"github.com/razor-1/sqlboiler/v4/queries/qm"
 )
 
 // M type is for providing columns and column values to UpdateAll.
@@ -160,7 +160,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 // Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}}
 const (
 	{{- range $val := $vals -}}
-		{{- $valStripped := stripWhitespace $val -}}
+	{{- $valStripped := stripWhitespace $val -}}
 	{{- if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end -}}
 	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} = "{{$val}}"
 	{{end -}}

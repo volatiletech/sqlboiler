@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/ericlagergren/decimal"
-
-	"github.com/razor-1/sqlboiler/v3/queries/qmhelper"
+	"github.com/razor-1/sqlboiler/v4/queries/qmhelper"
 )
 
 func TestDecimal_Value(t *testing.T) {

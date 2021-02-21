@@ -1,7 +1,8 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
-{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", "}}
+{{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
+{{- $canSoftDelete := .Table.CanSoftDelete }}
 {{if .AddGlobal -}}
 // Find{{$alias.UpSingular}}G retrieves a single record by ID.
 func Find{{$alias.UpSingular}}G({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}, selectCols ...string) (*{{$alias.UpSingular}}, error) {
@@ -46,7 +47,7 @@ func Find{{$alias.UpSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx co
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from {{.Table.Name | .SchemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", sel,
+		"select %s from {{.Table.Name | .SchemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}{{if and .AddSoftDeletes $canSoftDelete}} and {{"deleted_at" | $.Quotes}} is null{{end}}", sel,
 	)
 
 	q := queries.Raw(query, {{$pkNames | join ", "}})

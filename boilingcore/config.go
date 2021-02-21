@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/razor-1/sqlboiler/v3/drivers"
-	"github.com/razor-1/sqlboiler/v3/importers"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	"github.com/razor-1/sqlboiler/v4/importers"
 	"github.com/spf13/cast"
 )
 
@@ -22,14 +22,17 @@ type Config struct {
 	Debug             bool     `toml:"debug,omitempty" json:"debug,omitempty"`
 	AddGlobal         bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
 	AddPanic          bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
+	AddSoftDeletes    bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
 	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
 	NoAutoTimestamps  bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
 	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
 	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
+	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
 	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
 	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
+	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
@@ -42,6 +45,7 @@ type Config struct {
 
 // TypeReplace replaces a column type with something else
 type TypeReplace struct {
+	Tables  []string       `toml:"tables,omitempty" json:"tables,omitempty"`
 	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
 	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
 	Imports importers.Set  `toml:"imports,omitempty" json:"imports,omitempty"`
@@ -191,6 +195,8 @@ func ConvertTypeReplace(i interface{}) []TypeReplace {
 		replace.Match = columnFromInterface(replaceIntf["match"])
 		replace.Replace = columnFromInterface(replaceIntf["replace"])
 
+		replace.Tables = tablesOfTypeReplace(replaceIntf["match"])
+
 		if imps := replaceIntf["imports"]; imps != nil {
 			imps = cast.ToStringMap(imps)
 			var err error
@@ -204,6 +210,17 @@ func ConvertTypeReplace(i interface{}) []TypeReplace {
 	}
 
 	return replaces
+}
+
+func tablesOfTypeReplace(i interface{}) []string {
+	tables := []string{}
+
+	m := cast.ToStringMap(i)
+	if s := m["tables"]; s != nil {
+		tables = cast.ToStringSlice(s)
+	}
+
+	return tables
 }
 
 func columnFromInterface(i interface{}) (col drivers.Column) {

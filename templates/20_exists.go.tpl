@@ -2,7 +2,8 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
-{{- $schemaTable := .Table.Name | .SchemaTable}}
+{{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $canSoftDelete := .Table.CanSoftDelete }}
 {{if .AddGlobal -}}
 // {{$alias.UpSingular}}ExistsG checks if the {{$alias.UpSingular}} row exists.
 func {{$alias.UpSingular}}ExistsG({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}) (bool, error) {
@@ -43,7 +44,7 @@ func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx 
 	{{if .Dialect.UseCaseWhenExistsClause -}}
 	sql := "select case when exists(select top(1) 1 from {{$schemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}) then 1 else 0 end"
 	{{- else -}}
-	sql := "select exists(select 1 from {{$schemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}} limit 1)"
+	sql := "select exists(select 1 from {{$schemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}{{if and .AddSoftDeletes $canSoftDelete}} and {{"deleted_at" | $.Quotes}} is null{{end}} limit 1)"
 	{{- end}}
 
 	{{if .NoContext -}}

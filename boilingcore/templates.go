@@ -12,10 +12,9 @@ import (
 	"text/template"
 
 	"github.com/friendsofgo/errors"
-
-	"github.com/razor-1/sqlboiler/v3/drivers"
-	"github.com/razor-1/sqlboiler/v3/strmangle"
-	"github.com/razor-1/sqlboiler/v3/templatebin"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	"github.com/razor-1/sqlboiler/v4/templatebin"
+	"github.com/volatiletech/strmangle"
 )
 
 // templateData for sqlboiler templates
@@ -40,14 +39,19 @@ type templateData struct {
 	// Control various generation features
 	AddGlobal         bool
 	AddPanic          bool
+	AddSoftDeletes    bool
 	NoContext         bool
 	NoHooks           bool
 	NoAutoTimestamps  bool
 	NoRowsAffected    bool
 	NoDriverTemplates bool
+	NoBackReferencing bool
 
 	// Tags control which tags are added to the struct
 	Tags []string
+
+	// RelationTag controls the value of the tags for the Relationship struct
+	RelationTag string
 
 	// Generate struct tags as camelCase or snake_case
 	StructTagCasing string
@@ -298,6 +302,12 @@ var templateFunctions = template.FuncMap{
 	"aliasCols":      func(ta TableAlias) func(string) string { return ta.Column },
 	"usesPrimitives": usesPrimitives,
 	"isPrimitive":    isPrimitive,
+	"splitLines": func(a string) []string {
+		if a == "" {
+			return nil
+		}
+		return strings.Split(a, "\n")
+	},
 
 	// dbdrivers ops
 	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,

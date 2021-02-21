@@ -3,8 +3,8 @@ package boilingcore
 import (
 	"strings"
 
-	"github.com/razor-1/sqlboiler/v3/drivers"
-	"github.com/razor-1/sqlboiler/v3/strmangle"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	"github.com/volatiletech/strmangle"
 )
 
 // txtNameToOne creates the local and foreign function names for
@@ -38,12 +38,23 @@ import (
 // fk == table = industry.Industry | industry.Industry
 // fk != table = industry.ParentIndustry | industry.Industry
 func txtNameToOne(fk drivers.ForeignKey) (localFn, foreignFn string) {
-	foreignFn = strmangle.Singular(trimSuffixes(fk.Column))
-	fkeyNotTableName := foreignFn != strmangle.Singular(fk.ForeignTable)
-	foreignFn = strmangle.TitleCase(foreignFn)
+	fkColumnTrimmedSuffixes := strmangle.Singular(trimSuffixes(fk.Column))
+	fkNotTableName := fkColumnTrimmedSuffixes != strmangle.Singular(fk.ForeignTable)
+	singularForeignTable := strmangle.Singular(fk.ForeignTable)
 
-	if fkeyNotTableName {
-		localFn = foreignFn
+	if fkColumnTrimmedSuffixes == singularForeignTable {
+		foreignFn = strmangle.TitleCase(strmangle.Singular(fk.Table) + "_" + fkColumnTrimmedSuffixes)
+		if fk.Column != singularForeignTable {
+			foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
+		}
+	} else if fkColumnTrimmedSuffixes == fk.Column {
+		foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes + "_" + strmangle.Singular(fk.ForeignTable))
+	} else {
+		foreignFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
+	}
+
+	if fkNotTableName {
+		localFn = strmangle.TitleCase(fkColumnTrimmedSuffixes)
 	}
 
 	plurality := strmangle.Plural

@@ -7,12 +7,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/razor-1/sqlboiler/v3/strmangle"
+	"github.com/volatiletech/strmangle"
 )
 
 var (
-	rgxIdentifier = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(?:\."?[_a-z][_a-z0-9]*"?)*$`)
-	rgxInClause   = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
+	rgxIdentifier  = regexp.MustCompile(`^(?i)"?[a-z_][_a-z0-9]*"?(?:\."?[_a-z][_a-z0-9]*"?)*$`)
+	rgxInClause    = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])IN([\s|\(|\?].*)$`)
+	rgxNotInClause = regexp.MustCompile(`^(?i)(.*[\s|\)|\?])NOT\s+IN([\s|\(|\?].*)$`)
 )
 
 // BuildQuery builds a query object into the query string
@@ -47,6 +48,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 	var args []interface{}
 
+	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
 	buf.WriteString("SELECT ")
@@ -63,7 +65,17 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	hasSelectCols := len(q.selectCols) != 0
 	hasJoins := len(q.joins) != 0
-	if hasJoins && hasSelectCols && !q.count {
+	hasDistinct := q.distinct != ""
+	if hasDistinct {
+		buf.WriteString("DISTINCT ")
+		if q.count {
+			buf.WriteString("(")
+		}
+		buf.WriteString(q.distinct)
+		if q.count {
+			buf.WriteString(")")
+		}
+	} else if hasJoins && hasSelectCols && !q.count {
 		selectColsWithAs := writeAsStatements(q)
 		// Don't identQuoteSlice - writeAsStatements does this
 		buf.WriteString(strings.Join(selectColsWithAs, ", "))
@@ -91,11 +103,14 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 			case JoinInner:
 				fmt.Fprintf(joinBuf, " INNER JOIN %s", j.clause)
 			case JoinOuterLeft:
-				fmt.Fprintf(joinBuf, " LEFT OUTER JOIN %s", j.clause)
+				fmt.Fprintf(joinBuf, " LEFT JOIN %s", j.clause)
+			case JoinOuterRight:
+				fmt.Fprintf(joinBuf, " RIGHT JOIN %s", j.clause)
+			case JoinOuterFull:
+				fmt.Fprintf(joinBuf, " FULL JOIN %s", j.clause)
 			default:
-				panic("only inner and left outer joins are supported")
+				panic(fmt.Sprintf("Unsupported join of kind %v", j.kind))
 			}
-
 			args = append(args, j.args...)
 		}
 		var resp string
@@ -124,6 +139,7 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	var args []interface{}
 	buf := strmangle.GetBuffer()
 
+	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
 	buf.WriteString("DELETE FROM ")
@@ -146,6 +162,7 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 	var args []interface{}
 
+	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
 	buf.WriteString("UPDATE ")
@@ -370,9 +387,30 @@ ManualParen:
 			notFirstExpression = false
 		case whereKindRightParen:
 			buf.WriteByte(')')
-		case whereKindIn:
+		case whereKindIn, whereKindNotIn:
 			ln := len(where.args)
-			matches := rgxInClause.FindStringSubmatch(where.clause)
+			// WHERE IN () is invalid sql, so it is difficult to simply run code like:
+			// for _, u := range model.Users(qm.WhereIn("id IN ?",uids...)).AllP(db) {
+			//    ...
+			// }
+			// instead when we see empty IN we produce 1=0 so it can still be chained
+			// with other queries
+			if ln == 0 {
+				if where.kind == whereKindIn {
+					buf.WriteString("(1=0)")
+				} else if where.kind == whereKindNotIn {
+					buf.WriteString("(1=1)")
+				}
+				break
+			}
+
+			var matches []string
+			if where.kind == whereKindIn {
+				matches = rgxInClause.FindStringSubmatch(where.clause)
+			} else {
+				matches = rgxNotInClause.FindStringSubmatch(where.clause)
+			}
+
 			// If we can't find any matches attempt a simple replace with 1 group.
 			// Clauses that fit this criteria will not be able to contain ? in their
 			// column name side, however if this case is being hit then the regexp
@@ -419,7 +457,11 @@ ManualParen:
 				buf.WriteByte('(')
 			}
 			buf.WriteString(leftClause)
-			buf.WriteString(" IN ")
+			if where.kind == whereKindIn {
+				buf.WriteString(" IN ")
+			} else if where.kind == whereKindNotIn {
+				buf.WriteString(" NOT IN ")
+			}
 			buf.WriteString(rightClause)
 			if !manualParens {
 				buf.WriteByte(')')
@@ -545,6 +587,19 @@ func parseFromClause(toks []string) (alias, name string, ok bool) {
 	}
 
 	return alias, name, ok
+}
+
+func writeComment(q *Query, buf *bytes.Buffer) {
+	if len(q.comment) == 0 {
+		return
+	}
+
+	lines := strings.Split(q.comment, "\n")
+	for _, line := range lines {
+		buf.WriteString("-- ")
+		buf.WriteString(line)
+		buf.WriteByte('\n')
+	}
 }
 
 func writeCTEs(q *Query, buf *bytes.Buffer, args *[]interface{}) {

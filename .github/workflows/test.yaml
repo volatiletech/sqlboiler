@@ -1,0 +1,153 @@
+name: test
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [1.14.2]
+    services:
+      postgres:
+        image: postgres:12
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: psqlpassword
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: mysqlpassword
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+          - 1433:1433
+        env:
+          ACCEPT_EULA: 'Y'
+          SA_PASSWORD: 'Sqlboiler@1234'
+    steps:
+      # - name: install_tools
+      #   run: >
+      #     apt-get update
+      #     && apt-get install -y apt-transport-https software-properties-common python3-software-properties
+      #     && apt-add-repository ppa:git-core/ppa
+      #     && apt-get update
+      #     && apt-get install -y curl locales
+
+      # # Set up locales for sqlcmd (otherwise it breaks)
+      # - name: setup_locales
+      #   run: >
+      #     locale-gen en_US.UTF-8
+      #     && echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
+      #     && echo "LANG=en_US.UTF-8" >> /etc/default/locale
+
+      # # Install database clients
+      # # MySQL 8.0 is still in development, so we're using 5.7 which is already
+      # # available in Ubuntu 18.04
+      # - name: install_clients
+      #   run: >
+      #     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+      #     && echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' > /etc/apt/sources.list.d/psql.list
+      #     && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+      #     && curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/msprod.list
+      #     && apt-get update
+      #     && env ACCEPT_EULA=Y apt-get install -y git postgresql-client-12.2 mysql-client-5.7 mssql-tools unixodbc-dev
+
+      - name: psql_creds
+        run: >
+          echo "*:*:*:*:psqlpassword" > $HOME/.pgpass
+          && chmod 600 $HOME/.pgpass
+
+      - name: mysql_creds
+        run: >
+          echo -e "[client]\nuser = root\npassword = mysqlpassword\nhost = localhost\nprotocol = tcp" > $HOME/.my.cnf
+          && chmod 600 $HOME/.my.cnf
+
+      - name: psql_wait
+        run: |
+          set -o errexit;
+          c=0;
+          for i in `seq 30`; do
+            echo "psql_wait"
+            psql --host localhost --username postgres --dbname template1 -c 'select * from information_schema.tables;' > /dev/null && c=0 && break || c=$? && sleep 1
+          done;
+          exit $c
+
+      - name: mysql_wait
+        run: |
+          set -o errexit;
+          c=0;
+          for i in `seq 30`; do
+            echo "mysql_wait"
+            mysql --execute 'select * from information_schema.tables;' > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
+          done;
+          exit $c
+
+      - name: mssql_wait
+        run: |
+          set -o errexit;
+          c=0;
+          for i in `seq 30`; do
+            echo "mssql_wait"
+            sqlcmd -H localhost -U sa -P Sqlboiler@1234 -Q "select * from information_schema.tables;" > /dev/null > /dev/null && c=0 && break || c=$? && sleep 1
+          done;
+          exit $c
+
+      - name: checkout
+        uses: actions/checkout@v2
+        with: { fetch-depth: 1 }
+
+      - name: psql_db
+        run: >
+          cd $GITHUB_WORKSPACE
+          && ./boil.sh test-user psql
+          && ./boil.sh test-db psql
+          && ./boil.sh driver-test-db psql
+          && ./boil.sh driver-test-user psql
+
+      - name: mysql_db
+        run: >
+          cd $GITHUB_WORKSPACE
+          && ./boil.sh test-user mysql
+          && ./boil.sh test-db mysql
+          && ./boil.sh driver-test-db mysql
+          && ./boil.sh driver-test-user mysql
+
+      - name: mssql_db
+        run: >
+          cd $GITHUB_WORKSPACE
+          && ./boil.sh test-user mssql
+          && ./boil.sh test-db mssql
+          && ./boil.sh driver-test-db mssql
+          && ./boil.sh driver-test-user mssql
+
+      - name: go
+        uses: actions/setup-go@v1
+        with:
+          go-version: ${{matrix.go}}
+
+      - name: deps
+        run: go mod download
+        env: { GOPROXY: 'https://proxy.golang.org' }
+
+      - name: chmodhome
+        run: chmod 0755 $HOME
+
+      - name: build
+        run: >
+          cd $GITHUB_WORKSPACE
+          && ./boil.sh build
+          && ./boil.sh build all
+
+      - name: test
+        run: >
+          cd $GITHUB_WORKSPACE
+          && go test -v ./...

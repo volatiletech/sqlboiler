@@ -1,23 +1,27 @@
 ![sqlboiler logo](https://i.imgur.com/lMXUTPE.png)
 
-[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/razor-1/sqlboiler/v3/blob/master/LICENSE)
-[![GoDoc](https://godoc.org/github.com/razor-1/sqlboiler?status.svg)](https://godoc.org/github.com/razor-1/sqlboiler)
-[![Mail](https://img.shields.io/badge/mail%20list-sqlboiler-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler)
-[![Mail-Annc](https://img.shields.io/badge/mail%20list-sqlboiler--announce-lightgrey.svg)](https://groups.google.com/a/volatile.tech/forum/#!forum/sqlboiler-announce)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/volatiletech/sqlboiler/blob/master/LICENSE)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/mod/github.com/volatiletech/sqlboiler/v4)
 [![Slack](https://img.shields.io/badge/slack-%23general-lightgrey.svg)](https://sqlboiler.from-the.cloud)
-[![CircleCI](https://circleci.com/gh/volatiletech/sqlboiler.svg?style=shield)](https://circleci.com/gh/volatiletech/sqlboiler)
+![ActionsCI](https://github.com/volatiletech/sqlboiler/workflows/test/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/volatiletech/sqlboiler)](http://goreportcard.com/report/volatiletech/sqlboiler)
 
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 It is a "database-first" ORM as opposed to "code-first" (like gorm/gorp).
 That means you must first create your database schema. Please use something
-like [goose](https://bitbucket.org/liamstask/goose), [sql-migrate](https://github.com/rubenv/sql-migrate)
+like [sql-migrate](https://github.com/rubenv/sql-migrate)
 or some other migration tool to manage this part of the database's life-cycle.
 
-# Note on v2 vs v3
+# Note on versions
 
-v3 has been released, please upgrade when possible, v2 is on life support only now.
+v1, v2, and v3 are no longer maintained.
+
+v3 is the last GOPATH-compatible version.
+
+v4 has no real breaking changes between v3 and itself other than Go modules
+and is the only maintained version. Note this does not work with GOPATH
+projects.
 
 ## Why another ORM
 
@@ -46,6 +50,7 @@ Table of Contents
     * [Why another ORM](#why-another-orm)
     * [About SQL Boiler](#about-sql-boiler)
       * [Features](#features)
+      * [Missing Features](#missing-features)
       * [Supported Databases](#supported-databases)
       * [A Small Taste](#a-small-taste)
     * [Requirements &amp; Pro Tips](#requirements--pro-tips)
@@ -96,6 +101,7 @@ Table of Contents
         * [How do I use the types.BytesArray for Postgres bytea arrays?](#how-do-i-use-typesbytesarray-for-postgres-bytea-arrays)
         * [Why aren't my time.Time or null.Time fields working in MySQL?](#why-arent-my-timetime-or-nulltime-fields-working-in-mysql)
         * [Where is the homepage?](#where-is-the-homepage)
+        * [Why are the auto-generated tests failing?](#why-are-the-auto-generated-tests-failing)
   * [Benchmarks](#benchmarks)
 
 ## About SQL Boiler
@@ -111,6 +117,7 @@ Table of Contents
 - Strongly typed querying (usually no converting or binding to pointers)
 - Hooks (Before/After Create/Select/Update/Delete/Upsert)
 - Automatic CreatedAt/UpdatedAt
+- Automatic DeletedAt
 - Table and column whitelist/blacklist
 - Relationships/Associations
 - Eager loading (recursive)
@@ -124,14 +131,19 @@ Table of Contents
 - Enum types
 - Out of band driver support
 
+### Missing features
+
+- Multi-column foreign key support
+- View/Materialized view support
+
 ### Supported Databases
 
 | Database          | Driver Location |
 | ----------------- | --------------- |
-| PostgreSQL        | [https://github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
-| MySQL             | [https://github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
-| MSSQLServer 2012+ | [https://github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
-| SQLite3           | https://github.com/razor-1/sqlboiler-sqlite3
+| PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
+| MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
+| MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
+| SQLite3           | https://github.com/volatiletech/sqlboiler-sqlite3
 | CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb
 
 **Note:** SQLBoiler supports out of band driver support so you can make your own
@@ -145,7 +157,7 @@ For a comprehensive list of available operations and examples please see [Featur
 ```go
 import (
   // Import this so we don't have to use qm.Limit etc.
-  . "github.com/razor-1/sqlboiler/v3/queries/qm"
+  . "github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Open handle to database like normal
@@ -209,7 +221,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ### Requirements
 
-* Go 1.6 minimum, and Go 1.7 for compatibility tests.
+* Go 1.13, older Go versions are not supported.
 * Table names and column names should use `snake_case` format.
   * We require `snake_case` table names and column names. This is a recommended default in Postgres,
   and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
@@ -248,6 +260,9 @@ fmt.Println(len(users.R.FavoriteMovies))
 If you like learning via a video medium, sqlboiler has a number of screencasts
 available.
 
+*NOTE:* These videos predate modules (v4), the installation/import paths will be
+different though everything else should remain similar.
+
 [SQLBoiler: Getting Started](https://www.youtube.com/watch?v=y5utRS9axfg)
 
 [SQLBoiler: What's New in v3](https://www.youtube.com/watch?v=-B-OPsYRZJA)
@@ -258,22 +273,39 @@ available.
 
 #### Download
 
-```shell
-go get -u -t github.com/razor-1/sqlboiler
+To install the latest versions run the commands below. Thes GO111MODULE
+environment variable is to ensure that you don't accidentally add this to
+your current directory's module. See go issue:
+https://github.com/golang/go/issues/30515
 
-# Also install the driver of your choice, there exists psql, mysql, mssql
-# These are separate binaries.
-go get github.com/razor-1/sqlboiler/v3/drivers/sqlboiler-psql
+```shell
+# Install sqlboiler v4
+GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
+# Install an sqlboiler driver - these are seperate binaries, here we are
+# choosing postgresql
+GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+```
+
+To install `sqlboiler` as a dependency in your project use the commands below
+inside of your go module's directory tree. This will install the dependencies
+into your `go.mod` file at the correct version.
+
+```shell
+# Do not forget the trailing /v4
+go get github.com/volatiletech/sqlboiler/v4
+# Assuming you're going to use the null package for its additional null types
+# Do not forget the trailing /v8
+go get github.com/volatiletech/null/v8
 ```
 
 #### Configuration
 
-Create a configuration file. Because the project uses [viper](https://github.com/spf13/viper), TOML, JSON and YAML
-are all supported. Environment variables are also able to be used.
+Create a configuration file. Because the project uses
+[viper](https://github.com/spf13/viper), TOML, JSON and YAML are all usable
+but only TOML is supported. Environment variables are also able to be used.
 
-The configuration file should be named `sqlboiler.toml` for TOML, `sqlboiler.json` for JSON and
-`sqlboiler.yaml` or `sqlboiler.yml` for YAML and is searched for in the following directories in this
-order:
+The configuration file should be named `sqlboiler.toml` and is searched for in
+the following directories in this order:
 
 - `./`
 - `$XDG_CONFIG_HOME/sqlboiler/`
@@ -281,21 +313,40 @@ order:
 
 We will assume TOML for the rest of the documentation.
 
-We require you pass in your `psql` and `mysql` database configuration via the configuration file rather than env vars.
-There is no command line argument support for database configuration. Values given under the `postgres` and `mysql`
-block are passed directly to the psql and mysql drivers. Here is a rundown of all the different
-values that can go in that section:
+##### Database Driver Configuration
 
-| Name | Required | Postgres Default | MySQL Default
-| --- | --- | --- | --- |
-| dbname    | yes       | none      | none   |
-| host      | yes       | none      | none   |
-| port      | no        | 5432      | 3306   |
-| user      | yes       | none      | none   |
-| pass      | no        | none      | none   |
-| sslmode   | no        | "require" | "true" |
-| whitelist | no        | []        | []     |
-| blacklist | no        | []        | []     |
+The configuration for a specific driver (in these examples we'll use `psql`)
+must all be prefixed by the driver name. You must use a configuration file or
+environment variables for configuring the database driver; there are no
+command-line options for providing driver-specific configuration.
+
+In the configuration file for postgresql for example you would do:
+
+```toml
+[psql]
+dbname = "your_database_name"
+```
+
+When you use an environment variable it must also be prefixed by the driver
+name:
+
+```sh
+PSQL_DBNAME="your_database_name"
+```
+
+The values that exist for the drivers:
+
+| Name | Required | Postgres Default | MySQL Default | MSSQL Default |
+| ---- | -------- | ---------------- | ------------- | ------------- |
+| schema    | no        | "public"  | none   | "dbo"  |
+| dbname    | yes       | none      | none   | none   |
+| host      | yes       | none      | none   | none   |
+| port      | no        | 5432      | 3306   | 1433   |
+| user      | yes       | none      | none   | none   |
+| pass      | no        | none      | none   | none   |
+| sslmode   | no        | "require" | "true" | "true" |
+| whitelist | no        | []        | []     | []     |
+| blacklist | no        | []        | []     | []     |
 
 Example of whitelist/blacklist:
 
@@ -306,6 +357,8 @@ Example of whitelist/blacklist:
 # are no longer generated because of whitelists or blacklists may cause problems.
 blacklist = ["migrations", "addresses.name"]
 ```
+
+##### Generic config options
 
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
@@ -326,9 +379,13 @@ not to pass them through the command line or environment variables:
 | no-driver-templates | false     |
 | tag-ignore          | []        |
 
-Example:
+##### Full Example
 
 ```toml
+output   = "my_models"
+wipe     = true
+no-tests = true
+
 [psql]
   dbname = "dbname"
   host   = "localhost"
@@ -363,7 +420,7 @@ generate models for, we can invoke the sqlboiler command line utility.
 
 ```text
 SQL Boiler generates a Go ORM from template files, tailored to your database schema.
-Complete documentation is available at http://github.com/razor-1/sqlboiler
+Complete documentation is available at http://github.com/volatiletech/sqlboiler
 
 Usage:
   sqlboiler [flags] <driver>
@@ -374,18 +431,22 @@ sqlboiler psql
 Flags:
       --add-global-variants        Enable generation for global variants
       --add-panic-variants         Enable generation for panic variants
+      --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler
       --no-auto-timestamps         Disable automatic timestamps for created_at/updated_at
+      --no-back-referencing        Disable back referencing in the loaded relationship structs
       --no-context                 Disable context.Context usage in the generated code
+      --no-driver-templates        Disable parsing of templates defined by the database driver
       --no-hooks                   Disable hooks feature for your models
       --no-rows-affected           Disable rows affected in the generated API
       --no-tests                   Disable generated go test files
   -o, --output string              The name of the folder to output to (default "models")
   -p, --pkgname string             The name you wish to assign to your generated package (default "models")
-      --struct-tag-casing string   Decides the casing for go structure tag names. camel or snake (default "snake")
+      --struct-tag-casing string   Decides the casing for go structure tag names. camel, title, alias or snake (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
+      --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
       --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
       --version                    Print the version
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
@@ -578,10 +639,17 @@ The way to accomplish this is through the config file.
 [[types]]
   # The match is a drivers.Column struct, and matches on almost all fields.
   # Notable exception for the unique bool. Matches are done
-  # with "logical and" meaning it must match all specified matchers. Boolean values
-  # are only checked if all the string specifiers match first, and they
-  # must always match.
+  # with "logical and" meaning it must match all specified matchers.
+  # Boolean values are only checked if all the string specifiers match first,
+  # and they must always match.
+  #
   # Not shown here: db_type is the database type and a very useful matcher
+  # We can also whitelist tables for this replace by adding to the types.match:
+  # tables = ['users', 'videos']
+  #
+  # Note there is precedence for types.match, more specific things should appear
+  # further down in the config as once a matching rule is found it is executed
+  # immediately.
   [types.match]
     type = "null.String"
     nullable = true
@@ -802,6 +870,12 @@ The most common causes of problems and panics are:
     global database handle using `boil.SetDB()`.
 - Naming collisions, if the code fails to compile because there are naming collisions, look at the
   [aliasing](#aliases) feature.
+- Race conditions in tests or when using global variable models and using
+  relationship set helpers in multiple goroutines. Note that Set/Add/Remove
+  relationship helpers modify their input parameters to maintain parity between
+  the `.R` struct relationships and the database foreign keys but this can
+  produce subtle race conditions. Test for this using the `-race` flag on the
+  go tool.
 - A field not being inserted (usually a default true boolean), `boil.Infer` looks at the zero
   value of your Go type (it doesn't care what the default value in the database is) to determine
   if it should insert your field or not. In the case of a default true boolean value, when you
@@ -809,6 +883,10 @@ The most common causes of problems and panics are:
   field in Go so sqlboiler assumes you do not want to insert that field and you want the default
   value from the database. Use a whitelist/greylist to add that field to the list of fields
   to insert.
+- decimal library showing errors like: `pq: encode: unknown type types.NullDecimal`
+  is a result of a too-new and broken version of the github.com/ericlargergren/decimal
+  package, use the following version in your go.mod:
+  github.com/ericlagergren/decimal v0.0.0-20181231230500-73749d4874d5
 
 For errors with other causes, it may be simple to debug yourself by looking at the generated code.
 Setting `boil.DebugMode` to `true` can help with this. You can change the output using `boil.DebugWriter` (defaults to `os.Stdout`).
@@ -945,6 +1023,29 @@ before being sent to the database (if they were going to be sent).
   will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
   * The `updated_at` column will always be set to `time.Now()`.
 
+### Automatic DeletedAt (Soft Delete)
+
+Soft deletes are a way of deleting records in a database for the average query
+without actually removing the data. This type of thing is important in certain
+scenarios where data retention is important. It is typically done by adding a
+`deleted` bool or a `deleted_at` timestamp to each table in the database
+that can be soft deleted and subsequent queries on that table should always
+make sure that `deleted != true` or `deleted_at is null` to prevent showing
+"deleted" data.
+
+SQLBoiler uses the `deleted_at` variant to provide this functionality. If your
+table has a nullable timestamp field named `deleted_at` it will be a candidate
+for soft-deletion.
+
+*NOTE*: As of writing soft-delete is opt-in via `--add-soft-deletes` and is
+liable to change in future versions.
+
+*NOTE*: The `Delete` helpers will _not_ set `updated_at` currently. The current
+philosophy is that deleting the object is simply metadata and since it returns
+in no queries (other than raw ones) the updated_at will no longer be relevant.
+This could change in future versions if people disagree with this but it is
+the current behavior.
+
 ### Query Building
 
 We generate "Starter" methods for you. These methods are named as the plural versions of your model,
@@ -1002,7 +1103,7 @@ safe, but be careful!
 
 ```go
 // Dot import so we can access query mods directly instead of prefixing with "qm."
-import . "github.com/razor-1/sqlboiler/v3/queries/qm"
+import . "github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 // Use a raw query against a generated struct (Pilot in this example)
 // If this query mod exists in your call, it will override the others.
@@ -1028,7 +1129,7 @@ Where("(name=? and age=?) or (age=?)", "John", 5, 6)
 Where(
   Expr(
     models.PilotWhere.Name.EQ("John"),
-    Or2(models.PilotWhere.Age.Eq(5),
+    Or2(models.PilotWhere.Age.EQ(5)),
   ),
   Or2(models.PilotAge),
 )
@@ -1039,7 +1140,7 @@ WhereIn(fmt.Sprintf("%s, %s in ?", models.PilotColumns.Name, models.PilotColumns
 AndIn("weight in ?", 84)
 AndIn(models.PilotColumns.Weight + " in ?", 84)
 OrIn("height in ?", 183, 177, 204)
-OrIn(models.PilotColumns.Height + " in ?"), 183, 177, 204)
+OrIn(models.PilotColumns.Height + " in ?", 183, 177, 204)
 
 InnerJoin("pilots p on jets.pilot_id=?", 10)
 InnerJoin(models.TableNames.Pilots + " p on " + models.TableNames.Jets + "." + models.JetColumns.PilotID + "=?", 10)
@@ -1142,7 +1243,7 @@ in combination with your own custom, non-generated model.
 
 ### Binding
 
-For a comprehensive ruleset for `Bind()` you can refer to our [godoc](https://godoc.org/github.com/razor-1/sqlboiler/v3/queries#Bind).
+For a comprehensive ruleset for `Bind()` you can refer to our [pkg.go.dev](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/queries#Bind).
 
 The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
@@ -1259,7 +1360,7 @@ jets, _ := models.Jets(Load("Pilot")).All(ctx, db)
 // Type safe relationship names exist too:
 jets, _ := models.Jets(Load(models.JetRels.Pilot)).All(ctx, db)
 
-// Then access the loaded sructs using the special Relation field
+// Then access the loaded structs using the special Relation field
 for _, j := range jets {
   _ = j.R.Pilot
 }
@@ -1420,7 +1521,7 @@ tx.Rollback()
 
 It's also worth noting that there's a way to take advantage of `boil.SetDB()`
 by using the
-[boil.BeginTx()](https://godoc.org/github.com/razor-1/sqlboiler/v3/boil#BeginTx)
+[boil.BeginTx()](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil#BeginTx)
 function. This opens a transaction using the globally stored database.
 
 ### Debug Logging
@@ -1495,7 +1596,7 @@ greylist in cases where you want to insert a Go zero value.
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
-[boil.Columns.InsertColumnSet](https://godoc.org/github.com/razor-1/sqlboiler/v3/boil/#Columns.InsertColumnSet)
+[boil.Columns.InsertColumnSet](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil/#Columns.InsertColumnSet)
 for more details.
 
 ```go
@@ -1505,7 +1606,7 @@ err := p1.Insert(ctx, db, boil.Infer()) // Insert the first pilot with name "Lar
 // p1 now has an ID field set to 1
 
 var p2 models.Pilot
-p2.Name "Boris"
+p2.Name = "Boris"
 err := p2.Insert(ctx, db, boil.Infer()) // Insert the second pilot with name "Boris"
 // p2 now has an ID field set to 2
 
@@ -1547,7 +1648,7 @@ documentation above for more details.
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
-[boil.Columns.UpdateColumnSet](https://godoc.org/github.com/razor-1/sqlboiler/v3/boil/#Columns.UpdateColumnSet)
+[boil.Columns.UpdateColumnSet](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil/#Columns.UpdateColumnSet)
 for more details.
 
 ```go
@@ -1615,11 +1716,13 @@ p1.Name = "Hogan"
 err := p1.Upsert(ctx, db, true, []string{"id"}, boil.Whitelist("name"), boil.Whitelist("id", "name"))
 ```
 
-The `updateOnConflict` argument allows you to specify whether you would like Postgres
-to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL, this param will not be generated.
-
-The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres.
-For MySQL, this param will not be generated.
+* **Postgres**
+  * The `updateOnConflict` argument allows you to specify whether you would like Postgres
+  to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL and MSSQL, this param will not be generated.
+  * The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres.
+  For MySQL and MSSQL, this param will not be generated.
+* **MySQL and MSSQL**
+  * Passing `boil.None()` for `updateColumns` allows to perform a `DO NOTHING` on conflict similar to Postgres.
 
 Note: Passing a different set of column values to the update component is not currently supported.
 
@@ -1815,8 +1918,27 @@ You *must* use a DSN flag in MySQL connections, see: [Requirements](#requirement
 
 #### Where is the homepage?
 
-The homepage for the [SQLBoiler](https://github.com/razor-1/sqlboiler) [Golang ORM](https://github.com/razor-1/sqlboiler)
-generator is located at: https://github.com/razor-1/sqlboiler
+The homepage for the [SQLBoiler](https://github.com/volatiletech/sqlboiler) [Golang ORM](https://github.com/volatiletech/sqlboiler)
+generator is located at: https://github.com/volatiletech/sqlboiler
+
+#### Why are the auto-generated tests failing?
+
+The tests generated for your models package with sqlboiler are fairly
+error-prone. They are usually broken by constraints in the database
+that sqlboiler can't hope to understand.
+
+During regular run-time this isn't an issue because your code will throw errors
+and you will fix it however the auto-generated tests can only report those
+errors and it seems like something is wrong when in reality the only issue is
+that the auto generated tests can't understand that your `text` column is
+validated by a regex that says it must be composed solely of the 'b' character
+repeated 342 times.
+
+These tests are broken especially by foreign key constraints because of the
+parallelism we use. There's also no understanding in the tests of dependencies
+based on these foreign keys. As such there is a process that removes the foreign
+keys from your schema when they are run, if this process messes up you will get
+errors relating to foreign key constraints.
 
 ## Benchmarks
 

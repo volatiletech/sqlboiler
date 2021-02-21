@@ -14,6 +14,44 @@ func TestParent(t *testing.T) {
   {{- end -}}
 }
 
+{{if .AddSoftDeletes -}}
+func TestSoftDelete(t *testing.T) {
+  {{- range .Tables}}
+  {{- if .IsJoinTable -}}
+  {{- else -}}
+  	{{- if .CanSoftDelete -}}
+      {{- $alias := $.Aliases.Table .Name -}}
+      t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}SoftDelete)
+  	{{end -}}
+  {{end -}}
+  {{- end -}}
+}
+
+func TestQuerySoftDeleteAll(t *testing.T) {
+  {{- range .Tables}}
+  {{- if .IsJoinTable -}}
+  {{- else -}}
+  	{{- if .CanSoftDelete -}}
+      {{- $alias := $.Aliases.Table .Name -}}
+      t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}QuerySoftDeleteAll)
+  	{{end -}}
+  {{end -}}
+  {{- end -}}
+}
+
+func TestSliceSoftDeleteAll(t *testing.T) {
+  {{- range .Tables}}
+  {{- if .IsJoinTable -}}
+  {{- else -}}
+  	{{- if .CanSoftDelete -}}
+      {{- $alias := $.Aliases.Table .Name -}}
+      t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}SliceSoftDeleteAll)
+  	{{end -}}
+  {{end -}}
+  {{- end -}}
+}
+{{- end}}
+
 func TestDelete(t *testing.T) {
   {{- range .Tables}}
   {{- if .IsJoinTable -}}

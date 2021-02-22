@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/null/v8"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -607,6 +608,8 @@ func TestEqual(t *testing.T) {
 		{A: "hello", B: sql.NullString{Valid: false}, Want: false},
 		{A: now, B: now, Want: true},
 		{A: now, B: now.Add(time.Hour), Want: false},
+		{A: null.Uint64From(uint64(9223372036854775808)), B: uint64(9223372036854775808), Want: true},
+		{A: null.Uint64From(uint64(9223372036854775808)), B: uint64(9223372036854775809), Want: false},
 	}
 
 	for i, test := range tests {

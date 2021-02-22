@@ -14,7 +14,7 @@ require (
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
-	github.com/volatiletech/null/v8 v8.1.1
+	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/strmangle v0.0.1
 )

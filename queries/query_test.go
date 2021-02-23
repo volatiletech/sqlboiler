@@ -12,8 +12,10 @@ func TestSetLimit(t *testing.T) {
 	SetLimit(q, 10)
 
 	expect := 10
-	if q.limit != expect {
-		t.Errorf("Expected %d, got %d", expect, q.limit)
+	if q.limit == nil {
+		t.Errorf("Expected %d, got nil", expect)
+	} else if *q.limit != expect {
+		t.Errorf("Expected %d, got %d", expect, *q.limit)
 	}
 }
 

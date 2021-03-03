@@ -1411,7 +1411,7 @@ about or are not supported by your database.
   jet, _ := models.FindJet(ctx, db, 1)
   pilot, _ := models.FindPilot(ctx, db, 1)
 
-  // Set the pilot to an existing pilot
+  // Set the pilot to an existing jet
   err := jet.SetPilot(ctx, db, false, &pilot)
 
   pilot = models.Pilot{

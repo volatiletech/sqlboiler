@@ -61,7 +61,7 @@ func Find{{$alias.UpSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx co
 	}
 
 	{{if not .NoHooks -}}
-	if err := {{$alias.DownSingular}}Obj.doAfterSelectHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+	if err = {{$alias.DownSingular}}Obj.doAfterSelectHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
 		return {{$alias.DownSingular}}Obj, err
 	}
 	{{- end}}

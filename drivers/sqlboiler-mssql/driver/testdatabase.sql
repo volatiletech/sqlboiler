@@ -144,5 +144,10 @@ create table type_monsters (
 	varchar_null     varchar(max) null,
 	varchar_nnull    varchar(max) not null,
 	varchar100_null  varchar(100) null,
-	varchar100_nnull varchar(100) not null
+	varchar100_nnull varchar(100) not null,
+
+	uniqueidentifier_null uniqueidentifier null,
+	uniqueidentifier_nnull uniqueidentifier not null,
+	datetimeoffset_null datetimeoffset null,
+	datetimeoffset_nnull datetimeoffset not null
 );

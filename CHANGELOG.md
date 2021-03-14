@@ -11,10 +11,16 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Add new query mod WithDeleted to sidestep soft deletes in queries that
   support query mods (note there still is no way to do this for exists/find
   operations, see #854 for details)
+- Add select hooks to the Find() methods, this was an accidental omission
+  in previous versions (thanks @jakecoffman)
 
 ### Changed
 
 - Change go-bindata to v3.22.0
+- Change datetimeoffset and uniqueidentifier types in mssql this is a breaking
+  change if you are using these types, but at least in the case of
+  uniquedidentifier it was not possible to use without this change
+  (thanks @severedsea)
 
 ### Fixed
 

@@ -273,17 +273,25 @@ different though everything else should remain similar.
 
 #### Download
 
-To install the latest versions run the commands below. Thes GO111MODULE
-environment variable is to ensure that you don't accidentally add this to
-your current directory's module. See go issue:
-https://github.com/golang/go/issues/30515
+First you have to install the code generator binaries. There's the main binary
+and then a separate driver binary (select the right one for your database).
+
+Be very careful when installing, there's confusion in the Go ecosystem and
+knowing what are the right commands to run for which Go version can be tricky.
+Ensure you don't forget any /v suffixes or you'll end up on an old version.
 
 ```shell
-# Install sqlboiler v4
-GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
-# Install an sqlboiler driver - these are seperate binaries, here we are
-# choosing postgresql
-GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+# Go 1.16 and above:
+go install github.com/volatiletech/sqlboiler/v4@latest
+go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
+
+# Go 1.15 and below:
+# Install sqlboiler v4 and the postgresql driver (mysql, mssql, sqlite3 also available)
+# NOTE: DO NOT run this inside another Go module (like your project) as it will
+# pollute your go.mod with a bunch of stuff you don't want and your binary
+# will not get installed.
+GO111MODULE=on go get -u -t github.com/volatiletech/sqlboiler/v4
+GO111MODULE=on go get github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql
 ```
 
 To install `sqlboiler` as a dependency in your project use the commands below
@@ -291,10 +299,9 @@ inside of your go module's directory tree. This will install the dependencies
 into your `go.mod` file at the correct version.
 
 ```shell
-# Do not forget the trailing /v4
+# Do not forget the trailing /v4 and /v8 in the following commands
 go get github.com/volatiletech/sqlboiler/v4
 # Assuming you're going to use the null package for its additional null types
-# Do not forget the trailing /v8
 go get github.com/volatiletech/null/v8
 ```
 

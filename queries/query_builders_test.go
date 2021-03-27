@@ -125,6 +125,10 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{from: []string{"t"}, distinct: "id, t.*", joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
 		{&Query{from: []string{"t"}, distinct: "id, t.*", count: true, joins: []join{{JoinInner, "dogs d on d.cat_id = t.id", nil}}}, nil},
 		{&Query{from: []string{"t"}, where: []where{{clause: "deleted_at is null"}, {clause: "deleted_at = survives"}}, removeSoftDelete: true}, nil},
+		{&Query{
+			from:        []string{"articles"},
+			expressions: []argClause{{clause: "MATCH (title) AGAINST (?) AS score", args: []interface{}{"+MySQL"}}},
+		}, []interface{}{"+MySQL"}},
 	}
 
 	for i, test := range tests {

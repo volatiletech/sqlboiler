@@ -227,6 +227,24 @@ func Select(columns ...string) QueryMod {
 	}
 }
 
+type expressionQueryMod struct {
+	expression string
+	args       []interface{}
+}
+
+// Apply implements QueryMod.Apply.
+func (qm expressionQueryMod) Apply(q *queries.Query) {
+	queries.AppendExpression(q, qm.expression, qm.args...)
+}
+
+// Select a specific column
+func Expression(expression string, args ...interface{}) QueryMod {
+	return expressionQueryMod{
+		expression: expression,
+		args:       args,
+	}
+}
+
 // Where allows you to specify a where clause for your statement. If multiple
 // Where statements are used they are combined with 'and'
 func Where(clause string, args ...interface{}) QueryMod {

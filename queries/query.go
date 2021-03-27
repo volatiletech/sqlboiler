@@ -30,22 +30,23 @@ type Query struct {
 	load     []string
 	loadMods map[string]Applicator
 
-	delete     bool
-	update     map[string]interface{}
-	withs      []argClause
-	selectCols []string
-	count      bool
-	from       []string
-	joins      []join
-	where      []where
-	groupBy    []string
-	orderBy    []argClause
-	having     []argClause
-	limit      int
-	offset     int
-	forlock    string
-	distinct   string
-	comment    string
+	delete      bool
+	update      map[string]interface{}
+	withs       []argClause
+	selectCols  []string
+	expressions []argClause
+	count       bool
+	from        []string
+	joins       []join
+	where       []where
+	groupBy     []string
+	orderBy     []argClause
+	having      []argClause
+	limit       int
+	offset      int
+	forlock     string
+	distinct    string
+	comment     string
 
 	// This field is a hack to allow a query to strip out the reference
 	// to deleted at is null.
@@ -289,6 +290,11 @@ func SetUpdate(q *Query, cols map[string]interface{}) {
 // AppendSelect on the query.
 func AppendSelect(q *Query, columns ...string) {
 	q.selectCols = append(q.selectCols, columns...)
+}
+
+// AppendExpression on the query.
+func AppendExpression(q *Query, expression string, args ...interface{}) {
+	q.expressions = append(q.expressions, argClause{clause: expression, args: args})
 }
 
 // AppendFrom on the query.

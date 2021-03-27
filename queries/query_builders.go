@@ -90,6 +90,13 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteByte('*')
 	}
 
+	if len(q.expressions) != 0 {
+		buf.WriteString(", ")
+		exprs, exprArgs := writeExpressions(q)
+		buf.WriteString(strings.Join(exprs, ", "))
+		args = append(args, exprArgs...)
+	}
+
 	// close SQL COUNT function
 	if q.count {
 		buf.WriteByte(')')
@@ -329,6 +336,18 @@ func writeAsStatements(q *Query) []string {
 	}
 
 	return cols
+}
+
+func writeExpressions(q *Query) ([]string, []interface{}) {
+	exprs := make([]string, len(q.expressions))
+	args := make([]interface{}, 0)
+
+	for i, expr := range q.expressions {
+		exprs[i] = expr.clause
+		args = append(args, expr.args...)
+	}
+
+	return exprs, args
 }
 
 // whereClause parses a where slice and converts it into a

@@ -1,0 +1,1 @@
+SELECT "title", MATCH (title) AGAINST (?) AS score FROM "articles";

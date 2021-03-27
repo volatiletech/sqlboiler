@@ -46,6 +46,38 @@ func BuildQuery(q *Query) (string, []interface{}) {
 	return bufStr, args
 }
 
+// buildSelectColumns builds columns
+func buildSelectColumns(q *Query) []string {
+	hasSelectCols := len(q.selectCols) != 0
+	hasJoins := len(q.joins) != 0
+
+	if hasJoins && hasSelectCols && !q.count {
+		selectColsWithAs := writeAsStatements(q)
+		// Don't identQuoteSlice - writeAsStatements does this
+		return selectColsWithAs
+	} else if hasSelectCols {
+		return strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.selectCols)
+	} else if hasJoins && !q.count {
+		selectColsWithStars := writeStars(q)
+		return selectColsWithStars
+	}
+
+	return []string{}
+}
+
+// buildSelectExprs builds columns and expressions
+func buildSelectExprs(q *Query) ([]string, []interface{}) {
+	cols := buildSelectColumns(q)
+
+	if len(q.expressions) == 0 {
+		return cols, nil
+	}
+
+	exprs, args := writeExpressions(q)
+	cols = append(cols, exprs...)
+	return cols, args
+}
+
 func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf := strmangle.GetBuffer()
 	var args []interface{}
@@ -65,9 +97,8 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		buf.WriteString("COUNT(")
 	}
 
-	hasSelectCols := len(q.selectCols) != 0
-	hasJoins := len(q.joins) != 0
 	hasDistinct := q.distinct != ""
+
 	if hasDistinct {
 		buf.WriteString("DISTINCT ")
 		if q.count {
@@ -77,24 +108,18 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		if q.count {
 			buf.WriteString(")")
 		}
-	} else if hasJoins && hasSelectCols && !q.count {
-		selectColsWithAs := writeAsStatements(q)
-		// Don't identQuoteSlice - writeAsStatements does this
-		buf.WriteString(strings.Join(selectColsWithAs, ", "))
-	} else if hasSelectCols {
-		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.selectCols), ", "))
-	} else if hasJoins && !q.count {
-		selectColsWithStars := writeStars(q)
-		buf.WriteString(strings.Join(selectColsWithStars, ", "))
 	} else {
-		buf.WriteByte('*')
-	}
+		// build columns and expressions...
+		exprs, exprArgs := buildSelectExprs(q)
 
-	if len(q.expressions) != 0 {
-		buf.WriteString(", ")
-		exprs, exprArgs := writeExpressions(q)
-		buf.WriteString(strings.Join(exprs, ", "))
-		args = append(args, exprArgs...)
+		if len(exprs) == 0 {
+			// ...fallback to all columns if there is neither
+			buf.WriteByte('*')
+		} else {
+			buf.WriteString(strings.Join(exprs, ", "))
+
+			args = append(args, exprArgs...)
+		}
 	}
 
 	// close SQL COUNT function

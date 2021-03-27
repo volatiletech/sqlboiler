@@ -129,6 +129,11 @@ func TestBuildQuery(t *testing.T) {
 			from:        []string{"articles"},
 			expressions: []argClause{{clause: "MATCH (title) AGAINST (?) AS score", args: []interface{}{"+MySQL"}}},
 		}, []interface{}{"+MySQL"}},
+		{&Query{
+			from:        []string{"articles"},
+			selectCols:  []string{"title"},
+			expressions: []argClause{{clause: "MATCH (title) AGAINST (?) AS score", args: []interface{}{"+MySQL"}}},
+		}, []interface{}{"+MySQL"}},
 	}
 
 	for i, test := range tests {

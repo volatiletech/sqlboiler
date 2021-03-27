@@ -1,1 +1,1 @@
-SELECT *, MATCH (title) AGAINST (?) AS score FROM "articles";
+SELECT MATCH (title) AGAINST (?) AS score FROM "articles";

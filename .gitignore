@@ -9,3 +9,4 @@ testschema.sql
 .cover
 *.sqlite3
 issue*.sql
+.idea

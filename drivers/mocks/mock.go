@@ -224,6 +224,40 @@ func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.PrimaryK
 	}[tableName], nil
 }
 
+// UniqueKeyInfo returns mock unique key info for the passed in table name
+func (m *MockDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.PrimaryKey, error) {
+	return map[string][]*drivers.PrimaryKey{
+		"pilots": {{
+			Name:    "pilot_id_ukey",
+			Columns: []string{"id"},
+		}},
+		"airports": {{
+			Name:    "airport_id_ukey",
+			Columns: []string{"id"},
+		}},
+		"jets": {{
+			Name:    "jet_id_ukey",
+			Columns: []string{"id"},
+		}},
+		"licenses": {{
+			Name:    "license_id_ukey",
+			Columns: []string{"id"},
+		}},
+		"hangars": {{
+			Name:    "hangar_id_ukey",
+			Columns: []string{"id"},
+		}},
+		"languages": {{
+			Name:    "language_id_ukey",
+			Columns: []string{"id"},
+		}},
+		"pilot_languages": {{
+			Name:    "pilot_languages_ukey",
+			Columns: []string{"pilot_id", "language_id"},
+		}},
+	}[tableName], nil
+}
+
 // UseLastInsertID returns a database mock LastInsertID compatibility flag
 func (m *MockDriver) UseLastInsertID() bool { return false }
 

@@ -38,7 +38,8 @@ func TestDriver(t *testing.T) {
 	}
 
 	out := &bytes.Buffer{}
-	createDB := exec.Command("mysql", "-h", envHostname, "-u", envUsername, fmt.Sprintf("-p%s", envPassword), envDatabase)
+	createDB := exec.Command("mysql", "-h", envHostname, "-P", envPort, "-u", envUsername, fmt.Sprintf("-p%s", envPassword), envDatabase)
+	t.Logf(createDB.String())
 	createDB.Stdout = out
 	createDB.Stderr = out
 	createDB.Stdin = bytes.NewReader(b)

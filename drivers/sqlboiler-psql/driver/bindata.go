@@ -323,7 +323,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	}},
 	"templates_test": {nil, map[string]*bintree{
 		"singleton": {nil, map[string]*bintree{
-			"psql_main_test.go.tpl": {templates_testSingletonPsql_main_testGoTpl, map[string]*bintree{}},
+			"psql_main_test.go.tpl":   {templates_testSingletonPsql_main_testGoTpl, map[string]*bintree{}},
 			"psql_suites_test.go.tpl": {templates_testSingletonPsql_suites_testGoTpl, map[string]*bintree{}},
 		}},
 		"upsert.go.tpl": {templates_testUpsertGoTpl, map[string]*bintree{}},

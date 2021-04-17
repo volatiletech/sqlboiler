@@ -384,6 +384,79 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 	return pkey, nil
 }
 
+// UniqueKeysInfo looks up the unique key for a table.
+func (p *PostgresDriver) UniqueKeysInfo(schema, tableName string) ([]*drivers.PrimaryKey, error) {
+	var err error
+
+	query := `
+	select tc.constraint_name
+	from information_schema.table_constraints as tc
+	where tc.table_name = ? and tc.constraint_type = 'UNIQUE' and tc.table_schema = ?;`
+
+	var ukeysName []string
+	var ukeyRows *sql.Rows
+	if ukeyRows, err = p.conn.Query(query, tableName, schema); err != nil {
+		return nil, err
+	}
+	defer ukeyRows.Close()
+	for ukeyRows.Next() {
+		var keyName string
+
+		err = ukeyRows.Scan(&keyName)
+		if err != nil {
+			return nil, err
+		}
+		ukeysName = append(ukeysName, keyName)
+	}
+
+	queryColumns := `
+	select kcu.constraint_name, kcu.column_name
+	from information_schema.key_column_usage as kcu
+	where table_name = ? and constraint_name in (?` + strings.Repeat(",?", len(ukeysName)-1) + `) and table_schema = ?
+	order by kcu.constraint_name, kcu.ordinal_position;`
+
+	queryArgs := []interface{}{tableName}
+	for _, keyName := range ukeysName {
+		queryArgs = append(queryArgs, keyName)
+	}
+	queryArgs = append(queryArgs, schema)
+
+	var rows *sql.Rows
+	if rows, err = p.conn.Query(queryColumns, queryArgs...); err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ukeysMap := make(map[string]*drivers.PrimaryKey)
+	for rows.Next() {
+		var keyName, column string
+
+		err = rows.Scan(&keyName, &column)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := ukeysMap[keyName]; !ok {
+			ukeysMap[keyName] = &drivers.PrimaryKey{
+				Name:    keyName,
+				Columns: []string{column},
+			}
+		} else {
+			ukeysMap[keyName].Columns = append(ukeysMap[keyName].Columns, column)
+		}
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	ukeys := make([]*drivers.PrimaryKey, 0)
+	for _, key := range ukeysMap {
+		ukeys = append(ukeys, key)
+	}
+
+	return ukeys, nil
+}
+
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey

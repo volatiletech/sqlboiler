@@ -10,8 +10,9 @@ type Table struct {
 	SchemaName string   `json:"schema_name"`
 	Columns    []Column `json:"columns"`
 
-	PKey  *PrimaryKey  `json:"p_key"`
-	FKeys []ForeignKey `json:"f_keys"`
+	PKey     *PrimaryKey   `json:"p_key"`
+	UniqKeys []*PrimaryKey `json:"uniq_keys"`
+	FKeys    []ForeignKey  `json:"f_keys"`
 
 	IsJoinTable bool `json:"is_join_table"`
 

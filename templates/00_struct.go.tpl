@@ -39,6 +39,18 @@ var {{$alias.UpSingular}}Columns = struct {
 	{{end -}}
 }
 
+var {{$alias.UpSingular}}TableColumns = struct {
+	{{range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{$colAlias}} string
+	{{end -}}
+}{
+	{{range $column := .Table.Columns -}}
+	{{- $colAlias := $alias.Column $column.Name -}}
+	{{$colAlias}}: "{{$orig_tbl_name}}.{{$column.Name}}",
+	{{end -}}
+}
+
 {{/* Generated where helpers for all types in the database */}}
 // Generated where
 {{- range .Table.Columns -}}

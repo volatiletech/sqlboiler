@@ -4,6 +4,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Add `models.TableColumns.MODELNAME` which has the table.column name, useful
+  for custom printf style queries (thanks @sadayuki-matsuno)
+
 ## [v4.5.0] - 2021-03-14
 
 ### Added

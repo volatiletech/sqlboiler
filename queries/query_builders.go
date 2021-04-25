@@ -56,8 +56,8 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString("SELECT ")
 
 	if q.dialect.UseTopClause {
-		if q.limit != 0 && q.offset == 0 {
-			fmt.Fprintf(buf, " TOP (%d) ", q.limit)
+		if q.limit != nil && q.offset == 0 {
+			fmt.Fprintf(buf, " TOP (%d) ", *q.limit)
 		}
 	}
 
@@ -242,8 +242,8 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	}
 
 	if !q.dialect.UseTopClause {
-		if q.limit != 0 {
-			fmt.Fprintf(buf, " LIMIT %d", q.limit)
+		if q.limit != nil {
+			fmt.Fprintf(buf, " LIMIT %d", *q.limit)
 		}
 
 		if q.offset != 0 {
@@ -272,8 +272,8 @@ func writeModifiers(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 			// https://docs.microsoft.com/en-us/sql/t-sql/queries/select-order-by-clause-transact-sql?view=sql-server-ver15
 			fmt.Fprintf(buf, " OFFSET %d ROWS", q.offset)
 
-			if q.limit != 0 {
-				fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", q.limit)
+			if q.limit != nil {
+				fmt.Fprintf(buf, " FETCH NEXT %d ROWS ONLY", *q.limit)
 			}
 		}
 	}

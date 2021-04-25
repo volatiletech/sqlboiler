@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
@@ -19,6 +20,10 @@ var writeGoldenFiles = flag.Bool(
 	"Write golden files.",
 )
 
+func newIntPtr(a int) *int {
+	return &a
+}
+
 func TestBuildQuery(t *testing.T) {
 	t.Parallel()
 
@@ -27,7 +32,7 @@ func TestBuildQuery(t *testing.T) {
 		args []interface{}
 	}{
 		{&Query{from: []string{"t"}}, nil},
-		{&Query{from: []string{"q"}, limit: 5, offset: 6}, nil},
+		{&Query{from: []string{"q"}, limit: newIntPtr(5), offset: 6}, nil},
 		{&Query{
 			from: []string{"q"},
 			orderBy: []argClause{
@@ -81,7 +86,7 @@ func TestBuildQuery(t *testing.T) {
 			where: []where{
 				{clause: "(id=? and thing=?) or stuff=?", args: []interface{}{1, 2, 3}},
 			},
-			limit: 5,
+			limit: newIntPtr(5),
 		}, []interface{}{1, 2, 3}},
 		{&Query{
 			from: []string{"thing happy", `"fun"`, `stuff`},
@@ -94,7 +99,7 @@ func TestBuildQuery(t *testing.T) {
 				{clause: "aa=? or bb=? or cc=?", orSeparator: true, args: []interface{}{4, 5, 6}},
 				{clause: "dd=? or ee=? or ff=? and gg=?", args: []interface{}{7, 8, 9, 10}},
 			},
-			limit: 5,
+			limit: newIntPtr(5),
 		}, []interface{}{2, 3, 1, 4, 5, 6, 7, 8, 9, 10}},
 		{&Query{from: []string{"cats"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{from: []string{"cats c"}, joins: []join{{JoinInner, "dogs d on d.cat_id = cats.id", nil}}}, nil},
@@ -361,6 +366,7 @@ func TestNotInClause(t *testing.T) {
 		}
 	}
 }
+
 func TestInClause(t *testing.T) {
 	t.Parallel()
 
@@ -502,6 +508,36 @@ func TestInClause(t *testing.T) {
 		}
 		if !reflect.DeepEqual(args, test.args) {
 			t.Errorf("%d) Mismatch between expected args:\n%#v\n%#v\n", i, test.args, args)
+		}
+	}
+}
+
+func TestLimitClause(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		limit *int
+		expectPredicate func(sql string) bool
+	}{
+		{nil, func(sql string) bool {
+			return !strings.Contains(sql,"LIMIT")
+		}},
+		{newIntPtr(0), func(sql string) bool {
+			return strings.Contains(sql, "LIMIT 0")
+		}},
+		{newIntPtr(5), func(sql string) bool {
+			return strings.Contains(sql, "LIMIT 5")
+		}},
+	}
+
+	for i, test := range tests {
+		q := &Query{
+			limit: test.limit,
+			dialect: &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true, UseTopClause: false},
+		}
+		sql, _ := BuildQuery(q)
+		if !test.expectPredicate(sql) {
+			t.Errorf("%d) Unexpected built SQL query: %s", i, sql)
 		}
 	}
 }

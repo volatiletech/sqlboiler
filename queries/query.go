@@ -41,7 +41,7 @@ type Query struct {
 	groupBy    []string
 	orderBy    []argClause
 	having     []argClause
-	limit      int
+	limit      *int
 	offset     int
 	forlock    string
 	distinct   string
@@ -263,7 +263,7 @@ func SetDelete(q *Query) {
 
 // SetLimit on the query.
 func SetLimit(q *Query, limit int) {
-	q.limit = limit
+	q.limit = &limit
 }
 
 // SetOffset on the query.

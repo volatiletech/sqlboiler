@@ -11,6 +11,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Add `models.TableColumns.MODELNAME` which has the table.column name, useful
   for custom printf style queries (thanks @sadayuki-matsuno)
 
+### Fixed
+
+- Fix limit 0 queries (no longer omits limit clause) (thanks @longngn)
+
 ## [v4.5.0] - 2021-03-14
 
 ### Added

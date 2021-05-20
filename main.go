@@ -103,6 +103,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
 	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
+	rootCmd.PersistentFlags().BoolP("always-wrap-errors", "", false, "Wrap all returned errors with stacktraces, also sql.ErrNoRows")
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("add-soft-deletes", "", false, "Enable soft deletion by updating deleted_at timestamp")
@@ -180,6 +181,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
 		NoDriverTemplates: viper.GetBool("no-driver-templates"),
 		NoBackReferencing: viper.GetBool("no-back-referencing"),
+		AlwaysWrapErrors:  viper.GetBool("always-wrap-errors"),
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		TagIgnore:         viper.GetStringSlice("tag-ignore"),

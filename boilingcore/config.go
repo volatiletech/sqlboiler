@@ -30,6 +30,7 @@ type Config struct {
 	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
 	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
 	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
+	AlwaysWrapErrors  bool     `toml:"always_wrap_errors,omitempty" json:"always_wrap_errors,omitempty"`
 	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
 	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
 	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`

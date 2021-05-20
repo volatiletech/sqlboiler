@@ -148,6 +148,7 @@ func (s *State) Run() error {
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		NoBackReferencing: s.Config.NoBackReferencing,
+		AlwaysWrapErrors:  s.Config.AlwaysWrapErrors,
 		StructTagCasing:   s.Config.StructTagCasing,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,

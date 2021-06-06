@@ -177,6 +177,22 @@ func TestNullDecimal_JSON(t *testing.T) {
 	}
 }
 
+func TestNullDecimal_JSONNil(t *testing.T) {
+	t.Parallel()
+
+	var n NullDecimal
+	b, _ := json.Marshal(n)
+	if string(b) != `null` {
+		t.Errorf("want: null, got: %s", b)
+	}
+
+	n2 := new(NullDecimal)
+	b, _ = json.Marshal(n2)
+	if string(b) != `null` {
+		t.Errorf("want: null, got: %s", b)
+	}
+}
+
 func TestNullDecimal_IsZero(t *testing.T) {
 	t.Parallel()
 

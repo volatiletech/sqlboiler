@@ -14,6 +14,15 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - Fix limit 0 queries (no longer omits limit clause) (thanks @longngn)
+- Fix ordering issue when doing where clause on `deleted_at` and also trying to
+  query for deleted_at
+- Fix filename generation for tables that begin with `_`
+- Add MarshalJSON implementation to NullDecimal to fix marshalling this type
+  when nil.
+- Fix issue with Go 1.16 compatibility for mssql driver by bumping mssql version
+  (thanks @stefkampen)
+- Fix Remove set operations for to-many relationships error when passing in nil
+  or empty arrays of related models, it's now a no-op.
 
 ## [v4.5.0] - 2021-03-14
 

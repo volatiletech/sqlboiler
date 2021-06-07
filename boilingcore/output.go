@@ -139,6 +139,9 @@ func executeTemplates(e executeTemplateData) error {
 			}
 
 			fName := e.data.Table.Name
+			if strings.HasPrefix(fName, "_") {
+				fName = "und" + fName
+			}
 			if e.isTest {
 				fName += "_test"
 			}

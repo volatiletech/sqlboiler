@@ -417,20 +417,20 @@ func (q *Query) removeSoftDeleteWhere() {
 		return
 	}
 
-	for i := 0; i < len(q.where); i++ {
+	for i := len(q.where) - 1; i >= 0; i-- {
 		w := q.where[i]
 		if w.kind != whereKindNormal || !deletedAtRgx.MatchString(w.clause) {
 			continue
 		}
 
-		// It's vitaly important we preserve order here
+		// It's of vital importance we preserve order here
 		if i != len(q.where)-1 {
 			// If this is not the last element we shift all elements
 			// left one.
 			copy(q.where[i:], q.where[i+1:])
 		}
 		q.where = q.where[:len(q.where)-1]
-		// There shouldn't be multiple of these
+		// Only delete one of these - the rest could be from the user.
 		break
 	}
 }

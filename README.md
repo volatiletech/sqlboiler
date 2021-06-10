@@ -1005,6 +1005,16 @@ To disable this feature use `--no-auto-timestamps`.
 
 Note: You can set the timezone for this feature by calling `boil.SetLocation()`
 
+#### Customizing the timestamp columns
+
+Set the `auto-columns` map in your configuration file
+
+```toml
+[auto-columns]
+    created = "createdAt"
+    updated = "updatedAt"
+```
+
 #### Skipping Automatic Timestamps
 
 If for a given query you do not want timestamp columns to be re-computed prior

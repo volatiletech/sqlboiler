@@ -160,6 +160,7 @@ func (s *State) Run() error {
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
+		AutoColumns: s.Config.AutoColumns,
 	}
 
 	for _, v := range s.Config.TagIgnore {

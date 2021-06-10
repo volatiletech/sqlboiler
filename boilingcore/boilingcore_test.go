@@ -127,6 +127,17 @@ func testNew(t *testing.T, aliases Aliases) {
 		fmt.Println()
 	}
 
+	// From go1.16 dependencies are not auto downloaded
+	cmd = exec.Command("go", "mod", "tidy")
+	cmd.Dir = state.Config.OutFolder
+	cmd.Stderr = buf
+
+	if err = cmd.Run(); err != nil {
+		t.Errorf("go mod tidy cmd execution failed: %s", err)
+		outputCompileErrors(buf, state.Config.OutFolder)
+		fmt.Println()
+	}
+
 	cmd = exec.Command("go", "test", "-c")
 	cmd.Dir = state.Config.OutFolder
 	cmd.Stderr = buf

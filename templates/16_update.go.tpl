@@ -45,6 +45,13 @@ func (o *{{$alias.UpSingular}}) UpdateGP({{if not .NoContext}}ctx context.Contex
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	return o.UpdateBy({{if not .NoContext}}ctx, {{end -}} exec, columns, nil)
+}
+
+// UpdateBy does the same as Update except it allows updated by columns other than primary keys.
+// If updateBy is nil, the behaviour will be the same as Update.
+// See Update for more documentation.
+func (o *{{$alias.UpSingular}}) UpdateBy({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns, updateBy []string) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	{{- template "timestamp_update_helper" . -}}
 
 	var err error
@@ -54,15 +61,19 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 	}
 	{{end -}}
 
-	key := makeCacheKey(columns, nil)
+	key := makeCacheKey(columns, updateBy)
 	{{$alias.DownSingular}}UpdateCacheMut.RLock()
 	cache, cached := {{$alias.DownSingular}}UpdateCache[key]
 	{{$alias.DownSingular}}UpdateCacheMut.RUnlock()
 
+	if updateBy == nil {
+		updateBy = {{$alias.DownSingular}}PrimaryKeyColumns
+	}
+
 	if !cached {
 		wl := columns.UpdateColumnSet(
 			{{$alias.DownSingular}}AllColumns,
-			{{$alias.DownSingular}}PrimaryKeyColumns,
+			updateBy,
 		)
 		{{if .Dialect.UseAutoColumns -}}
 		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}ColumnsWithAuto)
@@ -78,9 +89,9 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 
 		cache.query = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE %s",
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
-			strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}len(wl)+1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns),
+			strmangle.WhereClause("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}len(wl)+1{{else}}0{{end}}, updateBy),
 		)
-		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, append(wl, {{$alias.DownSingular}}PrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, append(wl, updateBy...))
 		if err != nil {
 			return {{if not .NoRowsAffected}}0, {{end -}} err
 		}
@@ -168,7 +179,6 @@ func (q {{$alias.DownSingular}}Query) UpdateAllG({{if not .NoContext}}ctx contex
 // UpdateAll updates all rows with the specified column values.
 func (q {{$alias.DownSingular}}Query) UpdateAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	queries.SetUpdate(q.Query, cols)
-
 	{{if .NoRowsAffected -}}
 		{{if .NoContext -}}
 	_, err := q.Query.Exec(exec)

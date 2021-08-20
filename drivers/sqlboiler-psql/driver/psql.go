@@ -416,6 +416,7 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 	if rows, err = p.conn.Query(query, tableName, schema); err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var fkey drivers.ForeignKey

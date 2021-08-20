@@ -331,6 +331,7 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 	if rows, err = m.conn.Query(query, schema, schema, tableName); err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var fkey drivers.ForeignKey

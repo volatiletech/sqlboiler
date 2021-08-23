@@ -134,6 +134,9 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
+
+	writeAppendComment(q, buf)
+
 	return buf, args
 }
 
@@ -156,6 +159,8 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
+
+	writeAppendComment(q, buf)
 
 	return buf, args
 }
@@ -200,6 +205,8 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	writeModifiers(q, buf, &args)
 
 	buf.WriteByte(';')
+
+	writeAppendComment(q, buf)
 
 	return buf, args
 }
@@ -602,6 +609,16 @@ func writeComment(q *Query, buf *bytes.Buffer) {
 		buf.WriteString(line)
 		buf.WriteByte('\n')
 	}
+}
+
+func writeAppendComment(q *Query, buf *bytes.Buffer) {
+	if len(q.appendComment) == 0 {
+		return
+	}
+
+	buf.WriteString(" /* ")
+	buf.WriteString(q.appendComment)
+	buf.WriteString(" */ ")
 }
 
 func writeCTEs(q *Query, buf *bytes.Buffer, args *[]interface{}) {

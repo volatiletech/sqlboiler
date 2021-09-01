@@ -2,6 +2,16 @@ package drivers
 
 import "fmt"
 
+type ForeignKeyAction string
+
+const (
+	ForeignKeyNoAction   ForeignKeyAction = "a"
+	ForeignKeyRestrict                    = "r"
+	ForeignKeyCascade                     = "c"
+	ForeignKeySetNull                     = "n"
+	ForeignKeySetDefault                  = "d"
+)
+
 // PrimaryKey represents a primary key constraint in a database
 type PrimaryKey struct {
 	Name    string   `json:"name"`
@@ -10,11 +20,13 @@ type PrimaryKey struct {
 
 // ForeignKey represents a foreign key constraint in a database
 type ForeignKey struct {
-	Table    string `json:"table"`
-	Name     string `json:"name"`
-	Column   string `json:"column"`
-	Nullable bool   `json:"nullable"`
-	Unique   bool   `json:"unique"`
+	Table        string           `json:"table"`
+	Name         string           `json:"name"`
+	Column       string           `json:"column"`
+	Nullable     bool             `json:"nullable"`
+	Unique       bool             `json:"unique"`
+	DeleteAction ForeignKeyAction `json:"delete_action"`
+	UpdateAction ForeignKeyAction `json:"update_action"`
 
 	ForeignTable          string `json:"foreign_table"`
 	ForeignColumn         string `json:"foreign_column"`

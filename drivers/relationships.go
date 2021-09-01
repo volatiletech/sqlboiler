@@ -7,10 +7,12 @@ package drivers
 type ToOneRelationship struct {
 	Name string `json:"name"`
 
-	Table    string `json:"table"`
-	Column   string `json:"column"`
-	Nullable bool   `json:"nullable"`
-	Unique   bool   `json:"unique"`
+	Table        string           `json:"table"`
+	Column       string           `json:"column"`
+	Nullable     bool             `json:"nullable"`
+	Unique       bool             `json:"unique"`
+	DeleteAction ForeignKeyAction `json:"delete_action"`
+	UpdateAction ForeignKeyAction `json:"update_action"`
 
 	ForeignTable          string `json:"foreign_table"`
 	ForeignColumn         string `json:"foreign_column"`
@@ -24,10 +26,12 @@ type ToOneRelationship struct {
 type ToManyRelationship struct {
 	Name string `json:"name"`
 
-	Table    string `json:"table"`
-	Column   string `json:"column"`
-	Nullable bool   `json:"nullable"`
-	Unique   bool   `json:"unique"`
+	Table        string           `json:"table"`
+	Column       string           `json:"column"`
+	Nullable     bool             `json:"nullable"`
+	Unique       bool             `json:"unique"`
+	DeleteAction ForeignKeyAction `json:"delete_action"`
+	UpdateAction ForeignKeyAction `json:"update_action"`
 
 	ForeignTable          string `json:"foreign_table"`
 	ForeignColumn         string `json:"foreign_column"`
@@ -93,11 +97,13 @@ func toManyRelationships(table Table, tables []Table) []ToManyRelationship {
 
 func buildToOneRelationship(localTable Table, foreignKey ForeignKey, foreignTable Table, tables []Table) ToOneRelationship {
 	return ToOneRelationship{
-		Name:     foreignKey.Name,
-		Table:    localTable.Name,
-		Column:   foreignKey.ForeignColumn,
-		Nullable: foreignKey.ForeignColumnNullable,
-		Unique:   foreignKey.ForeignColumnUnique,
+		Name:         foreignKey.Name,
+		Table:        localTable.Name,
+		Column:       foreignKey.ForeignColumn,
+		Nullable:     foreignKey.ForeignColumnNullable,
+		Unique:       foreignKey.ForeignColumnUnique,
+		DeleteAction: foreignKey.DeleteAction,
+		UpdateAction: foreignKey.UpdateAction,
 
 		ForeignTable:          foreignTable.Name,
 		ForeignColumn:         foreignKey.Column,
@@ -114,6 +120,8 @@ func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTab
 			Column:                foreignKey.ForeignColumn,
 			Nullable:              foreignKey.ForeignColumnNullable,
 			Unique:                foreignKey.ForeignColumnUnique,
+			DeleteAction:          foreignKey.DeleteAction,
+			UpdateAction:          foreignKey.UpdateAction,
 			ForeignTable:          foreignTable.Name,
 			ForeignColumn:         foreignKey.Column,
 			ForeignColumnNullable: foreignKey.Nullable,
@@ -123,10 +131,12 @@ func buildToManyRelationship(localTable Table, foreignKey ForeignKey, foreignTab
 	}
 
 	relationship := ToManyRelationship{
-		Table:    localTable.Name,
-		Column:   foreignKey.ForeignColumn,
-		Nullable: foreignKey.ForeignColumnNullable,
-		Unique:   foreignKey.ForeignColumnUnique,
+		Table:        localTable.Name,
+		Column:       foreignKey.ForeignColumn,
+		Nullable:     foreignKey.ForeignColumnNullable,
+		Unique:       foreignKey.ForeignColumnUnique,
+		DeleteAction: foreignKey.DeleteAction,
+		UpdateAction: foreignKey.UpdateAction,
 
 		ToJoinTable: true,
 		JoinTable:   foreignTable.Name,

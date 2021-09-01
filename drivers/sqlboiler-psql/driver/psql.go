@@ -231,12 +231,12 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		c.is_nullable = 'YES' as is_nullable,
 		(case
 			when (select
-		    case
-			    when column_name = 'is_identity' then (select c.is_identity = 'YES' as is_identity)
-		    else
-			    false
-		    end as is_identity from information_schema.columns
-		    WHERE table_schema='information_schema' and table_name='columns' and column_name='is_identity') IS NULL then 'NO' else is_identity end) = 'YES' as is_identity,
+				case
+					when column_name = 'is_identity' then (select c.is_identity = 'YES' as is_identity)
+				else
+					false
+				end as is_identity from information_schema.columns
+				WHERE table_schema='information_schema' and table_name='columns' and column_name='is_identity') IS NULL then 'NO' else is_identity end) = 'YES' as is_identity,
 		(select exists(
 			select 1
 			from information_schema.table_constraints tc
@@ -409,6 +409,8 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 	query := fmt.Sprintf(`
 	select
 		pgcon.conname,
+		pgcon.confdeltype delete_action,
+		pgcon.confupdtype update_action,
 		pgc.relname as source_table,
 		pgasrc.attname as source_column,
 		dstlookupname.relname as dest_table,
@@ -435,7 +437,7 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 		var sourceTable string
 
 		fkey.Table = tableName
-		err = rows.Scan(&fkey.Name, &sourceTable, &fkey.Column, &fkey.ForeignTable, &fkey.ForeignColumn)
+		err = rows.Scan(&fkey.Name, &fkey.DeleteAction, &fkey.UpdateAction, &sourceTable, &fkey.Column, &fkey.ForeignTable, &fkey.ForeignColumn)
 		if err != nil {
 			return nil, err
 		}

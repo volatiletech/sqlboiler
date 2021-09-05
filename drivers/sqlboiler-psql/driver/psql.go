@@ -380,8 +380,78 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 	}
 
 	pkey.Columns = columns
+	pkey.TitleCase = strmangle.TitleCase(pkey.Name)
 
 	return pkey, nil
+}
+
+// UniqueKeyInfo looks up the constraint unique key for a table.
+func (p *PostgresDriver) UniqueKeyInfo(schema, tableName string) ([]drivers.UniqueKey, error) {
+	var uniquekeys []drivers.UniqueKey
+	var err error
+
+	query := `
+	select tc.constraint_name
+	from information_schema.table_constraints as tc
+	where tc.table_name = $1 and tc.constraint_type = 'UNIQUE' and tc.table_schema = $2;`
+
+	var rows *sql.Rows
+	if rows, err = p.conn.Query(query, tableName, schema); err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var names []string
+	for rows.Next() {
+		var name string
+
+		err = rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	for _, name := range names {
+		queryColumns := `
+	select kcu.column_name
+	from   information_schema.key_column_usage as kcu
+	where  constraint_name = $1 and table_name = $2 and table_schema = $3
+	order by kcu.ordinal_position;`
+
+		if rows, err = p.conn.Query(queryColumns, name, tableName, schema); err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		var columns []string
+		for rows.Next() {
+			var column string
+
+			err = rows.Scan(&column)
+			if err != nil {
+				return nil, err
+			}
+
+			columns = append(columns, column)
+		}
+
+		if err = rows.Err(); err != nil {
+			return nil, err
+		}
+		uniquekeys = append(uniquekeys, drivers.UniqueKey{
+			Name:      name,
+			TitleCase: strmangle.TitleCase(name),
+			Columns:   columns,
+		})
+	}
+
+	return uniquekeys, nil
 }
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.

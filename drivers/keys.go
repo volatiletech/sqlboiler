@@ -4,8 +4,16 @@ import "fmt"
 
 // PrimaryKey represents a primary key constraint in a database
 type PrimaryKey struct {
-	Name    string   `json:"name"`
-	Columns []string `json:"columns"`
+	Name      string   `json:"name"`
+	TitleCase string   `json:"title_case"`
+	Columns   []string `json:"columns"`
+}
+
+// UniqueKey represents a unique key constraint in a database
+type UniqueKey struct {
+	Name      string   `json:"name"`
+	TitleCase string   `json:"title_case"`
+	Columns   []string `json:"columns"`
 }
 
 // ForeignKey represents a foreign key constraint in a database

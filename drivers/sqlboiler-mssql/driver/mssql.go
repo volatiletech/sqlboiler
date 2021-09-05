@@ -328,6 +328,11 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 	return pkey, nil
 }
 
+// UniqueKeyInfo looks up the unique key for a table.
+func (m *MSSQLDriver) UniqueKeyInfo(schema, tableName string) ([]drivers.UniqueKey, error) {
+	return nil, nil
+}
+
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey

@@ -23,6 +23,7 @@
 			],
 			"p_key": {
 				"name": "PRIMARY",
+                "title_case": "",
 				"columns": [
 					"id"
 				]
@@ -66,6 +67,7 @@
 			],
 			"p_key": {
 				"name": "PRIMARY",
+                "title_case": "",
 				"columns": [
 					"id"
 				]
@@ -1814,6 +1816,7 @@
 			],
 			"p_key": {
 				"name": "PRIMARY",
+                "title_case": "",
 				"columns": [
 					"id"
 				]
@@ -1845,6 +1848,7 @@
 			],
 			"p_key": {
 				"name": "PRIMARY",
+                "title_case": "",
 				"columns": [
 					"id"
 				]
@@ -1913,6 +1917,7 @@
 			],
 			"p_key": {
 				"name": "PRIMARY",
+                "title_case": "",
 				"columns": [
 					"video_id",
 					"tag_id"
@@ -1998,6 +2003,7 @@
 			],
 			"p_key": {
 				"name": "PRIMARY",
+                "title_case": "",
 				"columns": [
 					"id"
 				]

@@ -87,14 +87,19 @@ func (m testMockDriver) ForeignKeyInfo(schema, tableName string) ([]ForeignKey, 
 // PrimaryKeyInfo returns mock primary key info for the passed in table name
 func (m testMockDriver) PrimaryKeyInfo(schema, tableName string) (*PrimaryKey, error) {
 	return map[string]*PrimaryKey{
-		"pilots":          {Name: "pilot_id_pkey", Columns: []string{"id"}},
-		"airports":        {Name: "airport_id_pkey", Columns: []string{"id"}},
-		"jets":            {Name: "jet_id_pkey", Columns: []string{"id"}},
-		"licenses":        {Name: "license_id_pkey", Columns: []string{"id"}},
-		"hangars":         {Name: "hangar_id_pkey", Columns: []string{"id"}},
-		"languages":       {Name: "language_id_pkey", Columns: []string{"id"}},
-		"pilot_languages": {Name: "pilot_languages_pkey", Columns: []string{"pilot_id", "language_id"}},
+		"pilots":          {Name: "pilot_id_pkey", TitleCase: "PilotIdPkey", Columns: []string{"id"}},
+		"airports":        {Name: "airport_id_pkey", TitleCase: "AirportIdPkey", Columns: []string{"id"}},
+		"jets":            {Name: "jet_id_pkey", TitleCase: "JetIdPkey", Columns: []string{"id"}},
+		"licenses":        {Name: "license_id_pkey", TitleCase: "LicenseIdPkey", Columns: []string{"id"}},
+		"hangars":         {Name: "hangar_id_pkey", TitleCase: "HangerIdPkey", Columns: []string{"id"}},
+		"languages":       {Name: "language_id_pkey", TitleCase: "LanguageIdPkey", Columns: []string{"id"}},
+		"pilot_languages": {Name: "pilot_languages_pkey", TitleCase: "PilotLanguagesPkey", Columns: []string{"pilot_id", "language_id"}},
 	}[tableName], nil
+}
+
+// UniqueKeyInfo returns mock unique key info for the passed in table name
+func (m testMockDriver) UniqueKeyInfo(schema, tableName string) ([]UniqueKey, error) {
+	return map[string][]UniqueKey{}[tableName], nil
 }
 
 // RightQuote is the quoting character for the right side of the identifier

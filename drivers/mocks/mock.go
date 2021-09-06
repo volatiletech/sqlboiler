@@ -194,34 +194,46 @@ func (m *MockDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 func (m *MockDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.PrimaryKey, error) {
 	return map[string]*drivers.PrimaryKey{
 		"pilots": {
-			Name:    "pilot_id_pkey",
-			Columns: []string{"id"},
+			Name:      "pilot_id_pkey",
+			TitleCase: "PilotIdPkey",
+			Columns:   []string{"id"},
 		},
 		"airports": {
-			Name:    "airport_id_pkey",
-			Columns: []string{"id"},
+			Name:      "airport_id_pkey",
+			TitleCase: "AirportIdPkey",
+			Columns:   []string{"id"},
 		},
 		"jets": {
-			Name:    "jet_id_pkey",
-			Columns: []string{"id"},
+			Name:      "jet_id_pkey",
+			TitleCase: "JetIdPkey",
+			Columns:   []string{"id"},
 		},
 		"licenses": {
-			Name:    "license_id_pkey",
-			Columns: []string{"id"},
+			Name:      "license_id_pkey",
+			TitleCase: "LicenseIdPkey",
+			Columns:   []string{"id"},
 		},
 		"hangars": {
-			Name:    "hangar_id_pkey",
-			Columns: []string{"id"},
+			Name:      "hangar_id_pkey",
+			TitleCase: "HangerIdPkey",
+			Columns:   []string{"id"},
 		},
 		"languages": {
-			Name:    "language_id_pkey",
-			Columns: []string{"id"},
+			Name:      "language_id_pkey",
+			TitleCase: "LanguageIdPkey",
+			Columns:   []string{"id"},
 		},
 		"pilot_languages": {
-			Name:    "pilot_languages_pkey",
-			Columns: []string{"pilot_id", "language_id"},
+			Name:      "pilot_languages_pkey",
+			TitleCase: "PilotLanguagesPkey",
+			Columns:   []string{"pilot_id", "language_id"},
 		},
 	}[tableName], nil
+}
+
+// UniqueKeyInfo returns mock primary key info for the passed in table name
+func (m *MockDriver) UniqueKeyInfo(schema, tableName string) ([]drivers.UniqueKey, error) {
+	return map[string][]drivers.UniqueKey{}[tableName], nil
 }
 
 // UseLastInsertID returns a database mock LastInsertID compatibility flag

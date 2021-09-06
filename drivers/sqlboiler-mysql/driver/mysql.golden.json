@@ -28,6 +28,7 @@
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": [
@@ -72,6 +73,7 @@
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
@@ -1821,6 +1823,7 @@
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
@@ -1853,6 +1856,7 @@
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
@@ -1923,6 +1927,7 @@
 					"tag_id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": [
 				{
 					"table": "video_tags",
@@ -2008,6 +2013,7 @@
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": [
 				{
 					"table": "videos",

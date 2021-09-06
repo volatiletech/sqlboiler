@@ -23,10 +23,12 @@
 			],
 			"p_key": {
 				"name": "sponsors_pkey",
+				"title_case": "SponsorsPkey",
 				"columns": [
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": [
@@ -66,10 +68,12 @@
 			],
 			"p_key": {
 				"name": "tags_pkey",
+				"title_case": "TagsPkey",
 				"columns": [
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
@@ -2429,10 +2433,12 @@
 			],
 			"p_key": {
 				"name": "type_monsters_pkey",
+				"title_case": "TypeMonstersPkey",
 				"columns": [
 					"id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
@@ -2490,10 +2496,20 @@
 			],
 			"p_key": {
 				"name": "users_pkey",
+				"title_case": "UsersPkey",
 				"columns": [
 					"id"
 				]
 			},
+			"u_keys": [
+				{
+					"name": "users_primary_email_key",
+					"title_case": "UsersPrimaryEmailKey",
+					"columns": [
+						"primary_email"
+					]
+				}
+			],
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
@@ -2558,11 +2574,13 @@
 			],
 			"p_key": {
 				"name": "video_tags_pkey",
+				"title_case": "VideoTagsPkey",
 				"columns": [
 					"video_id",
 					"tag_id"
 				]
 			},
+			"u_keys": null,
 			"f_keys": [
 				{
 					"table": "video_tags",
@@ -2643,10 +2661,20 @@
 			],
 			"p_key": {
 				"name": "videos_pkey",
+				"title_case": "VideosPkey",
 				"columns": [
 					"id"
 				]
 			},
+			"u_keys": [
+				{
+					"name": "videos_sponsor_id_key",
+					"title_case": "VideosSponsorIDKey",
+					"columns": [
+						"sponsor_id"
+					]
+				}
+			],
 			"f_keys": [
 				{
 					"table": "videos",

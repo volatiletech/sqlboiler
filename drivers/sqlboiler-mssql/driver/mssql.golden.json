@@ -23,7 +23,7 @@
 			],
 			"p_key": {
 				"name": "PK__sponsors",
-                "title_case": "",
+				"title_case": "",
 				"columns": [
 					"id"
 				]
@@ -67,7 +67,7 @@
 			],
 			"p_key": {
 				"name": "PK__tags",
-                "title_case": "",
+				"title_case": "",
 				"columns": [
 					"id"
 				]
@@ -1591,7 +1591,7 @@
 			],
 			"p_key": {
 				"name": "PK__type_mon",
-                "title_case": "",
+				"title_case": "",
 				"columns": [
 					"id"
 				]
@@ -1623,7 +1623,7 @@
 			],
 			"p_key": {
 				"name": "PK__users",
-                "title_case": "",
+				"title_case": "",
 				"columns": [
 					"id"
 				]
@@ -1692,7 +1692,7 @@
 			],
 			"p_key": {
 				"name": "PK__video_ta",
-                "title_case": "",
+				"title_case": "",
 				"columns": [
 					"video_id",
 					"tag_id"
@@ -1778,7 +1778,7 @@
 			],
 			"p_key": {
 				"name": "PK__videos",
-                "title_case": "",
+				"title_case": "",
 				"columns": [
 					"id"
 				]

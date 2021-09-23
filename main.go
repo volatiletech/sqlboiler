@@ -19,7 +19,7 @@ import (
 
 //go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
 
-const sqlBoilerVersion = "4.4.0-razor-1"
+const sqlBoilerVersion = "4.6.0-razor-1"
 
 var (
 	flagConfigFile string

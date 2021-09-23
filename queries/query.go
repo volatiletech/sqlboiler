@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
 
 	"github.com/razor-1/sqlboiler/v4/boil"
 	"github.com/razor-1/sqlboiler/v4/drivers"
@@ -41,11 +42,15 @@ type Query struct {
 	groupBy    []string
 	orderBy    []argClause
 	having     []argClause
-	limit      int
+	limit      *int
 	offset     int
 	forlock    string
 	distinct   string
 	comment    string
+
+	// This field is a hack to allow a query to strip out the reference
+	// to deleted at is null.
+	removeSoftDelete bool
 }
 
 // Applicator exists only to allow
@@ -263,7 +268,7 @@ func SetDelete(q *Query) {
 
 // SetLimit on the query.
 func SetLimit(q *Query, limit int) {
-	q.limit = limit
+	q.limit = &limit
 }
 
 // SetOffset on the query.
@@ -400,4 +405,37 @@ func AppendOrderBy(q *Query, clause string, args ...interface{}) {
 // AppendWith on the query.
 func AppendWith(q *Query, clause string, args ...interface{}) {
 	q.withs = append(q.withs, argClause{clause: clause, args: args})
+}
+
+// RemoveSoftDeleteWhere prevents the automatic soft delete where clause
+// from being included when building the query.
+func RemoveSoftDeleteWhere(q *Query) {
+	q.removeSoftDelete = true
+}
+
+var deletedAtRgx = regexp.MustCompile("deleted_at[\"'`]? is null")
+
+// removeSoftDeleteWhere attempts to remove the soft delete where clause
+// added automatically by sqlboiler.
+func (q *Query) removeSoftDeleteWhere() {
+	if !q.removeSoftDelete {
+		return
+	}
+
+	for i := len(q.where) - 1; i >= 0; i-- {
+		w := q.where[i]
+		if w.kind != whereKindNormal || !deletedAtRgx.MatchString(w.clause) {
+			continue
+		}
+
+		// It's of vital importance we preserve order here
+		if i != len(q.where)-1 {
+			// If this is not the last element we shift all elements
+			// left one.
+			copy(q.where[i:], q.where[i+1:])
+		}
+		q.where = q.where[:len(q.where)-1]
+		// Only delete one of these - the rest could be from the user.
+		break
+	}
 }

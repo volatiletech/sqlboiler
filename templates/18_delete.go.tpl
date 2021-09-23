@@ -132,7 +132,7 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 }
 
 {{if .AddGlobal -}}
-func (q {{$alias.DownSingular}}Query) DeleteAllG({{if not .NoContext}}ctx context.Context{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+func (q {{$alias.DownSingular}}Query) DeleteAllG({{if not .NoContext}}ctx context.Context{{end}}{{if $soft}}{{if not .NoContext}}, {{end}}hardDelete bool{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	return q.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}{{if $soft}}, hardDelete{{end}})
 }
 

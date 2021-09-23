@@ -13,7 +13,7 @@ var (
 
 type (
 	// {{$alias.UpSingular}}Slice is an alias for a slice of pointers to {{$alias.UpSingular}}.
-	// This should generally be used opposed to []{{$alias.UpSingular}}.
+	// This should almost always be used instead of []{{$alias.UpSingular}}.
 	{{$alias.UpSingular}}Slice []*{{$alias.UpSingular}}
 	{{if not .NoHooks -}}
 	// {{$alias.UpSingular}}Hook is the signature for custom {{$alias.UpSingular}} hook methods

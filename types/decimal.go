@@ -108,6 +108,15 @@ func (n *NullDecimal) UnmarshalJSON(data []byte) error {
 	return n.Big.UnmarshalJSON(data)
 }
 
+// MarshalJSON marshals a decimal value
+func (n NullDecimal) MarshalJSON() ([]byte, error) {
+	if n.Big == nil {
+		return []byte("null"), nil
+	}
+
+	return n.Big.MarshalText()
+}
+
 // IsZero implements qmhelper.Nullable
 func (n NullDecimal) IsZero() bool {
 	return n.Big == nil

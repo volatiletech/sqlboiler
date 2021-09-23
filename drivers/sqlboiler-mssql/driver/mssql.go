@@ -395,7 +395,7 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.Float64"
 		case "boolean", "bool", "bit":
 			c.Type = "null.Bool"
-		case "date", "datetime", "datetime2", "smalldatetime", "time":
+		case "date", "datetime", "datetime2", "datetimeoffset", "smalldatetime", "time":
 			c.Type = "null.Time"
 		case "binary", "varbinary":
 			c.Type = "null.Bytes"
@@ -404,7 +404,7 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "xml":
 			c.Type = "null.String"
 		case "uniqueidentifier":
-			c.Type = "null.String"
+			c.Type = "mssql.UniqueIdentifier"
 			c.DBType = "uuid"
 		case "numeric", "decimal", "dec":
 			c.Type = "types.NullDecimal"
@@ -429,7 +429,7 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "float64"
 		case "boolean", "bool", "bit":
 			c.Type = "bool"
-		case "date", "datetime", "datetime2", "smalldatetime", "time":
+		case "date", "datetime", "datetime2", "datetimeoffset", "smalldatetime", "time":
 			c.Type = "time.Time"
 		case "binary", "varbinary":
 			c.Type = "[]byte"
@@ -438,7 +438,7 @@ func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "xml":
 			c.Type = "string"
 		case "uniqueidentifier":
-			c.Type = "string"
+			c.Type = "mssql.UniqueIdentifier"
 			c.DBType = "uuid"
 		case "numeric", "decimal", "dec":
 			c.Type = "types.Decimal"
@@ -553,6 +553,9 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 		},
 		"types.NullDecimal": {
 			Standard: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
+		},
+		"mssql.UniqueIdentifier": {
+			Standard: importers.List{`"github.com/denisenkom/go-mssqldb"`},
 		},
 	}
 	return col, err

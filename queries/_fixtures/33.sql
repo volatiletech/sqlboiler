@@ -1,0 +1,1 @@
+SELECT * FROM "t" WHERE (deleted_at = survives);

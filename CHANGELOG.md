@@ -4,6 +4,55 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.6.0] - 2021-06-06
+
+### Added
+
+- Add `models.TableColumns.MODELNAME` which has the table.column name, useful
+  for custom printf style queries (thanks @sadayuki-matsuno)
+
+### Fixed
+
+- Fix limit 0 queries (no longer omits limit clause) (thanks @longngn)
+- Fix ordering issue when doing where clause on `deleted_at` and also trying to
+  query for deleted_at
+- Fix filename generation for tables that begin with `_`
+- Add MarshalJSON implementation to NullDecimal to fix marshalling this type
+  when nil.
+- Fix issue with Go 1.16 compatibility for mssql driver by bumping mssql version
+  (thanks @stefkampen)
+- Fix Remove set operations for to-many relationships error when passing in nil
+  or empty arrays of related models, it's now a no-op.
+
+## [v4.5.0] - 2021-03-14
+
+### Added
+
+- Add new query mod WithDeleted to sidestep soft deletes in queries that
+  support query mods (note there still is no way to do this for exists/find
+  operations, see #854 for details)
+- Add select hooks to the Find() methods, this was an accidental omission
+  in previous versions (thanks @jakecoffman)
+
+### Changed
+
+- Change go-bindata to v3.22.0
+- Change datetimeoffset and uniqueidentifier types in mssql this is a breaking
+  change if you are using these types, but at least in the case of
+  uniquedidentifier it was not possible to use without this change
+  (thanks @severedsea)
+
+### Fixed
+
+- Fix unnecessary copies in JSON type which improves performance (thanks @bouk)
+- Fix inclusion of foreign key constraints that target generated pg columns
+  (thanks @chochihim)
+- Fix generation failure bug in delete template when using --no-context
+  --add-global-variants and --add-soft-deletes
+- Fix cross-schema psql enum generation bug (thanks @csueiras)
+- Fix bug where column alias was not respected in Load names (thanks @jalan)
+- Fix bug with large uint64 values in eager loading (thanks @maku693)
+
 ## [v4.4.0] - 2020-12-16
 
 ### Added

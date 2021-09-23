@@ -315,6 +315,10 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}GP({{if not $.NoContex
 // Removes related items from R.{{$relAlias.Local}} (uses pointer comparison, removal does not keep order)
 // Sets related.R.{{$relAlias.Foreign}}.
 func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related ...*{{$ftable.UpSingular}}) error {
+	if len(related) == 0 {
+		return nil
+	}
+
 	var err error
 	{{if .ToJoinTable -}}
 	query := fmt.Sprintf(

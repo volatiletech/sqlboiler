@@ -22,6 +22,41 @@ var state *State
 var rgxHasSpaces = regexp.MustCompile(`^\s+`)
 
 func TestNew(t *testing.T) {
+	testNew(t, Aliases{})
+}
+
+func TestNewWithAliases(t *testing.T) {
+	aliases := Aliases{Tables: make(map[string]TableAlias)}
+	mockDriver := mocks.MockDriver{}
+	tableNames, err := mockDriver.TableNames("", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i, tableName := range tableNames {
+		tableAlias := TableAlias{
+			UpPlural:     fmt.Sprintf("Alias%vThings", i),
+			UpSingular:   fmt.Sprintf("Alias%vThing", i),
+			DownPlural:   fmt.Sprintf("alias%vThings", i),
+			DownSingular: fmt.Sprintf("alias%vThing", i),
+		}
+		columns, err := mockDriver.Columns("", tableName, nil, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		tableAlias.Columns = make(map[string]string)
+		for j, column := range columns {
+			tableAlias.Columns[column.Name] = fmt.Sprintf("Alias%vThingColumn%v", i, j)
+		}
+		tableAlias.Relationships = make(map[string]RelationshipAlias)
+
+		aliases.Tables[tableName] = tableAlias
+	}
+
+	testNew(t, aliases)
+}
+
+func testNew(t *testing.T, aliases Aliases) {
 	if testing.Short() {
 		t.SkipNow()
 	}
@@ -52,6 +87,7 @@ func TestNew(t *testing.T) {
 		},
 		Imports:   importers.NewDefaultImports(),
 		TagIgnore: []string{"pass"},
+		Aliases:   aliases,
 	}
 
 	state, err = New(config)

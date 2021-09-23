@@ -15,7 +15,7 @@ import (
 	"github.com/razor-1/sqlboiler/v4/importers"
 
 	"github.com/razor-1/sqlboiler/v4/drivers"
-	_ "github.com/razor-1/sqlboiler/v4/drivers/mocks"
+	"github.com/razor-1/sqlboiler/v4/drivers/mocks"
 )
 
 var state *State

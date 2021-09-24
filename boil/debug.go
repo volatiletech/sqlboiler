@@ -2,8 +2,10 @@ package boil
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 // DebugMode is a flag controlling whether generated sql statements and
@@ -14,6 +16,13 @@ var DebugMode = false
 
 // DebugWriter is where the debug output will be sent if DebugMode is true
 var DebugWriter io.Writer = os.Stdout
+
+// DebugFormatter formats query and args
+var DebugFormatter = func(writer io.Writer, query string, args []interface{}, duration time.Duration) {
+	fmt.Fprintln(writer, query)
+	fmt.Fprintln(writer, args)
+	fmt.Fprintln(writer, duration)
+}
 
 // WithDebug modifies a context to configure debug writing. If true,
 // all queries made using this context will be outputted to the io.Writer

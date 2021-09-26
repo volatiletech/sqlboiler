@@ -189,7 +189,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Replacements:      viper.GetStringSlice("replace"),
 		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
 		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
-		Version:           sqlBoilerVersion,
+		AutoColumns: boilingcore.AutoColumns{
+			Created: viper.GetString("auto-columns.created"),
+			Updated: viper.GetString("auto-columns.updated"),
+			Deleted: viper.GetString("auto-columns.deleted"),
+		},
+
+		Version: sqlBoilerVersion,
 	}
 
 	if cmdConfig.Debug {

@@ -68,6 +68,9 @@ type templateData struct {
 
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
+
+	// AutoColumns set the name of the columns for auto timestamps and soft deletes
+	AutoColumns AutoColumns
 }
 
 func (t templateData) Quotes(s string) string {

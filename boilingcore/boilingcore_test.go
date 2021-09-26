@@ -90,7 +90,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		Aliases:   aliases,
 	}
 
-	state, err = New(config)
+	state, err = New(config, nil)
 	if err != nil {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}

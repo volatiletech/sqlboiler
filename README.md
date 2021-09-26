@@ -454,7 +454,7 @@ Flags:
       --struct-tag-casing string   Decides the casing for go structure tag names. camel, title, alias or snake (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
       --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
-      --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
+      --templates strings          A templates directory, overrides the embedded template folders in sqlboiler
       --version                    Print the version
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
 ```
@@ -763,7 +763,7 @@ output_dir/
     └── jssingle.js
 ```
 
-**Note**: Because the `--templates` flag overrides the internal bindata of `sqlboiler`, if you still
+**Note**: Because the `--templates` flag overrides the embedded templates of `sqlboiler`, if you still
 wish to generate the default templates it's recommended that you include the path to sqlboiler's templates
 as well.
 

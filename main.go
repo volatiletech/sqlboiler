@@ -20,7 +20,7 @@ import (
 //go:embed templates templates_test
 var templatesBuiltin embed.FS
 
-const sqlBoilerVersion = "4.6.0"
+const sqlBoilerVersion = "4.7.0"
 
 var (
 	flagConfigFile string

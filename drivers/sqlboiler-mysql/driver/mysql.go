@@ -191,6 +191,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	select
 	c.column_name,
 	c.column_type,
+	c.column_comment,
 	if(c.data_type = 'enum', c.column_type, c.data_type),
 	if(extra = 'auto_increment','auto_increment',
 		if(version() like '%MariaDB%' and c.column_default = 'NULL', '',
@@ -239,15 +240,16 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colFullType string
+		var colName, colFullType, colComment, colType string
 		var nullable, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colType, &defaultValue, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := drivers.Column{
 			Name:       colName,
+			Comment:    colComment,
 			FullDBType: colFullType, // example: tinyint(1) instead of tinyint
 			DBType:     colType,
 			Nullable:   nullable,

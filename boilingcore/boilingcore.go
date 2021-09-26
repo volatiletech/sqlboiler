@@ -5,6 +5,7 @@ package boilingcore
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,7 +15,6 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/sqlboiler/v4/templatebin"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -49,7 +49,7 @@ type State struct {
 }
 
 // New creates a new state based off of the config
-func New(config *Config) (*State, error) {
+func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
 	s := &State{
 		Config: config,
 	}
@@ -108,7 +108,7 @@ func New(config *Config) (*State, error) {
 		return nil, err
 	}
 
-	templates, err = s.initTemplates()
+	templates, err = s.initTemplates(templatesBuiltin)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -160,6 +160,7 @@ func (s *State) Run() error {
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
+		AutoColumns: s.Config.AutoColumns,
 	}
 
 	for _, v := range s.Config.TagIgnore {
@@ -224,7 +225,7 @@ func (s *State) Cleanup() error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (s *State) initTemplates() ([]lazyTemplate, error) {
+func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)
@@ -245,10 +246,12 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
-		for _, a := range templatebin.AssetNames() {
-			if strings.HasSuffix(a, ".tpl") {
-				templates[normalizeSlashes(a)] = assetLoader(a)
-			}
+		assets, err := fs.Glob(templatesBuiltin, "*/*.tpl")
+		if err != nil {
+			return nil, err
+		}
+		for _, a := range assets {
+			templates[normalizeSlashes(a)] = assetLoader{fs: templatesBuiltin, name: a}
 		}
 	}
 

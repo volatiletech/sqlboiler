@@ -90,7 +90,11 @@ func testNew(t *testing.T, aliases Aliases) {
 		Aliases:   aliases,
 	}
 
-	state, err = New(config)
+	templatesBuiltin := os.DirFS("../templates")
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, err = New(config, templatesBuiltin)
 	if err != nil {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}
@@ -123,6 +127,17 @@ func testNew(t *testing.T, aliases Aliases) {
 
 	if err = cmd.Run(); err != nil {
 		t.Errorf("go mod init cmd execution failed: %s", err)
+		outputCompileErrors(buf, state.Config.OutFolder)
+		fmt.Println()
+	}
+
+	// From go1.16 dependencies are not auto downloaded
+	cmd = exec.Command("go", "mod", "tidy")
+	cmd.Dir = state.Config.OutFolder
+	cmd.Stderr = buf
+
+	if err = cmd.Run(); err != nil {
+		t.Errorf("go mod tidy cmd execution failed: %s", err)
 		outputCompileErrors(buf, state.Config.OutFolder)
 		fmt.Println()
 	}

@@ -39,8 +39,15 @@ type Config struct {
 
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
+	AutoColumns  AutoColumns   `toml:"auto_columns,omitempty" json:"auto_columns,omitempty"`
 
 	Version string `toml:"version" json:"version"`
+}
+
+type AutoColumns struct {
+	Created string `toml:"created,omitempty" json:"created,omitempty"`
+	Updated string `toml:"updated,omitempty" json:"updated,omitempty"`
+	Deleted string `toml:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
 // TypeReplace replaces a column type with something else

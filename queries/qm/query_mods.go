@@ -458,17 +458,19 @@ func GroupBy(clause string) QueryMod {
 
 type orderByQueryMod struct {
 	clause string
+	args   []interface{}
 }
 
 // Apply implements QueryMod.Apply.
 func (qm orderByQueryMod) Apply(q *queries.Query) {
-	queries.AppendOrderBy(q, qm.clause)
+	queries.AppendOrderBy(q, qm.clause, qm.args...)
 }
 
 // OrderBy allows you to specify a order by clause for your statement
-func OrderBy(clause string) QueryMod {
+func OrderBy(clause string, args ...interface{}) QueryMod {
 	return orderByQueryMod{
 		clause: clause,
+		args:   args,
 	}
 }
 

@@ -55,25 +55,21 @@ var {{$alias.UpSingular}}TableColumns = struct {
 // Generated where
 {{- range .Table.Columns -}}
 	{{- if (oncePut $.DBTypes .Type)}}
-	{{$name := printf "whereHelper%s" (goVarname .Type)}}
+		{{$name := printf "whereHelper%s" (goVarname .Type)}}
 type {{$name}} struct { field string }
 func (w {{$name}}) EQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, false, x){{else}}(w.field, qmhelper.EQ, x){{end}} }
 func (w {{$name}}) NEQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, true, x){{else}}(w.field, qmhelper.NEQ, x){{end}} }
-{{if .Nullable -}}
-func (w {{$name}}) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
-func (w {{$name}}) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-{{end -}}
 func (w {{$name}}) LT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LT, x) }
 func (w {{$name}}) LTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
 func (w {{$name}}) GT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-{{if isPrimitive .Type -}}
+		{{if isPrimitive .Type -}}
 func (w {{$name}}) IN(slice []{{.Type}}) qm.QueryMod {
-  values := make([]interface{}, 0, len(slice))
-  for _, value := range slice {
-    values = append(values, value)
-  }
-  return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
 func (w {{$name}}) NIN(slice []{{.Type}}) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
@@ -81,9 +77,16 @@ func (w {{$name}}) NIN(slice []{{.Type}}) qm.QueryMod {
 	  values = append(values, value)
 	}
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-  }
-{{end -}}
-	{{- end -}}
+}
+		{{end -}}
+	{{end -}}
+	{{if .Nullable -}}
+		{{- if (oncePut $.DBTypes (printf "%s.null" .Type))}}
+		{{$name := printf "whereHelper%s" (goVarname .Type)}}
+func (w {{$name}}) IsNull() qm.QueryMod { return qmhelper.WhereIsNull(w.field) }
+func (w {{$name}}) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+		{{end -}}
+	{{end -}}
 {{- end}}
 
 var {{$alias.UpSingular}}Where = struct {

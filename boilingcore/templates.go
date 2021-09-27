@@ -205,13 +205,10 @@ func (b base64Loader) String() string {
 	return fmt.Sprintf("base64:(sha256 of content): %x", sha)
 }
 
-type assetLoader struct {
-	fs   fs.FS
-	name string
-}
+type assetLoader string
 
 func (a assetLoader) Load() ([]byte, error) {
-	return fs.ReadFile(a.fs, string(a.name))
+	return fs.ReadFile(templatesBuiltin, string(a))
 }
 
 func (a assetLoader) MarshalText() ([]byte, error) {
@@ -219,7 +216,7 @@ func (a assetLoader) MarshalText() ([]byte, error) {
 }
 
 func (a assetLoader) String() string {
-	return "asset:" + string(a.name)
+	return "asset:" + string(a)
 }
 
 // set is to stop duplication from named enums, allowing a template loop

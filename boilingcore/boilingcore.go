@@ -251,7 +251,7 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			return nil, err
 		}
 		for _, a := range assets {
-			templates[normalizeSlashes(a)] = assetLoader{fs: templatesBuiltin, name: a}
+			templates[normalizeSlashes(a)] = assetLoader(a)
 		}
 	}
 

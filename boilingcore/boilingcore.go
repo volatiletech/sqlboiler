@@ -246,12 +246,14 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
-		assets, err := fs.Glob(templatesBuiltin, "*/*.tpl")
+		err := fs.WalkDir(templatesBuiltin, ".", func(path string, d fs.DirEntry, err error) error {
+			if !d.IsDir() && strings.HasSuffix(path, ".tpl") {
+				templates[normalizeSlashes(path)] = assetLoader(path)
+			}
+			return nil
+		})
 		if err != nil {
 			return nil, err
-		}
-		for _, a := range assets {
-			templates[normalizeSlashes(a)] = assetLoader(a)
 		}
 	}
 

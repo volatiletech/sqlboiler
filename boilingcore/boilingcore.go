@@ -49,7 +49,7 @@ type State struct {
 }
 
 // New creates a new state based off of the config
-func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
+func New(config *Config) (*State, error) {
 	s := &State{
 		Config: config,
 	}
@@ -108,7 +108,7 @@ func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
 		return nil, err
 	}
 
-	templates, err = s.initTemplates(templatesBuiltin)
+	templates, err = s.initTemplates()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -225,7 +225,7 @@ func (s *State) Cleanup() error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
+func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)

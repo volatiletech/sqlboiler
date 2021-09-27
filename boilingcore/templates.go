@@ -2,6 +2,7 @@ package boilingcore
 
 import (
 	"crypto/sha256"
+	"embed"
 	"encoding"
 	"encoding/base64"
 	"fmt"
@@ -16,6 +17,9 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
 )
+
+//go:embed templates templates_test
+var templatesBuiltin embed.FS
 
 // templateData for sqlboiler templates
 type templateData struct {

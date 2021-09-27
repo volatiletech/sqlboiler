@@ -222,42 +222,6 @@ driver_test_db() {
 }
 
 # ====================================
-# Bindata
-# ====================================
-
-go_generate() {
-    if test -z "${1}" -o "all" = "${1}"; then
-        set -o xtrace
-        go generate
-        set +o xtrace
-
-        if test -z "${1}"; then
-          return
-        fi
-    fi
-
-    if test "all" = "${1}"; then
-        run="psql mysql mssql"
-    else
-        run="${1}"
-    fi
-
-    cwd="${PWD}"
-    for i in $run; do
-        run_go_generate "${cwd}" "${i}"
-    done
-}
-
-run_go_generate() {
-    baseDir="${1}"
-    driver="${2}"
-    set -o xtrace
-    cd "${baseDir}/drivers/sqlboiler-${driver}/driver"
-    go generate
-    set +o xtrace
-}
-
-# ====================================
 # MSSQL stuff
 # ====================================
 
@@ -317,8 +281,6 @@ case "${command}" in
     driver-test-db)   driver_test_db "$1" ;;
     driver-test-user) driver_test_user "$1" ;;
 
-    go-generate) go_generate "$@" ;;
-
     mssql-run)    mssql_run "$@" ;;
     mssql-stop)   mssql_stop "$@" ;;
     mssql-sqlcmd) mssql_sqlcmd "$@" ;;
@@ -337,7 +299,6 @@ case "${command}" in
         echo "  driver-test <driver> [args] - runs tests for the driver"
         echo "  driver-test-db <driver>     - create driver db (run before driver-test-user)"
         echo "  driver-test-user <driver>   - creates a user for the driver tests (unprivileged)"
-        echo "  go-generate [all|driver]    - runs go generate on packages, omit arg for sqlboiler itself"
         echo "  mssql-run [attach]          - run mssql docker container, if attach is present will not daemonize"
         echo "  mssql-stop                  - stop mssql docker container"
         echo "  mssql-sqlcmd [args...]      - run sql query using sqlcmd in docker container"

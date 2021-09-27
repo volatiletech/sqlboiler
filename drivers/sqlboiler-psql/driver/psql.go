@@ -5,8 +5,10 @@ package driver
 
 import (
 	"database/sql"
+	"embed"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -18,9 +20,12 @@ import (
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
+
+	_ "embed"
 )
 
-//go:generate go-bindata -nometadata -pkg driver -prefix override override/...
+//go:embed override
+var templates embed.FS
 
 func init() {
 	drivers.RegisterFromInit("psql", &PostgresDriver{})
@@ -43,16 +48,24 @@ type PostgresDriver struct {
 
 // Templates that should be added/overridden
 func (p PostgresDriver) Templates() (map[string]string, error) {
-	names := AssetNames()
 	tpls := make(map[string]string)
-	for _, n := range names {
-		b, err := Asset(n)
+	fs.WalkDir(templates, "override", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		tpls[n] = base64.StdEncoding.EncodeToString(b)
-	}
+		if d.IsDir() {
+			return nil
+		}
+
+		b, err := fs.ReadFile(templates, path)
+		if err != nil {
+			return err
+		}
+		tpls[strings.Replace(path, "override/", "", 1)] = base64.StdEncoding.EncodeToString(b)
+
+		return nil
+	})
 
 	return tpls, nil
 }

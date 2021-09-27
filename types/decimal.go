@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"database/sql"
 	"database/sql/driver"
 	"errors"
@@ -14,6 +15,8 @@ var (
 	// decimals. It should be set once before any sqlboiler and then
 	// assumed to be read-only after sqlboiler's first use.
 	DecimalContext decimal.Context
+
+	nullBytes = []byte("null")
 )
 
 var (
@@ -101,6 +104,13 @@ func (n *NullDecimal) Scan(val interface{}) error {
 
 // UnmarshalJSON allows marshalling JSON into a null pointer
 func (n *NullDecimal) UnmarshalJSON(data []byte) error {
+	if bytes.Equal(data, nullBytes) {
+		if n != nil {
+			n.Big = nil
+		}
+		return nil
+	}
+
 	if n.Big == nil {
 		n.Big = decimal.WithContext(DecimalContext)
 	}
@@ -108,10 +118,26 @@ func (n *NullDecimal) UnmarshalJSON(data []byte) error {
 	return n.Big.UnmarshalJSON(data)
 }
 
+// String impl
+func (n NullDecimal) String() string {
+	if n.Big == nil {
+		return "nil"
+	}
+	return n.Big.String()
+}
+
+func (n NullDecimal) Format(f fmt.State, verb rune) {
+	if n.Big == nil {
+		fmt.Fprint(f, "nil")
+		return
+	}
+	n.Big.Format(f, verb)
+}
+
 // MarshalJSON marshals a decimal value
 func (n NullDecimal) MarshalJSON() ([]byte, error) {
 	if n.Big == nil {
-		return []byte("null"), nil
+		return nullBytes, nil
 	}
 
 	return n.Big.MarshalText()

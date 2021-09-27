@@ -5,6 +5,7 @@ import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/templatebin"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -69,6 +69,9 @@ type templateData struct {
 
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
+
+	// AutoColumns set the name of the columns for auto timestamps and soft deletes
+	AutoColumns AutoColumns
 }
 
 func (t templateData) Quotes(s string) string {
@@ -100,11 +103,7 @@ func (t templateNameList) Less(k, j int) bool {
 	}
 
 	res := strings.Compare(t[k], t[j])
-	if res <= 0 {
-		return true
-	}
-
-	return false
+	return res <= 0
 }
 
 // Templates returns the name of all the templates defined in the template list
@@ -203,10 +202,13 @@ func (b base64Loader) String() string {
 	return fmt.Sprintf("base64:(sha256 of content): %x", sha)
 }
 
-type assetLoader string
+type assetLoader struct {
+	fs   fs.FS
+	name string
+}
 
 func (a assetLoader) Load() ([]byte, error) {
-	return templatebin.Asset(string(a))
+	return fs.ReadFile(a.fs, string(a.name))
 }
 
 func (a assetLoader) MarshalText() ([]byte, error) {
@@ -214,7 +216,7 @@ func (a assetLoader) MarshalText() ([]byte, error) {
 }
 
 func (a assetLoader) String() string {
-	return "asset:" + string(a)
+	return "asset:" + string(a.name)
 }
 
 // set is to stop duplication from named enums, allowing a template loop

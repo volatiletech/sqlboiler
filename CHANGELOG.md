@@ -4,6 +4,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Change template locations to templates/{main,test}. This unfortunate move
+  is necessary to preserve old behavior.
+
+### Fixed
+
+- Revert change to boilingcore.New() both in behavior and function signature
+
 ## [v4.7.0] - 2021-09-26
 
 ### Added

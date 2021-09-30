@@ -357,6 +357,10 @@ func findTemplates(root, base string) (map[string]templateLoader, error) {
 	templates := make(map[string]templateLoader)
 	rootBase := filepath.Join(root, base)
 	err := filepath.Walk(rootBase, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if fi.IsDir() {
 			return nil
 		}

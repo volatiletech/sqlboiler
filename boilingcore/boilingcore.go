@@ -15,17 +15,8 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
+	boiltemplates "github.com/volatiletech/sqlboiler/v4/templates"
 	"github.com/volatiletech/strmangle"
-)
-
-const (
-	templatesDirectory          = "templates"
-	templatesSingletonDirectory = "templates/singleton"
-
-	templatesTestDirectory          = "templates_test"
-	templatesSingletonTestDirectory = "templates_test/singleton"
-
-	templatesTestMainDirectory = "templates_test/main_test"
 )
 
 var (
@@ -49,7 +40,7 @@ type State struct {
 }
 
 // New creates a new state based off of the config
-func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
+func New(config *Config) (*State, error) {
 	s := &State{
 		Config: config,
 	}
@@ -108,7 +99,7 @@ func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
 		return nil, err
 	}
 
-	templates, err = s.initTemplates(templatesBuiltin)
+	templates, err = s.initTemplates(boiltemplates.Builtin)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}

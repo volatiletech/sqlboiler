@@ -90,11 +90,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		Aliases:   aliases,
 	}
 
-	templatesBuiltin := os.DirFS("../templates")
-	if err != nil {
-		t.Fatal(err)
-	}
-	state, err = New(config, templatesBuiltin)
+	state, err = New(config)
 	if err != nil {
 		t.Fatalf("Unable to create State using config: %s", err)
 	}

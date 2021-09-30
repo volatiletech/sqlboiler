@@ -2,7 +2,6 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"os"
 	"os/exec"
@@ -16,9 +15,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
 )
-
-//go:embed templates templates_test
-var templatesBuiltin embed.FS
 
 const sqlBoilerVersion = "4.7.0"
 
@@ -220,7 +216,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	cmdConfig.Imports = configureImports()
 
-	cmdState, err = boilingcore.New(cmdConfig, templatesBuiltin)
+	cmdState, err = boilingcore.New(cmdConfig)
 	return err
 }
 

@@ -247,7 +247,6 @@ func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 			}
 
 			name := entry.Name()
-			fmt.Println(path, name)
 			if filepath.Ext(name) == ".tpl" {
 				templates[normalizeSlashes(path)] = assetLoader{fs: templatesBuiltin, name: path}
 			}

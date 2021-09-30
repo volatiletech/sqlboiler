@@ -130,7 +130,7 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateL
 
 	for _, t := range lazyTemplates {
 		firstDir := strings.Split(t.Name, string(filepath.Separator))[0]
-		isTest := firstDir == "test"
+		isTest := firstDir == "test" || strings.HasSuffix(firstDir, "_test")
 		if testTemplates && !isTest || !testTemplates && isTest {
 			continue
 		}

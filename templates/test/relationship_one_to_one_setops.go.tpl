@@ -8,7 +8,7 @@
 		{{- $colField := $ltable.Column $rel.Column -}}
 		{{- $fcolField := $ftable.Column $rel.ForeignColumn -}}
 		{{- $foreignPKeyCols := (getTable $.Tables .ForeignTable).PKey.Columns }}
-		{{- $canSoftDelete := (getTable $.Tables .ForeignTable).CanSoftDelete }}
+		{{- $canSoftDelete := (getTable $.Tables .ForeignTable).CanSoftDelete $.AutoColumns.Deleted }}
 func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 

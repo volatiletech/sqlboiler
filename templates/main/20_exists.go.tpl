@@ -3,7 +3,7 @@
 {{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
-{{- $canSoftDelete := .Table.CanSoftDelete }}
+{{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted }}
 {{if .AddGlobal -}}
 // {{$alias.UpSingular}}ExistsG checks if the {{$alias.UpSingular}} row exists.
 func {{$alias.UpSingular}}ExistsG({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}) (bool, error) {

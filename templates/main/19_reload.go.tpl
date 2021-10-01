@@ -1,6 +1,6 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
-{{- $canSoftDelete := .Table.CanSoftDelete }}
+{{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted }}
 {{if .AddGlobal -}}
 // ReloadG refetches the object from the database using the primary keys.
 func (o *{{$alias.UpSingular}}) ReloadG({{if not .NoContext}}ctx context.Context{{end}}) error {

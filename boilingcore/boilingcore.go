@@ -5,6 +5,7 @@ package boilingcore
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,18 +15,8 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/sqlboiler/v4/templatebin"
+	boiltemplates "github.com/volatiletech/sqlboiler/v4/templates"
 	"github.com/volatiletech/strmangle"
-)
-
-const (
-	templatesDirectory          = "templates"
-	templatesSingletonDirectory = "templates/singleton"
-
-	templatesTestDirectory          = "templates_test"
-	templatesSingletonTestDirectory = "templates_test/singleton"
-
-	templatesTestMainDirectory = "templates_test/main_test"
 )
 
 var (
@@ -108,7 +99,7 @@ func New(config *Config) (*State, error) {
 		return nil, err
 	}
 
-	templates, err = s.initTemplates()
+	templates, err = s.initTemplates(boiltemplates.Builtin)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -161,6 +152,7 @@ func (s *State) Run() error {
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
+		AutoColumns: s.Config.AutoColumns,
 	}
 
 	for _, v := range s.Config.TagIgnore {
@@ -225,7 +217,7 @@ func (s *State) Cleanup() error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (s *State) initTemplates() ([]lazyTemplate, error) {
+func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)
@@ -246,10 +238,24 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
-		for _, a := range templatebin.AssetNames() {
-			if strings.HasSuffix(a, ".tpl") {
-				templates[normalizeSlashes(a)] = assetLoader(a)
+		err := fs.WalkDir(templatesBuiltin, ".", func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
 			}
+
+			if entry.IsDir() {
+				return nil
+			}
+
+			name := entry.Name()
+			if filepath.Ext(name) == ".tpl" {
+				templates[normalizeSlashes(path)] = assetLoader{fs: templatesBuiltin, name: path}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -352,6 +358,10 @@ func findTemplates(root, base string) (map[string]templateLoader, error) {
 	templates := make(map[string]templateLoader)
 	rootBase := filepath.Join(root, base)
 	err := filepath.Walk(rootBase, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if fi.IsDir() {
 			return nil
 		}

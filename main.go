@@ -16,9 +16,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
-//go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
-
-const sqlBoilerVersion = "4.5.0"
+const sqlBoilerVersion = "4.7.1"
 
 var (
 	flagConfigFile string
@@ -92,7 +90,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
-	rootCmd.PersistentFlags().StringSliceP("templates", "", nil, "A templates directory, overrides the bindata'd template folders in sqlboiler")
+	rootCmd.PersistentFlags().StringSliceP("templates", "", nil, "A templates directory, overrides the embedded template folders in sqlboiler")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
@@ -191,7 +189,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Replacements:      viper.GetStringSlice("replace"),
 		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
 		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
-		Version:           sqlBoilerVersion,
+		AutoColumns: boilingcore.AutoColumns{
+			Created: viper.GetString("auto-columns.created"),
+			Updated: viper.GetString("auto-columns.updated"),
+			Deleted: viper.GetString("auto-columns.deleted"),
+		},
+
+		Version: sqlBoilerVersion,
 	}
 
 	if cmdConfig.Debug {

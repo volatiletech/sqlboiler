@@ -15,17 +15,8 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
+	boiltemplates "github.com/volatiletech/sqlboiler/v4/templates"
 	"github.com/volatiletech/strmangle"
-)
-
-const (
-	templatesDirectory          = "templates"
-	templatesSingletonDirectory = "templates/singleton"
-
-	templatesTestDirectory          = "templates_test"
-	templatesSingletonTestDirectory = "templates_test/singleton"
-
-	templatesTestMainDirectory = "templates_test/main_test"
 )
 
 var (
@@ -49,7 +40,7 @@ type State struct {
 }
 
 // New creates a new state based off of the config
-func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
+func New(config *Config) (*State, error) {
 	s := &State{
 		Config: config,
 	}
@@ -108,7 +99,7 @@ func New(config *Config, templatesBuiltin fs.FS) (*State, error) {
 		return nil, err
 	}
 
-	templates, err = s.initTemplates(templatesBuiltin)
+	templates, err = s.initTemplates(boiltemplates.Builtin)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -247,12 +238,24 @@ func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
-		assets, err := fs.Glob(templatesBuiltin, "*/*.tpl")
+		err := fs.WalkDir(templatesBuiltin, ".", func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if entry.IsDir() {
+				return nil
+			}
+
+			name := entry.Name()
+			if filepath.Ext(name) == ".tpl" {
+				templates[normalizeSlashes(path)] = assetLoader{fs: templatesBuiltin, name: path}
+			}
+
+			return nil
+		})
 		if err != nil {
 			return nil, err
-		}
-		for _, a := range assets {
-			templates[normalizeSlashes(a)] = assetLoader{fs: templatesBuiltin, name: a}
 		}
 	}
 
@@ -355,6 +358,10 @@ func findTemplates(root, base string) (map[string]templateLoader, error) {
 	templates := make(map[string]templateLoader)
 	rootBase := filepath.Join(root, base)
 	err := filepath.Walk(rootBase, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if fi.IsDir() {
 			return nil
 		}

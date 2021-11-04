@@ -141,7 +141,11 @@ func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
 		fmt.Fprintln(boil.DebugWriter, qs)
 		fmt.Fprintln(boil.DebugWriter, args)
 	}
-	return exec.Query(qs, args...)
+	rows, err := exec.Query(qs, args...)
+	if err != nil {
+		err = fmt.Errorf("%s ,sql:%+v,%+v", err.Error(), qs, args)
+	}
+	return rows, err
 }
 
 // ExecContext executes a query that does not need a row returned
@@ -174,7 +178,11 @@ func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*s
 		fmt.Fprintln(writer, qs)
 		fmt.Fprintln(writer, args)
 	}
-	return exec.QueryContext(ctx, qs, args...)
+	rows, err := exec.QueryContext(ctx, qs, args...)
+	if err != nil {
+		err = fmt.Errorf("%s ,sql:%+v,%+v", err.Error(), qs, args)
+	}
+	return rows, err
 }
 
 // ExecP executes a query that does not need a row returned

@@ -4,6 +4,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add `--add-enum-types` to create distinct enum types instead of strings
+  (thanks @stephenamo)
+
+### Fixed
+
+- Fix a regression in soft delete generation introduced in 4.7.1
+  (thanks @stephenamo)
+
 ## [v4.7.1] - 2021-09-30
 
 ### Changed

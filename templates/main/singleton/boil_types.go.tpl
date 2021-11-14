@@ -66,23 +66,70 @@ It only titlecases the EnumValue portion if it's snake-cased.
 		{{- $name := parseEnumName $col.DBType -}}
 		{{- $vals := parseEnumVals $col.DBType -}}
 		{{- $isNamed := ne (len $name) 0}}
-		{{- if and $isNamed (onceHas $once $name) -}}
-		{{- else -}}
+		{{- $enumName := "" -}}
+		{{- if not (and $isNamed (onceHas $once $name)) -}}
 			{{- if $isNamed -}}
 				{{$_ := oncePut $once $name}}
 			{{- end -}}
-{{- if and (gt (len $vals) 0) (isEnumNormal $vals)}}
-// Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}}
-const (
-	{{- range $val := $vals -}}
-	{{- $valStripped := stripWhitespace $val -}}
-	{{- if $isNamed}}{{titleCase $name}}{{else}}{{titleCase $table.Name}}{{titleCase $col.Name}}{{end -}}
-	{{if shouldTitleCaseEnum $valStripped}}{{titleCase $valStripped}}{{else}}{{$valStripped}}{{end}} = "{{$val}}"
-	{{end -}}
-)
-{{- else}}
-// Enum values for {{if $isNamed}}{{$name}}{{else}}{{$table.Name}}.{{$col.Name}}{{end}} are not proper Go identifiers, cannot emit constants
-{{- end -}}
+			{{- if and (gt (len $vals) 0) (isEnumNormal $vals)}}
+				{{- if $isNamed -}}
+					{{ $enumName = titleCase $name}}
+				{{- else -}}
+					{{ $enumName = titleCase $table.Name $col.Name}}
+				{{- end -}}
+
+				{{if $.AddEnumTypes}}
+					type {{$enumName}} string
+				{{end}}
+
+				// Enum values for {{$enumName}}
+				const (
+				{{range $val := $vals -}}
+					{{- $valStripped := stripWhitespace $val -}}
+					{{- $enumValue := $valStripped -}}
+					{{- if shouldTitleCaseEnum $valStripped -}}
+						{{$enumValue := titleCase $valStripped}}
+					{{end -}}
+					{{$enumName}}{{$enumValue}} {{if $.AddEnumTypes}}{{$enumName}}{{end}} = "{{$val}}"
+				{{end -}}
+				)
+
+				{{if $.AddEnumTypes}}
+					func (e {{$enumName}}) IsValid() error {
+						{{- /* $first is being used to add a comma to all enumValues, but the first one.*/ -}}
+						{{- $first := true -}}
+						{{- /* $enumValues will contain a comma separated string holding all enum consts */ -}}
+						{{- $enumValues := "" -}}
+						{{ range $val := $vals -}}
+							{{- if $first -}}
+								{{- $first = false -}}
+							{{- else -}}
+								{{- $enumValues = printf "%s%s" $enumValues ", " -}}
+							{{- end -}}
+
+							{{- $valStripped := stripWhitespace $val -}}
+							{{- $enumValue := $valStripped -}}
+							{{- if shouldTitleCaseEnum $valStripped -}}
+								{{- $enumValue := titleCase $valStripped -}}
+							{{- end -}}
+
+							{{- $enumValues = printf "%s%s%s" $enumValues $enumName $enumValue -}}
+						{{- end}}
+						switch e {
+						case {{$enumValues}}:
+							return nil
+						default:
+							return errors.New("enum is not valid")
+						}
+					}
+
+					func (e {{$enumName}}) String() string {
+						return string(e)
+					}
+				{{end -}}
+			{{else}}
+				// Enum values for {{$enumName}} are not proper Go identifiers, cannot emit constants
+			{{- end -}}
 		{{- end -}}
 	{{- end -}}
-{{- end -}}
+{{ end -}}

@@ -1,5 +1,5 @@
 {{- $alias := .Aliases.Table .Table.Name -}}
-{{- $canSoftDelete := .Table.CanSoftDelete -}}
+{{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted -}}
 {{- $soft := and .AddSoftDeletes $canSoftDelete }}
 {{if $soft -}}
 func test{{$alias.UpPlural}}SoftDelete(t *testing.T) {

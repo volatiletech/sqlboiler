@@ -65,9 +65,13 @@ func (t Table) CanLastInsertID() bool {
 	return true
 }
 
-func (t Table) CanSoftDelete() bool {
+func (t Table) CanSoftDelete(deleteColumn string) bool {
+	if deleteColumn == "" {
+		deleteColumn = "deleted_at"
+	}
+
 	for _, column := range t.Columns {
-		if column.Name == "deleted_at" && column.Type == "null.Time" {
+		if column.Name == deleteColumn && column.Type == "null.Time" {
 			return true
 		}
 	}

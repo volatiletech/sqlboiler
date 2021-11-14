@@ -2,7 +2,7 @@
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
 {{- $pkArgs := joinSlices " " $pkNames $colDefs.Types | join ", " -}}
-{{- $canSoftDelete := .Table.CanSoftDelete }}
+{{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted }}
 {{if .AddGlobal -}}
 // Find{{$alias.UpSingular}}G retrieves a single record by ID.
 func Find{{$alias.UpSingular}}G({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}, selectCols ...string) (*{{$alias.UpSingular}}, error) {

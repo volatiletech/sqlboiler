@@ -19,7 +19,7 @@ func TestSoftDelete(t *testing.T) {
   {{- range .Tables}}
   {{- if .IsJoinTable -}}
   {{- else -}}
-  	{{- if .CanSoftDelete -}}
+  	{{- if .CanSoftDelete $.AutoColumns.Deleted -}}
       {{- $alias := $.Aliases.Table .Name -}}
       t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}SoftDelete)
   	{{end -}}
@@ -31,7 +31,7 @@ func TestQuerySoftDeleteAll(t *testing.T) {
   {{- range .Tables}}
   {{- if .IsJoinTable -}}
   {{- else -}}
-  	{{- if .CanSoftDelete -}}
+  	{{- if .CanSoftDelete $.AutoColumns.Deleted -}}
       {{- $alias := $.Aliases.Table .Name -}}
       t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}QuerySoftDeleteAll)
   	{{end -}}
@@ -43,7 +43,7 @@ func TestSliceSoftDeleteAll(t *testing.T) {
   {{- range .Tables}}
   {{- if .IsJoinTable -}}
   {{- else -}}
-  	{{- if .CanSoftDelete -}}
+  	{{- if .CanSoftDelete $.AutoColumns.Deleted -}}
       {{- $alias := $.Aliases.Table .Name -}}
       t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}SliceSoftDeleteAll)
   	{{end -}}

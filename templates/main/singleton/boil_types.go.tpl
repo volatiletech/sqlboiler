@@ -88,7 +88,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 					{{- $valStripped := stripWhitespace $val -}}
 					{{- $enumValue := $valStripped -}}
 					{{- if shouldTitleCaseEnum $valStripped -}}
-						{{$enumValue := titleCase $valStripped}}
+						{{$enumValue = titleCase $valStripped}}
 					{{end -}}
 					{{$enumName}}{{$enumValue}} {{if $.AddEnumTypes}}{{$enumName}}{{end}} = "{{$val}}"
 				{{end -}}
@@ -110,7 +110,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 							{{- $valStripped := stripWhitespace $val -}}
 							{{- $enumValue := $valStripped -}}
 							{{- if shouldTitleCaseEnum $valStripped -}}
-								{{- $enumValue := titleCase $valStripped -}}
+								{{- $enumValue = titleCase $valStripped -}}
 							{{- end -}}
 
 							{{- $enumValues = printf "%s%s%s" $enumValues $enumName $enumValue -}}

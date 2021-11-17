@@ -16,7 +16,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
-const sqlBoilerVersion = "4.8.1"
+const sqlBoilerVersion = "4.8.2"
 
 var (
 	flagConfigFile string

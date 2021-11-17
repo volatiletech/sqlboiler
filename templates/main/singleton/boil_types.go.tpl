@@ -75,7 +75,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 				{{- if $isNamed -}}
 					{{ $enumName = titleCase $name}}
 				{{- else -}}
-					{{ $enumName = titleCase $table.Name $col.Name}}
+					{{ $enumName = printf "%s%s" (titleCase $table.Name) (titleCase $col.Name)}}
 				{{- end -}}
 
 				{{if $.AddEnumTypes}}

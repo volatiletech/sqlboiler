@@ -8,11 +8,11 @@ import (
 
 type testMockDriver struct{}
 
-func (m testMockDriver) TranslateColumnType(c Column) Column { return c }
-func (m testMockDriver) UseLastInsertID() bool               { return false }
-func (m testMockDriver) UseTopClause() bool                  { return false }
-func (m testMockDriver) Open() error                         { return nil }
-func (m testMockDriver) Close()                              {}
+func (m testMockDriver) TranslateColumnType(c Column, tableName string) Column { return c }
+func (m testMockDriver) UseLastInsertID() bool                                 { return false }
+func (m testMockDriver) UseTopClause() bool                                    { return false }
+func (m testMockDriver) Open() error                                           { return nil }
+func (m testMockDriver) Close()                                                {}
 
 func (m testMockDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	if len(whitelist) > 0 {

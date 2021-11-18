@@ -387,7 +387,7 @@ func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 // TranslateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (m *MSSQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+func (m *MSSQLDriver) TranslateColumnType(c drivers.Column, tableName string) drivers.Column {
 	if c.Nullable {
 		switch c.DBType {
 		case "tinyint":

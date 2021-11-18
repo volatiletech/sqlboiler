@@ -142,7 +142,7 @@ func (m *MockDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreign
 }
 
 // TranslateColumnType converts a column to its "null." form if it is nullable
-func (m *MockDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+func (m *MockDriver) TranslateColumnType(c drivers.Column, tableName string) drivers.Column {
 	if c.Nullable {
 		switch c.DBType {
 		case "bigint", "bigserial":

@@ -105,6 +105,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("add-soft-deletes", "", false, "Enable soft deletion by updating deleted_at timestamp")
 	rootCmd.PersistentFlags().BoolP("add-enum-types", "", false, "Enable generation of types for enums")
+	rootCmd.PersistentFlags().StringP("enum-null-prefix", "", "Null", "Name prefix of nullable enum types")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
@@ -173,6 +174,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		AddPanic:          viper.GetBool("add-panic-variants"),
 		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
 		AddEnumTypes:      viper.GetBool("add-enum-types"),
+		EnumNullPrefix:    viper.GetString("enum-null-prefix"),
 		NoContext:         viper.GetBool("no-context"),
 		NoTests:           viper.GetBool("no-tests"),
 		NoHooks:           viper.GetBool("no-hooks"),
@@ -204,8 +206,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	// Configure the driver
 	cmdConfig.DriverConfig = map[string]interface{}{
-		"whitelist": viper.GetStringSlice(driverName + ".whitelist"),
-		"blacklist": viper.GetStringSlice(driverName + ".blacklist"),
+		"whitelist":        viper.GetStringSlice(driverName + ".whitelist"),
+		"blacklist":        viper.GetStringSlice(driverName + ".blacklist"),
+		"add-enum-types":   cmdConfig.AddEnumTypes,
+		"enum-null-prefix": cmdConfig.EnumNullPrefix,
 	}
 
 	keys := allKeys(driverName)

@@ -41,6 +41,7 @@ type templateData struct {
 	AddPanic          bool
 	AddSoftDeletes    bool
 	AddEnumTypes      bool
+	EnumNullPrefix    string
 	NoContext         bool
 	NoHooks           bool
 	NoAutoTimestamps  bool
@@ -313,11 +314,12 @@ var templateFunctions = template.FuncMap{
 	},
 
 	// dbdrivers ops
-	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,
-	"filterColumnsByDefault": drivers.FilterColumnsByDefault,
-	"filterColumnsByEnum":    drivers.FilterColumnsByEnum,
-	"sqlColDefinitions":      drivers.SQLColDefinitions,
-	"columnNames":            drivers.ColumnNames,
-	"columnDBTypes":          drivers.ColumnDBTypes,
-	"getTable":               drivers.GetTable,
+	"filterColumnsByAuto":     drivers.FilterColumnsByAuto,
+	"filterColumnsByDefault":  drivers.FilterColumnsByDefault,
+	"filterColumnsByEnum":     drivers.FilterColumnsByEnum,
+	"sqlColDefinitions":       drivers.SQLColDefinitions,
+	"columnNames":             drivers.ColumnNames,
+	"columnDBTypes":           drivers.ColumnDBTypes,
+	"getTable":                drivers.GetTable,
+	"tablesHaveNullableEnums": drivers.TablesHaveNullableEnums,
 }

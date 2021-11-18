@@ -40,7 +40,8 @@ create table video_tags (
 create table type_monsters (
 	id int primary key not null auto_increment,
 
-	enum_use    enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday') not null,
+	enum_use        enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday') not null,
+	enum_nullable   enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday'),
 
 	id_two     int not null,
 	id_three   int,

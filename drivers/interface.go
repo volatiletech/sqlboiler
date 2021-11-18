@@ -12,9 +12,11 @@ import (
 
 // These constants are used in the config map passed into the driver
 const (
-	ConfigBlacklist = "blacklist"
-	ConfigWhitelist = "whitelist"
-	ConfigSchema    = "schema"
+	ConfigBlacklist      = "blacklist"
+	ConfigWhitelist      = "whitelist"
+	ConfigSchema         = "schema"
+	ConfigAddEnumTypes   = "add-enum-types"
+	ConfigEnumNullPrefix = "enum-null-prefix"
 
 	ConfigUser    = "user"
 	ConfigPass    = "pass"
@@ -74,7 +76,7 @@ type Constructor interface {
 	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
-	TranslateColumnType(Column) Column
+	TranslateColumnType(col Column, tableName string) Column
 }
 
 // Tables returns the metadata for all tables, minus the tables
@@ -100,7 +102,7 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 		}
 
 		for i, col := range t.Columns {
-			t.Columns[i] = c.TranslateColumnType(col)
+			t.Columns[i] = c.TranslateColumnType(col, name)
 		}
 
 		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {

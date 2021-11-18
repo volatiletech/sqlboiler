@@ -118,7 +118,7 @@
 				},
 				{
 					"name": "enum_use",
-					"type": "string",
+					"type": "TypeMonstersEnumUse",
 					"db_type": "enum('monday','tuesday','wednesday','thursday','friday')",
 					"default": "",
 					"comment": "",
@@ -133,7 +133,7 @@
 				},
 				{
 					"name": "enum_nullable",
-					"type": "null.String",
+					"type": "TypeMonstersNullEnumNullable",
 					"db_type": "enum('monday','tuesday','wednesday','thursday','friday')",
 					"default": "",
 					"comment": "",

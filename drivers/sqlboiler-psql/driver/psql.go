@@ -20,8 +20,6 @@ import (
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
-
-	_ "embed"
 )
 
 //go:embed override
@@ -41,9 +39,11 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // PostgresDriver holds the database connection string and a handle
 // to the database connection.
 type PostgresDriver struct {
-	connStr string
-	conn    *sql.DB
-	version int
+	connStr        string
+	conn           *sql.DB
+	version        int
+	addEnumTypes   bool
+	enumNullPrefix string
 }
 
 // Templates that should be added/overridden
@@ -91,6 +91,8 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 
 	useSchema := schema != "public"
 
+	p.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
+	p.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.conn, err = sql.Open("postgres", p.connStr)
 	if err != nil {
@@ -453,7 +455,7 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 // TranslateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+func (p *PostgresDriver) TranslateColumnType(c drivers.Column, tableName string) drivers.Column {
 	if c.Nullable {
 		switch c.DBType {
 		case "bigint", "bigserial":
@@ -513,7 +515,11 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
-			c.Type = "null.String"
+			if enumName := strmangle.ParseEnumName(c.DBType); enumName != "" && p.addEnumTypes {
+				c.Type = p.enumNullPrefix + strmangle.TitleCase(enumName)
+			} else {
+				c.Type = "null.String"
+			}
 		}
 	} else {
 		switch c.DBType {
@@ -574,7 +580,11 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
-			c.Type = "string"
+			if enumName := strmangle.ParseEnumName(c.DBType); enumName != "" && p.addEnumTypes {
+				c.Type = strmangle.TitleCase(enumName)
+			} else {
+				c.Type = "string"
+			}
 		}
 	}
 

@@ -1,6 +1,9 @@
 package drivers
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Table metadata from the database schema.
 type Table struct {
@@ -73,6 +76,19 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 	for _, column := range t.Columns {
 		if column.Name == deleteColumn && column.Type == "null.Time" {
 			return true
+		}
+	}
+	return false
+}
+
+func TablesHaveNullableEnums(tables []Table) bool {
+	for _, table := range tables {
+		for _, col := range table.Columns {
+			if col.Nullable &&
+				(strings.HasPrefix(col.DBType, "enum.") || // postgresql
+					strings.HasPrefix(col.DBType, "enum(")) { // mysql
+				return true
+			}
 		}
 	}
 	return false

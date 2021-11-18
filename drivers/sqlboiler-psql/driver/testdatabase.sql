@@ -57,7 +57,8 @@ create domain my_int_array as int[];
 create table type_monsters (
 	id serial primary key not null,
 
-	enum_use    workday not null,
+	enum_use        workday not null,
+	enum_nullable   workday,
 
 	bool_zero   bool,
 	bool_one    bool null,

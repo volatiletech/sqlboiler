@@ -23,16 +23,16 @@ func (m *MockDriver) Imports() (importers.Collection, error) {
 	return importers.Collection{
 		BasedOnType: importers.Map{
 			"null.Int": {
-				ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+				ThirdParty: importers.List{`"github.com/volatiletech/null/v9"`},
 			},
 			"null.String": {
-				ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+				ThirdParty: importers.List{`"github.com/volatiletech/null/v9"`},
 			},
 			"null.Time": {
-				ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+				ThirdParty: importers.List{`"github.com/volatiletech/null/v9"`},
 			},
 			"null.Bytes": {
-				ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+				ThirdParty: importers.List{`"github.com/volatiletech/null/v9"`},
 			},
 
 			"time.Time": {

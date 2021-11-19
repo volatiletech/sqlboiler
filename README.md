@@ -302,7 +302,7 @@ into your `go.mod` file at the correct version.
 # Do not forget the trailing /v4 and /v8 in the following commands
 go get github.com/volatiletech/sqlboiler/v4
 # Assuming you're going to use the null package for its additional null types
-go get github.com/volatiletech/null/v8
+go get github.com/volatiletech/null/v9
 ```
 
 #### Configuration

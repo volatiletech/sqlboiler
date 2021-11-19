@@ -24,7 +24,7 @@ import (
 	"database/sql/driver"
 	"strings"
 
-	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/null/v9"
 	"github.com/volatiletech/randomize"
 )
 

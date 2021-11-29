@@ -359,10 +359,11 @@ Example of whitelist/blacklist:
 
 ```toml
 [psql]
-# Removes migrations table, and the name column from the addresses table
-# from being generated. Foreign keys that reference tables or columns that
-# are no longer generated because of whitelists or blacklists may cause problems.
-blacklist = ["migrations", "addresses.name"]
+# Removes migrations table, the name column from the addresses table, and
+# secret_col of any table from being generated. Foreign keys that reference tables
+# or columns that are no longer generated because of whitelists or blacklists may
+# cause problems.
+blacklist = ["migrations", "addresses.name", "*.secret_col"]
 ```
 
 ##### Generic config options

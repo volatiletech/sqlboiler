@@ -12,6 +12,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
   so it can retain the stack trace. This supports the best practice of using
   errors.Is() anyway and will eventually become the default behavior in
   a breaking v5 (thanks @jhnj)
+- Add support for * as a wildcard for white/blacklisting columns. See readme
+  for details (thanks @Yoshiji)
 
 ## [v4.8.3] - 2021-11-16
 

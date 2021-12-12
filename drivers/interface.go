@@ -76,7 +76,12 @@ type Constructor interface {
 	ForeignKeyInfo(schema, tableName string) ([]ForeignKey, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
-	TranslateColumnType(col Column, tableName string) Column
+	TranslateColumnType(Column) Column
+}
+
+type TableColumnTypeTranslator interface {
+	// TranslateTableColumnType takes a Database column type and table name and returns a go column type.
+	TranslateTableColumnType(c Column, tableName string) Column
 }
 
 // Tables returns the metadata for all tables, minus the tables
@@ -101,8 +106,15 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 
-		for i, col := range t.Columns {
-			t.Columns[i] = c.TranslateColumnType(col, name)
+		tr, ok := c.(TableColumnTypeTranslator)
+		if ok {
+			for i, col := range t.Columns {
+				t.Columns[i] = tr.TranslateTableColumnType(col, name)
+			}
+		} else {
+			for i, col := range t.Columns {
+				t.Columns[i] = c.TranslateColumnType(col)
+			}
 		}
 
 		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {

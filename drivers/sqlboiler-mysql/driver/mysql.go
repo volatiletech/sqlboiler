@@ -372,7 +372,15 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 // TranslateColumnType converts mysql database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (m *MySQLDriver) TranslateColumnType(c drivers.Column, tableName string) drivers.Column {
+// Deprecated: for MySQL enum types to be created properly TranslateTableColumnType method should be used instead.
+func (m *MySQLDriver) TranslateColumnType(drivers.Column) drivers.Column {
+	panic("TranslateTableColumnType should be called")
+}
+
+// TranslateTableColumnType converts mysql database types to Go types, for example
+// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
+// as a Column object.
+func (m *MySQLDriver) TranslateTableColumnType(c drivers.Column, tableName string) drivers.Column {
 	unsigned := strings.Contains(c.FullDBType, "unsigned")
 	if c.Nullable {
 		switch c.DBType {

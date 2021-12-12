@@ -455,7 +455,7 @@ func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.For
 // TranslateColumnType converts postgres database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (p *PostgresDriver) TranslateColumnType(c drivers.Column, tableName string) drivers.Column {
+func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 	if c.Nullable {
 		switch c.DBType {
 		case "bigint", "bigserial":

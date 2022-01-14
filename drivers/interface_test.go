@@ -228,6 +228,34 @@ func TestFilterForeignKeys(t *testing.T) {
 	}
 }
 
+func TestKnownColumn(t *testing.T) {
+	tests := []struct {
+		table     string
+		column    string
+		whitelist []string
+		blacklist []string
+		expected  bool
+	}{
+		{"one", "id", []string{"one"}, []string{}, true},
+		{"one", "id", []string{}, []string{"one"}, false},
+		{"one", "id", []string{"one.id"}, []string{}, true},
+		{"one", "id", []string{"one.id"}, []string{"one"}, false},
+		{"one", "id", []string{"two"}, []string{}, false},
+		{"one", "id", []string{"two"}, []string{"one"}, false},
+		{"one", "id", []string{"two.id"}, []string{}, false},
+		{"one", "id", []string{"*.id"}, []string{}, true},
+		{"one", "id", []string{"*.id"}, []string{"*.id"}, false},
+	}
+
+	for i, test := range tests {
+		known := knownColumn(test.table, test.column, test.whitelist, test.blacklist)
+		if known != test.expected {
+			t.Errorf("%d) want: %t, got: %t\nTest: %#v", i, test.expected, known, test)
+		}
+	}
+
+}
+
 func TestSetIsJoinTable(t *testing.T) {
 	t.Parallel()
 

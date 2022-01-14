@@ -178,9 +178,9 @@ func TestFilterForeignKeys(t *testing.T) {
 				{Name: "four_id"},
 			},
 			FKeys: []ForeignKey{
-				{Column: "two_id", ForeignTable: "two", ForeignColumn: "id"},
-				{Column: "three_id", ForeignTable: "three", ForeignColumn: "id"},
-				{Column: "four_id", ForeignTable: "four", ForeignColumn: "id"},
+				{Table: "one", Column: "two_id", ForeignTable: "two", ForeignColumn: "id"},
+				{Table: "one", Column: "three_id", ForeignTable: "three", ForeignColumn: "id"},
+				{Table: "one", Column: "four_id", ForeignTable: "four", ForeignColumn: "id"},
 			},
 		},
 		{
@@ -210,7 +210,12 @@ func TestFilterForeignKeys(t *testing.T) {
 	}{
 		{[]string{}, []string{}, 3},
 		{[]string{"one", "two", "three"}, []string{}, 2},
+		{[]string{"one.two_id", "two"}, []string{}, 1},
+		{[]string{"*.two_id", "two"}, []string{}, 1},
 		{[]string{}, []string{"three", "four"}, 1},
+		{[]string{}, []string{"three.id"}, 2},
+		{[]string{}, []string{"one.two_id"}, 2},
+		{[]string{}, []string{"*.two_id"}, 2},
 		{[]string{"one", "two"}, []string{"two"}, 0},
 	}
 

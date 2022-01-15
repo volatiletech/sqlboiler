@@ -2476,7 +2476,7 @@
 					"name": "primary_email",
 					"type": "null.String",
 					"db_type": "character varying",
-					"default": "",
+					"default": "NULL",
 					"comment": "The user's preferred email address.\n\nUse this to send emails to the user.",
 					"nullable": true,
 					"unique": true,

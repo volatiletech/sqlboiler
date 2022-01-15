@@ -18,6 +18,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 )
 
@@ -84,7 +85,7 @@ func TestAssemble(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if bytes.Compare(want, got) != 0 {
-		t.Errorf("want:\n%s\ngot:\n%s\n", want, got)
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("%s\n", diff)
 	}
 }

@@ -85,7 +85,7 @@ func TestAssemble(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(want, got); diff != "" {
+	if diff := cmp.Diff(string(want), string(got)); diff != "" {
 		t.Errorf("%s\n", diff)
 	}
 }

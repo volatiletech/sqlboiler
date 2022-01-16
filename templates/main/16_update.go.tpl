@@ -64,6 +64,7 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
+		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}GeneratedColumns)
 		{{if .Dialect.UseAutoColumns -}}
 		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}ColumnsWithAuto)
 		{{end}}

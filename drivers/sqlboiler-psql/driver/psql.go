@@ -229,6 +229,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		COALESCE(col_description(('"'||c.table_schema||'"."'||c.table_name||'"')::regclass::oid, ordinal_position), '') as column_comment,
 
 		c.is_nullable = 'YES' as is_nullable,
+		(
+				case when c.is_generated = 'ALWAYS' or c.identity_generation = 'ALWAYS' 
+				then TRUE else FALSE end
+		) as is_generated,
 		(case
 			when (select
 		    case
@@ -284,7 +288,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 				end
 			) as column_type
 		) ct
-		where c.table_name = $2 and c.table_schema = $1 and c.is_generated = 'NEVER'`
+		where c.table_name = $2 and c.table_schema = $1`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -316,16 +320,9 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	for rows.Next() {
 		var colName, colType, colFullType, udtName, comment string
 		var defaultValue, arrayType, domainName *string
-		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &identity, &unique); err != nil {
+		var nullable, generated, identity, unique bool
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
-		}
-
-		// To prevent marking nullable columns as not having a default value
-		// Techinically, every nullable column is "DEFAULT NULL"
-		if nullable && defaultValue == nil {
-			null := "NULL"
-			defaultValue = &null
 		}
 
 		column := drivers.Column{
@@ -337,6 +334,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			UDTName:    udtName,
 			Comment:    comment,
 			Nullable:   nullable,
+			Generated:  generated,
 			Unique:     unique,
 		}
 		if defaultValue != nil {
@@ -345,6 +343,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 		if identity != false {
 			column.Default = "IDENTITY"
+		}
+
+		if nullable && column.Default == "" {
+			column.Default = "NULL"
 		}
 
 		columns = append(columns, column)

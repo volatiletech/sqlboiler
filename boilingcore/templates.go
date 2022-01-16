@@ -314,11 +314,12 @@ var templateFunctions = template.FuncMap{
 	},
 
 	// dbdrivers ops
-	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,
-	"filterColumnsByDefault": drivers.FilterColumnsByDefault,
-	"filterColumnsByEnum":    drivers.FilterColumnsByEnum,
-	"sqlColDefinitions":      drivers.SQLColDefinitions,
-	"columnNames":            drivers.ColumnNames,
-	"columnDBTypes":          drivers.ColumnDBTypes,
-	"getTable":               drivers.GetTable,
+	"filterColumnsByAuto":      drivers.FilterColumnsByAuto,
+	"filterColumnsByGenerated": drivers.FilterColumnsByGenerated,
+	"filterColumnsByDefault":   drivers.FilterColumnsByDefault,
+	"filterColumnsByEnum":      drivers.FilterColumnsByEnum,
+	"sqlColDefinitions":        drivers.SQLColDefinitions,
+	"columnNames":              drivers.ColumnNames,
+	"columnDBTypes":            drivers.ColumnDBTypes,
+	"getTable":                 drivers.GetTable,
 }

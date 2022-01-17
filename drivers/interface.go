@@ -131,12 +131,24 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 	return tables, nil
 }
 
+func knownColumn(table string, column string, whitelist, blacklist []string) bool {
+	return (len(whitelist) == 0 ||
+		strmangle.SetInclude(table, whitelist) ||
+		strmangle.SetInclude(table+"."+column, whitelist) ||
+		strmangle.SetInclude("*."+column, whitelist)) &&
+
+		(len(blacklist) == 0 || (!strmangle.SetInclude(table, blacklist) &&
+			!strmangle.SetInclude(table+"."+column, blacklist) &&
+			!strmangle.SetInclude("*."+column, blacklist)))
+}
+
 // filterForeignKeys filter FK whose ForeignTable is not in whitelist or in blacklist
 func filterForeignKeys(t *Table, whitelist, blacklist []string) {
 	var fkeys []ForeignKey
+
 	for _, fkey := range t.FKeys {
-		if (len(whitelist) == 0 || strmangle.SetInclude(fkey.ForeignTable, whitelist)) &&
-			(len(blacklist) == 0 || !strmangle.SetInclude(fkey.ForeignTable, blacklist)) {
+		if knownColumn(fkey.ForeignTable, fkey.ForeignColumn, whitelist, blacklist) &&
+			knownColumn(fkey.Table, fkey.Column, whitelist, blacklist) {
 			fkeys = append(fkeys, fkey)
 		}
 	}

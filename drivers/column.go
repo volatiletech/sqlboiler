@@ -75,7 +75,7 @@ func FilterColumnsByAuto(auto bool, columns []Column) []Column {
 	return cols
 }
 
-// FilterColumnsByAuto generates the list of columns that are generated
+// FilterColumnsByGenerated generates the list of columns that are generated
 func FilterColumnsByGenerated(generated bool, columns []Column) []Column {
 	var cols []Column
 

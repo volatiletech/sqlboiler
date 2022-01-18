@@ -18,7 +18,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				}
 			],
@@ -62,7 +62,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				}
 			],
@@ -116,7 +116,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -148,7 +148,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -164,7 +164,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -484,7 +484,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -500,7 +500,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -516,7 +516,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -532,7 +532,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -548,7 +548,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -564,7 +564,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -580,7 +580,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -596,7 +596,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -612,7 +612,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -628,7 +628,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -644,7 +644,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -660,7 +660,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -676,7 +676,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -692,7 +692,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -907,7 +907,7 @@
 					"name": "bytea_three",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "a",
+					"default": "0x61",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -923,7 +923,7 @@
 					"name": "bytea_four",
 					"type": "null.Bytes",
 					"db_type": "binary",
-					"default": "b",
+					"default": "0x62",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -939,7 +939,7 @@
 					"name": "bytea_five",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "abcdefghabcdefghabcdefgh\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+					"default": "0x616263646566676861626364656667686162636465666768",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -955,7 +955,7 @@
 					"name": "bytea_six",
 					"type": "null.Bytes",
 					"db_type": "binary",
-					"default": "hgfedcbahgfedcbahgfedcba\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+					"default": "0x686766656463626168676665646362616867666564636261",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -971,7 +971,7 @@
 					"name": "bytea_seven",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "\u0000",
+					"default": "0x",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -987,7 +987,7 @@
 					"name": "bytea_eight",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "\u0000",
+					"default": "0x",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -1001,11 +1001,11 @@
 				},
 				{
 					"name": "time_zero",
-					"type": "time.Time",
+					"type": "null.Time",
 					"db_type": "timestamp",
-					"default": "CURRENT_TIMESTAMP",
+					"default": "",
 					"comment": "",
-					"nullable": false,
+					"nullable": true,
 					"unique": false,
 					"validated": false,
 					"generated": false,
@@ -1204,7 +1204,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "tinyint(4)",
+					"full_db_type": "tinyint",
 					"auto_generated": false
 				},
 				{
@@ -1220,7 +1220,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "tinyint(4)",
+					"full_db_type": "tinyint",
 					"auto_generated": false
 				},
 				{
@@ -1268,7 +1268,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "tinyint(2)",
+					"full_db_type": "tinyint",
 					"auto_generated": false
 				},
 				{
@@ -1284,7 +1284,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "tinyint(2)",
+					"full_db_type": "tinyint",
 					"auto_generated": false
 				},
 				{
@@ -1300,7 +1300,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "smallint(6)",
+					"full_db_type": "smallint",
 					"auto_generated": false
 				},
 				{
@@ -1316,7 +1316,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "smallint(6)",
+					"full_db_type": "smallint",
 					"auto_generated": false
 				},
 				{
@@ -1332,7 +1332,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "mediumint(9)",
+					"full_db_type": "mediumint",
 					"auto_generated": false
 				},
 				{
@@ -1348,7 +1348,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "mediumint(9)",
+					"full_db_type": "mediumint",
 					"auto_generated": false
 				},
 				{
@@ -1364,7 +1364,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -1380,7 +1380,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint(20)",
+					"full_db_type": "bigint",
 					"auto_generated": false
 				},
 				{
@@ -1956,7 +1956,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				}
 			],
@@ -2010,7 +2010,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -2026,7 +2026,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				}
 			],
@@ -2082,7 +2082,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -2098,7 +2098,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				},
 				{
@@ -2114,7 +2114,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int(11)",
+					"full_db_type": "int",
 					"auto_generated": false
 				}
 			],

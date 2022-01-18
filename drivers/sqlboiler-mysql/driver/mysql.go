@@ -210,6 +210,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			replace(substring(c.column_default,2,length(c.column_default)-2),'\'\'','\''),
 				c.column_default))),
 	c.is_nullable = 'YES',
+	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated,
 		exists (
 			select c.column_name
 			from information_schema.table_constraints tc
@@ -222,7 +223,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 				constraint_schema = ? and table_name = ? and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'`
+	where table_name = ? and table_schema = ?`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -252,9 +253,9 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 
 	for rows.Next() {
 		var colName, colFullType, colComment, colType string
-		var nullable, unique bool
+		var nullable, generated, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &generated, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
@@ -265,6 +266,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			DBType:     colType,
 			Nullable:   nullable,
 			Unique:     unique,
+			Generated:  generated,
 		}
 
 		if defaultValue != nil && *defaultValue != "NULL" {

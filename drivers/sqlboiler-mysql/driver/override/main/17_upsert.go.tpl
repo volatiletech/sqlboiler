@@ -94,10 +94,13 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
+		insert = strmangle.SetComplement(insert, {{$alias.DownSingular}}GeneratedColumns)
+
 		update := updateColumns.UpdateColumnSet(
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
+		update = strmangle.SetComplement(update, {{$alias.DownSingular}}GeneratedColumns)
 
 		if !updateColumns.IsNone() && len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")

@@ -19,14 +19,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 )
 
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-	envHostname = drivers.DefaultEnv("DRIVER_HOSTNAME", "127.0.0.1")
+	envHostname = drivers.DefaultEnv("DRIVER_HOSTNAME", "localhost")
 	envPort     = drivers.DefaultEnv("DRIVER_PORT", "3306")
 	envUsername = drivers.DefaultEnv("DRIVER_USER", "sqlboiler_driver_user")
 	envPassword = drivers.DefaultEnv("DRIVER_PASS", "sqlboiler")

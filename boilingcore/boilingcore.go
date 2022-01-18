@@ -434,7 +434,7 @@ func (s *State) mergeDriverImports() error {
 // from the driver have nullable enum columns.
 func (s *State) mergeEnumImports() {
 	if drivers.TablesHaveNullableEnums(s.Tables) {
-		s.Config.Imports = importers.Merge(s.Config.Imports, importers.NewNullableEnumImports())
+		s.Config.Imports = importers.Merge(s.Config.Imports, importers.NullableEnumImports())
 	}
 }
 

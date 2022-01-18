@@ -285,8 +285,8 @@ func NewDefaultImports() Collection {
 	return col
 }
 
-// NewNullableEnumImports returns imports collection for nullable enum types.
-func NewNullableEnumImports() Collection {
+// NullableEnumImports returns imports collection for nullable enum types.
+func NullableEnumImports() Collection {
 	var col Collection
 
 	col.Singleton = Map{

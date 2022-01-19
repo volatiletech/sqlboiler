@@ -135,7 +135,7 @@
 					"name": "enum_nullable",
 					"type": "null.String",
 					"db_type": "enum.workday('monday','tuesday','wednesday','thursday','friday')",
-					"default": "",
+					"default": "NULL",
 					"comment": "",
 					"nullable": true,
 					"unique": false,

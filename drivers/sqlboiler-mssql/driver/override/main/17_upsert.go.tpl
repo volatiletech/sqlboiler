@@ -76,7 +76,10 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
-		insert = strmangle.SetComplement(insert, {{$alias.DownSingular}}ColumnsWithAuto)
+		{{if filterColumnsByAuto true .Table.Columns }}
+		insert = strmangle.SetComplement(insert, {{$alias.DownSingular}}GeneratedColumns)
+		{{end}}
+
 		for i, v := range insert {
 			if strmangle.ContainsAny({{$alias.DownSingular}}PrimaryKeyColumns, v) && strmangle.ContainsAny({{$alias.DownSingular}}ColumnsWithDefault, v) {
 				insert = append(insert[:i], insert[i+1:]...)
@@ -86,14 +89,13 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build insert column list")
 		}
 
-		ret = strmangle.SetMerge(ret, {{$alias.DownSingular}}ColumnsWithAuto)
-		ret = strmangle.SetMerge(ret, {{$alias.DownSingular}}ColumnsWithDefault)
-
 		update := updateColumns.UpdateColumnSet(
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
-		update = strmangle.SetComplement(update, {{$alias.DownSingular}}ColumnsWithAuto)
+		{{if filterColumnsByAuto true .Table.Columns }}
+		insert = strmangle.SetComplement(insert, {{$alias.DownSingular}}GeneratedColumns)
+		{{end}}
 
 		if !updateColumns.IsNone() && len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")

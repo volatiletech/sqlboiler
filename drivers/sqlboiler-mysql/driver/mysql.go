@@ -277,6 +277,11 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			column.Default = *defaultValue
 		}
 
+		// A generated column technically has a default value
+		if generated && column.Default == "" {
+			column.Default = "GENERATED"
+		}
+
 		columns = append(columns, column)
 	}
 

@@ -347,6 +347,12 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			column.Default = "IDENTITY"
 		}
 
+		// A generated column technically has a default value
+		if generated && column.Default == "" {
+			column.Default = "GENERATED"
+		}
+
+		// A nullable column can always default to NULL
 		if nullable && column.Default == "" {
 			column.Default = "NULL"
 		}

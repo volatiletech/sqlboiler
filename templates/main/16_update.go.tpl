@@ -64,9 +64,8 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
+		{{- if filterColumnsByAuto true .Table.Columns }}
 		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}GeneratedColumns)
-		{{if .Dialect.UseAutoColumns -}}
-		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}ColumnsWithAuto)
 		{{end}}
 		{{if not .NoAutoTimestamps}}
 		if !columns.IsWhitelist() {

@@ -92,15 +92,8 @@ func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
-		fields = strmangle.SetComplement(
-			fields,
-			{{$alias.DownSingular}}GeneratedColumns,
-		)
-		{{- if .Dialect.UseAutoColumns }}
-		fields = strmangle.SetComplement(
-			fields,
-			{{$alias.DownSingular}}ColumnsWithAuto,
-		)
+		{{- if filterColumnsByAuto true .Table.Columns }}
+		fields = strmangle.SetComplement(fields, {{$alias.DownSingular}}GeneratedColumns)
 		{{- end}}
 	}
 

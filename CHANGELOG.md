@@ -4,6 +4,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add new --always-wrap-errors flag that does not unwrap sql.ErrNoRows
+  so it can retain the stack trace. This supports the best practice of using
+  errors.Is() anyway and will eventually become the default behavior in
+  a breaking v5 (thanks @jhnj)
+- Add support for * as a wildcard for white/blacklisting columns. See readme
+  for details (thanks @Yoshiji)
+
 ## [v4.8.3] - 2021-11-16
 
 ### Fixed

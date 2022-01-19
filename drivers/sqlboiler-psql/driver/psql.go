@@ -323,6 +323,13 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
+		// To prevent marking nullable columns as not having a default value
+		// Techinically, every nullable column is "DEFAULT NULL"
+		if nullable && defaultValue == nil {
+			null := "NULL"
+			defaultValue = &null
+		}
+
 		column := drivers.Column{
 			Name:       colName,
 			DBType:     colType,

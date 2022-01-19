@@ -13,6 +13,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/strmangle"
 )
 
 //go:embed override
@@ -32,10 +33,11 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // MySQLDriver holds the database connection string and a handle
 // to the database connection.
 type MySQLDriver struct {
-	connStr string
-	conn    *sql.DB
-
-	tinyIntAsInt bool
+	connStr        string
+	conn           *sql.DB
+	addEnumTypes   bool
+	enumNullPrefix string
+	tinyIntAsInt   bool
 }
 
 // Templates that should be added/overridden
@@ -89,6 +91,8 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}
 
+	m.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
+	m.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mysql", m.connStr)
 	if err != nil {
@@ -370,7 +374,15 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 // TranslateColumnType converts mysql database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+// Deprecated: for MySQL enum types to be created properly TranslateTableColumnType method should be used instead.
+func (m *MySQLDriver) TranslateColumnType(drivers.Column) drivers.Column {
+	panic("TranslateTableColumnType should be called")
+}
+
+// TranslateTableColumnType converts mysql database types to Go types, for example
+// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
+// as a Column object.
+func (m *MySQLDriver) TranslateTableColumnType(c drivers.Column, tableName string) drivers.Column {
 	unsigned := strings.Contains(c.FullDBType, "unsigned")
 	if c.Nullable {
 		switch c.DBType {
@@ -422,7 +434,11 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "json":
 			c.Type = "null.JSON"
 		default:
-			c.Type = "null.String"
+			if len(strmangle.ParseEnumVals(c.DBType)) > 0 && m.addEnumTypes {
+				c.Type = strmangle.TitleCase(tableName) + m.enumNullPrefix + strmangle.TitleCase(c.Name)
+			} else {
+				c.Type = "null.String"
+			}
 		}
 	} else {
 		switch c.DBType {
@@ -474,7 +490,11 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "json":
 			c.Type = "types.JSON"
 		default:
-			c.Type = "string"
+			if len(strmangle.ParseEnumVals(c.DBType)) > 0 && m.addEnumTypes {
+				c.Type = strmangle.TitleCase(tableName) + strmangle.TitleCase(c.Name)
+			} else {
+				c.Type = "string"
+			}
 		}
 	}
 

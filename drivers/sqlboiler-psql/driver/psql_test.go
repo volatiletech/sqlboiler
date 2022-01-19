@@ -18,6 +18,8 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 )
 
@@ -50,41 +52,67 @@ func TestAssemble(t *testing.T) {
 	}
 	t.Logf("psql output:\n%s\n", out.Bytes())
 
-	config := drivers.Config{
-		"user":    envUsername,
-		"pass":    envPassword,
-		"dbname":  envDatabase,
-		"host":    envHostname,
-		"port":    envPort,
-		"sslmode": "disable",
-		"schema":  "public",
+	tests := []struct {
+		name       string
+		config     drivers.Config
+		goldenJson string
+	}{
+		{
+			name: "default",
+			config: drivers.Config{
+				"user":    envUsername,
+				"pass":    envPassword,
+				"dbname":  envDatabase,
+				"host":    envHostname,
+				"port":    envPort,
+				"sslmode": "disable",
+				"schema":  "public",
+			},
+			goldenJson: "psql.golden.json",
+		},
+		{
+			name: "enum_types",
+			config: drivers.Config{
+				"user":           envUsername,
+				"pass":           envPassword,
+				"dbname":         envDatabase,
+				"host":           envHostname,
+				"port":           envPort,
+				"sslmode":        "disable",
+				"schema":         "public",
+				"add-enum-types": true,
+			},
+			goldenJson: "psql.golden.enums.json",
+		},
 	}
 
-	p := &PostgresDriver{}
-	info, err := p.Assemble(config)
-	if err != nil {
-		t.Fatal(err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &PostgresDriver{}
+			info, err := p.Assemble(tt.config)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	got, err := json.MarshalIndent(info, "", "\t")
-	if err != nil {
-		t.Fatal(err)
-	}
+			got, err := json.MarshalIndent(info, "", "\t")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	if *flagOverwriteGolden {
-		if err = ioutil.WriteFile("psql.golden.json", got, 0664); err != nil {
-			t.Fatal(err)
-		}
-		t.Log("wrote:", string(got))
-		return
-	}
+			if *flagOverwriteGolden {
+				if err = ioutil.WriteFile(tt.goldenJson, got, 0664); err != nil {
+					t.Fatal(err)
+				}
+				t.Log("wrote:", string(got))
+				return
+			}
 
-	want, err := ioutil.ReadFile("psql.golden.json")
-	if err != nil {
-		t.Fatal(err)
-	}
+			want, err := ioutil.ReadFile(tt.goldenJson)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	if bytes.Compare(want, got) != 0 {
-		t.Errorf("want:\n%s\ngot:\n%s\n", want, got)
+			require.JSONEq(t, string(want), string(got))
+		})
 	}
 }

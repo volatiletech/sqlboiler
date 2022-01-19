@@ -285,6 +285,27 @@ func NewDefaultImports() Collection {
 	return col
 }
 
+// NullableEnumImports returns imports collection for nullable enum types.
+func NullableEnumImports() Collection {
+	var col Collection
+
+	col.Singleton = Map{
+		"boil_types": {
+			Standard: List{
+				`"bytes"`,
+				`"database/sql/driver"`,
+				`"encoding/json"`,
+			},
+			ThirdParty: List{
+				`"github.com/volatiletech/null/v8"`,
+				`"github.com/volatiletech/null/v8/convert"`,
+			},
+		},
+	}
+
+	return col
+}
+
 // AddTypeImports takes a set of imports 'a', a type -> import mapping 'typeMap'
 // and a set of column types that are currently in use and produces a new set
 // including both the old standard/third party, as well as the imports required

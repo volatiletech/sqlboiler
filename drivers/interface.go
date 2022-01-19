@@ -12,9 +12,11 @@ import (
 
 // These constants are used in the config map passed into the driver
 const (
-	ConfigBlacklist = "blacklist"
-	ConfigWhitelist = "whitelist"
-	ConfigSchema    = "schema"
+	ConfigBlacklist      = "blacklist"
+	ConfigWhitelist      = "whitelist"
+	ConfigSchema         = "schema"
+	ConfigAddEnumTypes   = "add-enum-types"
+	ConfigEnumNullPrefix = "enum-null-prefix"
 
 	ConfigUser    = "user"
 	ConfigPass    = "pass"
@@ -77,6 +79,11 @@ type Constructor interface {
 	TranslateColumnType(Column) Column
 }
 
+type TableColumnTypeTranslator interface {
+	// TranslateTableColumnType takes a Database column type and table name and returns a go column type.
+	TranslateTableColumnType(c Column, tableName string) Column
+}
+
 // Tables returns the metadata for all tables, minus the tables
 // specified in the blacklist.
 func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
@@ -99,8 +106,15 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
 		}
 
-		for i, col := range t.Columns {
-			t.Columns[i] = c.TranslateColumnType(col)
+		tr, ok := c.(TableColumnTypeTranslator)
+		if ok {
+			for i, col := range t.Columns {
+				t.Columns[i] = tr.TranslateTableColumnType(col, name)
+			}
+		} else {
+			for i, col := range t.Columns {
+				t.Columns[i] = c.TranslateColumnType(col)
+			}
 		}
 
 		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {

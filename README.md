@@ -379,6 +379,8 @@ not to pass them through the command line or environment variables:
 | debug               | false     |
 | add-global-variants | false     |
 | add-panic-variants  | false     |
+| add-enum-types      | false     |
+| enum-null-prefix    | "Null"    |
 | no-context          | false     |
 | no-hooks            | false     |
 | no-tests            | false     |
@@ -393,6 +395,7 @@ not to pass them through the command line or environment variables:
 output   = "my_models"
 wipe     = true
 no-tests = true
+add-enum-types = true
 
 [psql]
   dbname = "dbname"
@@ -441,6 +444,7 @@ Flags:
       --add-panic-variants         Enable generation for panic variants
       --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
       --add-enum-types             Enable generation of types for enums
+      --enum-null-prefix           Name prefix of nullable enum types (default "Null")
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler

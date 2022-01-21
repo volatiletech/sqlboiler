@@ -165,6 +165,22 @@ func (q {{$alias.DownSingular}}Query) UpdateAllG({{if not .NoContext}}ctx contex
 {{end -}}
 
 
+{{if and .AddGlobal .AddPanic -}}
+// UpdateAllGP updates all rows with the specified column values, and panics on error.
+func (q {{$alias.DownSingular}}Query) UpdateAllGP({{if not .NoContext}}ctx context.Context, {{end -}} cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.UpdateAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, cols)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
+}
+
+{{end -}}
+
+
 // UpdateAll updates all rows with the specified column values.
 func (q {{$alias.DownSingular}}Query) UpdateAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	queries.SetUpdate(q.Query, cols)

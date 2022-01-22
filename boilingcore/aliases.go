@@ -10,6 +10,7 @@ import (
 // Aliases defines aliases for the generation run
 type Aliases struct {
 	Tables map[string]TableAlias `toml:"tables,omitempty" json:"tables,omitempty"`
+	Views  map[string]ViewAlias  `toml:"views,omitempty" json:"views,omitempty"`
 }
 
 // TableAlias defines the spellings for a table name in Go
@@ -21,6 +22,15 @@ type TableAlias struct {
 
 	Columns       map[string]string            `toml:"columns,omitempty" json:"columns,omitempty"`
 	Relationships map[string]RelationshipAlias `toml:"relationships,omitempty" json:"relationships,omitempty"`
+}
+
+// ViewAlias defines the spellings for a table name in Go
+type ViewAlias struct {
+	UpPlural     string            `toml:"up_plural,omitempty" json:"up_plural,omitempty"`
+	UpSingular   string            `toml:"up_singular,omitempty" json:"up_singular,omitempty"`
+	DownPlural   string            `toml:"down_plural,omitempty" json:"down_plural,omitempty"`
+	DownSingular string            `toml:"down_singular,omitempty" json:"down_singular,omitempty"`
+	Columns      map[string]string `toml:"columns,omitempty" json:"columns,omitempty"`
 }
 
 // RelationshipAlias defines the naming for both sides of
@@ -159,6 +169,45 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 	}
 }
 
+// FillViewAliases takes the view information from the driver
+// and fills in aliases where the user has provided none.
+//
+// This leaves us with a complete list of Go names for all views and columns
+func FillViewAliases(a *Aliases, views []drivers.View) {
+	if a.Views == nil {
+		a.Views = make(map[string]ViewAlias)
+	}
+
+	for _, v := range views {
+		view := a.Views[v.Name]
+
+		if len(view.UpPlural) == 0 {
+			view.UpPlural = strmangle.TitleCase(strmangle.Plural(v.Name))
+		}
+		if len(view.UpSingular) == 0 {
+			view.UpSingular = strmangle.TitleCase(strmangle.Singular(v.Name))
+		}
+		if len(view.DownPlural) == 0 {
+			view.DownPlural = strmangle.CamelCase(strmangle.Plural(v.Name))
+		}
+		if len(view.DownSingular) == 0 {
+			view.DownSingular = strmangle.CamelCase(strmangle.Singular(v.Name))
+		}
+
+		if view.Columns == nil {
+			view.Columns = make(map[string]string)
+		}
+
+		for _, c := range v.Columns {
+			if _, ok := view.Columns[c.Name]; !ok {
+				view.Columns[c.Name] = strmangle.TitleCase(c.Name)
+			}
+		}
+
+		a.Views[v.Name] = view
+	}
+}
+
 // Table gets a table alias, panics if not found.
 func (a Aliases) Table(table string) TableAlias {
 	t, ok := a.Tables[table]
@@ -167,6 +216,16 @@ func (a Aliases) Table(table string) TableAlias {
 	}
 
 	return t
+}
+
+// View gets a view alias, panics if not found.
+func (a Aliases) View(view string) ViewAlias {
+	v, ok := a.Views[view]
+	if !ok {
+		panic("could not find view aliases for: " + view)
+	}
+
+	return v
 }
 
 // Column get's a column's aliased name, panics if not found.
@@ -187,6 +246,16 @@ func (t TableAlias) Relationship(fkey string) RelationshipAlias {
 	}
 
 	return r
+}
+
+// Column get's a column's aliased name, panics if not found.
+func (v ViewAlias) Column(column string) string {
+	c, ok := v.Columns[column]
+	if !ok {
+		panic(fmt.Sprintf("could not find column alias for: %s.%s", v.UpSingular, column))
+	}
+
+	return c
 }
 
 // ManyRelationship looks up a relationship alias, panics if not found.

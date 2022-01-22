@@ -21,6 +21,8 @@ import (
 type templateData struct {
 	Tables  []drivers.Table
 	Table   drivers.Table
+	Views   []drivers.View
+	View    drivers.View
 	Aliases Aliases
 
 	// Controls what names are output
@@ -128,14 +130,39 @@ func (t templateList) Templates() []string {
 	return ret
 }
 
-func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateList, error) {
+type templateType string
+
+const (
+	templateTypeTable templateType = "table"
+	templateTypeView  templateType = "view"
+	templateTypeTest  templateType = "test"
+)
+
+func loadTemplates(lazyTemplates []lazyTemplate, Type templateType) (*templateList, error) {
 	tpl := template.New("")
 
 	for _, t := range lazyTemplates {
-		firstDir := strings.Split(t.Name, string(filepath.Separator))[0]
+		parts := strings.Split(t.Name, string(filepath.Separator))
+		firstDir := parts[0]
+		isView := len(parts) > 0 && strings.HasPrefix(parts[1], "view_")
 		isTest := firstDir == "test" || strings.HasSuffix(firstDir, "_test")
-		if testTemplates && !isTest || !testTemplates && isTest {
-			continue
+
+		switch Type {
+		case templateTypeTest:
+			if !isTest {
+				continue
+			}
+		case templateTypeView:
+			if !isView {
+				continue
+			}
+		case templateTypeTable:
+			if isTest || isView {
+				continue
+			}
+
+		default:
+			return nil, fmt.Errorf("Unknown template type %q", Type)
 		}
 
 		byt, err := t.Loader.Load()

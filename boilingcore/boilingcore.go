@@ -34,9 +34,11 @@ type State struct {
 	Driver  drivers.Interface
 	Schema  string
 	Tables  []drivers.Table
+	Views   []drivers.View
 	Dialect drivers.Dialect
 
 	Templates     *templateList
+	ViewTemplates *templateList
 	TestTemplates *templateList
 }
 
@@ -97,6 +99,7 @@ func New(config *Config) (*State, error) {
 
 	if !s.Config.NoContext {
 		s.Config.Imports.All.Standard = append(s.Config.Imports.All.Standard, `"context"`)
+		s.Config.Imports.View.Standard = append(s.Config.Imports.View.Standard, `"context"`)
 		s.Config.Imports.Test.Standard = append(s.Config.Imports.Test.Standard, `"context"`)
 	}
 
@@ -132,6 +135,7 @@ func New(config *Config) (*State, error) {
 func (s *State) Run() error {
 	data := &templateData{
 		Tables:            s.Tables,
+		Views:             s.Views,
 		Aliases:           s.Config.Aliases,
 		DriverName:        s.Config.DriverName,
 		PkgName:           s.Config.PkgName,
@@ -179,8 +183,9 @@ func (s *State) Run() error {
 		}
 	}
 
-	var regularDirExtMap, testDirExtMap dirExtMap
+	var regularDirExtMap, viewDirExtMap, testDirExtMap dirExtMap
 	regularDirExtMap = groupTemplates(s.Templates)
+	viewDirExtMap = groupTemplates(s.ViewTemplates)
 	if !s.Config.NoTests {
 		testDirExtMap = groupTemplates(s.TestTemplates)
 	}
@@ -202,6 +207,17 @@ func (s *State) Run() error {
 			if err := generateTestOutput(s, testDirExtMap, data); err != nil {
 				return errors.Wrap(err, "unable to generate test output")
 			}
+		}
+	}
+
+	// reset the table in template data
+	data.Table = drivers.Table{}
+	for _, view := range s.Views {
+		data.View = view
+
+		// Generate the regular templates
+		if err := generateViewOutput(s, viewDirExtMap, data); err != nil {
+			return errors.Wrap(err, "unable to generate view output")
 		}
 	}
 
@@ -308,13 +324,18 @@ func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 		})
 	}
 
-	s.Templates, err = loadTemplates(lazyTemplates, false)
+	s.Templates, err = loadTemplates(lazyTemplates, templateTypeTable)
+	if err != nil {
+		return nil, err
+	}
+
+	s.ViewTemplates, err = loadTemplates(lazyTemplates, templateTypeView)
 	if err != nil {
 		return nil, err
 	}
 
 	if !s.Config.NoTests {
-		s.TestTemplates, err = loadTemplates(lazyTemplates, true)
+		s.TestTemplates, err = loadTemplates(lazyTemplates, templateTypeTest)
 		if err != nil {
 			return nil, err
 		}
@@ -413,6 +434,7 @@ func (s *State) initDBInfo(config map[string]interface{}) error {
 	s.Schema = dbInfo.Schema
 	s.Tables = dbInfo.Tables
 	s.Dialect = dbInfo.Dialect
+	s.Views = dbInfo.Views
 
 	return nil
 }
@@ -434,7 +456,7 @@ func (s *State) mergeDriverImports() error {
 // into the current configuration's imports if tables returned
 // from the driver have nullable enum columns.
 func (s *State) mergeEnumImports() {
-	if drivers.TablesHaveNullableEnums(s.Tables) {
+	if drivers.TablesHaveNullableEnums(s.Tables) || drivers.ViewsHaveNullableEnums(s.Views) {
 		s.Config.Imports = importers.Merge(s.Config.Imports, importers.NullableEnumImports())
 	}
 }
@@ -458,6 +480,28 @@ func (s *State) processTypeReplacements() error {
 
 					if len(r.Imports.Standard) != 0 || len(r.Imports.ThirdParty) != 0 {
 						s.Config.Imports.BasedOnType[t.Columns[j].Type] = importers.Set{
+							Standard:   r.Imports.Standard,
+							ThirdParty: r.Imports.ThirdParty,
+						}
+					}
+				}
+			}
+		}
+
+		for i := range s.Views {
+			v := s.Views[i]
+
+			if !shouldReplaceInView(v, r) {
+				continue
+			}
+
+			for j := range v.Columns {
+				c := v.Columns[j]
+				if matchColumn(c, r.Match) {
+					v.Columns[j] = columnMerge(c, r.Replace)
+
+					if len(r.Imports.Standard) != 0 || len(r.Imports.ThirdParty) != 0 {
+						s.Config.Imports.BasedOnType[v.Columns[j].Type] = importers.Set{
 							Standard:   r.Imports.Standard,
 							ThirdParty: r.Imports.ThirdParty,
 						}
@@ -568,6 +612,24 @@ func shouldReplaceInTable(t drivers.Table, r TypeReplace) bool {
 	return false
 }
 
+// shouldReplaceInView checks if views were specified in types.match in the config.
+// If views were set, it checks if the given view is among the specified views.
+func shouldReplaceInView(t drivers.View, r TypeReplace) bool {
+	// should do the same for tables in v5
+	// unless the views is specified as ["*"], do not apply to all views
+	if len(r.Views) == 1 && r.Views[0] == "*" {
+		return true
+	}
+
+	for _, replaceInView := range r.Views {
+		if replaceInView == t.Name {
+			return true
+		}
+	}
+
+	return false
+}
+
 // initOutFolders creates the folders that will hold the generated output.
 func (s *State) initOutFolders(lazyTemplates []lazyTemplate) error {
 	if s.Config.Wipe {
@@ -624,6 +686,7 @@ func (s *State) initTags(tags []string) error {
 
 func (s *State) initAliases(a *Aliases) error {
 	FillAliases(a, s.Tables)
+	FillViewAliases(a, s.Views)
 	return nil
 }
 

@@ -57,6 +57,7 @@ type AutoColumns struct {
 // TypeReplace replaces a column type with something else
 type TypeReplace struct {
 	Tables  []string       `toml:"tables,omitempty" json:"tables,omitempty"`
+	Views   []string       `toml:"views,omitempty" json:"views,omitempty"`
 	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
 	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
 	Imports importers.Set  `toml:"imports,omitempty" json:"imports,omitempty"`

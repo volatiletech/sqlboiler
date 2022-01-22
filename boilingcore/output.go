@@ -63,6 +63,18 @@ func generateOutput(state *State, dirExts dirExtMap, data *templateData) error {
 	})
 }
 
+// generateViewOutput builds the file output and sends it to outHandler for saving
+func generateViewOutput(state *State, dirExts dirExtMap, data *templateData) error {
+	return executeTemplates(executeTemplateData{
+		state:                state,
+		data:                 data,
+		templates:            state.ViewTemplates,
+		importSet:            state.Config.Imports.View,
+		combineImportsOnType: true,
+		dirExtensions:        dirExts,
+	})
+}
+
 // generateTestOutput builds the test file output and sends it to outHandler for saving
 func generateTestOutput(state *State, dirExts dirExtMap, data *templateData) error {
 	return executeTemplates(executeTemplateData{
@@ -113,7 +125,12 @@ func executeTemplates(e executeTemplateData) error {
 			colTypes[i] = ct.Type
 		}
 
-		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)
+		viewColTypes := make([]string, len(e.data.View.Columns))
+		for i, ct := range e.data.View.Columns {
+			viewColTypes[i] = ct.Type
+		}
+
+		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, append(colTypes, viewColTypes...))
 	}
 
 	for dir, dirExts := range e.dirExtensions {
@@ -139,6 +156,10 @@ func executeTemplates(e executeTemplateData) error {
 			}
 
 			fName := e.data.Table.Name
+			if fName == "" {
+				fName = e.data.View.Name
+			}
+
 			if strings.HasPrefix(fName, "_") {
 				fName = "und" + fName
 			}

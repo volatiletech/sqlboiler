@@ -10,7 +10,6 @@ import (
 // Aliases defines aliases for the generation run
 type Aliases struct {
 	Tables map[string]TableAlias `toml:"tables,omitempty" json:"tables,omitempty"`
-	Views  map[string]TableAlias `toml:"views,omitempty" json:"views,omitempty"`
 }
 
 // TableAlias defines the spellings for a table name in Go
@@ -160,45 +159,6 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 	}
 }
 
-// FillViewAliases takes the view information from the driver
-// and fills in aliases where the user has provided none.
-//
-// This leaves us with a complete list of Go names for all views and columns
-func FillViewAliases(a *Aliases, views []drivers.Table) {
-	if a.Views == nil {
-		a.Views = make(map[string]TableAlias)
-	}
-
-	for _, v := range views {
-		view := a.Views[v.Name]
-
-		if len(view.UpPlural) == 0 {
-			view.UpPlural = strmangle.TitleCase(strmangle.Plural(v.Name))
-		}
-		if len(view.UpSingular) == 0 {
-			view.UpSingular = strmangle.TitleCase(strmangle.Singular(v.Name))
-		}
-		if len(view.DownPlural) == 0 {
-			view.DownPlural = strmangle.CamelCase(strmangle.Plural(v.Name))
-		}
-		if len(view.DownSingular) == 0 {
-			view.DownSingular = strmangle.CamelCase(strmangle.Singular(v.Name))
-		}
-
-		if view.Columns == nil {
-			view.Columns = make(map[string]string)
-		}
-
-		for _, c := range v.Columns {
-			if _, ok := view.Columns[c.Name]; !ok {
-				view.Columns[c.Name] = strmangle.TitleCase(c.Name)
-			}
-		}
-
-		a.Views[v.Name] = view
-	}
-}
-
 // Table gets a table alias, panics if not found.
 func (a Aliases) Table(table string) TableAlias {
 	t, ok := a.Tables[table]
@@ -207,16 +167,6 @@ func (a Aliases) Table(table string) TableAlias {
 	}
 
 	return t
-}
-
-// View gets a view alias, panics if not found.
-func (a Aliases) View(view string) TableAlias {
-	v, ok := a.Views[view]
-	if !ok {
-		panic("could not find view aliases for: " + view)
-	}
-
-	return v
 }
 
 // Column get's a column's aliased name, panics if not found.

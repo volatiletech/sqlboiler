@@ -21,8 +21,6 @@ import (
 type templateData struct {
 	Tables  []drivers.Table
 	Table   drivers.Table
-	Views   []drivers.Table
-	View    drivers.Table
 	Aliases Aliases
 
 	// Controls what names are output

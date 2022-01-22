@@ -113,12 +113,7 @@ func executeTemplates(e executeTemplateData) error {
 			colTypes[i] = ct.Type
 		}
 
-		viewColTypes := make([]string, len(e.data.View.Columns))
-		for i, ct := range e.data.View.Columns {
-			viewColTypes[i] = ct.Type
-		}
-
-		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, append(colTypes, viewColTypes...))
+		imps = importers.AddTypeImports(imps, e.state.Config.Imports.BasedOnType, colTypes)
 	}
 
 	for dir, dirExts := range e.dirExtensions {
@@ -144,10 +139,6 @@ func executeTemplates(e executeTemplateData) error {
 			}
 
 			fName := e.data.Table.Name
-			if fName == "" {
-				fName = e.data.View.Name
-			}
-
 			if strings.HasPrefix(fName, "_") {
 				fName = "und" + fName
 			}

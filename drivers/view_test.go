@@ -65,3 +65,33 @@ func TestGetViewColumnMissing(t *testing.T) {
 
 	view.GetColumn("missing")
 }
+
+func TestViewCanSoftDelete(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		Can     bool
+		Columns []Column
+	}{
+		{true, []Column{
+			{Name: "deleted_at", Type: "null.Time"},
+		}},
+		{false, []Column{
+			{Name: "deleted_at", Type: "time.Time"},
+		}},
+		{false, []Column{
+			{Name: "deleted_at", Type: "int"},
+		}},
+		{false, nil},
+	}
+
+	for i, test := range tests {
+		table := Table{
+			Columns: test.Columns,
+		}
+
+		if got := table.CanSoftDelete("deleted_at"); got != test.Can {
+			t.Errorf("%d) wrong: %t", i, got)
+		}
+	}
+}

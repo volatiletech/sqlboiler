@@ -7,13 +7,3 @@ var TableNames = struct {
 	{{titleCase $table.Name}}: "{{$table.Name}}",
 	{{end -}}
 }
-
-var ViewNames = struct {
-	{{range $view := .Views -}}
-	{{titleCase $view.Name}} string
-	{{end -}}
-}{
-	{{range $view := .Views -}}
-	{{titleCase $view.Name}}: "{{$view.Name}}",
-	{{end -}}
-}

@@ -18,7 +18,6 @@ import (
 // for populating BasedOnType.
 type Collection struct {
 	All  Set `toml:"all" json:"all,omitempty"`
-	View Set `toml:"view" json:"view,omitempty"`
 	Test Set `toml:"test" json:"test,omitempty"`
 
 	Singleton     Map `toml:"singleton" json:"singleton,omitempty"`
@@ -211,19 +210,6 @@ func NewDefaultImports() Collection {
 		},
 	}
 
-	col.View = Set{
-		Standard: List{
-			`"database/sql"`,
-		},
-		ThirdParty: List{
-			`"github.com/friendsofgo/errors"`,
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries/qm"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"`,
-		},
-	}
-
 	col.Singleton = Map{
 		"boil_queries": {
 			ThirdParty: List{
@@ -357,7 +343,6 @@ func Merge(a, b Collection) Collection {
 	var c Collection
 
 	c.All = mergeSet(a.All, b.All)
-	c.View = mergeSet(a.View, b.View)
 	c.Test = mergeSet(a.Test, b.Test)
 
 	c.Singleton = mergeMap(a.Singleton, b.Singleton)

@@ -1,3 +1,5 @@
+{{- if .Table.IsView -}}
+{{- else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
@@ -73,3 +75,5 @@ func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx 
 
 	return exists, nil
 }
+
+{{- end -}}

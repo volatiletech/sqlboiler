@@ -8,7 +8,11 @@ var (
 	{{end -}}
 	{{$alias.DownSingular}}ColumnsWithoutDefault = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault false | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
 	{{$alias.DownSingular}}ColumnsWithDefault    = []string{{"{"}}{{.Table.Columns | filterColumnsByDefault true | columnNames | stringMap .StringFuncs.quoteWrap | join ","}}{{"}"}}
+	{{if .Table.IsView -}}
+	{{$alias.DownSingular}}PrimaryKeyColumns     = []string{}
+	{{else -}}
 	{{$alias.DownSingular}}PrimaryKeyColumns     = []string{{"{"}}{{.Table.PKey.Columns | stringMap .StringFuncs.quoteWrap | join ", "}}{{"}"}}
+	{{end -}}
 )
 
 type (
@@ -29,7 +33,9 @@ type (
 var (
 	{{$alias.DownSingular}}Type = reflect.TypeOf(&{{$alias.UpSingular}}{})
 	{{$alias.DownSingular}}Mapping = queries.MakeStructMapping({{$alias.DownSingular}}Type)
+	{{if not .Table.IsView -}}
 	{{$alias.DownSingular}}PrimaryKeyMapping, _ = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, {{$alias.DownSingular}}PrimaryKeyColumns)
+	{{end -}}
 	{{$alias.DownSingular}}InsertCacheMut sync.RWMutex
 	{{$alias.DownSingular}}InsertCache = make(map[string]insertCache)
 	{{$alias.DownSingular}}UpdateCacheMut sync.RWMutex
@@ -44,5 +50,14 @@ var (
 	// Force qmhelper dependency for where clause generation (which doesn't
 	// always happen)
 	_ = qmhelper.Where
+	{{if .Table.IsView -}}
+	// These are used in some views
+	_ = fmt.Sprintln("")
+	_ = reflect.Int
+	_ = strings.Builder{}
+	_ = sync.Mutex{}
+	_ = strmangle.Plural("")
+	_ = strconv.IntSize
+	{{- end}}
 )
 {{end -}}

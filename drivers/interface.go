@@ -41,7 +41,6 @@ type Interface interface {
 type DBInfo struct {
 	Schema  string  `json:"schema"`
 	Tables  []Table `json:"tables"`
-	Views   []View  `json:"views"`
 	Dialect Dialect `json:"dialect"`
 }
 
@@ -85,7 +84,8 @@ type Constructor interface {
 // implementations.
 type ViewConstructor interface {
 	ViewNames(schema string, whitelist, blacklist []string) ([]string, error)
-	ViewColumns(schema, viewName string, whitelist, blacklist []string) ([]Column, error)
+	ViewCapabilities(schema, viewName string) (ViewCapabilities, error)
+	ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]Column, error)
 
 	// TranslateColumnType takes a Database column type and returns a go column type.
 	TranslateColumnType(Column) Column
@@ -154,12 +154,21 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 		setRelationships(tbl, tables)
 	}
 
+	if vc, ok := c.(ViewConstructor); ok {
+		viewTables, err := views(vc, schema, whitelist, blacklist)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load views")
+		}
+
+		tables = append(tables, viewTables...)
+	}
+
 	return tables, nil
 }
 
-// Views returns the metadata for all views, minus the views
+// views returns the metadata for all views, minus the views
 // specified in the blacklist.
-func Views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]View, error) {
+func views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]Table, error) {
 	var err error
 
 	names, err := c.ViewNames(schema, whitelist, blacklist)
@@ -169,10 +178,15 @@ func Views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]V
 
 	sort.Strings(names)
 
-	var views []View
+	var views []Table
 	for _, name := range names {
-		t := View{
-			Name: name,
+		t := Table{
+			IsView: true,
+			Name:   name,
+		}
+
+		if t.ViewCapabilities, err = c.ViewCapabilities(schema, name); err != nil {
+			return nil, errors.Wrapf(err, "unable to fetch view capabilities info (%s)", name)
 		}
 
 		if t.Columns, err = c.ViewColumns(schema, name, whitelist, blacklist); err != nil {

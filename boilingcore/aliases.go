@@ -10,7 +10,7 @@ import (
 // Aliases defines aliases for the generation run
 type Aliases struct {
 	Tables map[string]TableAlias `toml:"tables,omitempty" json:"tables,omitempty"`
-	Views  map[string]ViewAlias  `toml:"views,omitempty" json:"views,omitempty"`
+	Views  map[string]TableAlias `toml:"views,omitempty" json:"views,omitempty"`
 }
 
 // TableAlias defines the spellings for a table name in Go
@@ -22,15 +22,6 @@ type TableAlias struct {
 
 	Columns       map[string]string            `toml:"columns,omitempty" json:"columns,omitempty"`
 	Relationships map[string]RelationshipAlias `toml:"relationships,omitempty" json:"relationships,omitempty"`
-}
-
-// ViewAlias defines the spellings for a table name in Go
-type ViewAlias struct {
-	UpPlural     string            `toml:"up_plural,omitempty" json:"up_plural,omitempty"`
-	UpSingular   string            `toml:"up_singular,omitempty" json:"up_singular,omitempty"`
-	DownPlural   string            `toml:"down_plural,omitempty" json:"down_plural,omitempty"`
-	DownSingular string            `toml:"down_singular,omitempty" json:"down_singular,omitempty"`
-	Columns      map[string]string `toml:"columns,omitempty" json:"columns,omitempty"`
 }
 
 // RelationshipAlias defines the naming for both sides of
@@ -173,9 +164,9 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 // and fills in aliases where the user has provided none.
 //
 // This leaves us with a complete list of Go names for all views and columns
-func FillViewAliases(a *Aliases, views []drivers.View) {
+func FillViewAliases(a *Aliases, views []drivers.Table) {
 	if a.Views == nil {
-		a.Views = make(map[string]ViewAlias)
+		a.Views = make(map[string]TableAlias)
 	}
 
 	for _, v := range views {
@@ -219,7 +210,7 @@ func (a Aliases) Table(table string) TableAlias {
 }
 
 // View gets a view alias, panics if not found.
-func (a Aliases) View(view string) ViewAlias {
+func (a Aliases) View(view string) TableAlias {
 	v, ok := a.Views[view]
 	if !ok {
 		panic("could not find view aliases for: " + view)
@@ -246,16 +237,6 @@ func (t TableAlias) Relationship(fkey string) RelationshipAlias {
 	}
 
 	return r
-}
-
-// Column get's a column's aliased name, panics if not found.
-func (v ViewAlias) Column(column string) string {
-	c, ok := v.Columns[column]
-	if !ok {
-		panic(fmt.Sprintf("could not find column alias for: %s.%s", v.UpSingular, column))
-	}
-
-	return c
 }
 
 // ManyRelationship looks up a relationship alias, panics if not found.

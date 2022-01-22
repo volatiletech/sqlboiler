@@ -63,18 +63,6 @@ func generateOutput(state *State, dirExts dirExtMap, data *templateData) error {
 	})
 }
 
-// generateViewOutput builds the file output and sends it to outHandler for saving
-func generateViewOutput(state *State, dirExts dirExtMap, data *templateData) error {
-	return executeTemplates(executeTemplateData{
-		state:                state,
-		data:                 data,
-		templates:            state.ViewTemplates,
-		importSet:            state.Config.Imports.View,
-		combineImportsOnType: true,
-		dirExtensions:        dirExts,
-	})
-}
-
 // generateTestOutput builds the test file output and sends it to outHandler for saving
 func generateTestOutput(state *State, dirExts dirExtMap, data *templateData) error {
 	return executeTemplates(executeTemplateData{

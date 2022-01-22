@@ -1,3 +1,5 @@
+{{- if .Table.IsView -}}
+{{- else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
@@ -305,3 +307,5 @@ func (o {{$alias.UpSingular}}Slice) UpdateAll({{if .NoContext}}exec boil.Executo
 
 	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 }
+
+{{- end -}}

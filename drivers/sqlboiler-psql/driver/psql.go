@@ -127,11 +127,6 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 		return nil, err
 	}
 
-	dbinfo.Views, err = drivers.Views(p, schema, whitelist, blacklist)
-	if err != nil {
-		return nil, err
-	}
-
 	return dbinfo, err
 }
 
@@ -212,7 +207,7 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1 and table_type = 'VIEW'`)
+	query := `select table_name from information_schema.views where table_schema = $1`
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		views := drivers.TablesFromList(whitelist)
@@ -246,10 +241,41 @@ func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string)
 		if err := rows.Scan(&name); err != nil {
 			return nil, err
 		}
+
 		names = append(names, name)
 	}
 
 	return names, nil
+}
+
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	capabilities := drivers.ViewCapabilities{}
+
+	query := `select
+	is_insertable_into = 'YES',
+	is_updatable = 'YES',
+	is_trigger_insertable_into = 'YES',
+	is_trigger_updatable = 'YES',
+	is_trigger_deletable = 'YES'
+	from information_schema.views where table_schema = $1 and table_name = $2
+	order by table_name;`
+
+	row := p.conn.QueryRow(query, schema, name)
+
+	var insertable, updatable, trInsert, trUpdate, trDelete bool
+	if err := row.Scan(&insertable, &updatable, &trInsert, &trUpdate, &trDelete); err != nil {
+		return capabilities, err
+	}
+
+	capabilities.CanInsert = insertable || trInsert
+	capabilities.CanUpsert = insertable && updatable
+	// CanUpdate: updatable || trUpdate,
+	// CanDelete: updatable || trDelete,
+
+	return capabilities, nil
 }
 
 func (p *PostgresDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {

@@ -1,10 +1,10 @@
 var ViewNames = struct {
-	{{range $view := .Views -}}
-	{{titleCase $view.Name}} string
-	{{end -}}
+	{{range $table := .Tables}}{{if $table.IsView -}}
+	{{titleCase $table.Name}} string
+	{{end}}{{end -}}
 }{
-	{{range $view := .Views -}}
-	{{titleCase $view.Name}}: "{{$view.Name}}",
-	{{end -}}
+	{{range $table := .Tables}}{{if $table.IsView -}}
+	{{titleCase $table.Name}}: "{{$table.Name}}",
+	{{end}}{{end -}}
 }
 

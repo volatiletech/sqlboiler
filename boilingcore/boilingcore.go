@@ -555,11 +555,6 @@ func columnMerge(dst, src drivers.Column) drivers.Column {
 // shouldReplaceInTable checks if tables were specified in types.match in the config.
 // If tables were set, it checks if the given table is among the specified tables.
 func shouldReplaceInTable(t drivers.Table, r TypeReplace) bool {
-	// To be enabled in v5
-	// unless the tables array is specified as ["*"], do not apply to all tables
-	// if len(r.Tables) == 1 && r.Tables[0] == "*" {
-	// return true
-	// }
 	if len(r.Tables) == 0 {
 		return true
 	}

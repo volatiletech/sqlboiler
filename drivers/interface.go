@@ -60,10 +60,13 @@ type Dialect struct {
 	UseDefaultKeyword    bool `json:"use_default_keyword"`
 
 	// The following is mostly for T-SQL/MSSQL, what a show
-	UseAutoColumns          bool `json:"use_auto_columns"`
 	UseTopClause            bool `json:"use_top_clause"`
 	UseOutputClause         bool `json:"use_output_clause"`
 	UseCaseWhenExistsClause bool `json:"use_case_when_exists_clause"`
+
+	// No longer used, left for backwards compatibility
+	// should be removed in v5
+	UseAutoColumns bool `json:"use_auto_columns"`
 }
 
 // Constructor breaks down the functionality required to implement a driver

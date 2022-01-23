@@ -242,5 +242,10 @@ create table type_monsters (
 	customarr_null   my_int_array null,
 	customarr_nnull  my_int_array not null,
 
-	domainuint3_nnull uint3 not null
+    domainuint3_nnull uint3 not null,
+
+    base text null,
+
+    generated_nnull text NOT NULL GENERATED ALWAYS AS (UPPER(base)) STORED,
+    generated_null text NULL GENERATED ALWAYS AS (UPPER(base)) STORED
 );

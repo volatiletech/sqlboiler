@@ -60,6 +60,9 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
+		{{- if filterColumnsByAuto true .Table.Columns }}
+		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}GeneratedColumns)
+		{{- end}}
 
 		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, wl)
 		if err != nil {

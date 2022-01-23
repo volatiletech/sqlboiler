@@ -1,3 +1,5 @@
+SET QUOTED_IDENTIFIER ON;
+
 -- Don't forget to maintain order here, foreign keys!
 drop table if exists video_tags;
 drop table if exists tags;
@@ -149,5 +151,8 @@ create table type_monsters (
 	uniqueidentifier_null uniqueidentifier null,
 	uniqueidentifier_nnull uniqueidentifier not null,
 	datetimeoffset_null datetimeoffset null,
-	datetimeoffset_nnull datetimeoffset not null
+	datetimeoffset_nnull datetimeoffset not null,
+
+    generated_persisted AS bigint_nnull * bigint_null PERSISTED,
+    generated_virtual AS smallint_nnull * smallint_null
 );

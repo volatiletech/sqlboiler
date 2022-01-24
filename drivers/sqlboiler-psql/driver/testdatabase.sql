@@ -5,6 +5,7 @@ drop table if exists videos;
 drop table if exists sponsors;
 drop table if exists users;
 drop table if exists type_monsters;
+drop view if exists user_videos;
 
 drop type if exists workday;
 create type workday as enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
@@ -249,3 +250,8 @@ create table type_monsters (
     generated_nnull text NOT NULL GENERATED ALWAYS AS (UPPER(base)) STORED,
     generated_null text NULL GENERATED ALWAYS AS (UPPER(base)) STORED
 );
+
+create view user_videos as 
+select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
+from users u
+inner join videos v on v.user_id = u.id;

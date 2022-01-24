@@ -168,5 +168,11 @@ create table type_monsters (
 	char_null     char null,
 	char_nnull    char not null,
 	text_null     text null,
-	text_nnull    text not null
+	text_nnull    text not null,
+
+
+    virtual_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) VIRTUAL NOT NULL,
+    virtual_null text GENERATED ALWAYS AS (UPPER(text_null)) VIRTUAL,
+    generated_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) STORED NOT NULL,
+    generated_null text GENERATED ALWAYS AS (UPPER(text_null)) STORED
 );

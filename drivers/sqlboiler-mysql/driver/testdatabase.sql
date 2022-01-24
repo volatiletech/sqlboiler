@@ -5,6 +5,7 @@ drop table if exists videos;
 drop table if exists sponsors;
 drop table if exists users;
 drop table if exists type_monsters;
+drop view if exists user_videos;
 
 create table users (
 	id int primary key not null auto_increment
@@ -176,3 +177,8 @@ create table type_monsters (
     generated_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) STORED NOT NULL,
     generated_null text GENERATED ALWAYS AS (UPPER(text_null)) STORED
 );
+
+create view user_videos as 
+select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
+from users u
+inner join videos v on v.user_id = u.id;

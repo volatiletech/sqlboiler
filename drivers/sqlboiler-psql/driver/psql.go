@@ -248,9 +248,7 @@ func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string)
 	return names, nil
 }
 
-// ViewNames connects to the postgres database and
-// retrieves all view names from the information_schema where the
-// view schema is schema. It uses a whitelist and blacklist.
+// ViewCapabilities return what actions are allowed for a view.
 func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
 	capabilities := drivers.ViewCapabilities{}
 
@@ -272,8 +270,6 @@ func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapa
 
 	capabilities.CanInsert = insertable || trInsert
 	capabilities.CanUpsert = insertable && updatable
-	// CanUpdate: updatable || trUpdate,
-	// CanDelete: updatable || trDelete,
 
 	return capabilities, nil
 }

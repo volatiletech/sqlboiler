@@ -7,6 +7,7 @@ drop table if exists videos;
 drop table if exists sponsors;
 drop table if exists users;
 drop table if exists type_monsters;
+drop view if exists user_videos;
 
 -- Note that if we don't explicitly name foreign keys then MS SQL will
 -- generate a name that includes a random set of 8 hex digits at the end,
@@ -156,3 +157,10 @@ create table type_monsters (
     generated_persisted AS bigint_nnull * bigint_null PERSISTED,
     generated_virtual AS smallint_nnull * smallint_null
 );
+
+GO
+
+create view user_videos as 
+select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
+from users u
+inner join videos v on v.user_id = u.id;

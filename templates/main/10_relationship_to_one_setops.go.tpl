@@ -1,4 +1,4 @@
-{{- if .Table.IsJoinTable -}}
+{{- if or .Table.IsJoinTable .Table.IsView -}}
 {{- else -}}
 	{{- range $fkey := .Table.FKeys -}}
 		{{- $ltable := $.Aliases.Table $fkey.Table -}}

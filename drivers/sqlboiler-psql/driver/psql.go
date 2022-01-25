@@ -201,6 +201,83 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 	return names, nil
 }
 
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	var names []string
+
+	query := `select table_name from information_schema.views where table_schema = $1`
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		views := drivers.TablesFromList(whitelist)
+		if len(views) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(true, len(views), 2, 1))
+			for _, w := range views {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		views := drivers.TablesFromList(blacklist)
+		if len(views) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(true, len(views), 2, 1))
+			for _, b := range views {
+				args = append(args, b)
+			}
+		}
+	}
+
+	query += ` order by table_name;`
+
+	rows, err := p.conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	capabilities := drivers.ViewCapabilities{}
+
+	query := `select
+	is_insertable_into = 'YES',
+	is_updatable = 'YES',
+	is_trigger_insertable_into = 'YES',
+	is_trigger_updatable = 'YES',
+	is_trigger_deletable = 'YES'
+	from information_schema.views where table_schema = $1 and table_name = $2
+	order by table_name;`
+
+	row := p.conn.QueryRow(query, schema, name)
+
+	var insertable, updatable, trInsert, trUpdate, trDelete bool
+	if err := row.Scan(&insertable, &updatable, &trInsert, &trUpdate, &trDelete); err != nil {
+		return capabilities, err
+	}
+
+	capabilities.CanInsert = insertable || trInsert
+	capabilities.CanUpsert = insertable && updatable
+
+	return capabilities, nil
+}
+
+func (p *PostgresDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return p.Columns(schema, tableName, whitelist, blacklist)
+}
+
 // Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()

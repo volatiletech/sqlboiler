@@ -1,3 +1,5 @@
+{{- if .Table.IsView -}}
+{{- else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
 {{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted }}
@@ -112,3 +114,5 @@ func (o *{{$alias.UpSingular}}Slice) ReloadAll({{if .NoContext}}exec boil.Execut
 
 	return nil
 }
+
+{{- end -}}

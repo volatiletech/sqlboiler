@@ -42,7 +42,12 @@
 					"foreign_column_unique": true
 				}
 			],
-			"to_many_relationships": null
+			"to_many_relationships": null,
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
 		},
 		{
 			"name": "tags",
@@ -95,7 +100,12 @@
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false
 				}
-			]
+			],
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
 		},
 		{
 			"name": "type_monsters",
@@ -2496,7 +2506,12 @@
 			"f_keys": null,
 			"is_join_table": false,
 			"to_one_relationships": null,
-			"to_many_relationships": null
+			"to_many_relationships": null,
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
 		},
 		{
 			"name": "users",
@@ -2579,7 +2594,12 @@
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false
 				}
-			]
+			],
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
 		},
 		{
 			"name": "video_tags",
@@ -2649,7 +2669,12 @@
 			],
 			"is_join_table": true,
 			"to_one_relationships": null,
-			"to_many_relationships": null
+			"to_many_relationships": null,
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
 		},
 		{
 			"name": "videos",
@@ -2755,7 +2780,73 @@
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false
 				}
-			]
+			],
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
+		},
+		{
+			"name": "user_videos",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "user_id",
+					"type": "null.Int",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "int4",
+					"domain_name": null,
+					"full_db_type": "int4"
+				},
+				{
+					"name": "video_id",
+					"type": "null.Int",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "int4",
+					"domain_name": null,
+					"full_db_type": "int4"
+				},
+				{
+					"name": "sponsor_id",
+					"type": "null.Int",
+					"db_type": "integer",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "int4",
+					"domain_name": null,
+					"full_db_type": "int4"
+				}
+			],
+			"p_key": null,
+			"f_keys": null,
+			"is_join_table": false,
+			"to_one_relationships": null,
+			"to_many_relationships": null,
+			"is_view": true,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
 		}
 	],
 	"dialect": {

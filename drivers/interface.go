@@ -82,6 +82,18 @@ type Constructor interface {
 	TranslateColumnType(Column) Column
 }
 
+// Constructor breaks down the functionality required to implement a driver
+// such that the drivers.Views method can be used to reduce duplication in driver
+// implementations.
+type ViewConstructor interface {
+	ViewNames(schema string, whitelist, blacklist []string) ([]string, error)
+	ViewCapabilities(schema, viewName string) (ViewCapabilities, error)
+	ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]Column, error)
+
+	// TranslateColumnType takes a Database column type and returns a go column type.
+	TranslateColumnType(Column) Column
+}
+
 type TableColumnTypeTranslator interface {
 	// TranslateTableColumnType takes a Database column type and table name and returns a go column type.
 	TranslateTableColumnType(c Column, tableName string) Column
@@ -145,7 +157,60 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 		setRelationships(tbl, tables)
 	}
 
+	if vc, ok := c.(ViewConstructor); ok {
+		viewTables, err := views(vc, schema, whitelist, blacklist)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load views")
+		}
+
+		tables = append(tables, viewTables...)
+	}
+
 	return tables, nil
+}
+
+// views returns the metadata for all views, minus the views
+// specified in the blacklist.
+func views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+	var err error
+
+	names, err := c.ViewNames(schema, whitelist, blacklist)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get view names")
+	}
+
+	sort.Strings(names)
+
+	var views []Table
+	for _, name := range names {
+		t := Table{
+			IsView: true,
+			Name:   name,
+		}
+
+		if t.ViewCapabilities, err = c.ViewCapabilities(schema, name); err != nil {
+			return nil, errors.Wrapf(err, "unable to fetch view capabilities info (%s)", name)
+		}
+
+		if t.Columns, err = c.ViewColumns(schema, name, whitelist, blacklist); err != nil {
+			return nil, errors.Wrapf(err, "unable to fetch view column info (%s)", name)
+		}
+
+		tr, ok := c.(TableColumnTypeTranslator)
+		if ok {
+			for i, col := range t.Columns {
+				t.Columns[i] = tr.TranslateTableColumnType(col, name)
+			}
+		} else {
+			for i, col := range t.Columns {
+				t.Columns[i] = c.TranslateColumnType(col)
+			}
+		}
+
+		views = append(views, t)
+	}
+
+	return views, nil
 }
 
 // filterForeignKeys filter FK whose ForeignTable is not in whitelist or in blacklist

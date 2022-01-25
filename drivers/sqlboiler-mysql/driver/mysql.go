@@ -194,6 +194,69 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	return names, nil
 }
 
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (m *MySQLDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	var names []string
+
+	query := `select table_name from information_schema.views where table_schema = ?`
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, w := range tables {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		tables := drivers.TablesFromList(blacklist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, b := range tables {
+				args = append(args, b)
+			}
+		}
+	}
+
+	query += ` order by table_name;`
+
+	rows, err := m.conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (m *MySQLDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	capabilities := drivers.ViewCapabilities{
+		// No definite way to check if a view is insertable
+		// See: https://dba.stackexchange.com/questions/285451/does-mysql-have-a-built-in-way-to-tell-whether-a-view-is-insertable-not-just-up?newreg=e6c571353a0948638bec10cf7f8c6f6f
+		CanInsert: false,
+		CanUpsert: false,
+	}
+
+	return capabilities, nil
+}
+
+func (m *MySQLDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return m.Columns(schema, tableName, whitelist, blacklist)
+}
+
 // Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()

@@ -20,7 +20,7 @@ type {{$alias.UpSingular}} struct {
 	{{$colAlias}} {{$column.Type}} `{{generateTags $.Tags $column.Name}}boil:"{{$column.Name}}" json:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}" toml:"{{$column.Name}}" yaml:"{{$column.Name}}{{if $column.Nullable}},omitempty{{end}}"`
 	{{end -}}
 	{{end -}}
-	{{- if .Table.IsJoinTable -}}
+	{{- if or .Table.IsJoinTable .Table.IsView -}}
 	{{- else}}
 	R *{{$alias.DownSingular}}R `{{generateTags $.Tags $.RelationTag}}boil:"{{$.RelationTag}}" json:"{{$.RelationTag}}" toml:"{{$.RelationTag}}" yaml:"{{$.RelationTag}}"`
 	L {{$alias.DownSingular}}L `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -101,8 +101,8 @@ var {{$alias.UpSingular}}Where = struct {
 	{{end -}}
 }
 
-{{- if .Table.IsJoinTable -}}
-{{- else}}
+{{if or .Table.IsJoinTable .Table.IsView -}}
+{{- else -}}
 // {{$alias.UpSingular}}Rels is where relationship names are stored.
 var {{$alias.UpSingular}}Rels = struct {
 	{{range .Table.FKeys -}}

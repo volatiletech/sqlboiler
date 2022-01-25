@@ -20,6 +20,15 @@ type Table struct {
 
 	ToOneRelationships  []ToOneRelationship  `json:"to_one_relationships"`
 	ToManyRelationships []ToManyRelationship `json:"to_many_relationships"`
+
+	// For views
+	IsView           bool             `json:"is_view"`
+	ViewCapabilities ViewCapabilities `json:"view_capabilities"`
+}
+
+type ViewCapabilities struct {
+	CanInsert bool `json:"can_insert"`
+	CanUpsert bool `json:"can_upsert"`
 }
 
 // GetTable by name. Panics if not found (for use in templates mostly).

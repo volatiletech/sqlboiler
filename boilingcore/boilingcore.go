@@ -631,7 +631,7 @@ func (s *State) initAliases(a *Aliases) error {
 func checkPKeys(tables []drivers.Table) error {
 	var missingPkey []string
 	for _, t := range tables {
-		if t.PKey == nil {
+		if !t.IsView && t.PKey == nil {
 			missingPkey = append(missingPkey, t.Name)
 		}
 	}

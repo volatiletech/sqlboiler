@@ -1,3 +1,4 @@
+{{- if or (not .Table.IsView) (.Table.ViewCapabilities.CanInsert) -}}
 {{- $alias := .Aliases.Table .Table.Name}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
@@ -220,3 +221,5 @@ CacheNoHooks:
 	return nil
 	{{- end}}
 }
+
+{{- end -}}

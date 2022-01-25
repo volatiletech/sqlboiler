@@ -1,3 +1,5 @@
+{{- if .Table.IsView -}}
+{{- else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $colDefs := sqlColDefinitions .Table.Columns .Table.PKey.Columns -}}
 {{- $pkNames := $colDefs.Names | stringMap (aliasCols $alias) | stringMap .StringFuncs.camelCase | stringMap .StringFuncs.replaceReserved -}}
@@ -70,3 +72,5 @@ func Find{{$alias.UpSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx co
 
 	return {{$alias.DownSingular}}Obj, nil
 }
+
+{{- end -}}

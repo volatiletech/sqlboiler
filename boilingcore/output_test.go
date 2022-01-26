@@ -122,17 +122,17 @@ func TestGetOutputFilename(t *testing.T) {
 			IsGo:      true,
 			Expected:  "hello",
 		},
-		"test": {
-			TableName: "hello",
-			IsTest:    true,
-			IsGo:      true,
-			Expected:  "hello_test",
-		},
 		"begins with underscore": {
 			TableName: "_hello",
 			IsTest:    false,
 			IsGo:      true,
 			Expected:  "und_hello",
+		},
+		"ends with _test": {
+			TableName: "hello_test",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "hello_test_model",
 		},
 		"ends with _js": {
 			TableName: "hello_js",
@@ -162,9 +162,13 @@ func TestGetOutputFilename(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := getOutputFileName(tc.TableName, tc.IsTest, tc.IsGo)
-			diff := cmp.Diff(tc.Expected, got)
-			if diff != "" {
+			notTest := getOutputFilename(tc.TableName, false, tc.IsGo)
+			if diff := cmp.Diff(tc.Expected, notTest); diff != "" {
+				t.Fatalf(diff)
+			}
+
+			isTest := getOutputFilename(tc.TableName, true, tc.IsGo)
+			if diff := cmp.Diff(tc.Expected+"_test", isTest); diff != "" {
 				t.Fatalf(diff)
 			}
 		})

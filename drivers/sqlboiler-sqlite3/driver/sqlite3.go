@@ -524,7 +524,7 @@ func (SQLiteDriver) Imports() (col importers.Collection, err error) {
 			ThirdParty: importers.List{
 				`"github.com/pkg/errors"`,
 				`"github.com/spf13/viper"`,
-				`_ "github.com/mattn/go-sqlite3"`,
+				`_ "modernc.org/sqlite"`,
 			},
 		},
 	}

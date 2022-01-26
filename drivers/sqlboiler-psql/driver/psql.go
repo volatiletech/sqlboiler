@@ -20,8 +20,6 @@ import (
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
-
-	_ "embed"
 )
 
 //go:embed override
@@ -41,9 +39,11 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // PostgresDriver holds the database connection string and a handle
 // to the database connection.
 type PostgresDriver struct {
-	connStr string
-	conn    *sql.DB
-	version int
+	connStr        string
+	conn           *sql.DB
+	version        int
+	addEnumTypes   bool
+	enumNullPrefix string
 }
 
 // Templates that should be added/overridden
@@ -91,6 +91,8 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 
 	useSchema := schema != "public"
 
+	p.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
+	p.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.conn, err = sql.Open("postgres", p.connStr)
 	if err != nil {
@@ -199,6 +201,83 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 	return names, nil
 }
 
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	var names []string
+
+	query := `select table_name from information_schema.views where table_schema = $1`
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		views := drivers.TablesFromList(whitelist)
+		if len(views) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s)", strmangle.Placeholders(true, len(views), 2, 1))
+			for _, w := range views {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		views := drivers.TablesFromList(blacklist)
+		if len(views) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s)", strmangle.Placeholders(true, len(views), 2, 1))
+			for _, b := range views {
+				args = append(args, b)
+			}
+		}
+	}
+
+	query += ` order by table_name;`
+
+	rows, err := p.conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	capabilities := drivers.ViewCapabilities{}
+
+	query := `select
+	is_insertable_into = 'YES',
+	is_updatable = 'YES',
+	is_trigger_insertable_into = 'YES',
+	is_trigger_updatable = 'YES',
+	is_trigger_deletable = 'YES'
+	from information_schema.views where table_schema = $1 and table_name = $2
+	order by table_name;`
+
+	row := p.conn.QueryRow(query, schema, name)
+
+	var insertable, updatable, trInsert, trUpdate, trDelete bool
+	if err := row.Scan(&insertable, &updatable, &trInsert, &trUpdate, &trDelete); err != nil {
+		return capabilities, err
+	}
+
+	capabilities.CanInsert = insertable || trInsert
+	capabilities.CanUpsert = insertable && updatable
+
+	return capabilities, nil
+}
+
+func (p *PostgresDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return p.Columns(schema, tableName, whitelist, blacklist)
+}
+
 // Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
@@ -229,6 +308,10 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		COALESCE(col_description(('"'||c.table_schema||'"."'||c.table_name||'"')::regclass::oid, ordinal_position), '') as column_comment,
 
 		c.is_nullable = 'YES' as is_nullable,
+		(
+				case when c.is_generated = 'ALWAYS' or c.identity_generation = 'ALWAYS' 
+				then TRUE else FALSE end
+		) as is_generated,
 		(case
 			when (select
 		    case
@@ -284,7 +367,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 				end
 			) as column_type
 		) ct
-		where c.table_name = $2 and c.table_schema = $1 and c.is_generated = 'NEVER'`
+		where c.table_name = $2 and c.table_schema = $1`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -316,21 +399,22 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	for rows.Next() {
 		var colName, colType, colFullType, udtName, comment string
 		var defaultValue, arrayType, domainName *string
-		var nullable, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &identity, &unique); err != nil {
+		var nullable, generated, identity, unique bool
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := drivers.Column{
-			Name:       colName,
-			DBType:     colType,
-			FullDBType: colFullType,
-			ArrType:    arrayType,
-			DomainName: domainName,
-			UDTName:    udtName,
-			Comment:    comment,
-			Nullable:   nullable,
-			Unique:     unique,
+			Name:          colName,
+			DBType:        colType,
+			FullDBType:    colFullType,
+			ArrType:       arrayType,
+			DomainName:    domainName,
+			UDTName:       udtName,
+			Comment:       comment,
+			Nullable:      nullable,
+			AutoGenerated: generated,
+			Unique:        unique,
 		}
 		if defaultValue != nil {
 			column.Default = *defaultValue
@@ -338,6 +422,16 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 		if identity != false {
 			column.Default = "IDENTITY"
+		}
+
+		// A generated column technically has a default value
+		if generated && column.Default == "" {
+			column.Default = "GENERATED"
+		}
+
+		// A nullable column can always default to NULL
+		if nullable && column.Default == "" {
+			column.Default = "NULL"
 		}
 
 		columns = append(columns, column)
@@ -513,7 +607,11 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
-			c.Type = "null.String"
+			if enumName := strmangle.ParseEnumName(c.DBType); enumName != "" && p.addEnumTypes {
+				c.Type = p.enumNullPrefix + strmangle.TitleCase(enumName)
+			} else {
+				c.Type = "null.String"
+			}
 		}
 	} else {
 		switch c.DBType {
@@ -574,7 +672,11 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:
-			c.Type = "string"
+			if enumName := strmangle.ParseEnumName(c.DBType); enumName != "" && p.addEnumTypes {
+				c.Type = strmangle.TitleCase(enumName)
+			} else {
+				c.Type = "string"
+			}
 		}
 	}
 

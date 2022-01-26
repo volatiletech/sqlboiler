@@ -1,4 +1,4 @@
-{{- if .Table.IsJoinTable -}}
+{{- if or .Table.IsJoinTable .Table.IsView -}}
 {{- else -}}
 	{{- range $rel := .Table.ToOneRelationships -}}
 		{{- $ltable := $.Aliases.Table $rel.Table -}}

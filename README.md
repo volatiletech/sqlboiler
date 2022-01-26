@@ -130,11 +130,13 @@ Table of Contents
 - 1d arrays, json, hstore & more
 - Enum types
 - Out of band driver support
+- Support for database views
+- Supports generated/computed columns
 
 ### Missing features
 
 - Multi-column foreign key support
-- View/Materialized view support
+- Materialized view support
 
 ### Supported Databases
 
@@ -222,9 +224,6 @@ fmt.Println(len(users.R.FavoriteMovies))
 ### Requirements
 
 * Go 1.13, older Go versions are not supported.
-* Table names and column names should use `snake_case` format.
-  * We require `snake_case` table names and column names. This is a recommended default in Postgres,
-  and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
 * Join tables should use a *composite primary key*.
   * For join tables to be used transparently for relationships your join table must have
   a *composite primary key* that encompasses both foreign table foreign keys and
@@ -359,10 +358,11 @@ Example of whitelist/blacklist:
 
 ```toml
 [psql]
-# Removes migrations table, and the name column from the addresses table
-# from being generated. Foreign keys that reference tables or columns that
-# are no longer generated because of whitelists or blacklists may cause problems.
-blacklist = ["migrations", "addresses.name"]
+# Removes migrations table, the name column from the addresses table, and
+# secret_col of any table from being generated. Foreign keys that reference tables
+# or columns that are no longer generated because of whitelists or blacklists may
+# cause problems.
+blacklist = ["migrations", "addresses.name", "*.secret_col"]
 ```
 
 ##### Generic config options
@@ -378,6 +378,8 @@ not to pass them through the command line or environment variables:
 | debug               | false     |
 | add-global-variants | false     |
 | add-panic-variants  | false     |
+| add-enum-types      | false     |
+| enum-null-prefix    | "Null"    |
 | no-context          | false     |
 | no-hooks            | false     |
 | no-tests            | false     |
@@ -392,6 +394,7 @@ not to pass them through the command line or environment variables:
 output   = "my_models"
 wipe     = true
 no-tests = true
+add-enum-types = true
 
 [psql]
   dbname = "dbname"
@@ -440,6 +443,7 @@ Flags:
       --add-panic-variants         Enable generation for panic variants
       --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
       --add-enum-types             Enable generation of types for enums
+      --enum-null-prefix           Name prefix of nullable enum types (default "Null")
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler

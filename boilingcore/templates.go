@@ -41,12 +41,14 @@ type templateData struct {
 	AddPanic          bool
 	AddSoftDeletes    bool
 	AddEnumTypes      bool
+	EnumNullPrefix    string
 	NoContext         bool
 	NoHooks           bool
 	NoAutoTimestamps  bool
 	NoRowsAffected    bool
 	NoDriverTemplates bool
 	NoBackReferencing bool
+	AlwaysWrapErrors  bool
 
 	// Tags control which tags are added to the struct
 	Tags []string
@@ -313,11 +315,12 @@ var templateFunctions = template.FuncMap{
 	},
 
 	// dbdrivers ops
-	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,
-	"filterColumnsByDefault": drivers.FilterColumnsByDefault,
-	"filterColumnsByEnum":    drivers.FilterColumnsByEnum,
-	"sqlColDefinitions":      drivers.SQLColDefinitions,
-	"columnNames":            drivers.ColumnNames,
-	"columnDBTypes":          drivers.ColumnDBTypes,
-	"getTable":               drivers.GetTable,
+	"filterColumnsByAuto":     drivers.FilterColumnsByAuto,
+	"filterColumnsByDefault":  drivers.FilterColumnsByDefault,
+	"filterColumnsByEnum":     drivers.FilterColumnsByEnum,
+	"sqlColDefinitions":       drivers.SQLColDefinitions,
+	"columnNames":             drivers.ColumnNames,
+	"columnDBTypes":           drivers.ColumnDBTypes,
+	"getTable":                drivers.GetTable,
+	"tablesHaveNullableEnums": drivers.TablesHaveNullableEnums,
 }

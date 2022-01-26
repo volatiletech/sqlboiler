@@ -1,3 +1,4 @@
+{{- if or (not .Table.IsView) .Table.ViewCapabilities.CanUpsert -}}
 {{- $alias := .Aliases.Table .Table.Name}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
@@ -94,10 +95,15 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
+
 		update := updateColumns.UpdateColumnSet(
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
+		{{if filterColumnsByAuto true .Table.Columns }}
+		insert = strmangle.SetComplement(insert, {{$alias.DownSingular}}GeneratedColumns)
+		update = strmangle.SetComplement(update, {{$alias.DownSingular}}GeneratedColumns)
+		{{- end }}
 
 		if !updateColumns.IsNone() && len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
@@ -227,3 +233,4 @@ CacheNoHooks:
 	return nil
 	{{- end}}
 }
+{{end}}

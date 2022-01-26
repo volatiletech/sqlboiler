@@ -1,3 +1,5 @@
+{{- if .Table.IsView -}}
+{{- else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
@@ -64,8 +66,8 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}PrimaryKeyColumns,
 		)
-		{{if .Dialect.UseAutoColumns -}}
-		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}ColumnsWithAuto)
+		{{- if filterColumnsByAuto true .Table.Columns }}
+		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}GeneratedColumns)
 		{{end}}
 		{{if not .NoAutoTimestamps}}
 		if !columns.IsWhitelist() {
@@ -160,6 +162,22 @@ func (q {{$alias.DownSingular}}Query) UpdateAllP({{if .NoContext}}exec boil.Exec
 // UpdateAllG updates all rows with the specified column values.
 func (q {{$alias.DownSingular}}Query) UpdateAllG({{if not .NoContext}}ctx context.Context, {{end -}} cols M) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	return q.UpdateAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, cols)
+}
+
+{{end -}}
+
+
+{{if and .AddGlobal .AddPanic -}}
+// UpdateAllGP updates all rows with the specified column values, and panics on error.
+func (q {{$alias.DownSingular}}Query) UpdateAllGP({{if not .NoContext}}ctx context.Context, {{end -}} cols M) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.UpdateAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, cols)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
 }
 
 {{end -}}
@@ -305,3 +323,5 @@ func (o {{$alias.UpSingular}}Slice) UpdateAll({{if .NoContext}}exec boil.Executo
 
 	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
 }
+
+{{- end -}}

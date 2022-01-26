@@ -13,10 +13,11 @@ import (
 	"strings"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/strmangle"
+
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
 	boiltemplates "github.com/volatiletech/sqlboiler/v4/templates"
-	"github.com/volatiletech/strmangle"
 )
 
 var (
@@ -90,6 +91,10 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to merge imports from driver")
 	}
 
+	if s.Config.AddEnumTypes {
+		s.mergeEnumImports()
+	}
+
 	if !s.Config.NoContext {
 		s.Config.Imports.All.Standard = append(s.Config.Imports.All.Standard, `"context"`)
 		s.Config.Imports.Test.Standard = append(s.Config.Imports.Test.Standard, `"context"`)
@@ -134,12 +139,14 @@ func (s *State) Run() error {
 		AddPanic:          s.Config.AddPanic,
 		AddSoftDeletes:    s.Config.AddSoftDeletes,
 		AddEnumTypes:      s.Config.AddEnumTypes,
+		EnumNullPrefix:    s.Config.EnumNullPrefix,
 		NoContext:         s.Config.NoContext,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		NoBackReferencing: s.Config.NoBackReferencing,
+		AlwaysWrapErrors:  s.Config.AlwaysWrapErrors,
 		StructTagCasing:   s.Config.StructTagCasing,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
@@ -423,6 +430,15 @@ func (s *State) mergeDriverImports() error {
 	return nil
 }
 
+// mergeEnumImports merges imports for nullable enum types
+// into the current configuration's imports if tables returned
+// from the driver have nullable enum columns.
+func (s *State) mergeEnumImports() {
+	if drivers.TablesHaveNullableEnums(s.Tables) {
+		s.Config.Imports = importers.Merge(s.Config.Imports, importers.NullableEnumImports())
+	}
+}
+
 // processTypeReplacements checks the config for type replacements
 // and performs them.
 func (s *State) processTypeReplacements() error {
@@ -615,7 +631,7 @@ func (s *State) initAliases(a *Aliases) error {
 func checkPKeys(tables []drivers.Table) error {
 	var missingPkey []string
 	for _, t := range tables {
-		if t.PKey == nil {
+		if !t.IsView && t.PKey == nil {
 			missingPkey = append(missingPkey, t.Name)
 		}
 	}

@@ -1,5 +1,5 @@
 {
-	"schema": "dbo",
+	"schema": "",
 	"tables": [
 		{
 			"name": "sponsors",
@@ -9,12 +9,12 @@
 					"name": "id",
 					"type": "int",
 					"db_type": "int",
-					"default": "AUTO_GENERATED",
+					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
 					"unique": true,
 					"validated": false,
-					"auto_generated": true,
+					"auto_generated": false,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
@@ -22,7 +22,7 @@
 				}
 			],
 			"p_key": {
-				"name": "PK__sponsors",
+				"name": "PRIMARY",
 				"columns": [
 					"id"
 				]
@@ -31,7 +31,7 @@
 			"is_join_table": false,
 			"to_one_relationships": [
 				{
-					"name": "FK_videos_sponsors",
+					"name": "videos_ibfk_2",
 					"table": "sponsors",
 					"column": "id",
 					"nullable": false,
@@ -57,12 +57,12 @@
 					"name": "id",
 					"type": "int",
 					"db_type": "int",
-					"default": "AUTO_GENERATED",
+					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
 					"unique": true,
 					"validated": false,
-					"auto_generated": true,
+					"auto_generated": false,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
@@ -70,7 +70,7 @@
 				}
 			],
 			"p_key": {
-				"name": "PK__tags",
+				"name": "PRIMARY",
 				"columns": [
 					"id"
 				]
@@ -91,11 +91,11 @@
 					"foreign_column_unique": true,
 					"to_join_table": true,
 					"join_table": "video_tags",
-					"join_local_fkey_name": "FK_video_tags_tags",
+					"join_local_fkey_name": "video_tags_ibfk_2",
 					"join_local_column": "tag_id",
 					"join_local_column_nullable": false,
 					"join_local_column_unique": false,
-					"join_foreign_fkey_name": "FK_video_tags_videos",
+					"join_foreign_fkey_name": "video_tags_ibfk_1",
 					"join_foreign_column": "video_id",
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false
@@ -115,16 +115,46 @@
 					"name": "id",
 					"type": "int",
 					"db_type": "int",
-					"default": "AUTO_GENERATED",
+					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
 					"unique": true,
 					"validated": false,
-					"auto_generated": true,
+					"auto_generated": false,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
 					"full_db_type": "int"
+				},
+				{
+					"name": "enum_use",
+					"type": "TypeMonstersEnumUse",
+					"db_type": "enum('monday','tuesday','wednesday','thursday','friday')",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "enum('monday','tuesday','wednesday','thursday','friday')"
+				},
+				{
+					"name": "enum_nullable",
+					"type": "TypeMonstersNullEnumNullable",
+					"db_type": "enum('monday','tuesday','wednesday','thursday','friday')",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "enum('monday','tuesday','wednesday','thursday','friday')"
 				},
 				{
 					"name": "id_two",
@@ -157,9 +187,9 @@
 					"full_db_type": "int"
 				},
 				{
-					"name": "bit_zero",
+					"name": "bool_zero",
 					"type": "null.Bool",
-					"db_type": "bit",
+					"db_type": "tinyint",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -169,12 +199,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
-					"name": "bit_one",
+					"name": "bool_one",
 					"type": "null.Bool",
-					"db_type": "bit",
+					"db_type": "tinyint",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -184,12 +214,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
-					"name": "bit_two",
+					"name": "bool_two",
 					"type": "bool",
-					"db_type": "bit",
+					"db_type": "tinyint",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -199,13 +229,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
-					"name": "bit_three",
+					"name": "bool_three",
 					"type": "null.Bool",
-					"db_type": "bit",
-					"default": "((0))",
+					"db_type": "tinyint",
+					"default": "0",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -214,13 +244,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
-					"name": "bit_four",
+					"name": "bool_four",
 					"type": "null.Bool",
-					"db_type": "bit",
-					"default": "((1))",
+					"db_type": "tinyint",
+					"default": "1",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -229,13 +259,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
-					"name": "bit_five",
+					"name": "bool_five",
 					"type": "bool",
-					"db_type": "bit",
-					"default": "((0))",
+					"db_type": "tinyint",
+					"default": "0",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -244,13 +274,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
-					"name": "bit_six",
+					"name": "bool_six",
 					"type": "bool",
-					"db_type": "bit",
-					"default": "((1))",
+					"db_type": "tinyint",
+					"default": "1",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -259,7 +289,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "tinyint(1)"
 				},
 				{
 					"name": "string_zero",
@@ -310,7 +340,7 @@
 					"name": "string_three",
 					"type": "null.String",
 					"db_type": "varchar",
-					"default": "('a')",
+					"default": "a",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -325,7 +355,7 @@
 					"name": "string_four",
 					"type": "string",
 					"db_type": "varchar",
-					"default": "('b')",
+					"default": "b",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -385,7 +415,7 @@
 					"name": "string_eight",
 					"type": "null.String",
 					"db_type": "varchar",
-					"default": "('abcdefgh')",
+					"default": "abcdefgh",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -400,7 +430,7 @@
 					"name": "string_nine",
 					"type": "string",
 					"db_type": "varchar",
-					"default": "('abcdefgh')",
+					"default": "abcdefgh",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -415,7 +445,7 @@
 					"name": "string_ten",
 					"type": "null.String",
 					"db_type": "varchar",
-					"default": "('')",
+					"default": "",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -430,7 +460,7 @@
 					"name": "string_eleven",
 					"type": "string",
 					"db_type": "varchar",
-					"default": "('')",
+					"default": "",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -490,7 +520,7 @@
 					"name": "big_int_three",
 					"type": "null.Int64",
 					"db_type": "bigint",
-					"default": "((111111))",
+					"default": "111111",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -505,7 +535,7 @@
 					"name": "big_int_four",
 					"type": "int64",
 					"db_type": "bigint",
-					"default": "((222222))",
+					"default": "222222",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -520,7 +550,7 @@
 					"name": "big_int_five",
 					"type": "null.Int64",
 					"db_type": "bigint",
-					"default": "((0))",
+					"default": "0",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -535,7 +565,7 @@
 					"name": "big_int_six",
 					"type": "int64",
 					"db_type": "bigint",
-					"default": "((0))",
+					"default": "0",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -595,7 +625,7 @@
 					"name": "int_three",
 					"type": "null.Int",
 					"db_type": "int",
-					"default": "((333333))",
+					"default": "333333",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -610,7 +640,7 @@
 					"name": "int_four",
 					"type": "int",
 					"db_type": "int",
-					"default": "((444444))",
+					"default": "444444",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -625,7 +655,7 @@
 					"name": "int_five",
 					"type": "null.Int",
 					"db_type": "int",
-					"default": "((0))",
+					"default": "0",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -640,7 +670,7 @@
 					"name": "int_six",
 					"type": "int",
 					"db_type": "int",
-					"default": "((0))",
+					"default": "0",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -653,7 +683,7 @@
 				},
 				{
 					"name": "float_zero",
-					"type": "null.Float64",
+					"type": "null.Float32",
 					"db_type": "float",
 					"default": "",
 					"comment": "",
@@ -668,7 +698,7 @@
 				},
 				{
 					"name": "float_one",
-					"type": "null.Float64",
+					"type": "null.Float32",
 					"db_type": "float",
 					"default": "",
 					"comment": "",
@@ -684,7 +714,7 @@
 				{
 					"name": "float_two",
 					"type": "null.Float32",
-					"db_type": "real",
+					"db_type": "float",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -694,12 +724,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_three",
 					"type": "null.Float32",
-					"db_type": "real",
+					"db_type": "float",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -709,12 +739,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_four",
 					"type": "null.Float32",
-					"db_type": "real",
+					"db_type": "float",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -724,12 +754,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_five",
 					"type": "float32",
-					"db_type": "real",
+					"db_type": "float",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -739,13 +769,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_six",
 					"type": "null.Float32",
-					"db_type": "real",
-					"default": "((1.1))",
+					"db_type": "float",
+					"default": "1.1",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -754,13 +784,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_seven",
 					"type": "float32",
-					"db_type": "real",
-					"default": "((1.1))",
+					"db_type": "float",
+					"default": "1.1",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -769,13 +799,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_eight",
 					"type": "null.Float32",
-					"db_type": "real",
-					"default": "((0.0))",
+					"db_type": "float",
+					"default": "0.0",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -784,13 +814,13 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "float_nine",
 					"type": "null.Float32",
-					"db_type": "real",
-					"default": "((0.0))",
+					"db_type": "float",
+					"default": "0.0",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -799,15 +829,15 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "float(2,1)"
 				},
 				{
 					"name": "bytea_zero",
-					"type": "[]byte",
+					"type": "null.Bytes",
 					"db_type": "binary",
 					"default": "",
 					"comment": "",
-					"nullable": false,
+					"nullable": true,
 					"unique": false,
 					"validated": false,
 					"auto_generated": false,
@@ -818,11 +848,11 @@
 				},
 				{
 					"name": "bytea_one",
-					"type": "[]byte",
+					"type": "null.Bytes",
 					"db_type": "binary",
 					"default": "",
 					"comment": "",
-					"nullable": false,
+					"nullable": true,
 					"unique": false,
 					"validated": false,
 					"auto_generated": false,
@@ -850,7 +880,7 @@
 					"name": "bytea_three",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "(CONVERT([varbinary](max),'a'))",
+					"default": "0x61",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -863,11 +893,11 @@
 				},
 				{
 					"name": "bytea_four",
-					"type": "[]byte",
+					"type": "null.Bytes",
 					"db_type": "binary",
-					"default": "(CONVERT([varbinary](max),'b'))",
+					"default": "0x62",
 					"comment": "",
-					"nullable": false,
+					"nullable": true,
 					"unique": false,
 					"validated": false,
 					"auto_generated": false,
@@ -880,7 +910,7 @@
 					"name": "bytea_five",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "(CONVERT([varbinary](max),'abcdefghabcdefghabcdefgh'))",
+					"default": "0x616263646566676861626364656667686162636465666768",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -893,11 +923,11 @@
 				},
 				{
 					"name": "bytea_six",
-					"type": "[]byte",
+					"type": "null.Bytes",
 					"db_type": "binary",
-					"default": "(CONVERT([varbinary](max),'hgfedcbahgfedcbahgfedcba'))",
+					"default": "0x686766656463626168676665646362616867666564636261",
 					"comment": "",
-					"nullable": false,
+					"nullable": true,
 					"unique": false,
 					"validated": false,
 					"auto_generated": false,
@@ -910,7 +940,7 @@
 					"name": "bytea_seven",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "(CONVERT([varbinary](max),''))",
+					"default": "0x",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -925,7 +955,7 @@
 					"name": "bytea_eight",
 					"type": "[]byte",
 					"db_type": "binary",
-					"default": "(CONVERT([varbinary](max),''))",
+					"default": "0x",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -938,14 +968,14 @@
 				},
 				{
 					"name": "time_zero",
-					"type": "[]byte",
+					"type": "null.Time",
 					"db_type": "timestamp",
-					"default": "AUTO_GENERATED",
+					"default": "",
 					"comment": "",
-					"nullable": false,
+					"nullable": true,
 					"unique": false,
 					"validated": false,
-					"auto_generated": true,
+					"auto_generated": false,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
@@ -965,6 +995,66 @@
 					"udt_name": "",
 					"domain_name": null,
 					"full_db_type": "date"
+				},
+				{
+					"name": "time_two",
+					"type": "null.Time",
+					"db_type": "timestamp",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "timestamp"
+				},
+				{
+					"name": "time_three",
+					"type": "null.Time",
+					"db_type": "timestamp",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "timestamp"
+				},
+				{
+					"name": "time_five",
+					"type": "null.Time",
+					"db_type": "timestamp",
+					"default": "CURRENT_TIMESTAMP",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "timestamp"
+				},
+				{
+					"name": "time_nine",
+					"type": "time.Time",
+					"db_type": "timestamp",
+					"default": "CURRENT_TIMESTAMP",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "timestamp"
 				},
 				{
 					"name": "time_eleven",
@@ -1000,7 +1090,7 @@
 					"name": "time_fifteen",
 					"type": "null.Time",
 					"db_type": "date",
-					"default": "('19990108')",
+					"default": "1999-01-08",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -1015,7 +1105,7 @@
 					"name": "time_sixteen",
 					"type": "time.Time",
 					"db_type": "date",
-					"default": "('1999-01-08')",
+					"default": "1999-01-08",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -1027,9 +1117,9 @@
 					"full_db_type": "date"
 				},
 				{
-					"name": "bit_null",
-					"type": "null.Bool",
-					"db_type": "bit",
+					"name": "json_null",
+					"type": "null.JSON",
+					"db_type": "json",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1039,12 +1129,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "json"
 				},
 				{
-					"name": "bit_nnull",
-					"type": "bool",
-					"db_type": "bit",
+					"name": "json_nnull",
+					"type": "types.JSON",
+					"db_type": "json",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1054,7 +1144,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bit"
+					"full_db_type": "json"
 				},
 				{
 					"name": "tinyint_null",
@@ -1073,6 +1163,66 @@
 				},
 				{
 					"name": "tinyint_nnull",
+					"type": "int8",
+					"db_type": "tinyint",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "tinyint"
+				},
+				{
+					"name": "tinyint1_null",
+					"type": "null.Bool",
+					"db_type": "tinyint",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "tinyint(1)"
+				},
+				{
+					"name": "tinyint1_nnull",
+					"type": "bool",
+					"db_type": "tinyint",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "tinyint(1)"
+				},
+				{
+					"name": "tinyint2_null",
+					"type": "null.Int8",
+					"db_type": "tinyint",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "tinyint"
+				},
+				{
+					"name": "tinyint2_nnull",
 					"type": "int8",
 					"db_type": "tinyint",
 					"default": "",
@@ -1117,9 +1267,9 @@
 					"full_db_type": "smallint"
 				},
 				{
-					"name": "int_null",
-					"type": "null.Int",
-					"db_type": "int",
+					"name": "mediumint_null",
+					"type": "null.Int32",
+					"db_type": "mediumint",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1129,12 +1279,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int"
+					"full_db_type": "mediumint"
 				},
 				{
-					"name": "int_nnull",
-					"type": "int",
-					"db_type": "int",
+					"name": "mediumint_nnull",
+					"type": "int32",
+					"db_type": "mediumint",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1144,7 +1294,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "int"
+					"full_db_type": "mediumint"
 				},
 				{
 					"name": "bigint_null",
@@ -1178,7 +1328,7 @@
 				},
 				{
 					"name": "float_null",
-					"type": "null.Float64",
+					"type": "null.Float32",
 					"db_type": "float",
 					"default": "",
 					"comment": "",
@@ -1193,7 +1343,7 @@
 				},
 				{
 					"name": "float_nnull",
-					"type": "float64",
+					"type": "float32",
 					"db_type": "float",
 					"default": "",
 					"comment": "",
@@ -1205,11 +1355,41 @@
 					"udt_name": "",
 					"domain_name": null,
 					"full_db_type": "float"
+				},
+				{
+					"name": "double_null",
+					"type": "null.Float64",
+					"db_type": "double",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "double"
+				},
+				{
+					"name": "double_nnull",
+					"type": "float64",
+					"db_type": "double",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "double"
 				},
 				{
 					"name": "doubleprec_null",
 					"type": "null.Float64",
-					"db_type": "float",
+					"db_type": "double",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1219,12 +1399,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "float"
+					"full_db_type": "double"
 				},
 				{
 					"name": "doubleprec_nnull",
 					"type": "float64",
-					"db_type": "float",
+					"db_type": "double",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1234,12 +1414,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "float"
+					"full_db_type": "double"
 				},
 				{
 					"name": "real_null",
-					"type": "null.Float32",
-					"db_type": "real",
+					"type": "null.Float64",
+					"db_type": "double",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1249,12 +1429,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "double"
 				},
 				{
 					"name": "real_nnull",
-					"type": "float32",
-					"db_type": "real",
+					"type": "float64",
+					"db_type": "double",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1264,7 +1444,37 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "real"
+					"full_db_type": "double"
+				},
+				{
+					"name": "boolean_null",
+					"type": "null.Bool",
+					"db_type": "tinyint",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "tinyint(1)"
+				},
+				{
+					"name": "boolean_nnull",
+					"type": "bool",
+					"db_type": "tinyint",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "tinyint(1)"
 				},
 				{
 					"name": "date_null",
@@ -1327,6 +1537,36 @@
 					"full_db_type": "datetime"
 				},
 				{
+					"name": "timestamp_null",
+					"type": "null.Time",
+					"db_type": "timestamp",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "timestamp"
+				},
+				{
+					"name": "timestamp_nnull",
+					"type": "time.Time",
+					"db_type": "timestamp",
+					"default": "CURRENT_TIMESTAMP",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "timestamp"
+				},
+				{
 					"name": "binary_null",
 					"type": "null.Bytes",
 					"db_type": "binary",
@@ -1369,7 +1609,7 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varbinary(1)"
+					"full_db_type": "varbinary(100)"
 				},
 				{
 					"name": "varbinary_nnull",
@@ -1384,12 +1624,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varbinary(1)"
+					"full_db_type": "varbinary(100)"
 				},
 				{
-					"name": "varbinary100_null",
+					"name": "tinyblob_null",
 					"type": "null.Bytes",
-					"db_type": "varbinary",
+					"db_type": "tinyblob",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1399,12 +1639,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varbinary(100)"
+					"full_db_type": "tinyblob"
 				},
 				{
-					"name": "varbinary100_nnull",
+					"name": "tinyblob_nnull",
 					"type": "[]byte",
-					"db_type": "varbinary",
+					"db_type": "tinyblob",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1414,12 +1654,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varbinary(100)"
+					"full_db_type": "tinyblob"
 				},
 				{
-					"name": "varbinarymax_null",
+					"name": "blob_null",
 					"type": "null.Bytes",
-					"db_type": "varbinary",
+					"db_type": "blob",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1429,12 +1669,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varbinary(-1)"
+					"full_db_type": "blob"
 				},
 				{
-					"name": "varbinarymax_nnull",
+					"name": "blob_nnull",
 					"type": "[]byte",
-					"db_type": "varbinary",
+					"db_type": "blob",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1444,7 +1684,97 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varbinary(-1)"
+					"full_db_type": "blob"
+				},
+				{
+					"name": "mediumblob_null",
+					"type": "null.Bytes",
+					"db_type": "mediumblob",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "mediumblob"
+				},
+				{
+					"name": "mediumblob_nnull",
+					"type": "[]byte",
+					"db_type": "mediumblob",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "mediumblob"
+				},
+				{
+					"name": "longblob_null",
+					"type": "null.Bytes",
+					"db_type": "longblob",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "longblob"
+				},
+				{
+					"name": "longblob_nnull",
+					"type": "[]byte",
+					"db_type": "longblob",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "longblob"
+				},
+				{
+					"name": "varchar_null",
+					"type": "null.String",
+					"db_type": "varchar",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "varchar(100)"
+				},
+				{
+					"name": "varchar_nnull",
+					"type": "string",
+					"db_type": "varchar",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "varchar(100)"
 				},
 				{
 					"name": "char_null",
@@ -1477,9 +1807,9 @@
 					"full_db_type": "char(1)"
 				},
 				{
-					"name": "varchar_null",
+					"name": "text_null",
 					"type": "null.String",
-					"db_type": "varchar",
+					"db_type": "text",
 					"default": "",
 					"comment": "",
 					"nullable": true,
@@ -1489,12 +1819,12 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varchar(-1)"
+					"full_db_type": "text"
 				},
 				{
-					"name": "varchar_nnull",
+					"name": "text_nnull",
 					"type": "string",
-					"db_type": "varchar",
+					"db_type": "text",
 					"default": "",
 					"comment": "",
 					"nullable": false,
@@ -1504,102 +1834,27 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "varchar(-1)"
+					"full_db_type": "text"
 				},
 				{
-					"name": "varchar100_null",
+					"name": "virtual_nnull",
+					"type": "string",
+					"db_type": "text",
+					"default": "AUTO_GENERATED",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": true,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "text"
+				},
+				{
+					"name": "virtual_null",
 					"type": "null.String",
-					"db_type": "varchar",
-					"default": "",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"validated": false,
-					"auto_generated": false,
-					"arr_type": null,
-					"udt_name": "",
-					"domain_name": null,
-					"full_db_type": "varchar(100)"
-				},
-				{
-					"name": "varchar100_nnull",
-					"type": "string",
-					"db_type": "varchar",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"unique": false,
-					"validated": false,
-					"auto_generated": false,
-					"arr_type": null,
-					"udt_name": "",
-					"domain_name": null,
-					"full_db_type": "varchar(100)"
-				},
-				{
-					"name": "uniqueidentifier_null",
-					"type": "mssql.UniqueIdentifier",
-					"db_type": "uuid",
-					"default": "",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"validated": false,
-					"auto_generated": false,
-					"arr_type": null,
-					"udt_name": "",
-					"domain_name": null,
-					"full_db_type": "uniqueidentifier"
-				},
-				{
-					"name": "uniqueidentifier_nnull",
-					"type": "mssql.UniqueIdentifier",
-					"db_type": "uuid",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"unique": false,
-					"validated": false,
-					"auto_generated": false,
-					"arr_type": null,
-					"udt_name": "",
-					"domain_name": null,
-					"full_db_type": "uniqueidentifier"
-				},
-				{
-					"name": "datetimeoffset_null",
-					"type": "null.Time",
-					"db_type": "datetimeoffset",
-					"default": "",
-					"comment": "",
-					"nullable": true,
-					"unique": false,
-					"validated": false,
-					"auto_generated": false,
-					"arr_type": null,
-					"udt_name": "",
-					"domain_name": null,
-					"full_db_type": "datetimeoffset"
-				},
-				{
-					"name": "datetimeoffset_nnull",
-					"type": "time.Time",
-					"db_type": "datetimeoffset",
-					"default": "",
-					"comment": "",
-					"nullable": false,
-					"unique": false,
-					"validated": false,
-					"auto_generated": false,
-					"arr_type": null,
-					"udt_name": "",
-					"domain_name": null,
-					"full_db_type": "datetimeoffset"
-				},
-				{
-					"name": "generated_persisted",
-					"type": "null.Int64",
-					"db_type": "bigint",
+					"db_type": "text",
 					"default": "AUTO_GENERATED",
 					"comment": "",
 					"nullable": true,
@@ -1609,12 +1864,27 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "bigint"
+					"full_db_type": "text"
 				},
 				{
-					"name": "generated_virtual",
-					"type": "null.Int16",
-					"db_type": "smallint",
+					"name": "generated_nnull",
+					"type": "string",
+					"db_type": "text",
+					"default": "AUTO_GENERATED",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": true,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "text"
+				},
+				{
+					"name": "generated_null",
+					"type": "null.String",
+					"db_type": "text",
 					"default": "AUTO_GENERATED",
 					"comment": "",
 					"nullable": true,
@@ -1624,11 +1894,11 @@
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
-					"full_db_type": "smallint"
+					"full_db_type": "text"
 				}
 			],
 			"p_key": {
-				"name": "PK__type_mon",
+				"name": "PRIMARY",
 				"columns": [
 					"id"
 				]
@@ -1651,12 +1921,12 @@
 					"name": "id",
 					"type": "int",
 					"db_type": "int",
-					"default": "AUTO_GENERATED",
+					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
 					"unique": true,
 					"validated": false,
-					"auto_generated": true,
+					"auto_generated": false,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
@@ -1664,7 +1934,7 @@
 				}
 			],
 			"p_key": {
-				"name": "PK__users",
+				"name": "PRIMARY",
 				"columns": [
 					"id"
 				]
@@ -1674,7 +1944,7 @@
 			"to_one_relationships": null,
 			"to_many_relationships": [
 				{
-					"name": "FK_videos_users",
+					"name": "videos_ibfk_1",
 					"table": "users",
 					"column": "id",
 					"nullable": false,
@@ -1737,7 +2007,7 @@
 				}
 			],
 			"p_key": {
-				"name": "PK__video_ta",
+				"name": "PRIMARY",
 				"columns": [
 					"video_id",
 					"tag_id"
@@ -1746,22 +2016,22 @@
 			"f_keys": [
 				{
 					"table": "video_tags",
-					"name": "FK_video_tags_tags",
-					"column": "tag_id",
+					"name": "video_tags_ibfk_1",
+					"column": "video_id",
 					"nullable": false,
 					"unique": false,
-					"foreign_table": "tags",
+					"foreign_table": "videos",
 					"foreign_column": "id",
 					"foreign_column_nullable": false,
 					"foreign_column_unique": true
 				},
 				{
 					"table": "video_tags",
-					"name": "FK_video_tags_videos",
-					"column": "video_id",
+					"name": "video_tags_ibfk_2",
+					"column": "tag_id",
 					"nullable": false,
 					"unique": false,
-					"foreign_table": "videos",
+					"foreign_table": "tags",
 					"foreign_column": "id",
 					"foreign_column_nullable": false,
 					"foreign_column_unique": true
@@ -1784,12 +2054,12 @@
 					"name": "id",
 					"type": "int",
 					"db_type": "int",
-					"default": "AUTO_GENERATED",
+					"default": "auto_increment",
 					"comment": "",
 					"nullable": false,
 					"unique": true,
 					"validated": false,
-					"auto_generated": true,
+					"auto_generated": false,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
@@ -1827,7 +2097,7 @@
 				}
 			],
 			"p_key": {
-				"name": "PK__videos",
+				"name": "PRIMARY",
 				"columns": [
 					"id"
 				]
@@ -1835,22 +2105,22 @@
 			"f_keys": [
 				{
 					"table": "videos",
-					"name": "FK_videos_sponsors",
-					"column": "sponsor_id",
-					"nullable": true,
-					"unique": true,
-					"foreign_table": "sponsors",
+					"name": "videos_ibfk_1",
+					"column": "user_id",
+					"nullable": false,
+					"unique": false,
+					"foreign_table": "users",
 					"foreign_column": "id",
 					"foreign_column_nullable": false,
 					"foreign_column_unique": true
 				},
 				{
 					"table": "videos",
-					"name": "FK_videos_users",
-					"column": "user_id",
-					"nullable": false,
-					"unique": false,
-					"foreign_table": "users",
+					"name": "videos_ibfk_2",
+					"column": "sponsor_id",
+					"nullable": true,
+					"unique": true,
+					"foreign_table": "sponsors",
 					"foreign_column": "id",
 					"foreign_column_nullable": false,
 					"foreign_column_unique": true
@@ -1871,11 +2141,11 @@
 					"foreign_column_unique": true,
 					"to_join_table": true,
 					"join_table": "video_tags",
-					"join_local_fkey_name": "FK_video_tags_videos",
+					"join_local_fkey_name": "video_tags_ibfk_1",
 					"join_local_column": "video_id",
 					"join_local_column_nullable": false,
 					"join_local_column_unique": false,
-					"join_foreign_fkey_name": "FK_video_tags_tags",
+					"join_foreign_fkey_name": "video_tags_ibfk_2",
 					"join_foreign_column": "tag_id",
 					"join_foreign_column_nullable": false,
 					"join_foreign_column_unique": false
@@ -1895,7 +2165,7 @@
 					"name": "user_id",
 					"type": "int",
 					"db_type": "int",
-					"default": "",
+					"default": "0",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -1910,7 +2180,7 @@
 					"name": "video_id",
 					"type": "int",
 					"db_type": "int",
-					"default": "",
+					"default": "0",
 					"comment": "",
 					"nullable": false,
 					"unique": false,
@@ -1950,15 +2220,15 @@
 		}
 	],
 	"dialect": {
-		"lq": 91,
-		"rq": 93,
-		"use_index_placeholders": true,
-		"use_last_insert_id": false,
-		"use_schema": true,
-		"use_default_keyword": true,
-		"use_top_clause": true,
-		"use_output_clause": true,
-		"use_case_when_exists_clause": true,
+		"lq": 96,
+		"rq": 96,
+		"use_index_placeholders": false,
+		"use_last_insert_id": true,
+		"use_schema": false,
+		"use_default_keyword": false,
+		"use_top_clause": false,
+		"use_output_clause": false,
+		"use_case_when_exists_clause": false,
 		"use_auto_columns": false
 	}
 }

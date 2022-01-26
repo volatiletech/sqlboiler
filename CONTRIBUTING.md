@@ -14,20 +14,20 @@ If you need quick communication we're usually on [Slack](https://sqlboiler.from-
 
 #### TLDR
 
-1. Open PR against **dev** branch with explanation
+1. Open PR against **master** branch with explanation
 1. Participate in Github Code Review
 
 #### Long version
 
 For code that requires little to no discussion, please just open a pull request with some
-explanation against the **dev** branch. All code goes through dev before going out in a release.
+explanation against the **master** branch. 
 
 ## Bigger Change
 
 #### TLDR
 
 1. Start proposal of idea in Github issue
-1. After design concensus, open PR with the work against the **dev** branch
+1. After design concensus, open PR with the work against the **master** branch
 1. Participate in Github Code Review
 
 #### Long version
@@ -37,8 +37,8 @@ before starting on a pull request, just so there's no time wasted in redoing/ref
 outright rejected because the PR is at odds with the design. The best way to accomplish this is to
 open an issue to discuss it. It can always start as a Slack conversation but should eventually end
 up as an issue to avoid penalizing the rest of the users for not being on Slack. Once we agree on
-the way to do something, then open the PR against the **dev** branch and we'll commence code review
-with the Github code review tools. Then it will be merged into dev, and later go out in a release.
+the way to do something, then open the PR against the **master** branch and we'll commence code review
+with the Github code review tools. Then it will be merged into master, and later go out in a release.
 
 ## Developer getting started
 

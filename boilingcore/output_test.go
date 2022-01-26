@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 type NopWriteCloser struct {
@@ -102,5 +104,73 @@ func TestOutputFilenameParts(t *testing.T) {
 		if usePkg != test.UsePkg {
 			t.Errorf("%d) usePkg wrong, want: %t, got: %t", i, test.UsePkg, usePkg)
 		}
+	}
+}
+
+func TestGetOutputFilename(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		TableName string
+		IsTest    bool
+		IsGo      bool
+		Expected  string
+	}{
+		"regular": {
+			TableName: "hello",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "hello",
+		},
+		"begins with underscore": {
+			TableName: "_hello",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "und_hello",
+		},
+		"ends with _test": {
+			TableName: "hello_test",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "hello_test_model",
+		},
+		"ends with _js": {
+			TableName: "hello_js",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "hello_js_model",
+		},
+		"ends with _windows": {
+			TableName: "hello_windows",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "hello_windows_model",
+		},
+		"ends with _arm64": {
+			TableName: "hello_arm64",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "hello_arm64_model",
+		},
+		"non-go ends with _arm64": {
+			TableName: "hello_arm64",
+			IsTest:    false,
+			IsGo:      false,
+			Expected:  "hello_arm64",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			notTest := getOutputFilename(tc.TableName, false, tc.IsGo)
+			if diff := cmp.Diff(tc.Expected, notTest); diff != "" {
+				t.Fatalf(diff)
+			}
+
+			isTest := getOutputFilename(tc.TableName, true, tc.IsGo)
+			if diff := cmp.Diff(tc.Expected+"_test", isTest); diff != "" {
+				t.Fatalf(diff)
+			}
+		})
 	}
 }

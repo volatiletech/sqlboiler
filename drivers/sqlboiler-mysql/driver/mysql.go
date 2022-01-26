@@ -13,6 +13,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/strmangle"
 )
 
 //go:embed override
@@ -32,10 +33,11 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // MySQLDriver holds the database connection string and a handle
 // to the database connection.
 type MySQLDriver struct {
-	connStr string
-	conn    *sql.DB
-
-	tinyIntAsInt bool
+	connStr        string
+	conn           *sql.DB
+	addEnumTypes   bool
+	enumNullPrefix string
+	tinyIntAsInt   bool
 }
 
 // Templates that should be added/overridden
@@ -89,6 +91,8 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}
 
+	m.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
+	m.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mysql", m.connStr)
 	if err != nil {
@@ -190,6 +194,69 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	return names, nil
 }
 
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (m *MySQLDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	var names []string
+
+	query := `select table_name from information_schema.views where table_schema = ?`
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, w := range tables {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		tables := drivers.TablesFromList(blacklist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, b := range tables {
+				args = append(args, b)
+			}
+		}
+	}
+
+	query += ` order by table_name;`
+
+	rows, err := m.conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (m *MySQLDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	capabilities := drivers.ViewCapabilities{
+		// No definite way to check if a view is insertable
+		// See: https://dba.stackexchange.com/questions/285451/does-mysql-have-a-built-in-way-to-tell-whether-a-view-is-insertable-not-just-up?newreg=e6c571353a0948638bec10cf7f8c6f6f
+		CanInsert: false,
+		CanUpsert: false,
+	}
+
+	return capabilities, nil
+}
+
+func (m *MySQLDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return m.Columns(schema, tableName, whitelist, blacklist)
+}
+
 // Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
@@ -210,6 +277,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			replace(substring(c.column_default,2,length(c.column_default)-2),'\'\'','\''),
 				c.column_default))),
 	c.is_nullable = 'YES',
+	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated,
 		exists (
 			select c.column_name
 			from information_schema.table_constraints tc
@@ -222,7 +290,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 				constraint_schema = ? and table_name = ? and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'`
+	where table_name = ? and table_schema = ?`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -252,23 +320,29 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 
 	for rows.Next() {
 		var colName, colFullType, colComment, colType string
-		var nullable, unique bool
+		var nullable, generated, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &generated, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := drivers.Column{
-			Name:       colName,
-			Comment:    colComment,
-			FullDBType: colFullType, // example: tinyint(1) instead of tinyint
-			DBType:     colType,
-			Nullable:   nullable,
-			Unique:     unique,
+			Name:          colName,
+			Comment:       colComment,
+			FullDBType:    colFullType, // example: tinyint(1) instead of tinyint
+			DBType:        colType,
+			Nullable:      nullable,
+			Unique:        unique,
+			AutoGenerated: generated,
 		}
 
-		if defaultValue != nil && *defaultValue != "NULL" {
+		if defaultValue != nil {
 			column.Default = *defaultValue
+		}
+
+		// A generated column technically has a default value
+		if column.Default == "" && column.AutoGenerated {
+			column.Default = "AUTO_GENERATED"
 		}
 
 		columns = append(columns, column)
@@ -368,7 +442,15 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 // TranslateColumnType converts mysql database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+// Deprecated: for MySQL enum types to be created properly TranslateTableColumnType method should be used instead.
+func (m *MySQLDriver) TranslateColumnType(drivers.Column) drivers.Column {
+	panic("TranslateTableColumnType should be called")
+}
+
+// TranslateTableColumnType converts mysql database types to Go types, for example
+// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
+// as a Column object.
+func (m *MySQLDriver) TranslateTableColumnType(c drivers.Column, tableName string) drivers.Column {
 	unsigned := strings.Contains(c.FullDBType, "unsigned")
 	if c.Nullable {
 		switch c.DBType {
@@ -420,7 +502,11 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "json":
 			c.Type = "null.JSON"
 		default:
-			c.Type = "null.String"
+			if len(strmangle.ParseEnumVals(c.DBType)) > 0 && m.addEnumTypes {
+				c.Type = strmangle.TitleCase(tableName) + m.enumNullPrefix + strmangle.TitleCase(c.Name)
+			} else {
+				c.Type = "null.String"
+			}
 		}
 	} else {
 		switch c.DBType {
@@ -472,7 +558,11 @@ func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 		case "json":
 			c.Type = "types.JSON"
 		default:
-			c.Type = "string"
+			if len(strmangle.ParseEnumVals(c.DBType)) > 0 && m.addEnumTypes {
+				c.Type = strmangle.TitleCase(tableName) + strmangle.TitleCase(c.Name)
+			} else {
+				c.Type = "string"
+			}
 		}
 	}
 

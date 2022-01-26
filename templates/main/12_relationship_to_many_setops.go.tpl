@@ -1,4 +1,4 @@
-{{- if .Table.IsJoinTable -}}
+{{- if or .Table.IsJoinTable .Table.IsView -}}
 {{- else -}}
 	{{- $table := .Table -}}
 	{{- range $rel := .Table.ToManyRelationships -}}

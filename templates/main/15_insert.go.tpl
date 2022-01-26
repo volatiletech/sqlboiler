@@ -1,3 +1,4 @@
+{{- if or (not .Table.IsView) (.Table.ViewCapabilities.CanInsert) -}}
 {{- $alias := .Aliases.Table .Table.Name}}
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
@@ -60,6 +61,9 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
 			nzDefaults,
 		)
+		{{- if filterColumnsByAuto true .Table.Columns }}
+		wl = strmangle.SetComplement(wl, {{$alias.DownSingular}}GeneratedColumns)
+		{{- end}}
 
 		cache.valueMapping, err = queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, wl)
 		if err != nil {
@@ -217,3 +221,5 @@ CacheNoHooks:
 	return nil
 	{{- end}}
 }
+
+{{- end -}}

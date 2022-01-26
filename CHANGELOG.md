@@ -4,7 +4,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v4.8.4] - 2022-01-27
 
 ### Added
 
@@ -14,6 +14,27 @@ Versioning](http://semver.org/spec/v2.0.0.html).
   a breaking v5 (thanks @jhnj)
 - Add support for * as a wildcard for white/blacklisting columns. See readme
   for details (thanks @Yoshiji)
+- Add missing function `func (modelQuery) UpdateAllGP(...)` (thanks @MeanSquaredError)
+- Add support for generated columns
+- Add support for database views
+- Add a `_model` suffix to the generated file for tables names that end with
+  `_test` or `_goos` or `_goarch` since Go treats such files specially.
+- Add `C` in front of model column attributes that begin with a number since a struct
+  field cannot begin with a number in Go
+
+### Changes
+
+- Modify the `--add-enum-types` flag to also use the generated types in the model
+  fields (thanks @optiman)
+- Mark nullable columns as having a default in Postgres driver
+- Bump MySQL version used for testing to 8.0
+
+### Fixed
+
+- Fix panic when a column referrring a foreign key is ignored
+  (thanks @zapo)
+- Fix bug with using the zero value of the decimal type for a nullable column
+  (thanks @hongshaoyang)
 
 ## [v4.8.3] - 2021-11-16
 

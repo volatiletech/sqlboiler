@@ -2,6 +2,8 @@ package boilingcore
 
 import (
 	"fmt"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
@@ -76,6 +78,11 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 		for _, c := range t.Columns {
 			if _, ok := table.Columns[c.Name]; !ok {
 				table.Columns[c.Name] = strmangle.TitleCase(c.Name)
+			}
+
+			r, _ := utf8.DecodeRuneInString(table.Columns[c.Name])
+			if unicode.IsNumber(r) {
+				table.Columns[c.Name] = "C" + table.Columns[c.Name]
 			}
 		}
 

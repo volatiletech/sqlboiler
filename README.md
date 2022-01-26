@@ -130,11 +130,13 @@ Table of Contents
 - 1d arrays, json, hstore & more
 - Enum types
 - Out of band driver support
+- Support for database views
+- Supports generated/computed columns
 
 ### Missing features
 
 - Multi-column foreign key support
-- View/Materialized view support
+- Materialized view support
 
 ### Supported Databases
 
@@ -222,9 +224,6 @@ fmt.Println(len(users.R.FavoriteMovies))
 ### Requirements
 
 * Go 1.13, older Go versions are not supported.
-* Table names and column names should use `snake_case` format.
-  * We require `snake_case` table names and column names. This is a recommended default in Postgres,
-  and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
 * Join tables should use a *composite primary key*.
   * For join tables to be used transparently for relationships your join table must have
   a *composite primary key* that encompasses both foreign table foreign keys and

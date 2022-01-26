@@ -146,7 +146,7 @@ func executeTemplates(e executeTemplateData) error {
 				}
 			}
 
-			fName := getOutputFileName(e.data.Table.Name, e.isTest, isGo)
+			fName := getOutputFilename(e.data.Table.Name, e.isTest, isGo)
 			fName += ext
 			if len(dir) != 0 {
 				fName = filepath.Join(dir, fName)
@@ -299,7 +299,7 @@ func getLongExt(filename string) string {
 	return filename[index:]
 }
 
-func getOutputFileName(tableName string, isTest, isGo bool) string {
+func getOutputFilename(tableName string, isTest, isGo bool) string {
 	if strings.HasPrefix(tableName, "_") {
 		tableName = "und" + tableName
 	}
@@ -325,6 +325,11 @@ func endsWithSpecialSuffix(tableName string) bool {
 	}
 
 	lastPart := parts[len(parts)-1]
+
+	if lastPart == "test" {
+		return true
+	}
+
 	if _, ok := goosList[lastPart]; ok {
 		return true
 	}

@@ -14,7 +14,7 @@
 					"nullable": true,
 					"unique": false,
 					"validated": false,
-					"auto_generated": false,
+					"auto_generated": true,
 					"arr_type": null,
 					"udt_name": "",
 					"domain_name": null,
@@ -25,6 +25,102 @@
 				"name": "",
 				"columns": [
 					"id"
+				]
+			},
+			"f_keys": null,
+			"is_join_table": false,
+			"to_one_relationships": null,
+			"to_many_relationships": null,
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
+		},
+		{
+			"name": "has_generated_columns",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "a",
+					"type": "null.Int64",
+					"db_type": "INTEGER",
+					"default": "auto_increment",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": true,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "INTEGER"
+				},
+				{
+					"name": "b",
+					"type": "null.Int64",
+					"db_type": "INT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "INT"
+				},
+				{
+					"name": "c",
+					"type": "null.String",
+					"db_type": "TEXT",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "TEXT"
+				},
+				{
+					"name": "d",
+					"type": "null.Int64",
+					"db_type": "INT",
+					"default": "auto_generated",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": true,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "INT"
+				},
+				{
+					"name": "e",
+					"type": "null.String",
+					"db_type": "TEXT",
+					"default": "auto_generated",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": true,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "TEXT"
+				}
+			],
+			"p_key": {
+				"name": "",
+				"columns": [
+					"a"
 				]
 			},
 			"f_keys": null,

@@ -169,3 +169,11 @@ create view user_videos as
 select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
 from users u
 inner join videos v on v.user_id = u.id;
+
+CREATE TABLE has_generated_columns (
+   a INTEGER PRIMARY KEY,
+   b INT,
+   c TEXT,
+   d INT GENERATED ALWAYS AS (a*abs(b)) VIRTUAL,
+   e TEXT GENERATED ALWAYS AS (substr(c,b,b+1)) STORED
+);

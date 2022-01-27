@@ -145,7 +145,7 @@ Table of Contents
 | PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
 | MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
 | MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
-| SQLite3           | https://github.com/volatiletech/sqlboiler-sqlite3
+| SQLite3           | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3](drivers/sqlboiler-sqlite3)
 | CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb
 
 **Note:** SQLBoiler supports out of band driver support so you can make your own

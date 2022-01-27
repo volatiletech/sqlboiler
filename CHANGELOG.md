@@ -21,6 +21,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
   `_test` or `_goos` or `_goarch` since Go treats such files specially.
 - Add `C` in front of model column attributes that begin with a number since a struct
   field cannot begin with a number in Go
+- Add **sqlite3** driver to the main repo using the CGo-free port
 
 ### Changes
 

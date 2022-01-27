@@ -18,4 +18,5 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/strmangle v0.0.1
+	modernc.org/sqlite v1.14.5
 )

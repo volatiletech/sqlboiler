@@ -198,7 +198,7 @@ func (s *State) Run() error {
 		}
 
 		// Generate the test templates
-		if !s.Config.NoTests {
+		if !s.Config.NoTests && !table.IsView {
 			if err := generateTestOutput(s, testDirExtMap, data); err != nil {
 				return errors.Wrap(err, "unable to generate test output")
 			}

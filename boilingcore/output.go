@@ -140,10 +140,16 @@ func executeTemplates(e executeTemplateData) error {
 				writeImports(out, imps)
 			}
 
+			prevLen := out.Len()
 			for _, tplName := range tplNames {
 				if err := executeTemplate(out, e.templates.Template, tplName, e.data); err != nil {
 					return err
 				}
+			}
+
+			// Skip writing the file if the content is empty
+			if out.Len()-prevLen < 1 {
+				continue
 			}
 
 			fName := getOutputFilename(e.data.Table.Name, e.isTest, isGo)

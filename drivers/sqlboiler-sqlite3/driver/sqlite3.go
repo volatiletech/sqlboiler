@@ -394,7 +394,7 @@ ColumnLoop:
 			}
 		}
 
-		if column.DefaultValue != nil && *column.DefaultValue != "NULL" {
+		if column.DefaultValue != nil {
 			bColumn.Default = *column.DefaultValue
 		} else if autoIncr {
 			bColumn.Default = "auto_increment"
@@ -406,6 +406,10 @@ ColumnLoop:
 			// version, they don't matter here so just masquerade as the same thing as
 			// above.
 			bColumn.Default = "auto_increment"
+		}
+
+		if bColumn.Nullable && bColumn.Default == "" {
+			bColumn.Default = "NULL"
 		}
 
 		columns = append(columns, bColumn)

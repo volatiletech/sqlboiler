@@ -164,3 +164,8 @@ create table type_monsters (
 create table autoinctest (
 	id INTEGER PRIMARY KEY
 );
+
+create view user_videos as 
+select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
+from users u
+inner join videos v on v.user_id = u.id;

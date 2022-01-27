@@ -172,6 +172,70 @@ func (s SQLiteDriver) TableNames(schema string, whitelist, blacklist []string) (
 	return names, nil
 }
 
+// ViewNames connects to the sqlite database and
+// retrieves all view names from sqlite_master
+func (s SQLiteDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	query := `SELECT name FROM sqlite_master WHERE type='view'`
+	args := []interface{}{}
+
+	if len(whitelist) > 0 {
+		views := drivers.TablesFromList(whitelist)
+		if len(views) > 0 {
+			query += fmt.Sprintf(" and tbl_name in (%s)", strings.Repeat(",?", len(views))[1:])
+			for _, w := range views {
+				args = append(args, w)
+			}
+		}
+	}
+
+	if len(blacklist) > 0 {
+		views := drivers.TablesFromList(blacklist)
+		if len(views) > 0 {
+			query += fmt.Sprintf(" and tbl_name not in (%s)", strings.Repeat(",?", len(views))[1:])
+			for _, b := range views {
+				args = append(args, b)
+			}
+		}
+	}
+
+	rows, err := s.dbConn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var names []string
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		if name != "sqlite_sequence" {
+			names = append(names, name)
+		}
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (s SQLiteDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	// Inserts may be allowed with the presence of an INSTEAD OF TRIGGER
+	// but it is not yet implemented.
+	// See: https://www.sqlite.org/lang_createview.html
+	capabilities := drivers.ViewCapabilities{
+		CanInsert: false,
+		CanUpsert: false,
+	}
+
+	return capabilities, nil
+}
+
+func (s SQLiteDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return s.Columns(schema, tableName, whitelist, blacklist)
+}
+
 type sqliteIndex struct {
 	SeqNum  int
 	Unique  int

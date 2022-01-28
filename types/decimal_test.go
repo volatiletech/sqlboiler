@@ -105,6 +105,10 @@ func TestNullDecimal_Value(t *testing.T) {
 		}
 	}
 
+	zero := NullDecimal{}
+	if _, err := zero.Value(); err != nil {
+		t.Error("zero value should not error")
+	}
 	infinity := NullDecimal{Big: new(decimal.Big).SetInf(true)}
 	if _, err := infinity.Value(); err == nil {
 		t.Error("infinity should not be passed into the database")

@@ -147,15 +147,16 @@ func executeTemplates(e executeTemplateData) error {
 				}
 			}
 
-			// Skip writing the file if the content is empty
-			if out.Len()-prevLen < 1 {
-				continue
-			}
-
 			fName := getOutputFilename(e.data.Table.Name, e.isTest, isGo)
 			fName += ext
 			if len(dir) != 0 {
 				fName = filepath.Join(dir, fName)
+			}
+
+			// Skip writing the file if the content is empty
+			if out.Len()-prevLen < 1 {
+				fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.state.Config.OutFolder, fName)
+				continue
 			}
 
 			if err := writeFile(e.state.Config.OutFolder, fName, out, isGo); err != nil {

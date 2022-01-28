@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -147,24 +146,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return commandFailure("must provide a driver name")
 	}
 
-	driverName := args[0]
-	driverPath := args[0]
-
-	if strings.ContainsRune(driverName, os.PathSeparator) {
-		driverName = strings.Replace(filepath.Base(driverName), "sqlboiler-", "", 1)
-		driverName = strings.Replace(driverName, ".exe", "", 1)
-	} else {
-		driverPath = "sqlboiler-" + driverPath
-		if p, err := exec.LookPath(driverPath); err == nil {
-			driverPath = p
-		}
-	}
-
-	driverPath, err = filepath.Abs(driverPath)
+	driverName, driverPath, err := drivers.RegisterBinaryFromCmdArg(args[0])
 	if err != nil {
-		return errors.Wrap(err, "could not find absolute path to driver")
+		return errors.Wrap(err, "could not register driver")
 	}
-	drivers.RegisterBinary(driverName, driverPath)
 
 	cmdConfig = &boilingcore.Config{
 		DriverName:        driverName,

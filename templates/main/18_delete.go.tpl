@@ -155,6 +155,21 @@ func (q {{$alias.DownSingular}}Query) DeleteAllP({{if .NoContext}}exec boil.Exec
 
 {{end -}}
 
+{{if and .AddGlobal .AddPanic -}}
+// DeleteAllGP deletes all rows, and panics on error.
+func (q {{$alias.DownSingular}}Query) DeleteAllGP({{if not .NoContext}}ctx context.Context, {{end}}{{if $soft}}hardDelete bool{{end}}) {{if not .NoRowsAffected}}int64{{end -}} {
+	{{if not .NoRowsAffected}}rowsAff, {{end -}} err := q.DeleteAll({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}{{if $soft}}, hardDelete{{end}})
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+	{{- if not .NoRowsAffected}}
+
+	return rowsAff
+	{{end -}}
+}
+
+{{end -}}
+
 // DeleteAll deletes all matching rows.
 func (q {{$alias.DownSingular}}Query) DeleteAll({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
 	if q.Query == nil {

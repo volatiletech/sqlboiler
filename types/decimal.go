@@ -167,9 +167,13 @@ func randomDecimal(nextInt func() int64, fieldType string, shouldBeNull bool) *d
 	return random
 }
 
-func decimalValue(d *decimal.Big, canNil bool) (driver.Value, error) {
-	if !canNil && d == nil {
-		return nil, nil
+func decimalValue(d *decimal.Big, canNull bool) (driver.Value, error) {
+	if d == nil {
+		if canNull {
+			return nil, nil
+		}
+
+		return "0", nil
 	}
 
 	if d.IsNaN(0) {

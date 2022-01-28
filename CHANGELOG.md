@@ -4,6 +4,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.8.5] - 2022-01-28
+
+### Added
+
+- Do not generate a template file if the content is empty
+- Add function `drivers.RegisterBinaryFromCmdArg()` to extract binary registration
+
+### Fixes
+
+- Fix panic on zero value of `types.NullDecimal`
+- `driver.Value()` for zero `types.Decimal` is now "0".
+
 ## [v4.8.4] - 2022-01-27
 
 ### Added

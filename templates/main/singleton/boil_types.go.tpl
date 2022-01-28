@@ -61,73 +61,89 @@ MySQL output looks like:    TableNameColNameEnumValue = "enumvalue"
 It only titlecases the EnumValue portion if it's snake-cased.
 */}}
 {{$once := onceNew}}
+{{$onceNull := onceNew}}
 {{- range $table := .Tables -}}
 	{{- range $col := $table.Columns | filterColumnsByEnum -}}
 		{{- $name := parseEnumName $col.DBType -}}
 		{{- $vals := parseEnumVals $col.DBType -}}
 		{{- $isNamed := ne (len $name) 0}}
 		{{- $enumName := "" -}}
-		{{- if not (and $isNamed (onceHas $once $name)) -}}
-			{{- if $isNamed -}}
-				{{$_ := oncePut $once $name}}
-			{{- end -}}
+		{{- if not (and
+			$isNamed
+			(and
+				(onceHas $once $name)
+				(onceHas $onceNull $name)
+			)
+		) -}}
 			{{- if and (gt (len $vals) 0) (isEnumNormal $vals)}}
 				{{- if $isNamed -}}
 					{{ $enumName = titleCase $name}}
 				{{- else -}}
 					{{ $enumName = printf "%s%s" (titleCase $table.Name) (titleCase $col.Name)}}
 				{{- end -}}
+				{{/* First iteration for enum type $name (nullable or not) */}}
+				{{- $enumFirstIter := and
+					(not (onceHas $once $name))
+					(not (onceHas $onceNull $name))
+				-}}
+
+				{{- if $enumFirstIter -}}
+					{{if $.AddEnumTypes}}
+						type {{$enumName}} string
+					{{end}}
+
+					// Enum values for {{$enumName}}
+					const (
+					{{range $val := $vals -}}
+						{{- $valStripped := stripWhitespace $val -}}
+						{{- $enumValue := $valStripped -}}
+						{{- if shouldTitleCaseEnum $valStripped -}}
+							{{$enumValue = titleCase $valStripped}}
+						{{- end -}}
+						{{$enumName}}{{$enumValue}} {{if $.AddEnumTypes}}{{$enumName}}{{end}} = "{{$val}}"
+					{{end -}}
+					)
+				{{- end -}}
 
 				{{if $.AddEnumTypes}}
-					type {{$enumName}} string
-				{{end}}
+					{{ if $enumFirstIter }}
+						func (e {{$enumName}}) IsValid() error {
+							{{- /* $first is being used to add a comma to all enumValues, but the first one.*/ -}}
+							{{- $first := true -}}
+							{{- /* $enumValues will contain a comma separated string holding all enum consts */ -}}
+							{{- $enumValues := "" -}}
+							{{ range $val := $vals -}}
+								{{- if $first -}}
+									{{- $first = false -}}
+								{{- else -}}
+									{{- $enumValues = printf "%s%s" $enumValues ", " -}}
+								{{- end -}}
 
-				// Enum values for {{$enumName}}
-				const (
-				{{range $val := $vals -}}
-					{{- $valStripped := stripWhitespace $val -}}
-					{{- $enumValue := $valStripped -}}
-					{{- if shouldTitleCaseEnum $valStripped -}}
-						{{$enumValue = titleCase $valStripped}}
-					{{- end -}}
-					{{$enumName}}{{$enumValue}} {{if $.AddEnumTypes}}{{$enumName}}{{end}} = "{{$val}}"
-				{{end -}}
-				)
+								{{- $valStripped := stripWhitespace $val -}}
+								{{- $enumValue := $valStripped -}}
+								{{- if shouldTitleCaseEnum $valStripped -}}
+									{{- $enumValue = titleCase $valStripped -}}
+								{{- end -}}
 
-				{{if $.AddEnumTypes}}
-					func (e {{$enumName}}) IsValid() error {
-						{{- /* $first is being used to add a comma to all enumValues, but the first one.*/ -}}
-						{{- $first := true -}}
-						{{- /* $enumValues will contain a comma separated string holding all enum consts */ -}}
-						{{- $enumValues := "" -}}
-						{{ range $val := $vals -}}
-							{{- if $first -}}
-								{{- $first = false -}}
-							{{- else -}}
-								{{- $enumValues = printf "%s%s" $enumValues ", " -}}
-							{{- end -}}
-
-							{{- $valStripped := stripWhitespace $val -}}
-							{{- $enumValue := $valStripped -}}
-							{{- if shouldTitleCaseEnum $valStripped -}}
-								{{- $enumValue = titleCase $valStripped -}}
-							{{- end -}}
-
-							{{- $enumValues = printf "%s%s%s" $enumValues $enumName $enumValue -}}
-						{{- end}}
-						switch e {
-						case {{$enumValues}}:
-							return nil
-						default:
-							return errors.New("enum is not valid")
+								{{- $enumValues = printf "%s%s%s" $enumValues $enumName $enumValue -}}
+							{{- end}}
+							switch e {
+							case {{$enumValues}}:
+								return nil
+							default:
+								return errors.New("enum is not valid")
+							}
 						}
-					}
 
-					{{if $col.Nullable}}
 						func (e {{$enumName}}) String() string {
 							return string(e)
 						}
+					{{- end -}}
 
+					{{ if and
+						$col.Nullable
+						(not (onceHas $onceNull $name))
+					}}
 						{{$enumType := ""}}
 						{{- if $isNamed -}}
 							{{- $enumType = (print $.EnumNullPrefix $enumName) }}
@@ -245,6 +261,16 @@ It only titlecases the EnumValue portion if it's snake-cased.
 				{{end -}}
 			{{else}}
 				// Enum values for {{$enumName}} are not proper Go identifiers, cannot emit constants
+			{{- end -}}
+			{{/* Save column type name after generation.
+			 Needs to be at the bottom because we check for the first iteration
+			 inside the $table.Columns loop. */}}
+			{{- if $isNamed -}}
+				{{- if $col.Nullable -}}
+					{{$_ := oncePut $onceNull $name}}
+				{{- else -}}
+					{{$_ := oncePut $once $name}}
+				{{- end -}}
 			{{- end -}}
 		{{- end -}}
 	{{- end -}}

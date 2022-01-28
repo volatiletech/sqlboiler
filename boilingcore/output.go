@@ -140,6 +140,7 @@ func executeTemplates(e executeTemplateData) error {
 				writeImports(out, imps)
 			}
 
+			prevLen := out.Len()
 			for _, tplName := range tplNames {
 				if err := executeTemplate(out, e.templates.Template, tplName, e.data); err != nil {
 					return err
@@ -150,6 +151,12 @@ func executeTemplates(e executeTemplateData) error {
 			fName += ext
 			if len(dir) != 0 {
 				fName = filepath.Join(dir, fName)
+			}
+
+			// Skip writing the file if the content is empty
+			if out.Len()-prevLen < 1 {
+				fmt.Fprintf(os.Stderr, "skipping empty file: %s/%s\n", e.state.Config.OutFolder, fName)
+				continue
 			}
 
 			if err := writeFile(e.state.Config.OutFolder, fName, out, isGo); err != nil {

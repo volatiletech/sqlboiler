@@ -44,6 +44,16 @@ func TestBinaryRegistration(t *testing.T) {
 	}
 }
 
+func TestBinaryFromArgRegistration(t *testing.T) {
+	RegisterBinaryFromCmdArg("/bin/true/mock5")
+
+	if d, ok := registeredDrivers["mock5"]; !ok {
+		t.Error("driver was not found")
+	} else if string(d.(binaryDriver)) != "/bin/true/mock5" {
+		t.Error("got the wrong driver back")
+	}
+}
+
 func TestGetDriver(t *testing.T) {
 	didYouPanic := false
 

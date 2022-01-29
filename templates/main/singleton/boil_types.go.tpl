@@ -71,8 +71,8 @@ It only titlecases the EnumValue portion if it's snake-cased.
 		{{- if not (and
 			$isNamed
 			(and
-				(onceHas $once $name)
-				(onceHas $onceNull $name)
+				($once.Has $name)
+				($onceNull.Has $name)
 			)
 		) -}}
 			{{- if and (gt (len $vals) 0) (isEnumNormal $vals)}}
@@ -83,8 +83,8 @@ It only titlecases the EnumValue portion if it's snake-cased.
 				{{- end -}}
 				{{/* First iteration for enum type $name (nullable or not) */}}
 				{{- $enumFirstIter := and
-					(not (onceHas $once $name))
-					(not (onceHas $onceNull $name))
+					(not ($once.Has $name))
+					(not ($onceNull.Has $name))
 				-}}
 
 				{{- if $enumFirstIter -}}
@@ -142,7 +142,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 
 					{{ if and
 						$col.Nullable
-						(not (onceHas $onceNull $name))
+						(not ($onceNull.Has $name))
 					}}
 						{{$enumType := ""}}
 						{{- if $isNamed -}}
@@ -267,9 +267,9 @@ It only titlecases the EnumValue portion if it's snake-cased.
 			 inside the $table.Columns loop. */}}
 			{{- if $isNamed -}}
 				{{- if $col.Nullable -}}
-					{{$_ := oncePut $onceNull $name}}
+					{{$_ := $onceNull.Put $name}}
 				{{- else -}}
-					{{$_ := oncePut $once $name}}
+					{{$_ := $once.Put $name}}
 				{{- end -}}
 			{{- end -}}
 		{{- end -}}

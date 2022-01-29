@@ -88,7 +88,11 @@ It only titlecases the EnumValue portion if it's snake-cased.
 				-}}
 
 				{{- if $enumFirstIter -}}
+					{{$enumType := "string" }}
+					{{$allvals := "\n"}}
+
 					{{if $.AddEnumTypes}}
+						{{- $enumType = $enumName -}}
 						type {{$enumName}} string
 					{{end}}
 
@@ -100,9 +104,14 @@ It only titlecases the EnumValue portion if it's snake-cased.
 						{{- if shouldTitleCaseEnum $valStripped -}}
 							{{$enumValue = titleCase $valStripped}}
 						{{- end -}}
-						{{$enumName}}{{$enumValue}} {{if $.AddEnumTypes}}{{$enumName}}{{end}} = "{{$val}}"
+						{{$enumName}}{{$enumValue}} {{$enumType}} = "{{$val}}"
+						{{$allvals = printf "%s%s%s,\n" $allvals $enumName $enumValue -}}
 					{{end -}}
 					)
+
+					func All{{$enumName}}() []{{$enumType}} {
+						return []{{$enumType}}{ {{$allvals}} }
+					}
 				{{- end -}}
 
 				{{if $.AddEnumTypes}}

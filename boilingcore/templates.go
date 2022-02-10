@@ -12,6 +12,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
@@ -144,6 +145,7 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs
 		}
 
 		_, err = tpl.New(t.Name).
+			Funcs(sprig.GenericFuncMap()).
 			Funcs(templateFunctions).
 			Funcs(customFuncs).
 			Parse(string(byt))

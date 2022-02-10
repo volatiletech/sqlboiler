@@ -12,6 +12,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
@@ -143,6 +144,11 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateL
 			return nil, errors.Wrapf(err, "failed to load template: %s", t.Name)
 		}
 
+		templateFunctions := sprig.GenericFuncMap()
+		for k, v := range boilerTemplateFunctions {
+			templateFunctions[k] = v
+		}
+
 		_, err = tpl.New(t.Name).Funcs(templateFunctions).Parse(string(byt))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse template: %s", t.Name)
@@ -257,10 +263,10 @@ var templateStringMappers = map[string]func(string) string{
 
 var goVarnameReplacer = strings.NewReplacer("[", "_", "]", "_", ".", "_")
 
-// templateFunctions is a map of all the functions that get passed into the
+// boilerTemplateFunctions is a map of all the functions that get passed into the
 // templates. If you wish to pass a new function into your own template,
 // add a function pointer here.
-var templateFunctions = template.FuncMap{
+var boilerTemplateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
 	"id":        strmangle.Identifier,

@@ -312,9 +312,11 @@ var templateFunctions = template.FuncMap{
 	"whereClause": strmangle.WhereClause,
 
 	// Alias and text helping
-	"aliasCols":      func(ta TableAlias) func(string) string { return ta.Column },
-	"usesPrimitives": usesPrimitives,
-	"isPrimitive":    isPrimitive,
+	"aliasCols":       func(ta TableAlias) func(string) string { return ta.Column },
+	"usesPrimitives":  usesPrimitives,
+	"isPrimitive":     isPrimitive,
+	"isNullPrimitive": isNullPrimitive,
+	"toPrimitive":     toPrimitive,
 	"splitLines": func(a string) []string {
 		if a == "" {
 			return nil

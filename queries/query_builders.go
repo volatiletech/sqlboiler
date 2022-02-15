@@ -20,6 +20,18 @@ var (
 // and it's accompanying arguments. Using this method
 // allows query building without immediate execution.
 func BuildQuery(q *Query) (string, []interface{}) {
+	return buildQuery(q, true)
+}
+
+// BuildSubquery builds a query object into the query string
+// and it's accompanying arguments but doesn't append a
+// semi-colon allowing the resulting string to be embedded
+// as a subquery.
+func BuildSubquery(q *Query) (string, []interface{}) {
+	return buildQuery(q, false)
+}
+
+func buildQuery(q *Query, finalize bool) (string, []interface{}) {
 	var buf *bytes.Buffer
 	var args []interface{}
 
@@ -34,6 +46,10 @@ func BuildQuery(q *Query) (string, []interface{}) {
 		buf, args = buildUpdateQuery(q)
 	default:
 		buf, args = buildSelectQuery(q)
+	}
+
+	if finalize {
+		buf.WriteByte(';')
 	}
 
 	defer strmangle.PutBuffer(buf)
@@ -133,7 +149,6 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	writeModifiers(q, buf, &args)
 
-	buf.WriteByte(';')
 	return buf, args
 }
 
@@ -154,8 +169,6 @@ func buildDeleteQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString(where)
 
 	writeModifiers(q, buf, &args)
-
-	buf.WriteByte(';')
 
 	return buf, args
 }
@@ -198,8 +211,6 @@ func buildUpdateQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	buf.WriteString(where)
 
 	writeModifiers(q, buf, &args)
-
-	buf.WriteByte(';')
 
 	return buf, args
 }

@@ -156,6 +156,7 @@ func (s *State) Run() error {
 		LQ:                strmangle.QuoteCharacter(s.Dialect.LQ),
 		RQ:                strmangle.QuoteCharacter(s.Dialect.RQ),
 		OutputDirDepth:    s.Config.OutputDirDepth(),
+		UserFuncs:         s.Config.TemplateUserFuncs,
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
@@ -217,7 +218,9 @@ func (s *State) Cleanup() error {
 // initTemplates loads all template folders into the state object.
 //
 // If TemplateDirs is set it uses those, else it pulls from assets.
-// Then it allows drivers to override, followed by replacements.
+// Then it allows drivers to override, followed by replacements. Any
+// user functions passed in by library users will be merged into the
+// template.FuncMap.
 //
 // Because there's the chance for windows paths to jumped in
 // all paths are converted to the native OS's slash style.

@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/spf13/cast"
 
@@ -42,6 +43,8 @@ type Config struct {
 
 	Imports          importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 	DefaultTemplates fs.FS                `toml:"-" json:"-"`
+
+	TemplateUserFuncs template.FuncMap `toml:"-" json:"-"`
 
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`

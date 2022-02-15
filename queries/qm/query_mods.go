@@ -194,18 +194,30 @@ func Distinct(clause string) QueryMod {
 }
 
 type withQueryMod struct {
+	alias  string
 	clause string
 	args   []interface{}
 }
 
 // Apply implements QueryMod.Apply.
 func (qm withQueryMod) Apply(q *queries.Query) {
-	queries.AppendWith(q, qm.clause, qm.args...)
+	queries.AppendWith(q, qm.alias, qm.clause, qm.args...)
 }
 
 // With allows you to pass in a Common Table Expression clause (and args)
 func With(clause string, args ...interface{}) QueryMod {
 	return withQueryMod{
+		clause: clause,
+		args:   args,
+	}
+}
+
+// WithSubquery allows you to generate a Common Table Expression using a query
+// object to populate the CTE
+func WithSubquery(alias string, q *queries.Query) QueryMod {
+	clause, args := queries.BuildSubquery(q)
+	return withQueryMod{
+		alias:  alias,
 		clause: clause,
 		args:   args,
 	}

@@ -2,7 +2,6 @@ package queries
 
 import (
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -59,25 +58,6 @@ func TestSetLoad(t *testing.T) {
 
 	if q.load[0] != "one" || q.load[1] != "two" {
 		t.Errorf("Was not expected string, got %v", q.load)
-	}
-}
-
-func TestBuildSubquery(t *testing.T) {
-	t.Parallel()
-
-	q := &Query{}
-	SetSelect(q, []string{"foo", "bar"})
-	SetFrom(q, "tbl")
-
-	query, _ := BuildQuery(q)
-	subquery, _ := BuildSubquery(q)
-
-	if !strings.HasSuffix(query, ";") {
-		t.Error("BuildQuery() result is missing trailing ';'")
-	}
-
-	if strings.HasSuffix(subquery, ";") {
-		t.Error("BuildSubquery() result has trailing ';'")
 	}
 }
 

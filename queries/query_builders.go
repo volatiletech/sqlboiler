@@ -625,7 +625,11 @@ func writeCTEs(q *Query, buf *bytes.Buffer, args *[]interface{}) {
 	withBuf := strmangle.GetBuffer()
 	lastPos := len(q.withs) - 1
 	for i, w := range q.withs {
-		fmt.Fprintf(withBuf, " %s", w.clause)
+		if w.alias != "" {
+			fmt.Fprintf(withBuf, " %s AS (%s)", w.alias, w.clause)
+		} else {
+			fmt.Fprintf(withBuf, " %s", w.clause)
+		}
 		if i >= 0 && i < lastPos {
 			withBuf.WriteByte(',')
 		}

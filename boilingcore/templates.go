@@ -72,6 +72,9 @@ type templateData struct {
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
 
+	// UserFuncs is an optional set of user-provided template functions
+	UserFuncs template.FuncMap
+
 	// AutoColumns set the name of the columns for auto timestamps and soft deletes
 	AutoColumns AutoColumns
 }

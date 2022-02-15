@@ -3,6 +3,7 @@ package boilingcore
 import (
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/spf13/cast"
 
@@ -40,6 +41,8 @@ type Config struct {
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
+
+	TemplateUserFuncs template.FuncMap `toml:"-" json:"-"`
 
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`

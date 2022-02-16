@@ -57,6 +57,7 @@ var {{$alias.UpSingular}}TableColumns = struct {
 	{{- if (oncePut $.DBTypes .Type)}}
 		{{$name := printf "whereHelper%s" (goVarname .Type)}}
 type {{$name}} struct { field string }
+func (w {{$name}}) String() string { return w.field }
 func (w {{$name}}) EQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, false, x){{else}}(w.field, qmhelper.EQ, x){{end}} }
 func (w {{$name}}) NEQ(x {{.Type}}) qm.QueryMod { return qmhelper.Where{{if .Nullable}}NullEQ(w.field, true, x){{else}}(w.field, qmhelper.NEQ, x){{end}} }
 func (w {{$name}}) LT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LT, x) }

@@ -17,6 +17,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/strmangle v0.0.1
+	github.com/volatiletech/strmangle v0.0.2
 	modernc.org/sqlite v1.14.5
 )

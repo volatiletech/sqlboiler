@@ -4,6 +4,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add `AllEnum()` function to retrieve a slice of all valid values of an enum type
+
+### Fixes
+
+- Fixes isses with detecting enum values that contain uppercases
+
 ## [v4.8.6] - 2022-01-29
 
 ### Added

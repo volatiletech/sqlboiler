@@ -2,6 +2,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TYPE workday AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
 CREATE TYPE faceyface AS ENUM('angry', 'hungry', 'bitter');
+CREATE TYPE "UserRole" AS ENUM ('SUPER_ADMIN', 'BILLING_ADMIN', 'READ_ONLY_ADMIN', 'USER');
 
 CREATE TABLE event_one (
   id     serial PRIMARY KEY NOT NULL,
@@ -440,4 +441,17 @@ ALTER TABLE pilot_languages ADD CONSTRAINT languages_fkey FOREIGN KEY (language_
 -- Previously the generated code had a naming clash when a table was called 'updates'
 CREATE TABLE updates (
     id integer PRIMARY KEY NOT NULL
+);
+
+-- Create table that has a name with an uppercase letter and columns with uppercase letters
+CREATE TABLE "User" (
+    "id" UUID NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" VARCHAR(127) NOT NULL,
+    "role" "UserRole" NOT NULL DEFAULT E'USER',
+    "tenantId" UUID NOT NULL,
+    "clientId" UUID,
+
+    PRIMARY KEY ("id")
 );

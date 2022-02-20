@@ -248,6 +248,7 @@ func (o once) Put(s string) bool {
 var templateStringMappers = map[string]func(string) string{
 	// String ops
 	"quoteWrap":       func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"safeQuoteWrap":   func(a string) string { return fmt.Sprintf(`\"%s\"`, a) },
 	"replaceReserved": strmangle.ReplaceReservedWords,
 
 	// Casing
@@ -262,9 +263,10 @@ var goVarnameReplacer = strings.NewReplacer("[", "_", "]", "_", ".", "_")
 // add a function pointer here.
 var templateFunctions = template.FuncMap{
 	// String ops
-	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
-	"id":        strmangle.Identifier,
-	"goVarname": goVarnameReplacer.Replace,
+	"quoteWrap":     func(s string) string { return fmt.Sprintf(`"%s"`, s) },
+	"safeQuoteWrap": func(a string) string { return fmt.Sprintf(`\"%s\"`, a) },
+	"id":            strmangle.Identifier,
+	"goVarname":     goVarnameReplacer.Replace,
 
 	// Pluralization
 	"singular": strmangle.Singular,

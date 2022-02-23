@@ -227,7 +227,7 @@ func (s *State) Cleanup() error {
 func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
-	defaultTemplates := s.Config.BaseTemplates
+	defaultTemplates := s.Config.DefaultTemplates
 	if defaultTemplates == nil {
 		defaultTemplates = boiltemplates.Builtin
 	}

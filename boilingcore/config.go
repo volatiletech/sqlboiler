@@ -1,6 +1,7 @@
 package boilingcore
 
 import (
+	"io/fs"
 	"path/filepath"
 	"strings"
 
@@ -39,7 +40,8 @@ type Config struct {
 	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
-	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
+	Imports          importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
+	DefaultTemplates fs.FS                `toml:"-" json:"-"`
 
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`

@@ -104,7 +104,7 @@ func New(config *Config) (*State, error) {
 		return nil, err
 	}
 
-	templates, err = s.initTemplates(boiltemplates.Builtin)
+	templates, err = s.initTemplates()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize templates")
 	}
@@ -224,7 +224,7 @@ func (s *State) Cleanup() error {
 //
 // Later, in order to properly look up imports the paths will
 // be forced back to linux style paths.
-func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
+func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
 	templates := make(map[string]templateLoader)
@@ -245,7 +245,12 @@ func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
-		err := fs.WalkDir(templatesBuiltin, ".", func(path string, entry fs.DirEntry, err error) error {
+		defaultTemplates := s.Config.DefaultTemplates
+		if defaultTemplates == nil {
+			defaultTemplates = boiltemplates.Builtin
+		}
+
+		err := fs.WalkDir(defaultTemplates, ".", func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -256,7 +261,7 @@ func (s *State) initTemplates(templatesBuiltin fs.FS) ([]lazyTemplate, error) {
 
 			name := entry.Name()
 			if filepath.Ext(name) == ".tpl" {
-				templates[normalizeSlashes(path)] = assetLoader{fs: templatesBuiltin, name: path}
+				templates[normalizeSlashes(path)] = assetLoader{fs: defaultTemplates, name: path}
 			}
 
 			return nil

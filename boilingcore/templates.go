@@ -12,6 +12,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
@@ -144,6 +145,7 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs
 		}
 
 		_, err = tpl.New(t.Name).
+			Funcs(sprig.GenericFuncMap()).
 			Funcs(templateFunctions).
 			Funcs(customFuncs).
 			Parse(string(byt))
@@ -261,9 +263,9 @@ var templateStringMappers = map[string]func(string) string{
 
 var goVarnameReplacer = strings.NewReplacer("[", "_", "]", "_", ".", "_")
 
-// templateFunctions is a map of all the functions that get passed into the
+// templateFunctions is a map of some helper functions that get passed into the
 // templates. If you wish to pass a new function into your own template,
-// add a function pointer here.
+// you can add that with Config.CustomTemplateFuncs
 var templateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap":     func(s string) string { return fmt.Sprintf(`"%s"`, s) },

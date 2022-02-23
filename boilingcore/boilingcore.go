@@ -156,7 +156,6 @@ func (s *State) Run() error {
 		LQ:                strmangle.QuoteCharacter(s.Dialect.LQ),
 		RQ:                strmangle.QuoteCharacter(s.Dialect.RQ),
 		OutputDirDepth:    s.Config.OutputDirDepth(),
-		UserFuncs:         s.Config.TemplateUserFuncs,
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
@@ -316,13 +315,13 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 		})
 	}
 
-	s.Templates, err = loadTemplates(lazyTemplates, false)
+	s.Templates, err = loadTemplates(lazyTemplates, false, s.Config.CustomTemplateFuncs)
 	if err != nil {
 		return nil, err
 	}
 
 	if !s.Config.NoTests {
-		s.TestTemplates, err = loadTemplates(lazyTemplates, true)
+		s.TestTemplates, err = loadTemplates(lazyTemplates, true, s.Config.CustomTemplateFuncs)
 		if err != nil {
 			return nil, err
 		}

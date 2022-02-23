@@ -227,11 +227,6 @@ func (s *State) Cleanup() error {
 func (s *State) initTemplates() ([]lazyTemplate, error) {
 	var err error
 
-	defaultTemplates := s.Config.DefaultTemplates
-	if defaultTemplates == nil {
-		defaultTemplates = boiltemplates.Builtin
-	}
-
 	templates := make(map[string]templateLoader)
 	if len(s.Config.TemplateDirs) != 0 {
 		for _, dir := range s.Config.TemplateDirs {
@@ -250,6 +245,11 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
+		defaultTemplates := s.Config.DefaultTemplates
+		if defaultTemplates == nil {
+			defaultTemplates = boiltemplates.Builtin
+		}
+
 		err := fs.WalkDir(defaultTemplates, ".", func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
 				return err

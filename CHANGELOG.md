@@ -9,10 +9,13 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Add `AllEnum()` function to retrieve a slice of all valid values of an enum type
+- Add `DefaultTemplates` to `boilingcore.Config` to change the base template files to use for generation.
+- Add `CustomTemplateFuncs` to `boilingcore.Config` to supply additional functions that can be used in templates.
 
 ### Fixes
 
-- Fixes isses with detecting enum values that contain uppercases
+- Fixes issues with detecting enum values that contain uppercases
+- Properly wrap column names in quotes when loading many-to-many relationships
 
 ## [v4.8.6] - 2022-01-29
 

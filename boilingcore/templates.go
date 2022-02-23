@@ -263,9 +263,9 @@ var templateStringMappers = map[string]func(string) string{
 
 var goVarnameReplacer = strings.NewReplacer("[", "_", "]", "_", ".", "_")
 
-// templateFunctions is a map of all the functions that get passed into the
+// templateFunctions is a map of some helper functions that get passed into the
 // templates. If you wish to pass a new function into your own template,
-// add a function pointer here.
+// you can add that with Config.CustomTemplateFuncs
 var templateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap":     func(s string) string { return fmt.Sprintf(`"%s"`, s) },

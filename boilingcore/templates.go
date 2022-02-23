@@ -72,9 +72,6 @@ type templateData struct {
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
 
-	// UserFuncs is an optional set of user-provided template functions
-	UserFuncs template.FuncMap
-
 	// AutoColumns set the name of the columns for auto timestamps and soft deletes
 	AutoColumns AutoColumns
 }
@@ -131,7 +128,7 @@ func (t templateList) Templates() []string {
 	return ret
 }
 
-func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateList, error) {
+func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs template.FuncMap) (*templateList, error) {
 	tpl := template.New("")
 
 	for _, t := range lazyTemplates {
@@ -146,7 +143,10 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateL
 			return nil, errors.Wrapf(err, "failed to load template: %s", t.Name)
 		}
 
-		_, err = tpl.New(t.Name).Funcs(templateFunctions).Parse(string(byt))
+		_, err = tpl.New(t.Name).
+			Funcs(templateFunctions).
+			Funcs(customFuncs).
+			Parse(string(byt))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse template: %s", t.Name)
 		}

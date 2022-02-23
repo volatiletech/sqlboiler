@@ -41,10 +41,10 @@ type Config struct {
 	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
 	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
-	Imports          importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
-	DefaultTemplates fs.FS                `toml:"-" json:"-"`
+	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 
-	TemplateUserFuncs template.FuncMap `toml:"-" json:"-"`
+	DefaultTemplates    fs.FS            `toml:"-" json:"-"`
+	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
 
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`

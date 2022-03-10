@@ -303,21 +303,49 @@ func SetFrom(q *Query, from ...string) {
 
 // AppendInnerJoin on the query.
 func AppendInnerJoin(q *Query, clause string, args ...interface{}) {
+	if len(args) == 0 {
+		for _, j := range q.joins {
+			if j.clause == clause && j.kind == JoinInner {
+				return
+			}
+		}
+	}
 	q.joins = append(q.joins, join{clause: clause, kind: JoinInner, args: args})
 }
 
 // AppendLeftOuterJoin on the query.
 func AppendLeftOuterJoin(q *Query, clause string, args ...interface{}) {
+	if len(args) == 0 {
+		for _, j := range q.joins {
+			if j.clause == clause && j.kind == JoinOuterLeft {
+				return
+			}
+		}
+	}
 	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterLeft, args: args})
 }
 
 // AppendRightOuterJoin on the query.
 func AppendRightOuterJoin(q *Query, clause string, args ...interface{}) {
+	if len(args) == 0 {
+		for _, j := range q.joins {
+			if j.clause == clause && j.kind == JoinOuterRight {
+				return
+			}
+		}
+	}
 	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterRight, args: args})
 }
 
 // AppendFullOuterJoin on the query.
 func AppendFullOuterJoin(q *Query, clause string, args ...interface{}) {
+	if len(args) == 0 {
+		for _, j := range q.joins {
+			if j.clause == clause && j.kind == JoinOuterFull {
+				return
+			}
+		}
+	}
 	q.joins = append(q.joins, join{clause: clause, kind: JoinOuterFull, args: args})
 }
 

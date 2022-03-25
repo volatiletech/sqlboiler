@@ -116,7 +116,7 @@ func (q {{$alias.DownSingular}}Query) All({{if .NoContext}}exec boil.Executor{{e
 }
 
 {{if .AddGlobal -}}
-// CountG returns the count of all {{$alias.UpSingular}} records in the query, and panics on error.
+// CountG returns the count of all {{$alias.UpSingular}} records in the query using the global executor
 func (q {{$alias.DownSingular}}Query) CountG({{if not .NoContext}}ctx context.Context{{end}}) (int64, error) {
 	return q.Count({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end -}})
 }
@@ -169,7 +169,7 @@ func (q {{$alias.DownSingular}}Query) Count({{if .NoContext}}exec boil.Executor{
 }
 
 {{if .AddGlobal -}}
-// ExistsG checks if the row exists in the table, and panics on error.
+// ExistsG checks if the row exists in the table using the global executor.
 func (q {{$alias.DownSingular}}Query) ExistsG({{if not .NoContext}}ctx context.Context{{end}}) (bool, error) {
 	return q.Exists({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end -}})
 }

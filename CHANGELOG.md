@@ -16,6 +16,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Fixes issues with detecting enum values that contain uppercases
 - Properly wrap column names in quotes when loading many-to-many relationships
+- Removes duplicated `deleted_at IS NULL` clause in relationship queries
 
 ## [v4.8.6] - 2022-01-29
 

@@ -147,7 +147,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 		{{else -}}
 		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(returns...)
 		{{end -}}
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			err = nil // Postgres doesn't return anything when there's no update
 		}
 	} else {

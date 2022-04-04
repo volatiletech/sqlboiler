@@ -452,7 +452,7 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 
 	row := p.conn.QueryRow(query, tableName, schema)
 	if err = row.Scan(&pkey.Name); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

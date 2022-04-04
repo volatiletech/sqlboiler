@@ -4,19 +4,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v4.9.0] - 2022-04-04
 
 ### Added
 
 - Add `AllEnum()` function to retrieve a slice of all valid values of an enum type
-- Add `DefaultTemplates` to `boilingcore.Config` to change the base template files to use for generation.
-- Add `CustomTemplateFuncs` to `boilingcore.Config` to supply additional functions that can be used in templates.
+- Add `DefaultTemplates` to `boilingcore.Config` to change the base template files to use for generation
+- Add `CustomTemplateFuncs` to `boilingcore.Config` to supply additional functions that can be used in templates (thanks @ccakes)
 
 ### Fixes
 
 - Fixes issues with detecting enum values that contain uppercases
-- Properly wrap column names in quotes when loading many-to-many relationships
-- Removes duplicated `deleted_at IS NULL` clause in relationship queries
+- Properly wrap column names in quotes when loading many-to-many relationships (thanks @bryanmcgrane)
+- Removes duplicated `deleted_at IS NULL` clause in relationship queries (thanks @ktakenaka)
 
 ## [v4.8.6] - 2022-01-29
 

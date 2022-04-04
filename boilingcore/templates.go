@@ -14,7 +14,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v5/drivers"
 	"github.com/volatiletech/strmangle"
 )
 

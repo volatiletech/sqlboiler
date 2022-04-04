@@ -1,4 +1,4 @@
-module github.com/volatiletech/sqlboiler/v4
+module github.com/volatiletech/sqlboiler/v5
 
 go 1.16
 
@@ -21,5 +21,3 @@ require (
 	github.com/volatiletech/strmangle v0.0.2
 	modernc.org/sqlite v1.14.5
 )
-
-retract v4.9.0 // Generated code shows v4.8.6, messed up commit tagging and untidy go.mod

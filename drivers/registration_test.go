@@ -3,7 +3,7 @@ package drivers
 import (
 	"testing"
 
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/sqlboiler/v5/importers"
 )
 
 type testRegistrationDriver struct{}

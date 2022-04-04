@@ -202,10 +202,10 @@ func NewDefaultImports() Collection {
 		},
 		ThirdParty: List{
 			`"github.com/friendsofgo/errors"`,
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries/qm"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"`,
+			`"github.com/volatiletech/sqlboiler/v5/boil"`,
+			`"github.com/volatiletech/sqlboiler/v5/queries"`,
+			`"github.com/volatiletech/sqlboiler/v5/queries/qm"`,
+			`"github.com/volatiletech/sqlboiler/v5/queries/qmhelper"`,
 			`"github.com/volatiletech/strmangle"`,
 		},
 	}
@@ -213,9 +213,9 @@ func NewDefaultImports() Collection {
 	col.Singleton = Map{
 		"boil_queries": {
 			ThirdParty: List{
-				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
-				`"github.com/volatiletech/sqlboiler/v4/queries"`,
-				`"github.com/volatiletech/sqlboiler/v4/queries/qm"`,
+				`"github.com/volatiletech/sqlboiler/v5/drivers"`,
+				`"github.com/volatiletech/sqlboiler/v5/queries"`,
+				`"github.com/volatiletech/sqlboiler/v5/queries/qm"`,
 			},
 		},
 		"boil_types": {
@@ -224,7 +224,7 @@ func NewDefaultImports() Collection {
 			},
 			ThirdParty: List{
 				`"github.com/friendsofgo/errors"`,
-				`"github.com/volatiletech/sqlboiler/v4/boil"`,
+				`"github.com/volatiletech/sqlboiler/v5/boil"`,
 				`"github.com/volatiletech/strmangle"`,
 			},
 		},
@@ -237,8 +237,8 @@ func NewDefaultImports() Collection {
 			`"testing"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries"`,
+			`"github.com/volatiletech/sqlboiler/v5/boil"`,
+			`"github.com/volatiletech/sqlboiler/v5/queries"`,
 			`"github.com/volatiletech/randomize"`,
 			`"github.com/volatiletech/strmangle"`,
 		},
@@ -259,7 +259,7 @@ func NewDefaultImports() Collection {
 			},
 			ThirdParty: List{
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/v4/boil"`,
+				`"github.com/volatiletech/sqlboiler/v5/boil"`,
 			},
 		},
 		"boil_queries_test": {
@@ -272,7 +272,7 @@ func NewDefaultImports() Collection {
 				`"regexp"`,
 			},
 			ThirdParty: List{
-				`"github.com/volatiletech/sqlboiler/v4/boil"`,
+				`"github.com/volatiletech/sqlboiler/v5/boil"`,
 			},
 		},
 		"boil_suites_test": {

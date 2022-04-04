@@ -175,7 +175,7 @@ func TestAddTypeImports(t *testing.T) {
 			`"fmt"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
+			`"github.com/volatiletech/sqlboiler/v5/boil"`,
 		},
 	}
 
@@ -187,7 +187,7 @@ func TestAddTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/null/v8"`,
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
+			`"github.com/volatiletech/sqlboiler/v5/boil"`,
 		},
 	}
 
@@ -218,7 +218,7 @@ func TestAddTypeImports(t *testing.T) {
 		},
 		ThirdParty: List{
 			`"github.com/volatiletech/null/v8"`,
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
+			`"github.com/volatiletech/sqlboiler/v5/boil"`,
 		},
 	}
 
@@ -234,11 +234,11 @@ func TestMergeSet(t *testing.T) {
 
 	a := Set{
 		Standard:   List{"fmt"},
-		ThirdParty: List{"github.com/volatiletech/sqlboiler/v4", "github.com/volatiletech/null/v8"},
+		ThirdParty: List{"github.com/volatiletech/sqlboiler/v5", "github.com/volatiletech/null/v8"},
 	}
 	b := Set{
 		Standard:   List{"os"},
-		ThirdParty: List{"github.com/volatiletech/sqlboiler/v4"},
+		ThirdParty: List{"github.com/volatiletech/sqlboiler/v5"},
 	}
 
 	c := mergeSet(a, b)
@@ -246,7 +246,7 @@ func TestMergeSet(t *testing.T) {
 	if c.Standard[0] != "fmt" && c.Standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.Standard)
 	}
-	if c.ThirdParty[0] != "github.com/volatiletech/null/v8" && c.ThirdParty[1] != "github.com/volatiletech/sqlboiler/v4" {
+	if c.ThirdParty[0] != "github.com/volatiletech/null/v8" && c.ThirdParty[1] != "github.com/volatiletech/sqlboiler/v5" {
 		t.Errorf("Wanted: github.com/volatiletech/sqlboiler, github.com/volatiletech/null/v8 got: %#v", c.ThirdParty)
 	}
 }

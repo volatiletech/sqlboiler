@@ -10,12 +10,12 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/v4/boilingcore"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/sqlboiler/v5/boilingcore"
+	"github.com/volatiletech/sqlboiler/v5/drivers"
+	"github.com/volatiletech/sqlboiler/v5/importers"
 )
 
-const sqlBoilerVersion = "4.13.0"
+const sqlBoilerVersion = "5.0.0"
 
 var (
 	flagConfigFile string

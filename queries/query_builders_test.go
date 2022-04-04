@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v5/drivers"
 )
 
 var writeGoldenFiles = flag.Bool(
@@ -516,11 +516,11 @@ func TestLimitClause(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		limit *int
+		limit           *int
 		expectPredicate func(sql string) bool
 	}{
 		{nil, func(sql string) bool {
-			return !strings.Contains(sql,"LIMIT")
+			return !strings.Contains(sql, "LIMIT")
 		}},
 		{newIntPtr(0), func(sql string) bool {
 			return strings.Contains(sql, "LIMIT 0")
@@ -532,7 +532,7 @@ func TestLimitClause(t *testing.T) {
 
 	for i, test := range tests {
 		q := &Query{
-			limit: test.limit,
+			limit:   test.limit,
 			dialect: &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true, UseTopClause: false},
 		}
 		sql, _ := BuildQuery(q)

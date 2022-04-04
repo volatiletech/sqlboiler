@@ -1,8 +1,8 @@
 package mocks
 
 import (
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/sqlboiler/v5/drivers"
+	"github.com/volatiletech/sqlboiler/v5/importers"
 	"github.com/volatiletech/strmangle"
 )
 

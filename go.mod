@@ -1,4 +1,4 @@
-module github.com/volatiletech/sqlboiler/v4
+module github.com/volatiletech/sqlboiler/v5
 
 go 1.16
 
@@ -42,9 +42,4 @@ require (
 	modernc.org/sqlite v1.18.1
 	modernc.org/strutil v1.1.3 // indirect
 	modernc.org/token v1.0.1 // indirect
-)
-
-retract (
-	v4.10.0 // Generated models are invalid due to a wrong assignment
-	v4.9.0 // Generated code shows v4.8.6, messed up commit tagging and untidy go.mod
 )

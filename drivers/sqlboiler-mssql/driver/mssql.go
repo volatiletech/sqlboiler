@@ -12,8 +12,7 @@ import (
 	// Side effect import go-mssqldb
 	"github.com/friendsofgo/errors"
 	_ "github.com/microsoft/go-mssqldb"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/sqlboiler/v5/importers"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -175,7 +174,6 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	query += ` ORDER BY table_name;`
 
 	rows, err := m.conn.Query(query, args...)
-
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +219,6 @@ func (m *MSSQLDriver) ViewNames(schema string, whitelist, blacklist []string) ([
 	query += ` order by table_name;`
 
 	rows, err := m.conn.Query(query, args...)
-
 	if err != nil {
 		return nil, err
 	}
@@ -544,7 +541,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			},
 			ThirdParty: importers.List{
 				`"github.com/volatiletech/strmangle"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
+				`"github.com/volatiletech/sqlboiler/v5/drivers"`,
 			},
 		},
 	}
@@ -568,7 +565,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql/driver"`,
+				`"github.com/volatiletech/sqlboiler/v5/drivers/sqlboiler-mssql/driver"`,
 				`"github.com/volatiletech/randomize"`,
 				`_ "github.com/microsoft/go-mssqldb"`,
 			},
@@ -628,10 +625,10 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"time"`},
 		},
 		"types.Decimal": {
-			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v5/types"`},
 		},
 		"types.NullDecimal": {
-			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v5/types"`},
 		},
 		"mssql.UniqueIdentifier": {
 			Standard: importers.List{`"github.com/microsoft/go-mssqldb"`},

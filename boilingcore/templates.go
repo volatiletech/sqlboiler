@@ -81,6 +81,10 @@ func (t templateData) Quotes(s string) string {
 	return fmt.Sprintf("%s%s%s", t.LQ, s, t.RQ)
 }
 
+func (t templateData) QuoteMap(s []string) []string {
+	return strmangle.StringMap(t.Quotes, s)
+}
+
 func (t templateData) SchemaTable(table string) string {
 	return strmangle.SchemaTable(t.LQ, t.RQ, t.Dialect.UseSchema, t.Schema, table)
 }
@@ -268,10 +272,9 @@ var goVarnameReplacer = strings.NewReplacer("[", "_", "]", "_", ".", "_")
 // you can add that with Config.CustomTemplateFuncs
 var templateFunctions = template.FuncMap{
 	// String ops
-	"quoteWrap":     func(s string) string { return fmt.Sprintf(`"%s"`, s) },
-	"safeQuoteWrap": func(a string) string { return fmt.Sprintf(`\"%s\"`, a) },
-	"id":            strmangle.Identifier,
-	"goVarname":     goVarnameReplacer.Replace,
+	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
+	"id":        strmangle.Identifier,
+	"goVarname": goVarnameReplacer.Replace,
 
 	// Pluralization
 	"singular": strmangle.Singular,

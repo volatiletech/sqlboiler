@@ -12,7 +12,9 @@
 {{if $.AddGlobal -}}
 // Set{{$relAlias.Local}}G of the {{$ltable.DownSingular}} to the related item.
 // Sets o.R.{{$relAlias.Local}} to related.
+{{- if not $.NoBackReferencing}}
 // Adds o to related.R.{{$relAlias.Foreign}}.
+{{- end}}
 // Uses the global database handle.
 func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}G({{if not $.NoContext}}ctx context.Context, {{end -}} insert bool, related *{{$ftable.UpSingular}}) error {
 	return o.Set{{$relAlias.Local}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, insert, related)
@@ -23,7 +25,9 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}G({{if not $.NoContext}}c
 {{if $.AddPanic -}}
 // Set{{$relAlias.Local}}P of the {{$ltable.DownSingular}} to the related item.
 // Sets o.R.{{$relAlias.Local}} to related.
+{{- if not $.NoBackReferencing}}
 // Adds o to related.R.{{$relAlias.Foreign}}.
+{{- end}}
 // Panics on error.
 func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}P({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related *{{$ftable.UpSingular}}) {
 	if err := o.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} exec, insert, related); err != nil {
@@ -36,7 +40,9 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}P({{if $.NoContext}}exec 
 {{if and $.AddGlobal $.AddPanic -}}
 // Set{{$relAlias.Local}}GP of the {{$ltable.DownSingular}} to the related item.
 // Sets o.R.{{$relAlias.Local}} to related.
+{{- if not $.NoBackReferencing}}
 // Adds o to related.R.{{$relAlias.Foreign}}.
+{{- end}}
 // Uses the global database handle and panics on error.
 func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}GP({{if not $.NoContext}}ctx context.Context, {{end -}} insert bool, related *{{$ftable.UpSingular}}) {
 	if err := o.Set{{$relAlias.Local}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, insert, related); err != nil {
@@ -48,7 +54,9 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}GP({{if not $.NoContext}}
 
 // Set{{$relAlias.Local}} of the {{$ltable.DownSingular}} to the related item.
 // Sets o.R.{{$relAlias.Local}} to related.
+{{- if not $.NoBackReferencing}}
 // Adds o to related.R.{{$relAlias.Foreign}}.
+{{- end}}
 func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related *{{$ftable.UpSingular}}) error {
 	var err error
 
@@ -93,7 +101,7 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 
 		{{if $usesPrimitives -}}
 		related.{{$fcol}} = o.{{$col}}
-		{{else -}}
+		{{- else -}}
 		queries.Assign(&related.{{$fcol}}, o.{{$col}})
 		{{- end}}
 	}
@@ -107,6 +115,7 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 		o.R.{{$relAlias.Local}} = related
 	}
 
+	{{if not $.NoBackReferencing -}}
 	if related.R == nil {
 		related.R = &{{$ftable.DownSingular}}R{
 			{{$relAlias.Foreign}}: o,
@@ -114,14 +123,18 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 	} else {
 		related.R.{{$relAlias.Foreign}} = o
 	}
+	{{end -}}
+
 	return nil
 }
 
-		{{- if .ForeignColumnNullable}}
+{{- if .ForeignColumnNullable}}
 {{if $.AddGlobal -}}
 // Remove{{$relAlias.Local}}G relationship.
 // Sets o.R.{{$relAlias.Local}} to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
+{{- if not $.NoBackReferencing}}
+// Removes o from all passed in related items' relationships struct.
+{{- end}}
 // Uses the global database handle.
 func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}G({{if not $.NoContext}}ctx context.Context, {{end -}} related *{{$ftable.UpSingular}}) error {
 	return o.Remove{{$relAlias.Local}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, related)
@@ -132,7 +145,9 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}G({{if not $.NoContext
 {{if $.AddPanic -}}
 // Remove{{$relAlias.Local}}P relationship.
 // Sets o.R.{{$relAlias.Local}} to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
+{{- if not $.NoBackReferencing}}
+// Removes o from all passed in related items' relationships struct.
+{{- end}}
 // Panics on error.
 func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}P({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related *{{$ftable.UpSingular}}) {
 	if err := o.Remove{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} exec, related); err != nil {
@@ -145,7 +160,9 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}P({{if $.NoContext}}ex
 {{if and $.AddGlobal $.AddPanic -}}
 // Remove{{$relAlias.Local}}GP relationship.
 // Sets o.R.{{$relAlias.Local}} to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
+{{- if not $.NoBackReferencing}}
+// Removes o from all passed in related items' relationships struct.
+{{- end}}
 // Uses the global database handle and panics on error.
 func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}GP({{if not $.NoContext}}ctx context.Context, {{end -}} related *{{$ftable.UpSingular}}) {
 	if err := o.Remove{{$relAlias.Local}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, related); err != nil {
@@ -157,7 +174,9 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}GP({{if not $.NoContex
 
 // Remove{{$relAlias.Local}} relationship.
 // Sets o.R.{{$relAlias.Local}} to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
+{{- if not $.NoBackReferencing}}
+// Removes o from all passed in related items' relationships struct.
+{{- end}}
 func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related *{{$ftable.UpSingular}}) error {
 	var err error
 
@@ -169,11 +188,15 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 	if o.R != nil {
 		o.R.{{$relAlias.Local}} = nil
 	}
+
+	{{if not $.NoBackReferencing -}}
 	if related == nil || related.R == nil {
 		return nil
 	}
 
 	related.R.{{$relAlias.Foreign}} = nil
+	{{- end}}
+
 	return nil
 }
 {{end -}}{{/* if foreignkey nullable */}}

@@ -4,6 +4,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.9.1] - 2022-04-08
+
+### Fixes
+
+- Fixes issue with column name quotinc in many-to-many eager load
+- Properly honor `--no-back-referencing` in relationship setops
+- Retract `v4.9.0` due to issues with the commit tagging and the generated code showing `v4.8.6`
+
 ## [v4.9.0] - 2022-04-04
 
 ### Added

@@ -50,7 +50,6 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 			} else if jt.Relationships == nil {
 				jt.Relationships = make(map[string]RelationshipAlias)
 			}
-			continue
 		}
 
 		table := a.Tables[t.Name]

@@ -813,7 +813,7 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			case "citext":
 				c.Type = "null.String"
 			default:
-				c.Type = "string"
+				c.Type = "null.String"
 				fmt.Fprintf(os.Stderr, "warning: incompatible data type detected: %s\n", c.UDTName)
 			}
 		default:

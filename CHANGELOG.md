@@ -8,6 +8,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Limit and Offset QueryMods use `int64` instead of `int`
 - Default type of nullable unknown user-defined types change from `string` to `null.String` in the postgres driver.
 - Honor config alias overrides in generated `TableNames` and `ViewNames` variables.
 

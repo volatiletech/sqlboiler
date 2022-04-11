@@ -20,7 +20,7 @@ var writeGoldenFiles = flag.Bool(
 	"Write golden files.",
 )
 
-func newIntPtr(a int) *int {
+func newIntPtr(a int64) *int64 {
 	return &a
 }
 
@@ -516,7 +516,7 @@ func TestLimitClause(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		limit           *int
+		limit           *int64
 		expectPredicate func(sql string) bool
 	}{
 		{nil, func(sql string) bool {

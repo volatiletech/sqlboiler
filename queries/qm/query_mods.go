@@ -509,7 +509,7 @@ func From(from string) QueryMod {
 }
 
 type limitQueryMod struct {
-	limit int
+	limit int64
 }
 
 // Apply implements QueryMod.Apply.
@@ -518,14 +518,14 @@ func (qm limitQueryMod) Apply(q *queries.Query) {
 }
 
 // Limit the number of returned rows
-func Limit(limit int) QueryMod {
+func Limit(limit int64) QueryMod {
 	return limitQueryMod{
 		limit: limit,
 	}
 }
 
 type offsetQueryMod struct {
-	offset int
+	offset int64
 }
 
 // Apply implements QueryMod.Apply.
@@ -534,7 +534,7 @@ func (qm offsetQueryMod) Apply(q *queries.Query) {
 }
 
 // Offset into the results
-func Offset(offset int) QueryMod {
+func Offset(offset int64) QueryMod {
 	return offsetQueryMod{
 		offset: offset,
 	}

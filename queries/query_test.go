@@ -11,7 +11,7 @@ func TestSetLimit(t *testing.T) {
 	q := &Query{}
 	SetLimit(q, 10)
 
-	expect := 10
+	var expect int64 = 10
 	if q.limit == nil {
 		t.Errorf("Expected %d, got nil", expect)
 	} else if *q.limit != expect {
@@ -25,7 +25,7 @@ func TestSetOffset(t *testing.T) {
 	q := &Query{}
 	SetOffset(q, 10)
 
-	expect := 10
+	var expect int64 = 10
 	if q.offset != expect {
 		t.Errorf("Expected %d, got %d", expect, q.offset)
 	}

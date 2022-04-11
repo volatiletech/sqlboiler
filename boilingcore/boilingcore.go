@@ -135,7 +135,6 @@ func (s *State) Run() error {
 		EnumNullPrefix:    s.Config.EnumNullPrefix,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
-		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		NoBackReferencing: s.Config.NoBackReferencing,
 		AlwaysWrapErrors:  s.Config.AlwaysWrapErrors,

@@ -343,7 +343,7 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}(ctx context.Context, 
 			rel.R.{{$relAlias.Foreign}} = nil
 		}
 		{{end -}}
-		if {{if not $.NoRowsAffected}}_, {{end -}} err = rel.Update(ctx, exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
 			return err
 		}
 	}

@@ -2,15 +2,11 @@
 
 ## CLI Changes
 
-### Context and the `--no-context` flag
-
-The `--no-context` flag has been removed. All models are now generated using context.  
-Similarly, interfaces and methods for non-context variants have been removed.
-e.g. `boil.Executor` vs `boil.ContextExecutor`.
-
-### Enums and the `--add-enum-types` flag
-
-The `--add-enum-type` flag has been removed. Generating types for enums is now the default behavior.
+* The `--no-context` flag has been removed. All models are now generated using context.  
+    Similarly, interfaces and methods for non-context variants have been removed.
+    e.g. `boil.Executor` vs `boil.ContextExecutor`.
+* The `--add-enum-type` flag has been removed. Generating types for enums is now the default behavior.
+* Removed the `--no-rows-affected` flag. Methods will now always return the rows affected.
 
 ## Fixes that caused breaking changes
 

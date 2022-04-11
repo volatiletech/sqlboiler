@@ -30,7 +30,6 @@ type Config struct {
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
 	NoAutoTimestamps  bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
-	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
 	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
 	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
 	AlwaysWrapErrors  bool     `toml:"always_wrap_errors,omitempty" json:"always_wrap_errors,omitempty"`

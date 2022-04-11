@@ -170,7 +170,7 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}(ctx context.Context, 
 	var err error
 
 	queries.SetScanner(&related.{{$fcol}}, nil)
-	if {{if not $.NoRowsAffected}}_, {{end -}} err = related.Update(ctx, exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
+	if _, err = related.Update(ctx, exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 

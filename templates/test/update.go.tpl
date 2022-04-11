@@ -36,17 +36,11 @@ func test{{$alias.UpPlural}}Update(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if .NoRowsAffected -}}
-	if err = o.Update(ctx,  tx, boil.Infer()); err != nil {
-		t.Error(err)
-	}
-	{{else -}}
 	if rowsAff, err := o.Update(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only affect one row but affected", rowsAff)
 	}
-	{{end -}}
 }
 
 func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
@@ -112,15 +106,9 @@ func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 	}
 
 	slice := {{$alias.UpSingular}}Slice{{"{"}}o{{"}"}}
-	{{if .NoRowsAffected -}}
-	if err = slice.UpdateAll(ctx,  tx, updateMap); err != nil {
-		t.Error(err)
-	}
-	{{else -}}
 	if rowsAff, err := slice.UpdateAll(ctx,  tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)
 	}
-	{{end -}}
 }

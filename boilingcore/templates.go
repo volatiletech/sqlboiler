@@ -44,7 +44,6 @@ type templateData struct {
 	EnumNullPrefix    string
 	NoHooks           bool
 	NoAutoTimestamps  bool
-	NoRowsAffected    bool
 	NoDriverTemplates bool
 	NoBackReferencing bool
 	AlwaysWrapErrors  bool

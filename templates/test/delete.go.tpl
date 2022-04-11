@@ -19,19 +19,11 @@ func test{{$alias.UpPlural}}SoftDelete(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{if .NoRowsAffected -}}
-	if err = o.Delete(ctx,  tx, false); err != nil {
-		t.Error(err)
-	}
-
-	{{else -}}
 	if rowsAff, err := o.Delete(ctx,  tx, false); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
-
-	{{end -}}
 
 	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
@@ -60,19 +52,11 @@ func test{{$alias.UpPlural}}QuerySoftDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{if .NoRowsAffected -}}
-	if err = {{$alias.UpPlural}}().DeleteAll(ctx,  tx, false); err != nil {
-		t.Error(err)
-	}
-
-	{{else -}}
 	if rowsAff, err := {{$alias.UpPlural}}().DeleteAll(ctx,  tx, false); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
-
-	{{end -}}
 
 	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
@@ -103,19 +87,11 @@ func test{{$alias.UpPlural}}SliceSoftDeleteAll(t *testing.T) {
 
 	slice := {{$alias.UpSingular}}Slice{{"{"}}o{{"}"}}
 
-	{{if .NoRowsAffected -}}
-	if err = slice.DeleteAll(ctx,  tx, false); err != nil {
-		t.Error(err)
-	}
-
-	{{else -}}
 	if rowsAff, err := slice.DeleteAll(ctx,  tx, false); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
-
-	{{end -}}
 
 	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
@@ -146,19 +122,11 @@ func test{{$alias.UpPlural}}Delete(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{if .NoRowsAffected -}}
-	if err = o.Delete(ctx,  tx {{- if $soft}}, true{{end}}); err != nil {
-		t.Error(err)
-	}
-
-	{{else -}}
 	if rowsAff, err := o.Delete(ctx,  tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
-
-	{{end -}}
 
 	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
@@ -187,19 +155,11 @@ func test{{$alias.UpPlural}}QueryDeleteAll(t *testing.T) {
 		t.Error(err)
 	}
 
-	{{if .NoRowsAffected -}}
-	if err = {{$alias.UpPlural}}().DeleteAll(ctx,  tx {{- if $soft}}, true{{end}}); err != nil {
-		t.Error(err)
-	}
-
-	{{else -}}
 	if rowsAff, err := {{$alias.UpPlural}}().DeleteAll(ctx,  tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
-
-	{{end -}}
 
 	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
@@ -230,19 +190,11 @@ func test{{$alias.UpPlural}}SliceDeleteAll(t *testing.T) {
 
 	slice := {{$alias.UpSingular}}Slice{{"{"}}o{{"}"}}
 
-	{{if .NoRowsAffected -}}
-	if err = slice.DeleteAll(ctx,  tx {{- if $soft}}, true{{end}}); err != nil {
-		t.Error(err)
-	}
-
-	{{else -}}
 	if rowsAff, err := slice.DeleteAll(ctx,  tx {{- if $soft}}, true{{end}}); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only have deleted one row, but affected:", rowsAff)
 	}
-
-	{{end -}}
 
 	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {

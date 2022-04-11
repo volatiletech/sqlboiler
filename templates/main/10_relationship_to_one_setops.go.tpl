@@ -172,7 +172,7 @@ func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}(ctx context.Context, exe
 	var err error
 
 	queries.SetScanner(&o.{{$col}}, nil)
-	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(ctx, exec, boil.Whitelist("{{.Column}}")); err != nil {
+	if _, err = o.Update(ctx, exec, boil.Whitelist("{{.Column}}")); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
 

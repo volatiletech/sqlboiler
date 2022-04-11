@@ -81,7 +81,7 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 			t.Error("foreign key was wrong value", a.{{$colField}}, x.{{$fcolField}})
 		}
 
-		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete(ctx,  tx {{- if and $.AddSoftDeletes $canSoftDelete}}, true{{end}}); err != nil {
+		if _, err = x.Delete(ctx,  tx {{- if and $.AddSoftDeletes $canSoftDelete}}, true{{end}}); err != nil {
 			t.Fatal("failed to delete x", err)
 		}
 	}

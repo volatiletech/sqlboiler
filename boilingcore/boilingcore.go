@@ -92,9 +92,7 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to merge imports from driver")
 	}
 
-	if s.Config.AddEnumTypes {
-		s.mergeEnumImports()
-	}
+	s.mergeEnumImports()
 
 	if err := s.processTypeReplacements(); err != nil {
 		return nil, err
@@ -134,7 +132,6 @@ func (s *State) Run() error {
 		AddGlobal:         s.Config.AddGlobal,
 		AddPanic:          s.Config.AddPanic,
 		AddSoftDeletes:    s.Config.AddSoftDeletes,
-		AddEnumTypes:      s.Config.AddEnumTypes,
 		EnumNullPrefix:    s.Config.EnumNullPrefix,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,

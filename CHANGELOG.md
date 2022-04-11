@@ -15,6 +15,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Removed
 
 - Removed the `--no-context` flag. Models are always generated with the use of context.
+- Removed the `--add-enum-type` flag. Generating types for enums is now the default behavior.
 
 ## [v4.13.0] - 2022-08-28
 

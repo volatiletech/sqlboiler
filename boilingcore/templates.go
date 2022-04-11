@@ -41,7 +41,6 @@ type templateData struct {
 	AddGlobal         bool
 	AddPanic          bool
 	AddSoftDeletes    bool
-	AddEnumTypes      bool
 	EnumNullPrefix    string
 	NoHooks           bool
 	NoAutoTimestamps  bool

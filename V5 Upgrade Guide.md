@@ -8,6 +8,10 @@ The `--no-context` flag has been removed. All models are now generated using con
 Similarly, interfaces and methods for non-context variants have been removed.
 e.g. `boil.Executor` vs `boil.ContextExecutor`.
 
+### Enums and the `--add-enum-types` flag
+
+The `--add-enum-type` flag has been removed. Generating types for enums is now the default behavior.
+
 ## Fixes that caused breaking changes
 
 * Both `qm.Limit` and `qm.Offset` now use `int64` instead of `int`. You may have to type cast your current calls.

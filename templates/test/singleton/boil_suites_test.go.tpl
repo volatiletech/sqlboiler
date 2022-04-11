@@ -6,7 +6,7 @@
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}})
@@ -17,7 +17,7 @@ func TestParent(t *testing.T) {
 {{if .AddSoftDeletes -}}
 func TestSoftDelete(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   	{{- if .CanSoftDelete $.AutoColumns.Deleted -}}
       {{- $alias := $.Aliases.Table .Name -}}
@@ -29,7 +29,7 @@ func TestSoftDelete(t *testing.T) {
 
 func TestQuerySoftDeleteAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   	{{- if .CanSoftDelete $.AutoColumns.Deleted -}}
       {{- $alias := $.Aliases.Table .Name -}}
@@ -41,7 +41,7 @@ func TestQuerySoftDeleteAll(t *testing.T) {
 
 func TestSliceSoftDeleteAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   	{{- if .CanSoftDelete $.AutoColumns.Deleted -}}
       {{- $alias := $.Aliases.Table .Name -}}
@@ -54,7 +54,7 @@ func TestSliceSoftDeleteAll(t *testing.T) {
 
 func TestDelete(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Delete)
@@ -64,7 +64,7 @@ func TestDelete(t *testing.T) {
 
 func TestQueryDeleteAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}QueryDeleteAll)
@@ -74,7 +74,7 @@ func TestQueryDeleteAll(t *testing.T) {
 
 func TestSliceDeleteAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}SliceDeleteAll)
@@ -84,7 +84,7 @@ func TestSliceDeleteAll(t *testing.T) {
 
 func TestExists(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Exists)
@@ -94,7 +94,7 @@ func TestExists(t *testing.T) {
 
 func TestFind(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Find)
@@ -104,7 +104,7 @@ func TestFind(t *testing.T) {
 
 func TestBind(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Bind)
@@ -114,7 +114,7 @@ func TestBind(t *testing.T) {
 
 func TestOne(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}One)
@@ -124,7 +124,7 @@ func TestOne(t *testing.T) {
 
 func TestAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}All)
@@ -134,7 +134,7 @@ func TestAll(t *testing.T) {
 
 func TestCount(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Count)
@@ -145,7 +145,7 @@ func TestCount(t *testing.T) {
 {{if not .NoHooks -}}
 func TestHooks(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Hooks)
@@ -156,7 +156,7 @@ func TestHooks(t *testing.T) {
 
 func TestInsert(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Insert)
@@ -169,7 +169,7 @@ func TestInsert(t *testing.T) {
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
 {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
     {{- range $fkey := .FKeys -}}
       {{- $ltable := $.Aliases.Table $fkey.Table -}}
@@ -185,7 +185,7 @@ func TestToOne(t *testing.T) {
 // or deadlocks can occur.
 func TestOneToOne(t *testing.T) {
   {{- range .Tables}}
-	{{- if .IsJoinTable -}}
+	{{- if or .IsJoinTable .IsView -}}
 	{{- else -}}
 	  {{- range $rel := .ToOneRelationships -}}
       {{- $ltable := $.Aliases.Table $rel.Table -}}
@@ -201,7 +201,7 @@ func TestOneToOne(t *testing.T) {
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
   {{- range .Tables}}
-    {{- if .IsJoinTable -}}
+    {{- if or .IsJoinTable .IsView -}}
     {{- else -}}
       {{- range $rel := .ToManyRelationships -}}
         {{- $ltable := $.Aliases.Table $rel.Table -}}
@@ -216,7 +216,7 @@ func TestToMany(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
 {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
     {{- range $fkey := .FKeys -}}
       {{- $ltable := $.Aliases.Table $fkey.Table -}}
@@ -232,7 +232,7 @@ func TestToOneSet(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
 {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
     {{- range $fkey := .FKeys -}}
       {{- if $fkey.Nullable -}}
@@ -250,7 +250,7 @@ func TestToOneRemove(t *testing.T) {
 // or deadlocks can occur.
 func TestOneToOneSet(t *testing.T) {
   {{- range .Tables}}
-	{{- if .IsJoinTable -}}
+	{{- if or .IsJoinTable .IsView -}}
 	{{- else -}}
 	  {{- range $rel := .ToOneRelationships -}}
       {{- $ltable := $.Aliases.Table $rel.Table -}}
@@ -266,7 +266,7 @@ func TestOneToOneSet(t *testing.T) {
 // or deadlocks can occur.
 func TestOneToOneRemove(t *testing.T) {
   {{- range .Tables}}
-	{{- if .IsJoinTable -}}
+	{{- if or .IsJoinTable .IsView -}}
 	{{- else -}}
 	  {{- range $rel := .ToOneRelationships -}}
 		{{- if $rel.ForeignColumnNullable -}}
@@ -284,7 +284,7 @@ func TestOneToOneRemove(t *testing.T) {
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
   {{- range .Tables}}
-    {{- if .IsJoinTable -}}
+    {{- if or .IsJoinTable .IsView -}}
     {{- else -}}
       {{- range $rel := .ToManyRelationships -}}
         {{- $ltable := $.Aliases.Table $rel.Table -}}
@@ -299,7 +299,7 @@ func TestToManyAdd(t *testing.T) {
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
   {{- range .Tables}}
-    {{- if .IsJoinTable -}}
+    {{- if or .IsJoinTable .IsView -}}
     {{- else -}}
       {{- range $rel := .ToManyRelationships -}}
         {{- if not (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
@@ -317,7 +317,7 @@ func TestToManySet(t *testing.T) {
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
   {{- range .Tables}}
-    {{- if .IsJoinTable -}}
+    {{- if or .IsJoinTable .IsView -}}
     {{- else -}}
       {{- range $rel := .ToManyRelationships -}}
         {{- if not (or $rel.ForeignColumnNullable $rel.ToJoinTable)}}
@@ -333,7 +333,7 @@ func TestToManyRemove(t *testing.T) {
 
 func TestReload(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Reload)
@@ -343,7 +343,7 @@ func TestReload(t *testing.T) {
 
 func TestReloadAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}ReloadAll)
@@ -353,7 +353,7 @@ func TestReloadAll(t *testing.T) {
 
 func TestSelect(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Select)
@@ -363,7 +363,7 @@ func TestSelect(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}Update)
@@ -373,7 +373,7 @@ func TestUpdate(t *testing.T) {
 
 func TestSliceUpdateAll(t *testing.T) {
   {{- range .Tables}}
-  {{- if .IsJoinTable -}}
+  {{- if or .IsJoinTable .IsView -}}
   {{- else -}}
   {{- $alias := $.Aliases.Table .Name -}}
   t.Run("{{$alias.UpPlural}}", test{{$alias.UpPlural}}SliceUpdateAll)

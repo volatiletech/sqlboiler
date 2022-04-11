@@ -6,7 +6,13 @@ func {{$alias.UpPlural}}(mods ...qm.QueryMod) {{$alias.DownSingular}}Query {
     {{if and .AddSoftDeletes $canSoftDelete -}}
     mods = append(mods, qm.From("{{$schemaTable}}"), qmhelper.WhereIsNull("{{$schemaTable}}.{{"deleted_at" | $.Quotes}}"))
     {{else -}}
-	mods = append(mods, qm.From("{{$schemaTable}}"))
-	{{end -}}
-	return {{$alias.DownSingular}}Query{NewQuery(mods...)}
+    mods = append(mods, qm.From("{{$schemaTable}}"))
+    {{end -}}
+
+    q := NewQuery(mods...)
+    if len(queries.GetSelect(q)) == 0 {
+        queries.SetSelect(q, []string{"{{$schemaTable}}.*"})
+    }
+
+    return {{$alias.DownSingular}}Query{NewQuery(mods...)}
 }

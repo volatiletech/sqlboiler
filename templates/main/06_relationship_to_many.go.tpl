@@ -26,14 +26,7 @@ func (o *{{$ltable.UpSingular}}) {{$relAlias.Local}}(mods ...qm.QueryMod) {{$fta
 	)
 		{{end}}
 
-	query := {{$ftable.UpPlural}}(queryMods...)
-	queries.SetFrom(query.Query, "{{$schemaForeignTable}}")
-
-	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"{{$schemaForeignTable}}.*"})
-	}
-
-	return query
+	return {{$ftable.UpPlural}}(queryMods...)
 }
 
 {{end -}}{{- /* range relationships */ -}}

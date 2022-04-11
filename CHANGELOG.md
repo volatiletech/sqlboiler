@@ -9,6 +9,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Fixes
 
 - Use correct column alias during soft delete
+- Use a default "table.*" for model queries
 
 ## [v4.9.1] - 2022-04-08
 

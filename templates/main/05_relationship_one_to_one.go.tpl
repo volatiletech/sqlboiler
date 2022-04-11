@@ -13,10 +13,7 @@ func (o *{{$ltable.UpSingular}}) {{$relAlias.Local}}(mods ...qm.QueryMod) ({{$ft
 
 	queryMods = append(queryMods, mods...)
 
-	query := {{$ftable.UpPlural}}(queryMods...)
-	queries.SetFrom(query.Query, "{{.ForeignTable | $.SchemaTable}}")
-
-	return query
+	return {{$ftable.UpPlural}}(queryMods...)
 }
 {{- end -}}
 {{- end -}}

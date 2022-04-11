@@ -1,4 +1,3 @@
-{{- if not .NoHooks -}}
 {{- $alias := .Aliases.Table .Table.Name}}
 
 var {{$alias.DownSingular}}AfterSelectHooks []{{$alias.UpSingular}}Hook
@@ -191,4 +190,3 @@ func Add{{$alias.UpSingular}}Hook(hookPoint boil.HookPoint, {{$alias.DownSingula
 		{{- end}}
 	}
 }
-{{- end}}

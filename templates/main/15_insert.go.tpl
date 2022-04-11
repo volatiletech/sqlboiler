@@ -41,11 +41,9 @@ func (o *{{$alias.UpSingular}}) Insert(ctx context.Context, exec boil.ContextExe
 	var err error
 	{{- template "timestamp_insert_helper" . }}
 
-	{{if not .NoHooks -}}
 	if err := o.doBeforeInsertHooks(ctx,  exec); err != nil {
 		return err
 	}
-	{{- end}}
 
 	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
 
@@ -181,11 +179,7 @@ CacheNoHooks:
 		{{$alias.DownSingular}}InsertCacheMut.Unlock()
 	}
 
-	{{if not .NoHooks -}}
 	return o.doAfterInsertHooks(ctx,  exec)
-	{{- else -}}
-	return nil
-	{{- end}}
 }
 
 {{- end -}}

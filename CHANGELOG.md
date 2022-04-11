@@ -17,6 +17,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Removed the `--no-context` flag. Models are always generated with the use of context.
 - Removed the `--add-enum-type` flag. Generating types for enums is now the default behavior.
 - Removed the `--no-rows-affected` flag. Methods will now always return the rows affected.
+- Removed the `--no-hooks` flag. Models will always have hooks. If unused, it will remain a nil slice.
 
 ## [v4.13.0] - 2022-08-28
 

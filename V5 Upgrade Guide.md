@@ -7,6 +7,7 @@
     e.g. `boil.Executor` vs `boil.ContextExecutor`.
 * The `--add-enum-type` flag has been removed. Generating types for enums is now the default behavior.
 * Removed the `--no-rows-affected` flag. Methods will now always return the rows affected.
+* Removed the `--no-hooks` flag. Models will always have hooks. If unused, it will remain a nil slice.
 
 ## Fixes that caused breaking changes
 

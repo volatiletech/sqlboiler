@@ -42,7 +42,6 @@ type templateData struct {
 	AddPanic          bool
 	AddSoftDeletes    bool
 	EnumNullPrefix    string
-	NoHooks           bool
 	NoAutoTimestamps  bool
 	NoDriverTemplates bool
 	NoBackReferencing bool

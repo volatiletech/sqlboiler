@@ -64,11 +64,9 @@ func Find{{$alias.UpSingular}}(ctx context.Context, exec boil.ContextExecutor, {
 		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
 	}
 
-	{{if not .NoHooks -}}
 	if err = {{$alias.DownSingular}}Obj.doAfterSelectHooks(ctx,  exec); err != nil {
 		return {{$alias.DownSingular}}Obj, err
 	}
-	{{- end}}
 
 	return {{$alias.DownSingular}}Obj, nil
 }

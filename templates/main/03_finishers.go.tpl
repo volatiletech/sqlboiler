@@ -50,11 +50,9 @@ func (q {{$alias.DownSingular}}Query) One(ctx context.Context, exec boil.Context
 		return nil, errors.Wrap(err, "{{.PkgName}}: failed to execute a one query for {{.Table.Name}}")
 	}
 
-	{{if not .NoHooks -}}
 	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
 		return o, err
 	}
-	{{- end}}
 
 	return o, nil
 }
@@ -102,7 +100,6 @@ func (q {{$alias.DownSingular}}Query) All(ctx context.Context, exec boil.Context
 		return nil, errors.Wrap(err, "{{.PkgName}}: failed to assign all query results to {{$alias.UpSingular}} slice")
 	}
 
-	{{if not .NoHooks -}}
 	if len({{$alias.DownSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterSelectHooks(ctx,  exec); err != nil {
@@ -110,7 +107,6 @@ func (q {{$alias.DownSingular}}Query) All(ctx context.Context, exec boil.Context
 			}
 		}
 	}
-	{{- end}}
 
 	return o, nil
 }

@@ -39,11 +39,9 @@ func (o *{{$alias.UpSingular}}) Upsert(ctx context.Context, exec boil.ContextExe
 
 	{{- template "timestamp_upsert_helper" . }}
 
-	{{if not .NoHooks -}}
 	if err := o.doBeforeUpsertHooks(ctx,  exec); err != nil {
 		return err
 	}
-	{{- end}}
 
 	nzDefaults := queries.NonZeroDefaultSet({{$alias.DownSingular}}ColumnsWithDefault, o)
 
@@ -147,10 +145,6 @@ func (o *{{$alias.UpSingular}}) Upsert(ctx context.Context, exec boil.ContextExe
 		{{$alias.DownSingular}}UpsertCacheMut.Unlock()
 	}
 
-	{{if not .NoHooks -}}
 	return o.doAfterUpsertHooks(ctx,  exec)
-	{{- else -}}
-	return nil
-	{{- end}}
 }
 {{end}}

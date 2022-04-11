@@ -108,7 +108,6 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}(ctx context.Context, e boi
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for {{.ForeignTable}}")
 	}
 
-	{{if not $.NoHooks -}}
 	if len({{$ltable.DownSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
@@ -116,7 +115,6 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}(ctx context.Context, e boi
 			}
 		}
 	}
-	{{- end}}
 
 	if len(resultSlice) == 0 {
 		return nil

@@ -142,7 +142,6 @@ func TestCount(t *testing.T) {
   {{- end -}}
 }
 
-{{if not .NoHooks -}}
 func TestHooks(t *testing.T) {
   {{- range .Tables}}
   {{- if or .IsJoinTable .IsView -}}
@@ -152,7 +151,6 @@ func TestHooks(t *testing.T) {
   {{end -}}
   {{- end -}}
 }
-{{- end}}
 
 func TestInsert(t *testing.T) {
   {{- range .Tables}}

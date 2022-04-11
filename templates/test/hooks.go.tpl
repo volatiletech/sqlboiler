@@ -1,4 +1,3 @@
-{{- if not .NoHooks -}}
 {{- $alias := .Aliases.Table .Table.Name}}
 func {{$alias.DownSingular}}BeforeInsertHook(ctx context.Context, e boil.ContextExecutor, o *{{$alias.UpSingular}}) error {
 	*o = {{$alias.UpSingular}}{}
@@ -140,4 +139,3 @@ func test{{$alias.UpPlural}}Hooks(t *testing.T) {
 	}
 	{{$alias.DownSingular}}AfterUpsertHooks = []{{$alias.UpSingular}}Hook{}
 }
-{{- end}}

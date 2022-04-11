@@ -51,11 +51,9 @@ func (o *{{$alias.UpSingular}}) Delete(ctx context.Context, exec boil.ContextExe
 		return 0, errors.New("{{.PkgName}}: no {{$alias.UpSingular}} provided for delete")
 	}
 
-	{{if not .NoHooks -}}
 	if err := o.doBeforeDeleteHooks(ctx, exec); err != nil {
 		return 0, err
 	}
-	{{- end}}
 
 	{{if $soft -}}
 	var (
@@ -99,11 +97,9 @@ func (o *{{$alias.UpSingular}}) Delete(ctx context.Context, exec boil.ContextExe
 		return 0, errors.Wrap(err, "{{.PkgName}}: failed to get rows affected by delete for {{.Table.Name}}")
 	}
 
-	{{if not .NoHooks -}}
 	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
 		return 0, err
 	}
-	{{- end}}
 
 	return rowsAff, nil
 }
@@ -211,7 +207,6 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec boil.Con
 		return 0, nil
 	}
 
-	{{if not .NoHooks -}}
 	if len({{$alias.DownSingular}}BeforeDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doBeforeDeleteHooks(ctx, exec); err != nil {
@@ -219,7 +214,6 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec boil.Con
 			}
 		}
 	}
-	{{- end}}
 
 	{{if $soft -}}
 	var (
@@ -274,7 +268,6 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec boil.Con
 		return 0, errors.Wrap(err, "{{.PkgName}}: failed to get rows affected by deleteall for {{.Table.Name}}")
 	}
 
-	{{if not .NoHooks -}}
 	if len({{$alias.DownSingular}}AfterDeleteHooks) != 0 {
 		for _, obj := range o {
 			if err := obj.doAfterDeleteHooks(ctx, exec); err != nil {
@@ -282,7 +275,6 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll(ctx context.Context, exec boil.Con
 			}
 		}
 	}
-	{{- end}}
 
 	return rowsAff, nil
 }

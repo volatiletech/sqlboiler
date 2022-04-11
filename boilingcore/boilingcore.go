@@ -133,7 +133,6 @@ func (s *State) Run() error {
 		AddPanic:          s.Config.AddPanic,
 		AddSoftDeletes:    s.Config.AddSoftDeletes,
 		EnumNullPrefix:    s.Config.EnumNullPrefix,
-		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		NoBackReferencing: s.Config.NoBackReferencing,

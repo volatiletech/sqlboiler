@@ -94,7 +94,6 @@ func main() {
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
-	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
 	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
@@ -158,7 +157,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
 		EnumNullPrefix:    viper.GetString("enum-null-prefix"),
 		NoTests:           viper.GetBool("no-tests"),
-		NoHooks:           viper.GetBool("no-hooks"),
 		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
 		NoDriverTemplates: viper.GetBool("no-driver-templates"),
 		NoBackReferencing: viper.GetBool("no-back-referencing"),

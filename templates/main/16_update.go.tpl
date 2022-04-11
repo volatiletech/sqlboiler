@@ -46,11 +46,9 @@ func (o *{{$alias.UpSingular}}) Update(ctx context.Context, exec boil.ContextExe
 	{{- template "timestamp_update_helper" . -}}
 
 	var err error
-	{{if not .NoHooks -}}
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
 	}
-	{{end -}}
 
 	key := makeCacheKey(columns, nil)
 	{{$alias.DownSingular}}UpdateCacheMut.RLock()
@@ -109,11 +107,7 @@ func (o *{{$alias.UpSingular}}) Update(ctx context.Context, exec boil.ContextExe
 		{{$alias.DownSingular}}UpdateCacheMut.Unlock()
 	}
 
-	{{if not .NoHooks -}}
 	return rowsAff, o.doAfterUpdateHooks(ctx, exec)
-	{{- else -}}
-	return rowsAff, nil
-	{{- end}}
 }
 
 {{if .AddPanic -}}

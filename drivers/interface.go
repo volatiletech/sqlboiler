@@ -3,6 +3,7 @@
 package drivers
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/friendsofgo/errors"
@@ -67,6 +68,30 @@ type Dialect struct {
 	// No longer used, left for backwards compatibility
 	// should be removed in v5
 	UseAutoColumns bool `json:"use_auto_columns"`
+}
+
+func (d Dialect) Quotes(s string) string {
+	return fmt.Sprintf("%s%s%s", string(d.LQ), s, string(d.RQ))
+}
+
+func (d Dialect) QuoteMap(s []string) []string {
+	return strmangle.StringMap(d.Quotes, s)
+}
+
+func (d Dialect) WhereClause(start int, cols []string) string {
+	return strmangle.WhereClause(string(d.LQ), string(d.RQ), start, cols)
+}
+
+func (d Dialect) WhereClauseRepeated(start int, cols []string, count int) string {
+	return strmangle.WhereClauseRepeated(string(d.LQ), string(d.RQ), start, cols, count)
+}
+
+func (d Dialect) SetParamNames(start int, cols []string) string {
+	return strmangle.SetParamNames(string(d.LQ), string(d.RQ), start, cols)
+}
+
+func (d Dialect) IdentQuoteSlice(s []string) []string {
+	return strmangle.IdentQuoteSlice(d.LQ, d.RQ, s)
 }
 
 // Constructor breaks down the functionality required to implement a driver

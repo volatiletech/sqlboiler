@@ -1,182 +1,119 @@
 {{- if not .NoHooks -}}
 {{- $alias := .Aliases.Table .Table.Name}}
 
-var {{$alias.DownSingular}}AfterSelectHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}AfterSelectHooks helpers.TableHooks[*{{$alias.UpSingular}}]
 
 {{if or (not .Table.IsView) (.Table.ViewCapabilities.CanInsert) -}}
-var {{$alias.DownSingular}}BeforeInsertHooks []{{$alias.UpSingular}}Hook
-var {{$alias.DownSingular}}AfterInsertHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeInsertHooks helpers.TableHooks[*{{$alias.UpSingular}}]
+var {{$alias.DownSingular}}AfterInsertHooks helpers.TableHooks[*{{$alias.UpSingular}}]
 {{- end}}
 
 {{if not .Table.IsView -}}
-var {{$alias.DownSingular}}BeforeUpdateHooks []{{$alias.UpSingular}}Hook
-var {{$alias.DownSingular}}AfterUpdateHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeUpdateHooks helpers.TableHooks[*{{$alias.UpSingular}}]
+var {{$alias.DownSingular}}AfterUpdateHooks helpers.TableHooks[*{{$alias.UpSingular}}]
 
-var {{$alias.DownSingular}}BeforeDeleteHooks []{{$alias.UpSingular}}Hook
-var {{$alias.DownSingular}}AfterDeleteHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeDeleteHooks helpers.TableHooks[*{{$alias.UpSingular}}]
+var {{$alias.DownSingular}}AfterDeleteHooks helpers.TableHooks[*{{$alias.UpSingular}}]
 {{- end}}
 
 {{if or (not .Table.IsView) (.Table.ViewCapabilities.CanUpsert) -}}
-var {{$alias.DownSingular}}BeforeUpsertHooks []{{$alias.UpSingular}}Hook
-var {{$alias.DownSingular}}AfterUpsertHooks []{{$alias.UpSingular}}Hook
+var {{$alias.DownSingular}}BeforeUpsertHooks helpers.TableHooks[*{{$alias.UpSingular}}]
+var {{$alias.DownSingular}}AfterUpsertHooks helpers.TableHooks[*{{$alias.UpSingular}}]
 {{- end}}
 
+// AfterSelectHooks returns all registered "after Select" hooks for the model
+func (t {{$alias.DownSingular}}Hooks) AfterSelectHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}AfterSelectHooks
+}
+
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *{{$alias.UpSingular}}) doAfterSelectHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}AfterSelectHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (o *{{$alias.UpSingular}}) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) error {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}AfterSelectHooks)
 }
 
 {{if or (not .Table.IsView) (.Table.ViewCapabilities.CanInsert) -}}
-// doBeforeInsertHooks executes all "before insert" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
+// BeforeInsertHooks returns all registered "before Insert" hooks for the model
+func (t {{$alias.DownSingular}}Hooks) BeforeInsertHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}BeforeInsertHooks
+}
 
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}BeforeInsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
+// doBeforeInsertHooks executes all "before Insert" hooks.
+func (o *{{$alias.UpSingular}}) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) error {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}BeforeInsertHooks)
+}
 
-	return nil
+// AfterInsertHooks returns all registered "after Insert" hooks for the model
+func (t {{$alias.DownSingular}}Hooks) AfterInsertHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}AfterInsertHooks
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *{{$alias.UpSingular}}) doAfterInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}AfterInsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (o *{{$alias.UpSingular}}) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) error {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}AfterInsertHooks)
 }
 {{- end}}
 
 {{if not .Table.IsView -}}
+// BeforeUpdateHooks returns all registered "before Update" hooks for the model
+func (t {{$alias.DownSingular}}Hooks) BeforeUpdateHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}BeforeUpdateHooks
+}
+
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
+func (o *{{$alias.UpSingular}}) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}BeforeUpdateHooks)
+}
 
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}BeforeUpdateHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+// AfterUpdateHooks returns all registered after Update hooks for the model
+func (t {{$alias.DownSingular}}Hooks) AfterUpdateHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}AfterUpdateHooks
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *{{$alias.UpSingular}}) doAfterUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
+func (o *{{$alias.UpSingular}}) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}AfterUpdateHooks)
+}
 
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}AfterUpdateHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+// BeforeDeleteHooks returns all registered "before Delete" hooks for the model
+func (t {{$alias.DownSingular}}Hooks) BeforeDeleteHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}BeforeDeleteHooks
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
+func (o *{{$alias.UpSingular}}) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}BeforeDeleteHooks)
+}
 
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}BeforeDeleteHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+// AfterDeleteHooks returns all registered after Delete hooks for the model
+func (t {{$alias.DownSingular}}Hooks) AfterDeleteHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}AfterDeleteHooks
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *{{$alias.UpSingular}}) doAfterDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}AfterDeleteHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (o *{{$alias.UpSingular}}) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}AfterDeleteHooks)
 }
 {{- end}}
 
 {{if or (not .Table.IsView) (.Table.ViewCapabilities.CanUpsert) -}}
+// BeforeUpsertHooks returns all registered "before Upsert" hooks for the model
+func (t {{$alias.DownSingular}}Hooks) BeforeUpsertHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}BeforeUpsertHooks
+}
+
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
+func (o *{{$alias.UpSingular}}) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}BeforeUpsertHooks)
+}
 
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}BeforeUpsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+// AfterUpsertHooks returns all registered after Upsert hooks for the model
+func (t {{$alias.DownSingular}}Hooks) AfterUpsertHooks() helpers.TableHooks[*{{$alias.UpSingular}}] {
+	return {{$alias.DownSingular}}AfterUpsertHooks
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *{{$alias.UpSingular}}) doAfterUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
-	if boil.HooksAreSkipped(ctx) {
-		return nil
-	}
-
-	{{end -}}
-	for _, hook := range {{$alias.DownSingular}}AfterUpsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (o *{{$alias.UpSingular}}) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
+	return helpers.DoHooks(ctx, exec, o, {{$alias.DownSingular}}AfterUpsertHooks)
 }
 {{- end}}
 

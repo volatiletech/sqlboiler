@@ -7,4 +7,5 @@ const (
 	ctxSkipTimestamps
 	ctxDebug
 	ctxDebugWriter
+	ctxHardDelete
 )

@@ -41,36 +41,18 @@ func Find{{$alias.UpSingular}}GP({{if not .NoContext}}ctx context.Context, {{end
 
 // Find{{$alias.UpSingular}} retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func Find{{$alias.UpSingular}}({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}, selectCols ...string) (*{{$alias.UpSingular}}, error) {
-	{{$alias.DownSingular}}Obj := &{{$alias.UpSingular}}{}
-
-	sel := "*"
-	if len(selectCols) > 0 {
-		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
-	}
-	query := fmt.Sprintf(
-		"select %s from {{.Table.Name | .SchemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}{{if and .AddSoftDeletes $canSoftDelete}} and {{"deleted_at" | $.Quotes}} is null{{end}}", sel,
-	)
-
-	q := queries.Raw(query, {{$pkNames | join ", "}})
-
-	err := q.Bind({{if not .NoContext}}ctx{{else}}nil{{end}}, exec, {{$alias.DownSingular}}Obj)
-	if err != nil {
-		{{if not .AlwaysWrapErrors -}}
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, sql.ErrNoRows
-		}
+func Find{{$alias.UpSingular}}(ctx context.Context, exec boil.ContextExecutor, {{$pkArgs}}, selectCols ...string) (*{{$alias.UpSingular}}, error) {
+	{{if eq (len .Table.PKey.Columns) 1 -}}
+	return helpers.Find[*{{$alias.UpSingular}}, {{$alias.DownSingular}}Table, {{$alias.DownSingular}}Hooks](ctx, exec, {{$alias.UpSingular}}PK({{index $pkNames 0}}), selectCols...)
+	{{- else -}}
+		pk := {{$alias.UpSingular}}PK{
+		{{range $index, $pkcol := .Table.PKey.Columns -}}
+		{{- $column := $.Table.GetColumn $pkcol -}}
+		{{$alias.Column $column.Name}}: {{index $pkNames $index}},
 		{{end -}}
-		return nil, errors.Wrap(err, "{{.PkgName}}: unable to select from {{.Table.Name}}")
-	}
-
-	{{if not .NoHooks -}}
-	if err = {{$alias.DownSingular}}Obj.doAfterSelectHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
-		return {{$alias.DownSingular}}Obj, err
-	}
+		}
+	return helpers.Find[*{{$alias.UpSingular}}, {{$alias.DownSingular}}Table, {{$alias.DownSingular}}Hooks](ctx, exec, pk, selectCols...)
 	{{- end}}
-
-	return {{$alias.DownSingular}}Obj, nil
 }
 
 {{- end -}}

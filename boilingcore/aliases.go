@@ -87,6 +87,9 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 
 		a.Tables[t.Name] = table
 
+		if t.IsJoinTable {
+			continue
+		}
 		for _, k := range t.FKeys {
 			r := table.Relationships[k.Name]
 			if len(r.Local) != 0 && len(r.Foreign) != 0 {

@@ -4,6 +4,7 @@
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
 {{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted -}}
 {{- $soft := and .AddSoftDeletes $canSoftDelete }}
+{{- $softDelCol := or $.AutoColumns.Deleted "deleted_at"}}
 {{if .AddGlobal -}}
 // DeleteG deletes a single {{$alias.UpSingular}} record.
 // DeleteG will match against the primary key column to find the record to delete.
@@ -70,8 +71,8 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 		sql = "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
-		o.DeletedAt = null.TimeFrom(currTime)
-		wl := []string{"{{or $.AutoColumns.Deleted "deleted_at"}}"}
+		o.{{$alias.Column $softDelCol}} = null.TimeFrom(currTime)
+		wl := []string{"{{$softDelCol}}"}
 		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 2 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}",
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
@@ -181,7 +182,7 @@ func (q {{$alias.DownSingular}}Query) DeleteAll({{if .NoContext}}exec boil.Execu
 		queries.SetDelete(q.Query)
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
-		queries.SetUpdate(q.Query, M{"{{or $.AutoColumns.Deleted "deleted_at"}}": currTime})
+		queries.SetUpdate(q.Query, M{"{{$softDelCol}}": currTime})
 	}
 	{{else -}}
 	queries.SetDelete(q.Query)
@@ -286,9 +287,9 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
 		for _, obj := range o {
 			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$alias.DownSingular}}PrimaryKeyMapping)
 			args = append(args, pkeyArgs...)
-			obj.DeletedAt = null.TimeFrom(currTime)
+			obj.{{$alias.Column $softDelCol}} = null.TimeFrom(currTime)
 		}
-		wl := []string{"{{or $.AutoColumns.Deleted "deleted_at"}}"}
+		wl := []string{"{{$softDelCol}}"}
 		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE " +
 			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),

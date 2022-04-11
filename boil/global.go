@@ -5,25 +5,16 @@ import (
 )
 
 var (
-	// currentDB is a global database handle for the package
-	currentDB        Executor
+	// currentContextDB is a global database handle for the package
 	currentContextDB ContextExecutor
 	// timestampLocation is the timezone used for the
 	// automated setting of created_at/updated_at columns
 	timestampLocation = time.UTC
 )
 
-// SetDB initializes the database handle for all template db interactions
-func SetDB(db Executor) {
-	currentDB = db
-	if c, ok := currentDB.(ContextExecutor); ok {
-		currentContextDB = c
-	}
-}
-
-// GetDB retrieves the global state database handle
-func GetDB() Executor {
-	return currentDB
+// SetContextDB initializes the database handle for all template db interactions
+func SetContextDB(db ContextExecutor) {
+	currentContextDB = db
 }
 
 // GetContextDB retrieves the global state database handle as a context executor

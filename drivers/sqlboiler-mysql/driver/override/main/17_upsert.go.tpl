@@ -3,16 +3,16 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *{{$alias.UpSingular}}) UpsertG({{if not .NoContext}}ctx context.Context, {{end -}} updateColumns, insertColumns boil.Columns) error {
-	return o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateColumns, insertColumns)
+func (o *{{$alias.UpSingular}}) UpsertG(ctx context.Context, updateColumns, insertColumns boil.Columns) error {
+	return o.Upsert(ctx, boil.GetContextDB(), updateColumns, insertColumns)
 }
 
 {{end -}}
 
 {{if and .AddGlobal .AddPanic -}}
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *{{$alias.UpSingular}}) UpsertGP({{if not .NoContext}}ctx context.Context, {{end -}} updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, updateColumns, insertColumns); err != nil {
+func (o *{{$alias.UpSingular}}) UpsertGP(ctx context.Context, updateColumns, insertColumns boil.Columns) {
+	if err := o.Upsert(ctx, boil.GetContextDB(), updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -22,8 +22,8 @@ func (o *{{$alias.UpSingular}}) UpsertGP({{if not .NoContext}}ctx context.Contex
 {{if .AddPanic -}}
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *{{$alias.UpSingular}}) UpsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) {
-	if err := o.Upsert({{if not .NoContext}}ctx, {{end -}} exec, updateColumns, insertColumns); err != nil {
+func (o *{{$alias.UpSingular}}) UpsertP(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) {
+	if err := o.Upsert(ctx,  exec, updateColumns, insertColumns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -40,7 +40,7 @@ var mySQL{{$alias.UpSingular}}UniqueColumns = []string{
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
-func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, updateColumns, insertColumns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for upsert")
 	}
@@ -48,7 +48,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	{{- template "timestamp_upsert_helper" . }}
 
 	{{if not .NoHooks -}}
-	if err := o.doBeforeUpsertHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+	if err := o.doBeforeUpsertHooks(ctx,  exec); err != nil {
 		return err
 	}
 	{{- end}}
@@ -136,32 +136,17 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 		returns = queries.PtrsFromMapping(value, cache.retMapping)
 	}
 
-	{{if .NoContext -}}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, vals)
-	}
-	{{else -}}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	{{end -}}
 
 	{{$canLastInsertID := .Table.CanLastInsertID -}}
 	{{if $canLastInsertID -}}
-		{{if .NoContext -}}
-	result, err := exec.Exec(cache.query, vals...)
-		{{else -}}
 	result, err := exec.ExecContext(ctx, cache.query, vals...)
-		{{end -}}
 	{{else -}}
-		{{if .NoContext -}}
-	_, err = exec.Exec(cache.query, vals...)
-		{{else -}}
 	_, err = exec.ExecContext(ctx, cache.query, vals...)
-		{{end -}}
 	{{- end}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to upsert for {{.Table.Name}}")
@@ -198,24 +183,13 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
  	}
 	nzUniqueCols = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uniqueMap)
 
-	{{if .NoContext -}}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, nzUniqueCols...)
-	}
-	{{else -}}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.retQuery)
 		fmt.Fprintln(writer, nzUniqueCols...)
 	}
-	{{end -}}
 
-	{{if .NoContext -}}
-	err = exec.QueryRow(cache.retQuery, nzUniqueCols...).Scan(returns...)
-	{{else -}}
 	err = exec.QueryRowContext(ctx, cache.retQuery, nzUniqueCols...).Scan(returns...)
-	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 	}
@@ -228,7 +202,7 @@ CacheNoHooks:
 	}
 
 	{{if not .NoHooks -}}
-	return o.doAfterUpsertHooks({{if not .NoContext}}ctx, {{end -}} exec)
+	return o.doAfterUpsertHooks(ctx,  exec)
 	{{- else -}}
 	return nil
 	{{- end}}

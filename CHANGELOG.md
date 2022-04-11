@@ -12,6 +12,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Default type of nullable unknown user-defined types change from `string` to `null.String` in the postgres driver.
 - Honor config alias overrides in generated `TableNames` and `ViewNames` variables.
 
+### Removed
+
+- Removed the `--no-context` flag. Models are always generated with the use of context.
+
 ## [v4.13.0] - 2022-08-28
 
 ### Added

@@ -14,14 +14,14 @@ func test{{$alias.UpPlural}}Upsert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}{{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}}{{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Upsert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer(), boil.Infer()); err != nil {
+	if err = o.Upsert(ctx,  tx, boil.Infer(), boil.Infer()); err != nil {
 		t.Errorf("Unable to upsert {{$alias.UpSingular}}: %s", err)
 	}
 
-	count, err := {{$alias.UpPlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
+	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -34,11 +34,11 @@ func test{{$alias.UpPlural}}Upsert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	if err = o.Upsert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer(), boil.Infer()); err != nil {
+	if err = o.Upsert(ctx,  tx, boil.Infer(), boil.Infer()); err != nil {
 		t.Errorf("Unable to upsert {{$alias.UpSingular}}: %s", err)
 	}
 
-	count, err = {{$alias.UpPlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
+	count, err = {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}

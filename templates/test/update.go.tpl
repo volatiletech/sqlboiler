@@ -16,14 +16,14 @@ func test{{$alias.UpPlural}}Update(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$alias.UpPlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
+	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -37,11 +37,11 @@ func test{{$alias.UpPlural}}Update(t *testing.T) {
 	}
 
 	{{if .NoRowsAffected -}}
-	if err = o.Update({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Update(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 	{{else -}}
-	if rowsAff, err := o.Update({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if rowsAff, err := o.Update(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("should only affect one row but affected", rowsAff)
@@ -63,14 +63,14 @@ func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$alias.UpPlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
+	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -113,11 +113,11 @@ func test{{$alias.UpPlural}}SliceUpdateAll(t *testing.T) {
 
 	slice := {{$alias.UpSingular}}Slice{{"{"}}o{{"}"}}
 	{{if .NoRowsAffected -}}
-	if err = slice.UpdateAll({{if not .NoContext}}ctx, {{end -}} tx, updateMap); err != nil {
+	if err = slice.UpdateAll(ctx,  tx, updateMap); err != nil {
 		t.Error(err)
 	}
 	{{else -}}
-	if rowsAff, err := slice.UpdateAll({{if not .NoContext}}ctx, {{end -}} tx, updateMap); err != nil {
+	if rowsAff, err := slice.UpdateAll(ctx,  tx, updateMap); err != nil {
 		t.Error(err)
 	} else if rowsAff != 1 {
 		t.Error("wanted one record updated but got", rowsAff)

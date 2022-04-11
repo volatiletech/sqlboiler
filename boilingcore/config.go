@@ -28,7 +28,6 @@ type Config struct {
 	AddSoftDeletes    bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
 	AddEnumTypes      bool     `toml:"add_enum_types,omitempty" json:"add_enum_types,omitempty"`
 	EnumNullPrefix    string   `toml:"enum_null_prefix,omitempty" json:"enum_null_prefix,omitempty"`
-	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
 	NoAutoTimestamps  bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`

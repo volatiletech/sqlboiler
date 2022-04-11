@@ -96,11 +96,6 @@ func New(config *Config) (*State, error) {
 		s.mergeEnumImports()
 	}
 
-	if !s.Config.NoContext {
-		s.Config.Imports.All.Standard = append(s.Config.Imports.All.Standard, `"context"`)
-		s.Config.Imports.Test.Standard = append(s.Config.Imports.Test.Standard, `"context"`)
-	}
-
 	if err := s.processTypeReplacements(); err != nil {
 		return nil, err
 	}
@@ -141,7 +136,6 @@ func (s *State) Run() error {
 		AddSoftDeletes:    s.Config.AddSoftDeletes,
 		AddEnumTypes:      s.Config.AddEnumTypes,
 		EnumNullPrefix:    s.Config.EnumNullPrefix,
-		NoContext:         s.Config.NoContext,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
 		NoRowsAffected:    s.Config.NoRowsAffected,

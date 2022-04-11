@@ -11,7 +11,7 @@
 		{{- $canSoftDelete := (getTable $.Tables $rel.ForeignTable).CanSoftDelete $.AutoColumns.Deleted }}
 // Load{{$relAlias.Local}} allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-1 relationship.
-func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boil.Executor{{else}}ctx context.Context, e boil.ContextExecutor{{end}}, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
+func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}(ctx context.Context, e boil.ContextExecutor, singular bool, {{$arg}} interface{}, mods queries.Applicator) error {
 	var slice []*{{$ltable.UpSingular}}
 	var object *{{$ltable.UpSingular}}
 
@@ -79,11 +79,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		mods.Apply(query)
 	}
 
-	{{if $.NoContext -}}
-	results, err := query.Query(e)
-	{{else -}}
 	results, err := query.QueryContext(ctx, e)
-	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "failed to eager load {{$ftable.UpSingular}}")
 	}
@@ -103,7 +99,7 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	{{if not $.NoHooks -}}
 	if len({{$ltable.DownSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks({{if $.NoContext}}e{{else}}ctx, e{{end}}); err != nil {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
 			}
 		}

@@ -8,9 +8,9 @@ import (
 func TestGetSetDB(t *testing.T) {
 	t.Parallel()
 
-	SetDB(&sql.DB{})
+	SetContextDB(&sql.DB{})
 
-	if GetDB() == nil {
+	if GetContextDB() == nil {
 		t.Errorf("Expected GetDB to return a database handle, got nil")
 	}
 }

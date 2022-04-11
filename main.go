@@ -93,7 +93,6 @@ func main() {
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
-	rootCmd.PersistentFlags().BoolP("no-context", "", false, "Disable context.Context usage in the generated code")
 	rootCmd.PersistentFlags().BoolP("no-tests", "", false, "Disable generated go test files")
 	rootCmd.PersistentFlags().BoolP("no-hooks", "", false, "Disable hooks feature for your models")
 	rootCmd.PersistentFlags().BoolP("no-rows-affected", "", false, "Disable rows affected in the generated API")
@@ -161,7 +160,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
 		AddEnumTypes:      viper.GetBool("add-enum-types"),
 		EnumNullPrefix:    viper.GetString("enum-null-prefix"),
-		NoContext:         viper.GetBool("no-context"),
 		NoTests:           viper.GetBool("no-tests"),
 		NoHooks:           viper.GetBool("no-hooks"),
 		NoRowsAffected:    viper.GetBool("no-rows-affected"),

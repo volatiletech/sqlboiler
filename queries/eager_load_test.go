@@ -64,7 +64,7 @@ type testEagerZeroR struct {
 type testEagerZeroL struct {
 }
 
-func (testEagerL) LoadChildOne(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerL) LoadChildOne(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	var toSetOn []*testEager
 	if singular {
 		toSetOn = []*testEager{obj.(*testEager)}
@@ -84,7 +84,7 @@ func (testEagerL) LoadChildOne(_ boil.Executor, singular bool, obj interface{}, 
 	return nil
 }
 
-func (testEagerL) LoadChildMany(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerL) LoadChildMany(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	var toSetOn []*testEager
 	if singular {
 		toSetOn = []*testEager{obj.(*testEager)}
@@ -107,7 +107,7 @@ func (testEagerL) LoadChildMany(_ boil.Executor, singular bool, obj interface{},
 	return nil
 }
 
-func (testEagerChildL) LoadNestedOne(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerChildL) LoadNestedOne(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	var toSetOn []*testEagerChild
 	if singular {
 		toSetOn = []*testEagerChild{obj.(*testEagerChild)}
@@ -127,7 +127,7 @@ func (testEagerChildL) LoadNestedOne(_ boil.Executor, singular bool, obj interfa
 	return nil
 }
 
-func (testEagerChildL) LoadNestedMany(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerChildL) LoadNestedMany(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	var toSetOn []*testEagerChild
 	if singular {
 		toSetOn = []*testEagerChild{obj.(*testEagerChild)}
@@ -150,7 +150,7 @@ func (testEagerChildL) LoadNestedMany(_ boil.Executor, singular bool, obj interf
 	return nil
 }
 
-func (testEagerL) LoadZeroOne(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerL) LoadZeroOne(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	var toSetOn []*testEager
 	if singular {
 		toSetOn = []*testEager{obj.(*testEager)}
@@ -167,7 +167,7 @@ func (testEagerL) LoadZeroOne(_ boil.Executor, singular bool, obj interface{}, m
 	return nil
 }
 
-func (testEagerL) LoadZeroMany(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerL) LoadZeroMany(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	var toSetOn []*testEager
 	if singular {
 		toSetOn = []*testEager{obj.(*testEager)}
@@ -184,11 +184,11 @@ func (testEagerL) LoadZeroMany(_ boil.Executor, singular bool, obj interface{}, 
 	return nil
 }
 
-func (testEagerZeroL) LoadNestedOne(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerZeroL) LoadNestedOne(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	return nil
 }
 
-func (testEagerZeroL) LoadNestedMany(_ boil.Executor, singular bool, obj interface{}, mods Applicator) error {
+func (testEagerZeroL) LoadNestedMany(_ boil.ContextExecutor, singular bool, obj interface{}, mods Applicator) error {
 	return nil
 }
 

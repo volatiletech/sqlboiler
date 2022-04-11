@@ -22,15 +22,13 @@ var {{$alias.DownSingular}}AfterUpsertHooks []{{$alias.UpSingular}}Hook
 {{- end}}
 
 // doAfterSelectHooks executes all "after Select" hooks.
-func (o *{{$alias.UpSingular}}) doAfterSelectHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doAfterSelectHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}AfterSelectHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -40,15 +38,13 @@ func (o *{{$alias.UpSingular}}) doAfterSelectHooks({{if .NoContext}}exec boil.Ex
 
 {{if or (not .Table.IsView) (.Table.ViewCapabilities.CanInsert) -}}
 // doBeforeInsertHooks executes all "before insert" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doBeforeInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}BeforeInsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -57,15 +53,13 @@ func (o *{{$alias.UpSingular}}) doBeforeInsertHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterInsertHooks executes all "after Insert" hooks.
-func (o *{{$alias.UpSingular}}) doAfterInsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doAfterInsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}AfterInsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -76,15 +70,13 @@ func (o *{{$alias.UpSingular}}) doAfterInsertHooks({{if .NoContext}}exec boil.Ex
 
 {{if not .Table.IsView -}}
 // doBeforeUpdateHooks executes all "before Update" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doBeforeUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}BeforeUpdateHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -93,15 +85,13 @@ func (o *{{$alias.UpSingular}}) doBeforeUpdateHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterUpdateHooks executes all "after Update" hooks.
-func (o *{{$alias.UpSingular}}) doAfterUpdateHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doAfterUpdateHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}AfterUpdateHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -110,15 +100,13 @@ func (o *{{$alias.UpSingular}}) doAfterUpdateHooks({{if .NoContext}}exec boil.Ex
 }
 
 // doBeforeDeleteHooks executes all "before Delete" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doBeforeDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}BeforeDeleteHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -127,15 +115,13 @@ func (o *{{$alias.UpSingular}}) doBeforeDeleteHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterDeleteHooks executes all "after Delete" hooks.
-func (o *{{$alias.UpSingular}}) doAfterDeleteHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doAfterDeleteHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}AfterDeleteHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -146,15 +132,13 @@ func (o *{{$alias.UpSingular}}) doAfterDeleteHooks({{if .NoContext}}exec boil.Ex
 
 {{if or (not .Table.IsView) (.Table.ViewCapabilities.CanUpsert) -}}
 // doBeforeUpsertHooks executes all "before Upsert" hooks.
-func (o *{{$alias.UpSingular}}) doBeforeUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doBeforeUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}BeforeUpsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}
@@ -163,15 +147,13 @@ func (o *{{$alias.UpSingular}}) doBeforeUpsertHooks({{if .NoContext}}exec boil.E
 }
 
 // doAfterUpsertHooks executes all "after Upsert" hooks.
-func (o *{{$alias.UpSingular}}) doAfterUpsertHooks({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (err error) {
-	{{if not .NoContext -}}
+func (o *{{$alias.UpSingular}}) doAfterUpsertHooks(ctx context.Context, exec boil.ContextExecutor) (err error) {
 	if boil.HooksAreSkipped(ctx) {
 		return nil
 	}
 
-	{{end -}}
 	for _, hook := range {{$alias.DownSingular}}AfterUpsertHooks {
-		if err := hook({{if not .NoContext}}ctx, {{end -}} exec, o); err != nil {
+		if err := hook(ctx, exec, o); err != nil {
 			return err
 		}
 	}

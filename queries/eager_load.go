@@ -13,7 +13,7 @@ import (
 
 type loadRelationshipState struct {
 	ctx    context.Context
-	exec   boil.Executor
+	exec   boil.ContextExecutor
 	loaded map[string]struct{}
 	toLoad []string
 	mods   map[string]Applicator
@@ -50,7 +50,7 @@ func (l loadRelationshipState) buildKey(depth int) string {
 // obj should be one of:
 // *[]*struct or *struct
 // bkind should reflect what kind of thing it is above
-func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, mods map[string]Applicator, obj interface{}, bkind bindKind) error {
+func eagerLoad(ctx context.Context, exec boil.ContextExecutor, toLoad []string, mods map[string]Applicator, obj interface{}, bkind bindKind) error {
 	state := loadRelationshipState{
 		ctx:    ctx, // defiant to the end, I know this is frowned upon
 		exec:   exec,

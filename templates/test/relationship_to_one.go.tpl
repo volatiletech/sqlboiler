@@ -8,8 +8,8 @@
 		{{- $fcolField := $ftable.Column $fkey.ForeignColumn -}}
 		{{- $usesPrimitives := usesPrimitives $.Tables $fkey.Table $fkey.Column $fkey.ForeignTable $fkey.ForeignColumn }}
 func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(t *testing.T) {
-	{{if not $.NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local {{$ltable.UpSingular}}
@@ -23,7 +23,7 @@ func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(
 		t.Errorf("Unable to randomize {{$ftable.UpSingular}} struct: %s", err)
 	}
 
-	if err := foreign.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err := foreign.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -32,11 +32,11 @@ func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(
 	{{else -}}
 	queries.Assign(&local.{{$colField}}, foreign.{{$fcolField}})
 	{{end -}}
-	if err := local.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err := local.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.{{$rel.Foreign}}().One({{if not $.NoContext}}ctx, {{end -}} tx)
+	check, err := local.{{$rel.Foreign}}().One(ctx,  tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(
 	}
 
 	slice := {{$ltable.UpSingular}}Slice{&local}
-	if err = local.L.Load{{$rel.Foreign}}({{if not $.NoContext}}ctx, {{end -}} tx, false, (*[]*{{$ltable.UpSingular}})(&slice), nil); err != nil {
+	if err = local.L.Load{{$rel.Foreign}}(ctx,  tx, false, (*[]*{{$ltable.UpSingular}})(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.{{$rel.Foreign}} == nil {
@@ -58,7 +58,7 @@ func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(
 	}
 
 	local.R.{{$rel.Foreign}} = nil
-	if err = local.L.Load{{$rel.Foreign}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &local, nil); err != nil {
+	if err = local.L.Load{{$rel.Foreign}}(ctx,  tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
 	if local.R.{{$rel.Foreign}} == nil {

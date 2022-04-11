@@ -3,8 +3,8 @@
 {{- $schemaTable := .Table.Name | .SchemaTable}}
 {{if .AddGlobal -}}
 // InsertG a single record. See Insert for whitelist behavior description.
-func (o *{{$alias.UpSingular}}) InsertG({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) error {
-	return o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns)
+func (o *{{$alias.UpSingular}}) InsertG(ctx context.Context, columns boil.Columns) error {
+	return o.Insert(ctx, boil.GetContextDB(), columns)
 }
 
 {{end -}}
@@ -12,8 +12,8 @@ func (o *{{$alias.UpSingular}}) InsertG({{if not .NoContext}}ctx context.Context
 {{if .AddPanic -}}
 // InsertP a single record using an executor, and panics on error. See Insert
 // for whitelist behavior description.
-func (o *{{$alias.UpSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) {
-	if err := o.Insert({{if not .NoContext}}ctx, {{end -}} exec, columns); err != nil {
+func (o *{{$alias.UpSingular}}) InsertP(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) {
+	if err := o.Insert(ctx,  exec, columns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -23,8 +23,8 @@ func (o *{{$alias.UpSingular}}) InsertP({{if .NoContext}}exec boil.Executor{{els
 {{if and .AddGlobal .AddPanic -}}
 // InsertGP a single record, and panics on error. See Insert for whitelist
 // behavior description.
-func (o *{{$alias.UpSingular}}) InsertGP({{if not .NoContext}}ctx context.Context, {{end -}} columns boil.Columns) {
-	if err := o.Insert({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, columns); err != nil {
+func (o *{{$alias.UpSingular}}) InsertGP(ctx context.Context, columns boil.Columns) {
+	if err := o.Insert(ctx, boil.GetContextDB(), columns); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -33,7 +33,7 @@ func (o *{{$alias.UpSingular}}) InsertGP({{if not .NoContext}}ctx context.Contex
 
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
-func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) error {
+func (o *{{$alias.UpSingular}}) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
 	if o == nil {
 		return errors.New("{{.PkgName}}: no {{.Table.Name}} provided for insertion")
 	}
@@ -42,7 +42,7 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	{{- template "timestamp_insert_helper" . }}
 
 	{{if not .NoHooks -}}
-	if err := o.doBeforeInsertHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+	if err := o.doBeforeInsertHooks(ctx,  exec); err != nil {
 		return err
 	}
 	{{- end}}
@@ -103,33 +103,18 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 	value := reflect.Indirect(reflect.ValueOf(o))
 	vals := queries.ValuesFromMapping(value, cache.valueMapping)
 
-	{{if .NoContext -}}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.query)
-		fmt.Fprintln(boil.DebugWriter, vals)
-	}
-	{{else -}}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.query)
 		fmt.Fprintln(writer, vals)
 	}
-	{{end -}}
 
 	{{if .Dialect.UseLastInsertID -}}
 	{{- $canLastInsertID := .Table.CanLastInsertID -}}
 	{{if $canLastInsertID -}}
-		{{if .NoContext -}}
-	result, err := exec.Exec(cache.query, vals...)
-		{{else -}}
 	result, err := exec.ExecContext(ctx, cache.query, vals...)
-		{{end -}}
 	{{else -}}
-		{{if .NoContext -}}
-	_, err = exec.Exec(cache.query, vals...)
-		{{else -}}
 	_, err = exec.ExecContext(ctx, cache.query, vals...)
-		{{end -}}
 	{{- end}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to insert into {{.Table.Name}}")
@@ -165,40 +150,21 @@ func (o *{{$alias.UpSingular}}) Insert({{if .NoContext}}exec boil.Executor{{else
 		{{end -}}
 	}
 
-	{{if .NoContext -}}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, cache.retQuery)
-		fmt.Fprintln(boil.DebugWriter, identifierCols...)
-	}
-	{{else -}}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, cache.retQuery)
 		fmt.Fprintln(writer, identifierCols...)
 	}
-	{{end -}}
 
-	{{if .NoContext -}}
-	err = exec.QueryRow(cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
-	{{else -}}
 	err = exec.QueryRowContext(ctx, cache.retQuery, identifierCols...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
-	{{end -}}
 	if err != nil {
 		return errors.Wrap(err, "{{.PkgName}}: unable to populate default values for {{.Table.Name}}")
 	}
 	{{else}}
 	if len(cache.retMapping) != 0 {
-		{{if .NoContext -}}
-		err = exec.QueryRow(cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
-		{{else -}}
 		err = exec.QueryRowContext(ctx, cache.query, vals...).Scan(queries.PtrsFromMapping(value, cache.retMapping)...)
-		{{end -}}
 	} else {
-		{{if .NoContext -}}
-		_, err = exec.Exec(cache.query, vals...)
-		{{else -}}
 		_, err = exec.ExecContext(ctx, cache.query, vals...)
-		{{end -}}
 	}
 
 	if err != nil {
@@ -216,7 +182,7 @@ CacheNoHooks:
 	}
 
 	{{if not .NoHooks -}}
-	return o.doAfterInsertHooks({{if not .NoContext}}ctx, {{end -}} exec)
+	return o.doAfterInsertHooks(ctx,  exec)
 	{{- else -}}
 	return nil
 	{{- end}}

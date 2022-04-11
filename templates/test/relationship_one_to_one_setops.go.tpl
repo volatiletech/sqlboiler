@@ -12,8 +12,8 @@
 func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
-	{{if not $.NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
@@ -30,15 +30,15 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 		t.Fatal(err)
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err := a.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = b.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
 	for i, x := range []*{{$ftable.UpSingular}}{&b, &c} {
-		err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x)
+		err = a.Set{{$relAlias.Local}}(ctx,  tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,7 +59,7 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 		}
 
 		{{if setInclude .ForeignColumn $foreignPKeyCols -}}
-		if exists, err := {{$ftable.UpSingular}}Exists({{if not $.NoContext}}ctx, {{end -}} tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
+		if exists, err := {{$ftable.UpSingular}}Exists(ctx,  tx, x.{{$foreignPKeyCols | stringMap $.StringFuncs.titleCase | join ", x."}}); err != nil {
 			t.Fatal(err)
 		} else if !exists {
 			t.Error("want 'x' to exist")
@@ -68,7 +68,7 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 		zero := reflect.Zero(reflect.TypeOf(x.{{$fcolField}}))
 		reflect.Indirect(reflect.ValueOf(&x.{{$fcolField}})).Set(zero)
 
-		if err = x.Reload({{if not $.NoContext}}ctx, {{end -}} tx); err != nil {
+		if err = x.Reload(ctx,  tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 		{{- end}}
@@ -81,7 +81,7 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 			t.Error("foreign key was wrong value", a.{{$colField}}, x.{{$fcolField}})
 		}
 
-		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete({{if not $.NoContext}}ctx, {{end -}} tx {{- if and $.AddSoftDeletes $canSoftDelete}}, true{{end}}); err != nil {
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = x.Delete(ctx,  tx {{- if and $.AddSoftDeletes $canSoftDelete}}, true{{end}}); err != nil {
 			t.Fatal("failed to delete x", err)
 		}
 	}
@@ -91,8 +91,8 @@ func test{{$ltable.UpSingular}}OneToOneSetOp{{$ftable.UpSingular}}Using{{$relAli
 func test{{$ltable.UpSingular}}OneToOneRemoveOp{{$ftable.UpSingular}}Using{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
-	{{if not $.NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
@@ -106,19 +106,19 @@ func test{{$ltable.UpSingular}}OneToOneRemoveOp{{$ftable.UpSingular}}Using{{$rel
 		t.Fatal(err)
 	}
 
-	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = a.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &b); err != nil {
+	if err = a.Set{{$relAlias.Local}}(ctx,  tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.Remove{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, &b); err != nil {
+	if err = a.Remove{{$relAlias.Local}}(ctx,  tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err := a.{{$relAlias.Local}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}

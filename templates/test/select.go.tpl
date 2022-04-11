@@ -9,14 +9,14 @@ func test{{$alias.UpPlural}}Select(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	slice, err := {{$alias.UpPlural}}().All({{if not .NoContext}}ctx, {{end -}} tx)
+	slice, err := {{$alias.UpPlural}}().All(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}

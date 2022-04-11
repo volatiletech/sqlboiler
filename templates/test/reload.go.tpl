@@ -9,14 +9,14 @@ func test{{$alias.UpPlural}}Reload(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	if err = o.Reload({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = o.Reload(ctx,  tx); err != nil {
 		t.Error(err)
 	}
 }
@@ -31,16 +31,16 @@ func test{{$alias.UpPlural}}ReloadAll(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
 	slice := {{$alias.UpSingular}}Slice{{"{"}}o{{"}"}}
 
-	if err = slice.ReloadAll({{if not .NoContext}}ctx, {{end -}} tx); err != nil {
+	if err = slice.ReloadAll(ctx,  tx); err != nil {
 		t.Error(err)
 	}
 }

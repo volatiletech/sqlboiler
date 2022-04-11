@@ -16,8 +16,8 @@
 // Adds o to related.R.{{$rel.Local}}.
 {{- end}}
 // Uses the global database handle.
-func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}G({{if not $.NoContext}}ctx context.Context, {{end -}} insert bool, related *{{$ftable.UpSingular}}) error {
-	return o.Set{{$rel.Foreign}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, insert, related)
+func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}G(ctx context.Context, insert bool, related *{{$ftable.UpSingular}}) error {
+	return o.Set{{$rel.Foreign}}(ctx, boil.GetContextDB(), insert, related)
 }
 
 {{end -}}
@@ -29,8 +29,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}G({{if not $.NoContext}}ctx 
 // Adds o to related.R.{{$rel.Local}}.
 {{- end}}
 // Panics on error.
-func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}P({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related *{{$ftable.UpSingular}}) {
-	if err := o.Set{{$rel.Foreign}}({{if not $.NoContext}}ctx, {{end -}} exec, insert, related); err != nil {
+func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}P(ctx context.Context, exec boil.ContextExecutor, insert bool, related *{{$ftable.UpSingular}}) {
+	if err := o.Set{{$rel.Foreign}}(ctx, exec, insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -44,8 +44,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}P({{if $.NoContext}}exec boi
 // Adds o to related.R.{{$rel.Local}}.
 {{- end}}
 // Uses the global database handle and panics on error.
-func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}GP({{if not $.NoContext}}ctx context.Context, {{end -}} insert bool, related *{{$ftable.UpSingular}}) {
-	if err := o.Set{{$rel.Foreign}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, insert, related); err != nil {
+func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}GP(ctx context.Context, insert bool, related *{{$ftable.UpSingular}}) {
+	if err := o.Set{{$rel.Foreign}}(ctx, boil.GetContextDB(), insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -57,10 +57,10 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}GP({{if not $.NoContext}}ctx
 {{- if not $.NoBackReferencing}}
 // Adds o to related.R.{{$rel.Local}}.
 {{- end}}
-func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related *{{$ftable.UpSingular}}) error {
+func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}(ctx context.Context, exec boil.ContextExecutor, insert bool, related *{{$ftable.UpSingular}}) error {
 	var err error
 	if insert {
-		if err = related.Insert({{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
 			return errors.Wrap(err, "failed to insert into foreign table")
 		}
 	}
@@ -72,28 +72,15 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}({{if $.NoContext}}exec boil
 	)
 	values := []interface{}{related.{{$fcol}}, o.{{$.Table.PKey.Columns | stringMap (aliasCols $ltable) | join ", o."}}{{"}"}}
 
-	{{if $.NoContext -}}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, updateQuery)
-		fmt.Fprintln(boil.DebugWriter, values)
-	}
-	{{else -}}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, updateQuery)
 		fmt.Fprintln(writer, values)
 	}
-	{{end -}}
 
-	{{if $.NoContext -}}
-	if _, err = exec.Exec(updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-	{{- else -}}
 	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
 		return errors.Wrap(err, "failed to update local table")
 	}
-	{{- end}}
 
 	{{if $usesPrimitives -}}
 	o.{{$col}} = related.{{$fcol}}
@@ -140,8 +127,8 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}({{if $.NoContext}}exec boil
 // Removes o from all passed in related items' relationships struct.
 {{- end}}
 // Uses the global database handle.
-func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}G({{if not $.NoContext}}ctx context.Context, {{end -}} related *{{$ftable.UpSingular}}) error {
-	return o.Remove{{$rel.Foreign}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, related)
+func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}G(ctx context.Context, related *{{$ftable.UpSingular}}) error {
+	return o.Remove{{$rel.Foreign}}(ctx, boil.GetContextDB(), related)
 }
 
 {{end -}}
@@ -153,8 +140,8 @@ func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}G({{if not $.NoContext}}c
 // Removes o from all passed in related items' relationships struct.
 {{- end}}
 // Panics on error.
-func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}P({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related *{{$ftable.UpSingular}}) {
-	if err := o.Remove{{$rel.Foreign}}({{if not $.NoContext}}ctx, {{end -}} exec, related); err != nil {
+func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}P(ctx context.Context, exec boil.ContextExecutor, related *{{$ftable.UpSingular}}) {
+	if err := o.Remove{{$rel.Foreign}}(ctx, exec, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -168,8 +155,8 @@ func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}P({{if $.NoContext}}exec 
 // Removes o from all passed in related items' relationships struct.
 {{- end}}
 // Uses the global database handle and panics on error.
-func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}GP({{if not $.NoContext}}ctx context.Context, {{end -}} related *{{$ftable.UpSingular}}) {
-	if err := o.Remove{{$rel.Foreign}}({{if $.NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, related); err != nil {
+func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}GP(ctx context.Context, related *{{$ftable.UpSingular}}) {
+	if err := o.Remove{{$rel.Foreign}}(ctx, boil.GetContextDB(), related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
@@ -181,15 +168,11 @@ func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}GP({{if not $.NoContext}}
 {{- if not $.NoBackReferencing}}
 // Removes o from all passed in related items' relationships struct.
 {{- end}}
-func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}({{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related *{{$ftable.UpSingular}}) error {
+func (o *{{$ltable.UpSingular}}) Remove{{$rel.Foreign}}(ctx context.Context, exec boil.ContextExecutor, related *{{$ftable.UpSingular}}) error {
 	var err error
 
 	queries.SetScanner(&o.{{$col}}, nil)
-	{{if $.NoContext -}}
-	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(exec, boil.Whitelist("{{.Column}}")); err != nil {
-	{{else -}}
 	if {{if not $.NoRowsAffected}}_, {{end -}} err = o.Update(ctx, exec, boil.Whitelist("{{.Column}}")); err != nil {
-	{{end -}}
 		return errors.Wrap(err, "failed to update local table")
 	}
 

@@ -194,6 +194,7 @@ func NewDefaultImports() Collection {
 	col.All = Set{
 		Standard: List{
 			`"database/sql"`,
+			`"context"`,
 			`"fmt"`,
 			`"reflect"`,
 			`"strings"`,
@@ -232,6 +233,7 @@ func NewDefaultImports() Collection {
 
 	col.Test = Set{
 		Standard: List{
+			`"context"`,
 			`"bytes"`,
 			`"reflect"`,
 			`"testing"`,

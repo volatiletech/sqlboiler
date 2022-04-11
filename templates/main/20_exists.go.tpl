@@ -8,16 +8,16 @@
 {{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted }}
 {{if .AddGlobal -}}
 // {{$alias.UpSingular}}ExistsG checks if the {{$alias.UpSingular}} row exists.
-func {{$alias.UpSingular}}ExistsG({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}) (bool, error) {
-	return {{$alias.UpSingular}}Exists({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, {{$pkNames | join ", "}})
+func {{$alias.UpSingular}}ExistsG(ctx context.Context, {{$pkArgs}}) (bool, error) {
+	return {{$alias.UpSingular}}Exists(ctx, boil.GetContextDB(), {{$pkNames | join ", "}})
 }
 
 {{end -}}
 
 {{if .AddPanic -}}
 // {{$alias.UpSingular}}ExistsP checks if the {{$alias.UpSingular}} row exists. Panics on error.
-func {{$alias.UpSingular}}ExistsP({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}) bool {
-	e, err := {{$alias.UpSingular}}Exists({{if not .NoContext}}ctx, {{end -}} exec, {{$pkNames | join ", "}})
+func {{$alias.UpSingular}}ExistsP(ctx context.Context, exec boil.ContextExecutor, {{$pkArgs}}) bool {
+	e, err := {{$alias.UpSingular}}Exists(ctx,  exec, {{$pkNames | join ", "}})
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -29,8 +29,8 @@ func {{$alias.UpSingular}}ExistsP({{if .NoContext}}exec boil.Executor{{else}}ctx
 
 {{if and .AddGlobal .AddPanic -}}
 // {{$alias.UpSingular}}ExistsGP checks if the {{$alias.UpSingular}} row exists. Panics on error.
-func {{$alias.UpSingular}}ExistsGP({{if not .NoContext}}ctx context.Context, {{end -}} {{$pkArgs}}) bool {
-	e, err := {{$alias.UpSingular}}Exists({{if .NoContext}}boil.GetDB(){{else}}ctx, boil.GetContextDB(){{end}}, {{$pkNames | join ", "}})
+func {{$alias.UpSingular}}ExistsGP(ctx context.Context, {{$pkArgs}}) bool {
+	e, err := {{$alias.UpSingular}}Exists(ctx, boil.GetContextDB(), {{$pkNames | join ", "}})
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -41,7 +41,7 @@ func {{$alias.UpSingular}}ExistsGP({{if not .NoContext}}ctx context.Context, {{e
 {{end -}}
 
 // {{$alias.UpSingular}}Exists checks if the {{$alias.UpSingular}} row exists.
-func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, {{$pkArgs}}) (bool, error) {
+func {{$alias.UpSingular}}Exists(ctx context.Context, exec boil.ContextExecutor, {{$pkArgs}}) (bool, error) {
 	var exists bool
 	{{if .Dialect.UseCaseWhenExistsClause -}}
 	sql := "select case when exists(select top(1) 1 from {{$schemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}) then 1 else 0 end"
@@ -49,26 +49,13 @@ func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx 
 	sql := "select exists(select 1 from {{$schemaTable}} where {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}{{if and .AddSoftDeletes $canSoftDelete}} and {{or $.AutoColumns.Deleted "deleted_at" | $.Quotes}} is null{{end}} limit 1)"
 	{{- end}}
 
-	{{if .NoContext -}}
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, {{$pkNames | join ", "}})
-	}
-	{{else -}}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
 		fmt.Fprintln(writer, {{$pkNames | join ", "}})
 	}
-	{{end -}}
 
-	{{if .NoContext -}}
-	row := exec.QueryRow(sql, {{$pkNames | join ", "}})
-	{{else -}}
-	row := exec.QueryRowContext(ctx, sql, {{$pkNames | join ", "}})
-	{{- end}}
-
-	err := row.Scan(&exists)
+	err :=  exec.QueryRowContext(ctx, sql, {{$pkNames | join ", "}}).Scan(&exists)
 	if err != nil {
 		return false, errors.Wrap(err, "{{.PkgName}}: unable to check if {{.Table.Name}} exists")
 	}

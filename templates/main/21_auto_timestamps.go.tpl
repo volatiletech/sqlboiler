@@ -3,9 +3,7 @@
 	{{- $alias := .Aliases.Table .Table.Name -}}
 	{{- $colNames := .Table.Columns | columnNames -}}
 	{{if containsAny $colNames (or $.AutoColumns.Created "created_at") (or $.AutoColumns.Updated "updated_at")}}
-		{{if not .NoContext -}}
 	if !boil.TimestampsAreSkipped(ctx) {
-		{{end -}}
 		currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
 		    {{- $colAlias := $alias.Column $col.Name -}}
@@ -32,9 +30,7 @@
 				{{- end -}}
 			{{- end -}}
 		{{end}}
-		{{if not .NoContext -}}
 	}
-		{{end -}}
 	{{end}}
 	{{- end}}
 {{- end -}}
@@ -43,9 +39,7 @@
 	{{- $alias := .Aliases.Table .Table.Name -}}
 	{{- $colNames := .Table.Columns | columnNames -}}
 	{{if containsAny $colNames (or $.AutoColumns.Updated "updated_at")}}
-		{{if not .NoContext -}}
 	if !boil.TimestampsAreSkipped(ctx) {
-		{{end -}}
 		currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
 	        {{- $colAlias := $alias.Column $col.Name -}}
@@ -57,9 +51,7 @@
 				{{- end -}}
 			{{- end -}}
 		{{end}}
-		{{if not .NoContext -}}
 	}
-		{{end -}}
 	{{end}}
 	{{- end}}
 {{end -}}
@@ -68,9 +60,7 @@
 	{{- $alias := .Aliases.Table .Table.Name -}}
 	{{- $colNames := .Table.Columns | columnNames -}}
 	{{if containsAny $colNames (or $.AutoColumns.Created "created_at") (or $.AutoColumns.Updated "updated_at")}}
-		{{if not .NoContext -}}
 	if !boil.TimestampsAreSkipped(ctx) {
-		{{end -}}
 	currTime := time.Now().In(boil.GetLocation())
 		{{range $ind, $col := .Table.Columns}}
 		    {{- $colAlias := $alias.Column $col.Name -}}
@@ -93,9 +83,7 @@
 				{{- end -}}
 			{{- end -}}
 		{{end}}
-		{{if not .NoContext -}}
 	}
-		{{end -}}
 	{{end}}
 	{{- end}}
 {{end -}}

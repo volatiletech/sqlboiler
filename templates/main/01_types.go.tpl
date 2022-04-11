@@ -19,7 +19,7 @@ type (
 	{{$alias.UpSingular}}Slice []*{{$alias.UpSingular}}
 	{{if not .NoHooks -}}
 	// {{$alias.UpSingular}}Hook is the signature for custom {{$alias.UpSingular}} hook methods
-	{{$alias.UpSingular}}Hook func({{if .NoContext}}boil.Executor{{else}}context.Context, boil.ContextExecutor{{end}}, *{{$alias.UpSingular}}) error
+	{{$alias.UpSingular}}Hook func(context.Context, boil.ContextExecutor, *{{$alias.UpSingular}}) error
 	{{- end}}
 
 	{{$alias.DownSingular}}Query struct {

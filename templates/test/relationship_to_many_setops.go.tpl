@@ -11,8 +11,8 @@
 func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
-	{{if not $.NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
@@ -29,13 +29,13 @@ func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 		}
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err := a.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = b.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = c.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -45,7 +45,7 @@ func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.Add{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, i != 0, x...)
+		err = a.Add{{$relAlias.Local}}(ctx,  tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -93,7 +93,7 @@ func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+		count, err := a.{{$relAlias.Local}}().Count(ctx,  tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -107,8 +107,8 @@ func test{{$ltable.UpSingular}}ToManyAddOp{{$relAlias.Local}}(t *testing.T) {
 func test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
-	{{if not $.NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
@@ -125,22 +125,22 @@ func test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}}(t *testing.T) {
 		}
 	}
 
-	if err = a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = a.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = b.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = b.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
-	if err = c.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = c.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, false, &b, &c)
+	err = a.Set{{$relAlias.Local}}(ctx,  tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err := a.{{$relAlias.Local}}().Count(ctx,  tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,12 +148,12 @@ func test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}}(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.Set{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, &d, &e)
+	err = a.Set{{$relAlias.Local}}(ctx,  tx, true, &d, &e)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err = a.{{$relAlias.Local}}().Count(ctx,  tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,8 +228,8 @@ func test{{$ltable.UpSingular}}ToManySetOp{{$relAlias.Local}}(t *testing.T) {
 func test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}}(t *testing.T) {
 	var err error
 
-	{{if not $.NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if $.NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a {{$ltable.UpSingular}}
@@ -246,16 +246,16 @@ func test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}}(t *testing.T) {
 		}
 	}
 
-	if err := a.Insert({{if not $.NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err := a.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	err = a.Add{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, true, foreigners...)
+	err = a.Add{{$relAlias.Local}}(ctx,  tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err := a.{{$relAlias.Local}}().Count(ctx,  tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,12 +263,12 @@ func test{{$ltable.UpSingular}}ToManyRemoveOp{{$relAlias.Local}}(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.Remove{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} tx, foreigners[:2]...)
+	err = a.Remove{{$relAlias.Local}}(ctx,  tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.{{$relAlias.Local}}().Count({{if not $.NoContext}}ctx, {{end -}} tx)
+	count, err = a.{{$relAlias.Local}}().Count(ctx,  tx)
 	if err != nil {
 		t.Fatal(err)
 	}

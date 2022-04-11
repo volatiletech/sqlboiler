@@ -1,20 +1,11 @@
 var dbNameRand *rand.Rand
 
-{{if .NoContext -}}
-func MustTx(transactor boil.Transactor, err error) boil.Transactor {
-	if err != nil {
-		panic(fmt.Sprintf("Cannot create a transactor: %s", err))
-	}
-	return transactor
-}
-{{- else -}}
 func MustTx(transactor boil.ContextTransactor, err error) boil.ContextTransactor {
 	if err != nil {
 		panic(fmt.Sprintf("Cannot create a transactor: %s", err))
 	}
 	return transactor
 }
-{{- end}}
 
 func newFKeyDestroyer(regex *regexp.Regexp, reader io.Reader) io.Reader {
 	return &fKeyDestroyer{

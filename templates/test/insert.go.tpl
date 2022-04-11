@@ -9,14 +9,14 @@ func test{{$alias.UpPlural}}Insert(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Infer()); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Infer()); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$alias.UpPlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
+	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,14 +36,14 @@ func test{{$alias.UpPlural}}InsertWhitelist(t *testing.T) {
 		t.Errorf("Unable to randomize {{$alias.UpSingular}} struct: %s", err)
 	}
 
-	{{if not .NoContext}}ctx := context.Background(){{end}}
-	tx := MustTx({{if .NoContext}}boil.Begin(){{else}}boil.BeginTx(ctx, nil){{end}})
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
-	if err = o.Insert({{if not .NoContext}}ctx, {{end -}} tx, boil.Whitelist({{$alias.DownSingular}}ColumnsWithoutDefault...)); err != nil {
+	if err = o.Insert(ctx,  tx, boil.Whitelist({{$alias.DownSingular}}ColumnsWithoutDefault...)); err != nil {
 		t.Error(err)
 	}
 
-	count, err := {{$alias.UpPlural}}().Count({{if not .NoContext}}ctx, {{end -}} tx)
+	count, err := {{$alias.UpPlural}}().Count(ctx,  tx)
 	if err != nil {
 		t.Error(err)
 	}

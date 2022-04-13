@@ -51,11 +51,13 @@ func formatPoints(points []Point) string {
 	return strings.Join(pts, ",")
 }
 
+var parsePointRegexp = regexp.MustCompile(`^\((-?[0-9]+(?:\.[0-9]+)?),(-?[0-9]+(?:\.[0-9]+)?)\)$`)
+
 func parsePoint(pt string) (Point, error) {
 	var point = Point{}
 	var err error
 
-	pdzs := regexp.MustCompile(`^\((-?[0-9]+(?:\.[0-9]+)?),(-?[0-9]+(?:\.[0-9]+)?)\)$`).FindStringSubmatch(pt)
+	pdzs := parsePointRegexp.FindStringSubmatch(pt)
 	if len(pdzs) != 3 {
 		return point, errors.New("wrong point")
 	}
@@ -71,10 +73,12 @@ func parsePoint(pt string) (Point, error) {
 	return point, nil
 }
 
+var parsePointsRegexp = regexp.MustCompile(`\((?:-?[0-9]+(?:\.[0-9]+)?),(?:-?[0-9]+(?:\.[0-9]+)?)\)`)
+
 func parsePoints(pts string) ([]Point, error) {
 	var points = []Point{}
 
-	pdzs := regexp.MustCompile(`\((?:-?[0-9]+(?:\.[0-9]+)?),(?:-?[0-9]+(?:\.[0-9]+)?)\)`).FindAllString(pts, -1)
+	pdzs := parsePointsRegexp.FindAllString(pts, -1)
 	for _, pt := range pdzs {
 		point, err := parsePoint(pt)
 		if err != nil {

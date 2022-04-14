@@ -14,5 +14,5 @@ func {{$alias.UpPlural}}(mods ...qm.QueryMod) {{$alias.DownSingular}}Query {
         queries.SetSelect(q, []string{"{{$schemaTable}}.*"})
     }
 
-    return {{$alias.DownSingular}}Query{NewQuery(mods...)}
+    return {{$alias.DownSingular}}Query{NewQuery(q)}
 }

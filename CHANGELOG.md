@@ -9,6 +9,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 ### Fixes
 
 - Don't generate test suites for views
+- Properly assign new query object in models.Pural()
 
 ## [v4.9.2] - 2022-04-11
 

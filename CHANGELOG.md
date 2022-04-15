@@ -6,6 +6,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] 
 
+### Added
+
+- Add config options to allow user defined rules for inflections
+
 ### Fixes
 
 - Don't generate test suites for views

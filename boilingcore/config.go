@@ -49,6 +49,7 @@ type Config struct {
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
 	AutoColumns  AutoColumns   `toml:"auto_columns,omitempty" json:"auto_columns,omitempty"`
+	Inflections  Inflections   `toml:"inflections,omitempty" json:"inflections,omitempty"`
 
 	Version string `toml:"version" json:"version"`
 }
@@ -66,6 +67,14 @@ type TypeReplace struct {
 	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
 	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
 	Imports importers.Set  `toml:"imports,omitempty" json:"imports,omitempty"`
+}
+
+type Inflections struct {
+	Plural        map[string]string
+	PluralExact   map[string]string
+	Singular      map[string]string
+	SingularExact map[string]string
+	Irregular     map[string]string
 }
 
 // OutputDirDepth returns depth of output directory

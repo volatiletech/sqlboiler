@@ -183,6 +183,13 @@ func preRun(cmd *cobra.Command, args []string) error {
 			Updated: viper.GetString("auto-columns.updated"),
 			Deleted: viper.GetString("auto-columns.deleted"),
 		},
+		Inflections: boilingcore.Inflections{
+			Plural:        viper.GetStringMapString("inflections.plural"),
+			PluralExact:   viper.GetStringMapString("inflections.plural_exact"),
+			Singular:      viper.GetStringMapString("inflections.singular"),
+			SingularExact: viper.GetStringMapString("inflections.singular_exact"),
+			Irregular:     viper.GetStringMapString("inflections.irregular"),
+		},
 
 		Version: sqlBoilerVersion,
 	}

@@ -642,6 +642,32 @@ down_singular = "teamName"
   foreign = "Videos"
 ```
 
+##### Inflections
+
+With inflections, you can control the rules sqlboiler uses to generates singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not wnat to create aliases for every instance.
+
+```toml
+[inflections.plural]
+# Rules to convert a suffix to its plural form
+ium = "ia"
+
+[inflections.plural_exact]
+# Rules to convert an exact word to its plural form
+stadium = "stadia"
+
+[inflections.singular]
+# Rules to convert a suffix to its singular form
+ia = "ium"
+
+[inflections.singular_exact]
+# Rules to convert an exact word to its singular form
+stadia = "stadium"
+
+[inflections.irregular]
+# The singular -> plural mapping of an exact word that doen't follow conventional rules
+radius = "radii"
+```
+
 ##### Types
 
 There exists the ability to override types that the driver has inferred.

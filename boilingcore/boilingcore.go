@@ -81,6 +81,7 @@ func New(config *Config) (*State, error) {
 	}
 
 	s.Driver = drivers.GetDriver(config.DriverName)
+	s.initInflections()
 
 	err := s.initDBInfo(config.DriverConfig)
 	if err != nil {
@@ -614,6 +615,29 @@ func (s *State) initOutFolders(lazyTemplates []lazyTemplate) error {
 	}
 
 	return nil
+}
+
+// initInflections adds custom inflections to strmangle's ruleset
+func (s *State) initInflections() {
+	ruleset := strmangle.GetBoilRuleset()
+
+	for k, v := range s.Config.Inflections.Plural {
+		ruleset.AddPlural(k, v)
+	}
+	for k, v := range s.Config.Inflections.PluralExact {
+		ruleset.AddPluralExact(k, v, true)
+	}
+
+	for k, v := range s.Config.Inflections.Singular {
+		ruleset.AddSingular(k, v)
+	}
+	for k, v := range s.Config.Inflections.SingularExact {
+		ruleset.AddSingularExact(k, v, true)
+	}
+
+	for k, v := range s.Config.Inflections.Irregular {
+		ruleset.AddIrregular(k, v)
+	}
 }
 
 // initTags removes duplicate tags and validates the format

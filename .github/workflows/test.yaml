@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [1.17.1, 1.16.8]
+        go: [1.18, 1.17]
     services:
       postgres:
         image: postgres:12
@@ -130,7 +130,7 @@ jobs:
           && ./boil.sh driver-test-user mssql
 
       - name: go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: ${{matrix.go}}
 

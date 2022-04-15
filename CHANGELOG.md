@@ -10,6 +10,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Don't generate test suites for views
 - Properly assign new query object in models.Pural()
+- Fix false negatives for enum values
+- Strip non alphanumeric characters when title casing.
 
 ## [v4.9.2] - 2022-04-11
 

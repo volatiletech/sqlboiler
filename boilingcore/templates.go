@@ -256,7 +256,7 @@ func (o once) Put(s string) bool {
 // stringMap function.
 var templateStringMappers = map[string]func(string) string{
 	// String ops
-	"quoteWrap":       func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"quoteWrap":       func(a string) string { return fmt.Sprintf(`%q`, a) },
 	"safeQuoteWrap":   func(a string) string { return fmt.Sprintf(`\"%s\"`, a) },
 	"replaceReserved": strmangle.ReplaceReservedWords,
 
@@ -295,14 +295,11 @@ var templateFunctions = template.FuncMap{
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 
 	// Enum ops
-	"parseEnumName":       strmangle.ParseEnumName,
-	"parseEnumVals":       strmangle.ParseEnumVals,
-	"isEnumNormal":        strmangle.IsEnumNormal,
-	"stripWhitespace":     strmangle.StripWhitespace,
-	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
-	"onceNew":             newOnce,
-	"oncePut":             once.Put,
-	"onceHas":             once.Has,
+	"parseEnumName": strmangle.ParseEnumName,
+	"parseEnumVals": strmangle.ParseEnumVals,
+	"onceNew":       newOnce,
+	"oncePut":       once.Put,
+	"onceHas":       once.Has,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,

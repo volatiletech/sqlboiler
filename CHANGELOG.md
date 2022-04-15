@@ -4,6 +4,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.10.2] - 2022-04-15
+
+### Fixes
+
+- Fix performance issue when scanning pgeo point (thanks @ivokanchev)
+
 ## [v4.10.1] - 2022-04-15
 
 ### Fixes

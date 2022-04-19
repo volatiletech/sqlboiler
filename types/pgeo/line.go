@@ -7,6 +7,8 @@ import (
 	"regexp"
 )
 
+var parseLineRegexp = regexp.MustCompile(`^\{(-?[0-9]+(?:\.[0-9]+)?),(-?[0-9]+(?:\.[0-9]+)?),(-?[0-9]+(?:\.[0-9]+)?)\}$`)
+
 // Line represents a infinite line with the linear equation Ax + By + C = 0, where A and B are not both zero.
 type Line struct {
 	A float64 `json:"a"`
@@ -39,7 +41,7 @@ func scanLine(l *Line, src interface{}) error {
 		return err
 	}
 
-	pdzs := regexp.MustCompile(`^\{(-?[0-9]+(?:\.[0-9]+)?),(-?[0-9]+(?:\.[0-9]+)?),(-?[0-9]+(?:\.[0-9]+)?)\}$`).FindStringSubmatch(val)
+	pdzs := parseLineRegexp.FindStringSubmatch(val)
 	if len(pdzs) != 4 {
 		return errors.New("wrong line")
 	}

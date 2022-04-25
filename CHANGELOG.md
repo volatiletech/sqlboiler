@@ -19,6 +19,8 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Fix panic when a column referrring a foreign key is ignored
   (thanks @zapo)
+- Fix one single point in paths and polygons
+  (thanks @saulortega)
 
 ## [v4.10.2] - 2022-04-15
 

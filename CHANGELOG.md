@@ -4,12 +4,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [v4.11.0] - Unreleased
+## [v4.11.0] - 2022-04-25
 
 ### Added
 
 - Add getter methods to relationship structs
   (thanks @fsaintjacques)
+
+### Changed
+
+- When title casing UPPER_SNAKE_CASE strings, underscores are not removed for readablity.
 
 ### Fixes
 

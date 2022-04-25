@@ -4,6 +4,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.11.0] - Unreleased
+
+### Added
+
+- Add getter methods to relationship structs
+  (thanks @fsaintjacques)
+
+### Fixes
+
+- Fix panic when a column referrring a foreign key is ignored
+  (thanks @zapo)
+
 ## [v4.10.2] - 2022-04-15
 
 ### Fixes

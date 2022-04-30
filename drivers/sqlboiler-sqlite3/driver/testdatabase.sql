@@ -165,6 +165,12 @@ create table autoinctest (
 	id INTEGER PRIMARY KEY
 );
 
+-- additional fields should not be marked as auto generated, when the AUTOINCREMENT keyword is present
+create table autoinckeywordtest (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	b INTEGER
+);
+
 create view user_videos as 
 select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
 from users u

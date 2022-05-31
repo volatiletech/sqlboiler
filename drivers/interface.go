@@ -227,6 +227,10 @@ func knownColumn(table string, column string, whitelist, blacklist []string) boo
 
 // filterPrimaryKey filter columns from the primary key that are not in whitelist or in blacklist
 func filterPrimaryKey(t *Table, whitelist, blacklist []string) {
+	if t.PKey == nil {
+		return
+	}
+
 	pkeyColumns := make([]string, 0, len(t.PKey.Columns))
 	for _, c := range t.PKey.Columns {
 		if knownColumn(t.Name, c, whitelist, blacklist) {

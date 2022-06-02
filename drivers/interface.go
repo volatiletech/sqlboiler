@@ -4,6 +4,7 @@ package drivers
 
 import (
 	"sort"
+	"sync"
 
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/importers"
@@ -99,6 +100,44 @@ type TableColumnTypeTranslator interface {
 	TranslateTableColumnType(c Column, tableName string) Column
 }
 
+// table returns columns info for a given table
+func table(c Constructor, schema string, name string, whitelist, blacklist []string) (Table, error) {
+	var err error
+	t := &Table{
+		Name: name,
+	}
+
+	if t.Columns, err = c.Columns(schema, name, whitelist, blacklist); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
+	}
+
+	tr, ok := c.(TableColumnTypeTranslator)
+	if ok {
+		for i, col := range t.Columns {
+			t.Columns[i] = tr.TranslateTableColumnType(col, name)
+		}
+	} else {
+		for i, col := range t.Columns {
+			t.Columns[i] = c.TranslateColumnType(col)
+		}
+	}
+
+	if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
+	}
+
+	if t.FKeys, err = c.ForeignKeyInfo(schema, name); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
+	}
+
+	filterPrimaryKey(t, whitelist, blacklist)
+	filterForeignKeys(t, whitelist, blacklist)
+
+	setIsJoinTable(t)
+
+	return *t, nil
+}
+
 // Tables returns the metadata for all tables, minus the tables
 // specified in the blacklist.
 func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
@@ -111,41 +150,37 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 
 	sort.Strings(names)
 
-	var tables []Table
-	for _, name := range names {
-		t := Table{
-			Name: name,
-		}
+	tables := make([]Table, len(names))
 
-		if t.Columns, err = c.Columns(schema, name, whitelist, blacklist); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
-		}
+	// gather tables info in parallel but restrict amount of concurrent requests by 10
+	const concurrency = 10
+	concurrentTickets := make(chan struct{}, concurrency)
+	for i := 0; i < concurrency; i++ {
+		concurrentTickets <- struct{}{}
+	}
 
-		tr, ok := c.(TableColumnTypeTranslator)
-		if ok {
-			for i, col := range t.Columns {
-				t.Columns[i] = tr.TranslateTableColumnType(col, name)
+	wg := sync.WaitGroup{}
+	errs := make(chan error, len(names))
+	for i, name := range names {
+		<-concurrentTickets
+		wg.Add(1)
+		go func(i int, name string) {
+			defer wg.Done()
+			defer func() { concurrentTickets <- struct{}{} }()
+			t, err := table(c, schema, name, whitelist, blacklist)
+			if err != nil {
+				errs <- err
+				return
 			}
-		} else {
-			for i, col := range t.Columns {
-				t.Columns[i] = c.TranslateColumnType(col)
-			}
-		}
+			tables[i] = t
+		}(i, name)
+	}
 
-		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
-		}
+	wg.Wait()
 
-		if t.FKeys, err = c.ForeignKeyInfo(schema, name); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
-		}
-
-		filterPrimaryKey(&t, whitelist, blacklist)
-		filterForeignKeys(&t, whitelist, blacklist)
-
-		setIsJoinTable(&t)
-
-		tables = append(tables, t)
+	// return first error occurred if any
+	if len(errs) != 0 {
+		return nil, <-errs
 	}
 
 	// Relationships have a dependency on foreign key nullability.
@@ -219,7 +254,6 @@ func knownColumn(table string, column string, whitelist, blacklist []string) boo
 		strmangle.SetInclude(table, whitelist) ||
 		strmangle.SetInclude(table+"."+column, whitelist) ||
 		strmangle.SetInclude("*."+column, whitelist)) &&
-
 		(len(blacklist) == 0 || (!strmangle.SetInclude(table, blacklist) &&
 			!strmangle.SetInclude(table+"."+column, blacklist) &&
 			!strmangle.SetInclude("*."+column, blacklist)))

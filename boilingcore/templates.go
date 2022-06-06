@@ -300,6 +300,7 @@ var templateFunctions = template.FuncMap{
 	"onceNew":       newOnce,
 	"oncePut":       once.Put,
 	"onceHas":       once.Has,
+	"isEnumDBType":  drivers.IsEnumDBType,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,
@@ -322,12 +323,11 @@ var templateFunctions = template.FuncMap{
 	},
 
 	// dbdrivers ops
-	"filterColumnsByAuto":     drivers.FilterColumnsByAuto,
-	"filterColumnsByDefault":  drivers.FilterColumnsByDefault,
-	"filterColumnsByEnum":     drivers.FilterColumnsByEnum,
-	"sqlColDefinitions":       drivers.SQLColDefinitions,
-	"columnNames":             drivers.ColumnNames,
-	"columnDBTypes":           drivers.ColumnDBTypes,
-	"getTable":                drivers.GetTable,
-	"tablesHaveNullableEnums": drivers.TablesHaveNullableEnums,
+	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,
+	"filterColumnsByDefault": drivers.FilterColumnsByDefault,
+	"filterColumnsByEnum":    drivers.FilterColumnsByEnum,
+	"sqlColDefinitions":      drivers.SQLColDefinitions,
+	"columnNames":            drivers.ColumnNames,
+	"columnDBTypes":          drivers.ColumnDBTypes,
+	"getTable":               drivers.GetTable,
 }

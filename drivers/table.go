@@ -92,7 +92,7 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 func TablesHaveNullableEnums(tables []Table) bool {
 	for _, table := range tables {
 		for _, col := range table.Columns {
-			if col.Nullable && rgxEnum.MatchString(col.DBType) {
+			if col.Nullable && IsEnumDBType(col.DBType) {
 				return true
 			}
 		}

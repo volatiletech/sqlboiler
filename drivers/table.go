@@ -2,7 +2,6 @@ package drivers
 
 import (
 	"fmt"
-	"strings"
 )
 
 // Table metadata from the database schema.
@@ -93,9 +92,7 @@ func (t Table) CanSoftDelete(deleteColumn string) bool {
 func TablesHaveNullableEnums(tables []Table) bool {
 	for _, table := range tables {
 		for _, col := range table.Columns {
-			if col.Nullable &&
-				(strings.HasPrefix(col.DBType, "enum.") || // postgresql
-					strings.HasPrefix(col.DBType, "enum(")) { // mysql
+			if col.Nullable && IsEnumDBType(col.DBType) {
 				return true
 			}
 		}

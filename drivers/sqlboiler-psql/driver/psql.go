@@ -44,6 +44,14 @@ type PostgresDriver struct {
 	version        int
 	addEnumTypes   bool
 	enumNullPrefix string
+
+	uniqueColumns map[columnIdentifier]struct{}
+}
+
+type columnIdentifier struct {
+	Schema string
+	Table  string
+	Column string
 }
 
 // Templates that should be added/overridden
@@ -161,7 +169,7 @@ func PSQLBuildQueryString(user, pass, dbname, host string, port int, sslmode str
 func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = $1 and table_type = 'BASE TABLE'`)
+	query := `select table_name from information_schema.tables where table_schema = $1 and table_type = 'BASE TABLE'`
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)
@@ -274,6 +282,66 @@ func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapa
 	return capabilities, nil
 }
 
+// loadUniqueColumns is responsible for populating p.uniqueColumns with an entry
+// for every table or view column that is made unique by an index or constraint.
+// This information is queried once, rather than for each table, for performance
+// reasons.
+func (p *PostgresDriver) loadUniqueColumns() error {
+	if p.uniqueColumns != nil {
+		return nil
+	}
+	p.uniqueColumns = map[columnIdentifier]struct{}{}
+	query := `with
+method_a as (
+    select
+        tc.table_schema as schema_name,
+        ccu.table_name as table_name,
+        ccu.column_name as column_name
+    from information_schema.table_constraints tc
+    inner join information_schema.constraint_column_usage as ccu
+        on tc.constraint_name = ccu.constraint_name
+    where
+        tc.constraint_type = 'UNIQUE' and (
+            (select count(*)
+            from information_schema.constraint_column_usage
+            where constraint_schema = tc.table_schema and constraint_name = tc.constraint_name
+            ) = 1
+        )
+),
+method_b as (
+    select
+        pgix.schemaname as schema_name,
+        pgix.tablename as table_name,
+        pga.attname as column_name
+    from pg_indexes pgix
+    inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i' and pgc.relnatts = 1
+    inner join pg_index pgi on pgi.indexrelid = pgc.oid
+    inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
+    where pgi.indisunique = true
+),
+results as (
+    select * from method_a
+    union
+    select * from method_b
+)
+select * from results;
+`
+	rows, err := p.conn.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var c columnIdentifier
+		if err := rows.Scan(&c.Schema, &c.Table, &c.Column); err != nil {
+			return errors.Wrapf(err, "unable to scan unique entry row")
+		}
+		p.uniqueColumns[c] = struct{}{}
+	}
+	return nil
+}
+
 func (p *PostgresDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
 	return p.Columns(schema, tableName, whitelist, blacklist)
 }
@@ -283,6 +351,9 @@ func (p *PostgresDriver) ViewColumns(schema, tableName string, whitelist, blackl
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
 func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	if err := p.loadUniqueColumns(); err != nil {
+		return nil, errors.Wrapf(err, "unable to load unique data")
+	}
 	var columns []drivers.Column
 	args := []interface{}{schema, tableName}
 
@@ -309,7 +380,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 		c.is_nullable = 'YES' as is_nullable,
 		(
-				case when c.is_generated = 'ALWAYS' or c.identity_generation = 'ALWAYS' 
+				case when c.is_generated = 'ALWAYS' or c.identity_generation = 'ALWAYS'
 				then TRUE else FALSE end
 		) as is_generated,
 		(case
@@ -319,23 +390,8 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		    else
 			    false
 		    end as is_identity from information_schema.columns
-		    WHERE table_schema='information_schema' and table_name='columns' and column_name='is_identity') IS NULL then 'NO' else is_identity end) = 'YES' as is_identity,
-		(select exists(
-			select 1
-			from information_schema.table_constraints tc
-			inner join information_schema.constraint_column_usage as ccu on tc.constraint_name = ccu.constraint_name
-			where tc.table_schema = $1 and tc.constraint_type = 'UNIQUE' and ccu.constraint_schema = $1 and ccu.table_name = c.table_name and ccu.column_name = c.column_name and
-				(select count(*) from information_schema.constraint_column_usage where constraint_schema = $1 and constraint_name = tc.constraint_name) = 1
-		)) OR
-		(select exists(
-			select 1
-			from pg_indexes pgix
-			inner join pg_class pgc on pgix.indexname = pgc.relname and pgc.relkind = 'i' and pgc.relnatts = 1
-			inner join pg_index pgi on pgi.indexrelid = pgc.oid
-			inner join pg_attribute pga on pga.attrelid = pgi.indrelid and pga.attnum = ANY(pgi.indkey)
-			where
-				pgix.schemaname = $1 and pgix.tablename = c.table_name and pga.attname = c.column_name and pgi.indisunique = true
-		)) as is_unique
+		    WHERE table_schema='information_schema' and table_name='columns' and column_name='is_identity') IS NULL then 'NO' else is_identity end
+		) = 'YES' as is_identity
 
 		from information_schema.columns as c
 		inner join pg_namespace as pgn on pgn.nspname = c.udt_schema
@@ -399,11 +455,12 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	for rows.Next() {
 		var colName, colType, colFullType, udtName, comment string
 		var defaultValue, arrayType, domainName *string
-		var nullable, generated, identity, unique bool
-		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity, &unique); err != nil {
+		var nullable, generated, identity bool
+		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
+		_, unique := p.uniqueColumns[columnIdentifier{schema, tableName, colName}]
 		column := drivers.Column{
 			Name:          colName,
 			DBType:        colType,
@@ -420,7 +477,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 			column.Default = *defaultValue
 		}
 
-		if identity != false {
+		if identity {
 			column.Default = "IDENTITY"
 		}
 

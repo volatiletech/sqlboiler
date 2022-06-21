@@ -319,7 +319,7 @@ var templateFunctions = template.FuncMap{
 		if a == "" {
 			return nil
 		}
-		return strings.Split(a, "\n")
+		return strings.Split(strings.TrimSpace(a), "\n")
 	},
 
 	// dbdrivers ops

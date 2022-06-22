@@ -389,8 +389,104 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	var columns []drivers.Column
 	args := []interface{}{schema, tableName}
 
-	query := `
+	matviewQuery := `WITH cte_pg_attribute AS (
+		SELECT
+			pg_catalog.format_type(a.atttypid, NULL) LIKE '%[]' = TRUE as is_array,
+			pg_catalog.format_type(a.atttypid, a.atttypmod) as column_full_type,
+			a.*
+		FROM pg_attribute a
+	), cte_pg_namespace AS (
+		SELECT
+			n.nspname NOT IN ('pg_catalog', 'information_schema') = TRUE as is_user_defined,
+			n.oid
+		FROM pg_namespace n
+	), cte_information_schema_domains AS (
+		SELECT
+			domain_name IS NOT NULL = TRUE as is_domain,
+			data_type LIKE '%[]' = TRUE as is_array,
+			domain_name,
+			udt_name,
+			data_type
+		FROM information_schema.domains
+	)
+	SELECT 
+		a.attnum as ordinal_position,
+		a.attname as column_name,
+		(
+			case 
+			when t.typtype = 'e'
+			then (
+				select 'enum.' || t.typname || '(''' || string_agg(labels.label, ''',''') || ''')'
+				from (
+					select pg_enum.enumlabel as label
+					from pg_enum
+					where pg_enum.enumtypid =
+					(
+						select typelem
+						from pg_type
+						inner join pg_namespace ON pg_type.typnamespace = pg_namespace.oid
+						where pg_type.typtype = 'b' and pg_type.typname = ('_' || t.typname) and pg_namespace.nspname=$1
+						limit 1
+					)
+					order by pg_enum.enumsortorder
+				) as labels
+			)
+			when a.is_array OR d.is_array
+			then 'ARRAY'
+			when d.is_domain
+			then d.data_type
+			when tn.is_user_defined
+			then 'USER-DEFINED'
+			else pg_catalog.format_type(a.atttypid, NULL)
+			end
+		) as column_type,
+		(
+			case 
+			when d.is_domain
+			then d.udt_name		
+			when a.column_full_type LIKE '%(%)%' AND t.typcategory IN ('S', 'V')
+			then a.column_full_type
+			else t.typname
+			end
+		) as column_full_type,
+		(
+			case 
+			when d.is_domain
+			then d.udt_name		
+			else t.typname
+			end
+		) as udt_name,
+		(
+			case when a.is_array
+			then
+				case when tn.is_user_defined
+				then 'USER-DEFINED'
+				else RTRIM(pg_catalog.format_type(a.atttypid, NULL), '[]')
+				end
+			else NULL
+			end
+		) as array_type,
+		d.domain_name,
+		NULL as column_default,
+		'' as column_comment,
+		a.attnotnull = FALSE as is_nullable,
+		FALSE as is_generated,
+		a.attidentity <> '' as is_identity
+	FROM cte_pg_attribute a
+		JOIN pg_class c on a.attrelid = c.oid
+		JOIN pg_namespace cn on c.relnamespace = cn.oid
+		JOIN pg_type t ON t.oid = a.atttypid
+		LEFT JOIN cte_pg_namespace tn ON t.typnamespace = tn.oid
+		LEFT JOIN cte_information_schema_domains d ON d.domain_name = pg_catalog.format_type(a.atttypid, NULL)
+		WHERE a.attnum > 0 
+		AND c.relkind = 'm'
+		AND NOT a.attisdropped
+		AND c.relname = $2
+		AND cn.nspname = $1`
+
+	tableQuery := `
 	select
+		c.ordinal_position,
 		c.column_name,
 		ct.column_type,
 		(
@@ -457,10 +553,28 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		) ct
 		where c.table_name = $2 and c.table_schema = $1`
 
+	query := fmt.Sprintf(`SELECT 
+		column_name,
+		column_type,
+		column_full_type,
+		udt_name,
+		array_type,
+		domain_name,
+		column_default,
+		column_comment,
+		is_nullable,
+		is_generated,
+		is_identity
+	FROM (
+		%s
+		UNION
+		%s
+	) AS c`, matviewQuery, tableQuery)
+
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
 		if len(cols) > 0 {
-			query += fmt.Sprintf(" and c.column_name in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
+			query += fmt.Sprintf(" where c.column_name in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
 			for _, w := range cols {
 				args = append(args, w)
 			}
@@ -468,7 +582,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	} else if len(blacklist) > 0 {
 		cols := drivers.ColumnsFromList(blacklist, tableName)
 		if len(cols) > 0 {
-			query += fmt.Sprintf(" and c.column_name not in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
+			query += fmt.Sprintf(" where c.column_name not in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))
 			for _, w := range cols {
 				args = append(args, w)
 			}

@@ -215,7 +215,19 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := `select table_name from information_schema.views where table_schema = $1`
+	query := `select 
+		table_name 
+	from (
+			select 
+				table_name, 
+				table_schema 
+			from information_schema.views
+			UNION
+			select 
+				matviewname as table_name, 
+				schemaname as table_schema 
+			from pg_matviews 
+	) as v where v.table_schema= $1`
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		views := drivers.TablesFromList(whitelist)

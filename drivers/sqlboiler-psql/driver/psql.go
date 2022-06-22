@@ -272,13 +272,33 @@ func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string)
 func (p *PostgresDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
 	capabilities := drivers.ViewCapabilities{}
 
-	query := `select
-	is_insertable_into = 'YES',
-	is_updatable = 'YES',
-	is_trigger_insertable_into = 'YES',
-	is_trigger_updatable = 'YES',
-	is_trigger_deletable = 'YES'
-	from information_schema.views where table_schema = $1 and table_name = $2
+	query := `select 
+		is_insertable_into,
+		is_updatable,
+		is_trigger_insertable_into,
+		is_trigger_updatable,
+		is_trigger_deletable
+	from (
+		select
+			table_schema,
+			table_name,
+			is_insertable_into = 'YES' as is_insertable_into,
+			is_updatable = 'YES' as is_updatable,
+			is_trigger_insertable_into = 'YES' as is_trigger_insertable_into,
+			is_trigger_updatable = 'YES' as is_trigger_updatable,
+			is_trigger_deletable = 'YES' as is_trigger_deletable
+		from information_schema.views
+		UNION
+		select 
+			schemaname as table_schema,
+			matviewname as table_name, 
+			false as is_insertable_into,
+			false as is_updatable,
+			false as is_trigger_insertable_into,
+			false as is_trigger_updatable, 
+			false as is_trigger_deletable
+		from pg_matviews 
+	) as v where v.table_schema= $1 and v.table_name = $2 
 	order by table_name;`
 
 	row := p.conn.QueryRow(query, schema, name)

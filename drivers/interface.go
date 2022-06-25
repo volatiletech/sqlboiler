@@ -13,11 +13,13 @@ import (
 
 // These constants are used in the config map passed into the driver
 const (
-	ConfigBlacklist      = "blacklist"
-	ConfigWhitelist      = "whitelist"
-	ConfigSchema         = "schema"
-	ConfigAddEnumTypes   = "add-enum-types"
-	ConfigEnumNullPrefix = "enum-null-prefix"
+	ConfigBlacklist          = "blacklist"
+	ConfigWhitelist          = "whitelist"
+	ConfigSchema             = "schema"
+	ConfigAddEnumTypes       = "add-enum-types"
+	ConfigEnumNullPrefix     = "enum-null-prefix"
+	ConfigConcurrency        = "concurrency"
+	ConfigDefaultConcurrency = 10
 
 	ConfigUser    = "user"
 	ConfigPass    = "pass"
@@ -25,10 +27,6 @@ const (
 	ConfigPort    = "port"
 	ConfigDBName  = "dbname"
 	ConfigSSLMode = "sslmode"
-
-	// number of threads while getting tables and views info
-	// TODO: allow override from config and cmdline
-	concurrency = 10
 )
 
 // Interface abstracts either a side-effect imported driver or a binary
@@ -106,17 +104,17 @@ type TableColumnTypeTranslator interface {
 
 // Tables returns the metadata for all tables, minus the tables
 // specified in the blacklist.
-func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+func Tables(c Constructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
 	var err error
 	var ret []Table
 
-	ret, err = tables(c, schema, whitelist, blacklist)
+	ret, err = tables(c, schema, whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to load tables")
 	}
 
 	if vc, ok := c.(ViewConstructor); ok {
-		v, err := views(vc, schema, whitelist, blacklist)
+		v, err := views(vc, schema, whitelist, blacklist, concurrency)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load views")
 		}
@@ -126,7 +124,7 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 	return ret, nil
 }
 
-func tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+func tables(c Constructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
 	var err error
 
 	names, err := c.TableNames(schema, whitelist, blacklist)
@@ -216,7 +214,7 @@ func table(c Constructor, schema string, name string, whitelist, blacklist []str
 
 // views returns the metadata for all views, minus the views
 // specified in the blacklist.
-func views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+func views(c ViewConstructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
 	var err error
 
 	names, err := c.ViewNames(schema, whitelist, blacklist)

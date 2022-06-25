@@ -88,6 +88,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	schema := config.DefaultString(drivers.ConfigSchema, "public")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.ConfigDefaultConcurrency)
 
 	useSchema := schema != "public"
 
@@ -122,7 +123,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 			UseDefaultKeyword:    true,
 		},
 	}
-	dbinfo.Tables, err = drivers.Tables(p, schema, whitelist, blacklist)
+	dbinfo.Tables, err = drivers.Tables(p, schema, whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}

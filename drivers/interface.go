@@ -106,7 +106,13 @@ type TableColumnTypeTranslator interface {
 
 // Tables returns the metadata for all tables, minus the tables
 // specified in the blacklist.
-func Tables(c Constructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
+func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+	return TablesConcurrently(c, schema, whitelist, blacklist, 1)
+}
+
+// TablesConcurrently is a concurrent version of Tables. It returns the
+// metadata for all tables, minus the tables specified in the blacklist.
+func TablesConcurrently(c Constructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
 	var err error
 	var ret []Table
 

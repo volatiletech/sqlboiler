@@ -96,7 +96,7 @@ func (s SQLiteDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		},
 	}
 
-	dbinfo.Tables, err = drivers.Tables(s, "", whitelist, blacklist, concurrency)
+	dbinfo.Tables, err = drivers.TablesConcurrently(s, "", whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}

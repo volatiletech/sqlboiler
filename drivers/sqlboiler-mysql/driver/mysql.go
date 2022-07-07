@@ -117,7 +117,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		},
 	}
 
-	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist, concurrency)
+	dbinfo.Tables, err = drivers.TablesConcurrently(m, schema, whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}

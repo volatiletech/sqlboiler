@@ -83,7 +83,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	schema := dbname
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
-	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.ConfigDefaultConcurrency)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	tinyIntAsIntIntf, ok := config["tinyint_as_int"]
 	if ok {

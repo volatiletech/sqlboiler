@@ -13,13 +13,12 @@ import (
 
 // These constants are used in the config map passed into the driver
 const (
-	ConfigBlacklist          = "blacklist"
-	ConfigWhitelist          = "whitelist"
-	ConfigSchema             = "schema"
-	ConfigAddEnumTypes       = "add-enum-types"
-	ConfigEnumNullPrefix     = "enum-null-prefix"
-	ConfigConcurrency        = "concurrency"
-	ConfigDefaultConcurrency = 10
+	ConfigBlacklist      = "blacklist"
+	ConfigWhitelist      = "whitelist"
+	ConfigSchema         = "schema"
+	ConfigAddEnumTypes   = "add-enum-types"
+	ConfigEnumNullPrefix = "enum-null-prefix"
+	ConfigConcurrency    = "concurrency"
 
 	ConfigUser    = "user"
 	ConfigPass    = "pass"
@@ -27,6 +26,9 @@ const (
 	ConfigPort    = "port"
 	ConfigDBName  = "dbname"
 	ConfigSSLMode = "sslmode"
+
+	// DefaultConcurrency defines the default amount of threads to use when loading tables info
+	DefaultConcurrency = 10
 )
 
 // Interface abstracts either a side-effect imported driver or a binary

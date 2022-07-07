@@ -88,7 +88,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	schema := config.DefaultString(drivers.ConfigSchema, "public")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
-	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.ConfigDefaultConcurrency)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	useSchema := schema != "public"
 

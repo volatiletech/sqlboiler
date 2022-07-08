@@ -1,10 +1,12 @@
 package drivers
 
 import (
-	"strings"
+	"regexp"
 
 	"github.com/volatiletech/strmangle"
 )
+
+var rgxEnum = regexp.MustCompile(`^enum(\.\w+)?\([^)]+\)$`)
 
 // Column holds information about a database column.
 // Types are Go types, converted by TranslateColumnType.
@@ -88,10 +90,15 @@ func FilterColumnsByEnum(columns []Column) []Column {
 	var cols []Column
 
 	for _, c := range columns {
-		if strings.HasPrefix(c.DBType, "enum") {
+		if rgxEnum.MatchString(c.DBType) {
 			cols = append(cols, c)
 		}
 	}
 
 	return cols
+}
+
+// IsEnumDBType reports whether the column type is Enum
+func IsEnumDBType(dbType string) bool {
+	return rgxEnum.MatchString(dbType)
 }

@@ -140,6 +140,7 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
 		}
 
+		filterPrimaryKey(&t, whitelist, blacklist)
 		filterForeignKeys(&t, whitelist, blacklist)
 
 		setIsJoinTable(&t)
@@ -222,6 +223,17 @@ func knownColumn(table string, column string, whitelist, blacklist []string) boo
 		(len(blacklist) == 0 || (!strmangle.SetInclude(table, blacklist) &&
 			!strmangle.SetInclude(table+"."+column, blacklist) &&
 			!strmangle.SetInclude("*."+column, blacklist)))
+}
+
+// filterPrimaryKey filter columns from the primary key that are not in whitelist or in blacklist
+func filterPrimaryKey(t *Table, whitelist, blacklist []string) {
+	pkeyColumns := make([]string, 0, len(t.PKey.Columns))
+	for _, c := range t.PKey.Columns {
+		if knownColumn(t.Name, c, whitelist, blacklist) {
+			pkeyColumns = append(pkeyColumns, c)
+		}
+	}
+	t.PKey.Columns = pkeyColumns
 }
 
 // filterForeignKeys filter FK whose ForeignTable is not in whitelist or in blacklist

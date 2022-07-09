@@ -189,6 +189,42 @@ func (*{{$alias.DownSingular}}R) NewStruct() *{{$alias.DownSingular}}R {
 	return &{{$alias.DownSingular}}R{}
 }
 
+{{range .Table.FKeys -}}
+{{- $ftable := $.Aliases.Table .ForeignTable -}}
+{{- $relAlias := $alias.Relationship .Name -}}
+func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Foreign}}() *{{$ftable.UpSingular}} {
+	if (r == nil) {
+    return nil
+	}
+  return r.{{$relAlias.Foreign}}
+}
+
+{{end -}}
+
+{{- range .Table.ToOneRelationships -}}
+{{- $ftable := $.Aliases.Table .ForeignTable -}}
+{{- $relAlias := $ftable.Relationship .Name -}}
+func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Local}}() *{{$ftable.UpSingular}} {
+	if (r == nil) {
+    return nil
+	}
+  return r.{{$relAlias.Local}}
+}
+
+{{end -}}
+
+{{- range .Table.ToManyRelationships -}}
+{{- $ftable := $.Aliases.Table .ForeignTable -}}
+{{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
+func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Local}}() {{printf "%sSlice" $ftable.UpSingular}} {
+	if (r == nil) {
+    return nil
+	}
+  return r.{{$relAlias.Local}}
+}
+
+{{end -}}
+
 // {{$alias.DownSingular}}L is where Load methods for each relationship are stored.
 type {{$alias.DownSingular}}L struct{}
 {{end -}}

@@ -4,6 +4,180 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.10.2] - 2022-04-15
+
+### Fixes
+
+- Fix performance issue when scanning pgeo point (thanks @ivokanchev)
+
+## [v4.10.1] - 2022-04-15
+
+### Fixes
+
+- Properly assign new query object in models.Pural()
+
+## [v4.10.0] - 2022-04-15
+
+### Added
+
+- Add config options to allow user defined rules for inflections
+
+### Fixes
+
+- Don't generate test suites for views
+- Properly assign new query object in models.Pural()
+- Fix false negatives for enum values
+- Strip non alphanumeric characters when title casing.
+
+## [v4.9.2] - 2022-04-11
+
+### Fixes
+
+- Use correct column alias during soft delete
+- Use a default "table.*" for model queries
+
+## [v4.9.1] - 2022-04-08
+
+### Fixes
+
+- Fixes issue with column name quotinc in many-to-many eager load
+- Properly honor `--no-back-referencing` in relationship setops
+- Retract `v4.9.0` due to issues with the commit tagging and the generated code showing `v4.8.6`
+
+## [v4.9.0] - 2022-04-04
+
+### Added
+
+- Add `AllEnum()` function to retrieve a slice of all valid values of an enum type
+- Add `DefaultTemplates` to `boilingcore.Config` to change the base template files to use for generation
+- Add `CustomTemplateFuncs` to `boilingcore.Config` to supply additional functions that can be used in templates (thanks @ccakes)
+
+### Fixes
+
+- Fixes issues with detecting enum values that contain uppercases
+- Properly wrap column names in quotes when loading many-to-many relationships (thanks @bryanmcgrane)
+- Removes duplicated `deleted_at IS NULL` clause in relationship queries (thanks @ktakenaka)
+
+## [v4.8.6] - 2022-01-29
+
+### Added
+
+- Add missing function `func (modelQuery) DeleteAllGP(...)` (thanks @parnic)
+
+### Fixes
+
+- Fixed issue with generation of both nullable and non-nullable enum types (thanks @optiman)
+
+## [v4.8.5] - 2022-01-28
+
+### Added
+
+- Do not generate a template file if the content is empty
+- Add function `drivers.RegisterBinaryFromCmdArg()` to extract binary registration
+
+### Fixes
+
+- Fix panic on zero value of `types.NullDecimal`
+- `driver.Value()` for zero `types.Decimal` is now "0".
+
+## [v4.8.4] - 2022-01-27
+
+### Added
+
+- Add new --always-wrap-errors flag that does not unwrap sql.ErrNoRows
+  so it can retain the stack trace. This supports the best practice of using
+  errors.Is() anyway and will eventually become the default behavior in
+  a breaking v5 (thanks @jhnj)
+- Add support for * as a wildcard for white/blacklisting columns. See readme
+  for details (thanks @Yoshiji)
+- Add missing function `func (modelQuery) UpdateAllGP(...)` (thanks @MeanSquaredError)
+- Add support for generated columns
+- Add support for database views
+- Add a `_model` suffix to the generated file for tables names that end with
+  `_test` or `_goos` or `_goarch` since Go treats such files specially.
+- Add `C` in front of model column attributes that begin with a number since a struct
+  field cannot begin with a number in Go
+- Add **sqlite3** driver to the main repo using the CGo-free port
+
+### Changes
+
+- Modify the `--add-enum-types` flag to also use the generated types in the model
+  fields (thanks @optiman)
+- Mark nullable columns as having a default in Postgres driver
+- Bump MySQL version used for testing to 8.0
+
+### Fixed
+
+- Fix panic when a column referrring a foreign key is ignored
+  (thanks @zapo)
+- Fix bug with using the zero value of the decimal type for a nullable column
+  (thanks @hongshaoyang)
+
+## [v4.8.3] - 2021-11-16
+
+### Fixed
+
+- Fix bad use of titlecase in mysql enum name generation
+
+## [v4.8.2] - 2021-11-16
+
+### Fixed
+
+- Fix regression in enum name generation
+
+## [v4.8.1] - 2021-11-14
+
+### Fixed
+
+- Fix a regression in the soft delete test template generation introduced in
+  4.8.1
+
+## [v4.8.0] - 2021-11-14
+
+### Added
+
+- Add `--add-enum-types` to create distinct enum types instead of strings
+  (thanks @stephenamo)
+
+### Fixed
+
+- Fix a regression in soft delete generation introduced in 4.7.1
+  (thanks @stephenamo)
+
+## [v4.7.1] - 2021-09-30
+
+### Changed
+
+- Change template locations to templates/{main,test}. This unfortunate move
+  is necessary to preserve old behavior.
+
+### Fixed
+
+- Revert change to boilingcore.New() both in behavior and function signature
+
+## [v4.7.0] - 2021-09-26
+
+### Added
+
+- Add configuration for overriding custom timestamp column names
+  (thanks @stephanafamo)
+- Add support for arguments to order by (thanks @emwalker and @alexdor)
+- Add support for comments to mysql (thanks @Wuvist)
+
+### Fixed
+
+- Fix CVEs in transitive dependencies by bumping cobra & viper
+- Fix inconsistent generation of IsNull/IsNotNull where helpers for types that
+  appear both as null and not null in the database.
+- JSON unmarshalling null into types.NullDecimal will no longer panic. String
+  and format have been overridden to return "nil" when the underlying decimal
+  is nil instead of crashing.
+
+### Removed
+
+- Removed bindata in favor of go:embed. This is not a breaking change as there
+  are no longer supported versions of Go that do not support go:embed.
+
 ## [v4.6.0] - 2021-06-06
 
 ### Added

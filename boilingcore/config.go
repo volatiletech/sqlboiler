@@ -1,12 +1,16 @@
 package boilingcore
 
 import (
+	"io/fs"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/razor-1/sqlboiler/v4/drivers"
 	"github.com/razor-1/sqlboiler/v4/importers"
 	"github.com/spf13/cast"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	"github.com/razor-1/sqlboiler/v4/importers"
 )
 
 // Config for the running of the commands
@@ -23,6 +27,8 @@ type Config struct {
 	AddGlobal         bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
 	AddPanic          bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
 	AddSoftDeletes    bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
+	AddEnumTypes      bool     `toml:"add_enum_types,omitempty" json:"add_enum_types,omitempty"`
+	EnumNullPrefix    string   `toml:"enum_null_prefix,omitempty" json:"enum_null_prefix,omitempty"`
 	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
 	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
 	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
@@ -30,6 +36,7 @@ type Config struct {
 	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
 	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
 	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
+	AlwaysWrapErrors  bool     `toml:"always_wrap_errors,omitempty" json:"always_wrap_errors,omitempty"`
 	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
 	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
 	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
@@ -37,18 +44,38 @@ type Config struct {
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 
+	DefaultTemplates    fs.FS            `toml:"-" json:"-"`
+	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
+
 	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
 	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
+	AutoColumns  AutoColumns   `toml:"auto_columns,omitempty" json:"auto_columns,omitempty"`
+	Inflections  Inflections   `toml:"inflections,omitempty" json:"inflections,omitempty"`
 
 	Version string `toml:"version" json:"version"`
+}
+
+type AutoColumns struct {
+	Created string `toml:"created,omitempty" json:"created,omitempty"`
+	Updated string `toml:"updated,omitempty" json:"updated,omitempty"`
+	Deleted string `toml:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
 // TypeReplace replaces a column type with something else
 type TypeReplace struct {
 	Tables  []string       `toml:"tables,omitempty" json:"tables,omitempty"`
+	Views   []string       `toml:"views,omitempty" json:"views,omitempty"`
 	Match   drivers.Column `toml:"match,omitempty" json:"match,omitempty"`
 	Replace drivers.Column `toml:"replace,omitempty" json:"replace,omitempty"`
 	Imports importers.Set  `toml:"imports,omitempty" json:"imports,omitempty"`
+}
+
+type Inflections struct {
+	Plural        map[string]string
+	PluralExact   map[string]string
+	Singular      map[string]string
+	SingularExact map[string]string
+	Irregular     map[string]string
 }
 
 // OutputDirDepth returns depth of output directory

@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [1.14.2]
+        go: [1.18, 1.17]
     services:
       postgres:
         image: postgres:12
@@ -21,7 +21,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       mysql:
-        image: mysql:5.7
+        image: mysql:8.0
         ports:
           - 3306:3306
         env:
@@ -130,7 +130,7 @@ jobs:
           && ./boil.sh driver-test-user mssql
 
       - name: go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: ${{matrix.go}}
 

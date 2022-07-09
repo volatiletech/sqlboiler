@@ -130,11 +130,13 @@ Table of Contents
 - 1d arrays, json, hstore & more
 - Enum types
 - Out of band driver support
+- Support for database views
+- Supports generated/computed columns
 
 ### Missing features
 
 - Multi-column foreign key support
-- View/Materialized view support
+- Materialized view support
 
 ### Supported Databases
 
@@ -143,7 +145,7 @@ Table of Contents
 | PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
 | MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
 | MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
-| SQLite3           | https://github.com/volatiletech/sqlboiler-sqlite3
+| SQLite3           | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3](drivers/sqlboiler-sqlite3)
 | CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb
 
 **Note:** SQLBoiler supports out of band driver support so you can make your own
@@ -222,9 +224,6 @@ fmt.Println(len(users.R.FavoriteMovies))
 ### Requirements
 
 * Go 1.13, older Go versions are not supported.
-* Table names and column names should use `snake_case` format.
-  * We require `snake_case` table names and column names. This is a recommended default in Postgres,
-  and we agree that it's good form, so we're enforcing this format for all drivers for the time being.
 * Join tables should use a *composite primary key*.
   * For join tables to be used transparently for relationships your join table must have
   a *composite primary key* that encompasses both foreign table foreign keys and
@@ -359,10 +358,11 @@ Example of whitelist/blacklist:
 
 ```toml
 [psql]
-# Removes migrations table, and the name column from the addresses table
-# from being generated. Foreign keys that reference tables or columns that
-# are no longer generated because of whitelists or blacklists may cause problems.
-blacklist = ["migrations", "addresses.name"]
+# Removes migrations table, the name column from the addresses table, and
+# secret_col of any table from being generated. Foreign keys that reference tables
+# or columns that are no longer generated because of whitelists or blacklists may
+# cause problems.
+blacklist = ["migrations", "addresses.name", "*.secret_col"]
 ```
 
 ##### Generic config options
@@ -378,6 +378,8 @@ not to pass them through the command line or environment variables:
 | debug               | false     |
 | add-global-variants | false     |
 | add-panic-variants  | false     |
+| add-enum-types      | false     |
+| enum-null-prefix    | "Null"    |
 | no-context          | false     |
 | no-hooks            | false     |
 | no-tests            | false     |
@@ -392,6 +394,7 @@ not to pass them through the command line or environment variables:
 output   = "my_models"
 wipe     = true
 no-tests = true
+add-enum-types = true
 
 [psql]
   dbname = "dbname"
@@ -439,6 +442,8 @@ Flags:
       --add-global-variants        Enable generation for global variants
       --add-panic-variants         Enable generation for panic variants
       --add-soft-deletes           Enable soft deletion by updating deleted_at timestamp
+      --add-enum-types             Enable generation of types for enums
+      --enum-null-prefix           Name prefix of nullable enum types (default "Null")
   -c, --config string              Filename of config file to override default lookup
   -d, --debug                      Debug mode prints stack traces on error
   -h, --help                       help for sqlboiler
@@ -454,7 +459,7 @@ Flags:
       --struct-tag-casing string   Decides the casing for go structure tag names. camel, title, alias or snake (default "snake")
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
       --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
-      --templates strings          A templates directory, overrides the bindata'd template folders in sqlboiler
+      --templates strings          A templates directory, overrides the embedded template folders in sqlboiler
       --version                    Print the version
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
 ```
@@ -637,6 +642,32 @@ down_singular = "teamName"
   foreign = "Videos"
 ```
 
+##### Inflections
+
+With inflections, you can control the rules sqlboiler uses to generates singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not wnat to create aliases for every instance.
+
+```toml
+[inflections.plural]
+# Rules to convert a suffix to its plural form
+ium = "ia"
+
+[inflections.plural_exact]
+# Rules to convert an exact word to its plural form
+stadium = "stadia"
+
+[inflections.singular]
+# Rules to convert a suffix to its singular form
+ia = "ium"
+
+[inflections.singular_exact]
+# Rules to convert an exact word to its singular form
+stadia = "stadium"
+
+[inflections.irregular]
+# The singular -> plural mapping of an exact word that doen't follow conventional rules
+radius = "radii"
+```
+
 ##### Types
 
 There exists the ability to override types that the driver has inferred.
@@ -763,7 +794,7 @@ output_dir/
     └── jssingle.js
 ```
 
-**Note**: Because the `--templates` flag overrides the internal bindata of `sqlboiler`, if you still
+**Note**: Because the `--templates` flag overrides the embedded templates of `sqlboiler`, if you still
 wish to generate the default templates it's recommended that you include the path to sqlboiler's templates
 as well.
 
@@ -1004,6 +1035,16 @@ to `time.Now()` in your database, and update your object appropriately.
 To disable this feature use `--no-auto-timestamps`.
 
 Note: You can set the timezone for this feature by calling `boil.SetLocation()`
+
+#### Customizing the timestamp columns
+
+Set the `auto-columns` map in your configuration file
+
+```toml
+[auto-columns]
+    created = "createdAt"
+    updated = "updatedAt"
+```
 
 #### Skipping Automatic Timestamps
 

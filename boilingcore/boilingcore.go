@@ -5,6 +5,7 @@ package boilingcore
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,20 +13,11 @@ import (
 	"strings"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/strmangle"
+
 	"github.com/razor-1/sqlboiler/v4/drivers"
 	"github.com/razor-1/sqlboiler/v4/importers"
-	"github.com/razor-1/sqlboiler/v4/templatebin"
-	"github.com/volatiletech/strmangle"
-)
-
-const (
-	templatesDirectory          = "templates"
-	templatesSingletonDirectory = "templates/singleton"
-
-	templatesTestDirectory          = "templates_test"
-	templatesSingletonTestDirectory = "templates_test/singleton"
-
-	templatesTestMainDirectory = "templates_test/main_test"
+	boiltemplates "github.com/razor-1/sqlboiler/v4/templates"
 )
 
 var (
@@ -89,6 +81,7 @@ func New(config *Config) (*State, error) {
 	}
 
 	s.Driver = drivers.GetDriver(config.DriverName)
+	s.initInflections()
 
 	err := s.initDBInfo(config.DriverConfig)
 	if err != nil {
@@ -97,6 +90,10 @@ func New(config *Config) (*State, error) {
 
 	if err := s.mergeDriverImports(); err != nil {
 		return nil, errors.Wrap(err, "unable to merge imports from driver")
+	}
+
+	if s.Config.AddEnumTypes {
+		s.mergeEnumImports()
 	}
 
 	if !s.Config.NoContext {
@@ -142,12 +139,15 @@ func (s *State) Run() error {
 		AddGlobal:         s.Config.AddGlobal,
 		AddPanic:          s.Config.AddPanic,
 		AddSoftDeletes:    s.Config.AddSoftDeletes,
+		AddEnumTypes:      s.Config.AddEnumTypes,
+		EnumNullPrefix:    s.Config.EnumNullPrefix,
 		NoContext:         s.Config.NoContext,
 		NoHooks:           s.Config.NoHooks,
 		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
 		NoRowsAffected:    s.Config.NoRowsAffected,
 		NoDriverTemplates: s.Config.NoDriverTemplates,
 		NoBackReferencing: s.Config.NoBackReferencing,
+		AlwaysWrapErrors:  s.Config.AlwaysWrapErrors,
 		StructTagCasing:   s.Config.StructTagCasing,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
@@ -160,6 +160,7 @@ func (s *State) Run() error {
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
+		AutoColumns: s.Config.AutoColumns,
 	}
 
 	for _, v := range s.Config.TagIgnore {
@@ -198,7 +199,7 @@ func (s *State) Run() error {
 		}
 
 		// Generate the test templates
-		if !s.Config.NoTests {
+		if !s.Config.NoTests && !table.IsView {
 			if err := generateTestOutput(s, testDirExtMap, data); err != nil {
 				return errors.Wrap(err, "unable to generate test output")
 			}
@@ -217,7 +218,9 @@ func (s *State) Cleanup() error {
 // initTemplates loads all template folders into the state object.
 //
 // If TemplateDirs is set it uses those, else it pulls from assets.
-// Then it allows drivers to override, followed by replacements.
+// Then it allows drivers to override, followed by replacements. Any
+// user functions passed in by library users will be merged into the
+// template.FuncMap.
 //
 // Because there's the chance for windows paths to jumped in
 // all paths are converted to the native OS's slash style.
@@ -245,10 +248,29 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 			mergeTemplates(templates, tpls)
 		}
 	} else {
-		for _, a := range templatebin.AssetNames() {
-			if strings.HasSuffix(a, ".tpl") {
-				templates[normalizeSlashes(a)] = assetLoader(a)
+		defaultTemplates := s.Config.DefaultTemplates
+		if defaultTemplates == nil {
+			defaultTemplates = boiltemplates.Builtin
+		}
+
+		err := fs.WalkDir(defaultTemplates, ".", func(path string, entry fs.DirEntry, err error) error {
+			if err != nil {
+				return err
 			}
+
+			if entry.IsDir() {
+				return nil
+			}
+
+			name := entry.Name()
+			if filepath.Ext(name) == ".tpl" {
+				templates[normalizeSlashes(path)] = assetLoader{fs: defaultTemplates, name: path}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -294,13 +316,13 @@ func (s *State) initTemplates() ([]lazyTemplate, error) {
 		})
 	}
 
-	s.Templates, err = loadTemplates(lazyTemplates, false)
+	s.Templates, err = loadTemplates(lazyTemplates, false, s.Config.CustomTemplateFuncs)
 	if err != nil {
 		return nil, err
 	}
 
 	if !s.Config.NoTests {
-		s.TestTemplates, err = loadTemplates(lazyTemplates, true)
+		s.TestTemplates, err = loadTemplates(lazyTemplates, true, s.Config.CustomTemplateFuncs)
 		if err != nil {
 			return nil, err
 		}
@@ -351,6 +373,10 @@ func findTemplates(root, base string) (map[string]templateLoader, error) {
 	templates := make(map[string]templateLoader)
 	rootBase := filepath.Join(root, base)
 	err := filepath.Walk(rootBase, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if fi.IsDir() {
 			return nil
 		}
@@ -410,6 +436,15 @@ func (s *State) mergeDriverImports() error {
 
 	s.Config.Imports = importers.Merge(s.Config.Imports, drivers)
 	return nil
+}
+
+// mergeEnumImports merges imports for nullable enum types
+// into the current configuration's imports if tables returned
+// from the driver have nullable enum columns.
+func (s *State) mergeEnumImports() {
+	if drivers.TablesHaveNullableEnums(s.Tables) {
+		s.Config.Imports = importers.Merge(s.Config.Imports, importers.NullableEnumImports())
+	}
 }
 
 // processTypeReplacements checks the config for type replacements
@@ -582,6 +617,29 @@ func (s *State) initOutFolders(lazyTemplates []lazyTemplate) error {
 	return nil
 }
 
+// initInflections adds custom inflections to strmangle's ruleset
+func (s *State) initInflections() {
+	ruleset := strmangle.GetBoilRuleset()
+
+	for k, v := range s.Config.Inflections.Plural {
+		ruleset.AddPlural(k, v)
+	}
+	for k, v := range s.Config.Inflections.PluralExact {
+		ruleset.AddPluralExact(k, v, true)
+	}
+
+	for k, v := range s.Config.Inflections.Singular {
+		ruleset.AddSingular(k, v)
+	}
+	for k, v := range s.Config.Inflections.SingularExact {
+		ruleset.AddSingularExact(k, v, true)
+	}
+
+	for k, v := range s.Config.Inflections.Irregular {
+		ruleset.AddIrregular(k, v)
+	}
+}
+
 // initTags removes duplicate tags and validates the format
 // of all user tags are simple strings without quotes: [a-zA-Z_\.]+
 func (s *State) initTags(tags []string) error {
@@ -604,7 +662,7 @@ func (s *State) initAliases(a *Aliases) error {
 func checkPKeys(tables []drivers.Table) error {
 	var missingPkey []string
 	for _, t := range tables {
-		if t.PKey == nil {
+		if !t.IsView && t.PKey == nil {
 			missingPkey = append(missingPkey, t.Name)
 		}
 	}

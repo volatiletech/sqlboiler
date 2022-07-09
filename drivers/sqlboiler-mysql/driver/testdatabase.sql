@@ -5,6 +5,7 @@ drop table if exists videos;
 drop table if exists sponsors;
 drop table if exists users;
 drop table if exists type_monsters;
+drop view if exists user_videos;
 
 create table users (
 	id int primary key not null auto_increment
@@ -40,7 +41,8 @@ create table video_tags (
 create table type_monsters (
 	id int primary key not null auto_increment,
 
-	enum_use    enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday') not null,
+	enum_use        enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday') not null,
+	enum_nullable   enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday'),
 
 	id_two     int not null,
 	id_three   int,
@@ -167,5 +169,16 @@ create table type_monsters (
 	char_null     char null,
 	char_nnull    char not null,
 	text_null     text null,
-	text_nnull    text not null
+	text_nnull    text not null,
+
+
+    virtual_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) VIRTUAL NOT NULL,
+    virtual_null text GENERATED ALWAYS AS (UPPER(text_null)) VIRTUAL,
+    generated_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) STORED NOT NULL,
+    generated_null text GENERATED ALWAYS AS (UPPER(text_null)) STORED
 );
+
+create view user_videos as 
+select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
+from users u
+inner join videos v on v.user_id = u.id;

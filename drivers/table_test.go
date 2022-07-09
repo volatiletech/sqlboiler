@@ -143,7 +143,7 @@ func TestCanSoftDelete(t *testing.T) {
 			Columns: test.Columns,
 		}
 
-		if got := table.CanSoftDelete(); got != test.Can {
+		if got := table.CanSoftDelete("deleted_at"); got != test.Can {
 			t.Errorf("%d) wrong: %t", i, got)
 		}
 	}

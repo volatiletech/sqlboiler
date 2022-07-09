@@ -2,8 +2,10 @@ package driver
 
 import (
 	"database/sql"
+	"embed"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"strconv"
 	"strings"
 
@@ -11,13 +13,15 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/razor-1/sqlboiler/v4/drivers"
 	"github.com/razor-1/sqlboiler/v4/importers"
+	"github.com/volatiletech/strmangle"
 )
+
+//go:embed override
+var templates embed.FS
 
 func init() {
 	drivers.RegisterFromInit("mysql", &MySQLDriver{})
 }
-
-//go:generate go-bindata -nometadata -pkg driver -prefix override override/...
 
 // Assemble is more useful for calling into the library so you don't
 // have to instantiate an empty type.
@@ -29,24 +33,33 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // MySQLDriver holds the database connection string and a handle
 // to the database connection.
 type MySQLDriver struct {
-	connStr string
-	conn    *sql.DB
-
-	tinyIntAsInt bool
+	connStr        string
+	conn           *sql.DB
+	addEnumTypes   bool
+	enumNullPrefix string
+	tinyIntAsInt   bool
 }
 
 // Templates that should be added/overridden
 func (MySQLDriver) Templates() (map[string]string, error) {
-	names := AssetNames()
 	tpls := make(map[string]string)
-	for _, n := range names {
-		b, err := Asset(n)
+	fs.WalkDir(templates, "override", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		tpls[n] = base64.StdEncoding.EncodeToString(b)
-	}
+		if d.IsDir() {
+			return nil
+		}
+
+		b, err := fs.ReadFile(templates, path)
+		if err != nil {
+			return err
+		}
+		tpls[strings.Replace(path, "override/", "", 1)] = base64.StdEncoding.EncodeToString(b)
+
+		return nil
+	})
 
 	return tpls, nil
 }
@@ -78,6 +91,8 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		}
 	}
 
+	m.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
+	m.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mysql", m.connStr)
 	if err != nil {
@@ -179,6 +194,69 @@ func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	return names, nil
 }
 
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (m *MySQLDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	var names []string
+
+	query := `select table_name from information_schema.views where table_schema = ?`
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, w := range tables {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		tables := drivers.TablesFromList(blacklist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, b := range tables {
+				args = append(args, b)
+			}
+		}
+	}
+
+	query += ` order by table_name;`
+
+	rows, err := m.conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (m *MySQLDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	capabilities := drivers.ViewCapabilities{
+		// No definite way to check if a view is insertable
+		// See: https://dba.stackexchange.com/questions/285451/does-mysql-have-a-built-in-way-to-tell-whether-a-view-is-insertable-not-just-up?newreg=e6c571353a0948638bec10cf7f8c6f6f
+		CanInsert: false,
+		CanUpsert: false,
+	}
+
+	return capabilities, nil
+}
+
+func (m *MySQLDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return m.Columns(schema, tableName, whitelist, blacklist)
+}
+
 // Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
@@ -191,6 +269,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	select
 	c.column_name,
 	c.column_type,
+	c.column_comment,
 	if(c.data_type = 'enum', c.column_type, c.data_type),
 	if(extra = 'auto_increment','auto_increment',
 		if(version() like '%MariaDB%' and c.column_default = 'NULL', '',
@@ -198,6 +277,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			replace(substring(c.column_default,2,length(c.column_default)-2),'\'\'','\''),
 				c.column_default))),
 	c.is_nullable = 'YES',
+	(c.extra = 'STORED GENERATED' OR c.extra = 'VIRTUAL GENERATED') is_generated,
 		exists (
 			select c.column_name
 			from information_schema.table_constraints tc
@@ -210,7 +290,7 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 				constraint_schema = ? and table_name = ? and constraint_name = tc.constraint_name) = 1
 		) as is_unique
 	from information_schema.columns as c
-	where table_name = ? and table_schema = ? and c.extra not like '%VIRTUAL%'`
+	where table_name = ? and table_schema = ?`
 
 	if len(whitelist) > 0 {
 		cols := drivers.ColumnsFromList(whitelist, tableName)
@@ -239,23 +319,30 @@ func (m *MySQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 	defer rows.Close()
 
 	for rows.Next() {
-		var colName, colType, colFullType string
-		var nullable, unique bool
+		var colName, colFullType, colComment, colType string
+		var nullable, generated, unique bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colType, &defaultValue, &nullable, &unique); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colComment, &colType, &defaultValue, &nullable, &generated, &unique); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
 		column := drivers.Column{
-			Name:       colName,
-			FullDBType: colFullType, // example: tinyint(1) instead of tinyint
-			DBType:     colType,
-			Nullable:   nullable,
-			Unique:     unique,
+			Name:          colName,
+			Comment:       colComment,
+			FullDBType:    colFullType, // example: tinyint(1) instead of tinyint
+			DBType:        colType,
+			Nullable:      nullable,
+			Unique:        unique,
+			AutoGenerated: generated,
 		}
 
-		if defaultValue != nil && *defaultValue != "NULL" {
+		if defaultValue != nil {
 			column.Default = *defaultValue
+		}
+
+		// A generated column technically has a default value
+		if column.Default == "" && column.AutoGenerated {
+			column.Default = "AUTO_GENERATED"
 		}
 
 		columns = append(columns, column)
@@ -276,7 +363,7 @@ func (m *MySQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 
 	row := m.conn.QueryRow(query, tableName, schema)
 	if err = row.Scan(&pkey.Name); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -352,130 +439,131 @@ func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.Foreig
 	return fkeys, nil
 }
 
-func (m *MySQLDriver) nullColumnType(dbType string, fullDBType string) string {
-	unsigned := strings.Contains(fullDBType, "unsigned")
-	var colType string
-	switch dbType {
-	case "tinyint":
-		// map tinyint(1) to bool if TinyintAsBool is true
-		if !m.tinyIntAsInt && fullDBType == "tinyint(1)" {
-			colType = "null.Bool"
-		} else if unsigned {
-			colType = "null.Uint8"
-		} else {
-			colType = "null.Int8"
-		}
-	case "smallint":
-		if unsigned {
-			colType = "null.Uint16"
-		} else {
-			colType = "null.Int16"
-		}
-	case "mediumint":
-		if unsigned {
-			colType = "null.Uint32"
-		} else {
-			colType = "null.Int32"
-		}
-	case "int", "integer":
-		if unsigned {
-			colType = "null.Uint"
-		} else {
-			colType = "null.Int"
-		}
-	case "bigint":
-		if unsigned {
-			colType = "null.Uint64"
-		} else {
-			colType = "null.Int64"
-		}
-	case "float":
-		colType = "null.Float32"
-	case "double", "double precision", "real":
-		colType = "null.Float64"
-	case "boolean", "bool":
-		colType = "null.Bool"
-	case "date", "datetime", "timestamp":
-		colType = "null.Time"
-	case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
-		colType = "null.Bytes"
-	case "numeric", "decimal", "dec", "fixed":
-		colType = "types.NullDecimal"
-	case "json":
-		colType = "null.JSON"
-	default:
-		colType = "null.String"
-	}
-
-	return colType
-}
-
-func (m *MySQLDriver) columnType(dbType string, fullDBType string) string {
-	unsigned := strings.Contains(fullDBType, "unsigned")
-	var colType string
-	switch dbType {
-	case "tinyint":
-		// map tinyint(1) to bool if TinyintAsBool is true
-		if !m.tinyIntAsInt && fullDBType == "tinyint(1)" {
-			colType = "bool"
-		} else if unsigned {
-			colType = "uint8"
-		} else {
-			colType = "int8"
-		}
-	case "smallint":
-		if unsigned {
-			colType = "uint16"
-		} else {
-			colType = "int16"
-		}
-	case "mediumint":
-		if unsigned {
-			colType = "uint32"
-		} else {
-			colType = "int32"
-		}
-	case "int", "integer":
-		if unsigned {
-			colType = "uint"
-		} else {
-			colType = "int"
-		}
-	case "bigint":
-		if unsigned {
-			colType = "uint64"
-		} else {
-			colType = "int64"
-		}
-	case "float":
-		colType = "float32"
-	case "double", "double precision", "real":
-		colType = "float64"
-	case "boolean", "bool":
-		colType = "bool"
-	case "date", "datetime", "timestamp":
-		colType = "time.Time"
-	case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
-		colType = "[]byte"
-	case "numeric", "decimal", "dec", "fixed":
-		colType = "types.Decimal"
-	case "json":
-		colType = "types.JSON"
-	default:
-		colType = "string"
-	}
-
-	return colType
-}
-
 // TranslateColumnType converts mysql database types to Go types, for example
 // "varchar" to "string" and "bigint" to "int64". It returns this parsed data
 // as a Column object.
-func (m *MySQLDriver) TranslateColumnType(c drivers.Column) drivers.Column {
+// Deprecated: for MySQL enum types to be created properly TranslateTableColumnType method should be used instead.
+func (m *MySQLDriver) TranslateColumnType(drivers.Column) drivers.Column {
+	panic("TranslateTableColumnType should be called")
+}
+
+// TranslateTableColumnType converts mysql database types to Go types, for example
+// "varchar" to "string" and "bigint" to "int64". It returns this parsed data
+// as a Column object.
+func (m *MySQLDriver) TranslateTableColumnType(c drivers.Column, tableName string) drivers.Column {
+	unsigned := strings.Contains(c.FullDBType, "unsigned")
 	if c.Nullable {
-		c.Type = m.nullColumnType(c.DBType, c.FullDBType)
+		switch c.DBType {
+		case "tinyint":
+			// map tinyint(1) to bool if TinyintAsBool is true
+			if !m.tinyIntAsInt && c.FullDBType == "tinyint(1)" {
+				c.Type = "null.Bool"
+			} else if unsigned {
+				c.Type = "null.Uint8"
+			} else {
+				c.Type = "null.Int8"
+			}
+		case "smallint":
+			if unsigned {
+				c.Type = "null.Uint16"
+			} else {
+				c.Type = "null.Int16"
+			}
+		case "mediumint":
+			if unsigned {
+				c.Type = "null.Uint32"
+			} else {
+				c.Type = "null.Int32"
+			}
+		case "int", "integer":
+			if unsigned {
+				c.Type = "null.Uint"
+			} else {
+				c.Type = "null.Int"
+			}
+		case "bigint":
+			if unsigned {
+				c.Type = "null.Uint64"
+			} else {
+				c.Type = "null.Int64"
+			}
+		case "float":
+			c.Type = "null.Float32"
+		case "double", "double precision", "real":
+			c.Type = "null.Float64"
+		case "boolean", "bool":
+			c.Type = "null.Bool"
+		case "date", "datetime", "timestamp":
+			c.Type = "null.Time"
+		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+			c.Type = "null.Bytes"
+		case "numeric", "decimal", "dec", "fixed":
+			c.Type = "types.NullDecimal"
+		case "json":
+			c.Type = "null.JSON"
+		default:
+			if len(strmangle.ParseEnumVals(c.DBType)) > 0 && m.addEnumTypes {
+				c.Type = strmangle.TitleCase(tableName) + m.enumNullPrefix + strmangle.TitleCase(c.Name)
+			} else {
+				c.Type = "null.String"
+			}
+		}
 	} else {
-		c.Type = m.columnType(c.DBType, c.FullDBType)
+		switch c.DBType {
+		case "tinyint":
+			// map tinyint(1) to bool if TinyintAsBool is true
+			if !m.tinyIntAsInt && c.FullDBType == "tinyint(1)" {
+				c.Type = "bool"
+			} else if unsigned {
+				c.Type = "uint8"
+			} else {
+				c.Type = "int8"
+			}
+		case "smallint":
+			if unsigned {
+				c.Type = "uint16"
+			} else {
+				c.Type = "int16"
+			}
+		case "mediumint":
+			if unsigned {
+				c.Type = "uint32"
+			} else {
+				c.Type = "int32"
+			}
+		case "int", "integer":
+			if unsigned {
+				c.Type = "uint"
+			} else {
+				c.Type = "int"
+			}
+		case "bigint":
+			if unsigned {
+				c.Type = "uint64"
+			} else {
+				c.Type = "int64"
+			}
+		case "float":
+			c.Type = "float32"
+		case "double", "double precision", "real":
+			c.Type = "float64"
+		case "boolean", "bool":
+			c.Type = "bool"
+		case "date", "datetime", "timestamp":
+			c.Type = "time.Time"
+		case "binary", "varbinary", "tinyblob", "blob", "mediumblob", "longblob":
+			c.Type = "[]byte"
+		case "numeric", "decimal", "dec", "fixed":
+			c.Type = "types.Decimal"
+		case "json":
+			c.Type = "types.JSON"
+		default:
+			if len(strmangle.ParseEnumVals(c.DBType)) > 0 && m.addEnumTypes {
+				c.Type = strmangle.TitleCase(tableName) + strmangle.TitleCase(c.Name)
+			} else {
+				c.Type = "string"
+			}
+		}
 	}
 
 	return c

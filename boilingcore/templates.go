@@ -5,15 +5,16 @@ import (
 	"encoding"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
 	"github.com/razor-1/sqlboiler/v4/drivers"
-	"github.com/razor-1/sqlboiler/v4/templatebin"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -40,12 +41,15 @@ type templateData struct {
 	AddGlobal         bool
 	AddPanic          bool
 	AddSoftDeletes    bool
+	AddEnumTypes      bool
+	EnumNullPrefix    string
 	NoContext         bool
 	NoHooks           bool
 	NoAutoTimestamps  bool
 	NoRowsAffected    bool
 	NoDriverTemplates bool
 	NoBackReferencing bool
+	AlwaysWrapErrors  bool
 
 	// Tags control which tags are added to the struct
 	Tags []string
@@ -68,10 +72,17 @@ type templateData struct {
 
 	// StringFuncs are usable in templates with stringMap
 	StringFuncs map[string]func(string) string
+
+	// AutoColumns set the name of the columns for auto timestamps and soft deletes
+	AutoColumns AutoColumns
 }
 
 func (t templateData) Quotes(s string) string {
 	return fmt.Sprintf("%s%s%s", t.LQ, s, t.RQ)
+}
+
+func (t templateData) QuoteMap(s []string) []string {
+	return strmangle.StringMap(t.Quotes, s)
 }
 
 func (t templateData) SchemaTable(table string) string {
@@ -99,11 +110,7 @@ func (t templateNameList) Less(k, j int) bool {
 	}
 
 	res := strings.Compare(t[k], t[j])
-	if res <= 0 {
-		return true
-	}
-
-	return false
+	return res <= 0
 }
 
 // Templates returns the name of all the templates defined in the template list
@@ -126,12 +133,12 @@ func (t templateList) Templates() []string {
 	return ret
 }
 
-func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateList, error) {
+func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs template.FuncMap) (*templateList, error) {
 	tpl := template.New("")
 
 	for _, t := range lazyTemplates {
 		firstDir := strings.Split(t.Name, string(filepath.Separator))[0]
-		isTest := strings.HasSuffix(firstDir, "_test")
+		isTest := firstDir == "test" || strings.HasSuffix(firstDir, "_test")
 		if testTemplates && !isTest || !testTemplates && isTest {
 			continue
 		}
@@ -141,7 +148,11 @@ func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool) (*templateL
 			return nil, errors.Wrapf(err, "failed to load template: %s", t.Name)
 		}
 
-		_, err = tpl.New(t.Name).Funcs(templateFunctions).Parse(string(byt))
+		_, err = tpl.New(t.Name).
+			Funcs(sprig.GenericFuncMap()).
+			Funcs(templateFunctions).
+			Funcs(customFuncs).
+			Parse(string(byt))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse template: %s", t.Name)
 		}
@@ -202,10 +213,13 @@ func (b base64Loader) String() string {
 	return fmt.Sprintf("base64:(sha256 of content): %x", sha)
 }
 
-type assetLoader string
+type assetLoader struct {
+	fs   fs.FS
+	name string
+}
 
 func (a assetLoader) Load() ([]byte, error) {
-	return templatebin.Asset(string(a))
+	return fs.ReadFile(a.fs, string(a.name))
 }
 
 func (a assetLoader) MarshalText() ([]byte, error) {
@@ -213,7 +227,7 @@ func (a assetLoader) MarshalText() ([]byte, error) {
 }
 
 func (a assetLoader) String() string {
-	return "asset:" + string(a)
+	return "asset:" + string(a.name)
 }
 
 // set is to stop duplication from named enums, allowing a template loop
@@ -242,7 +256,8 @@ func (o once) Put(s string) bool {
 // stringMap function.
 var templateStringMappers = map[string]func(string) string{
 	// String ops
-	"quoteWrap":       func(a string) string { return fmt.Sprintf(`"%s"`, a) },
+	"quoteWrap":       func(a string) string { return fmt.Sprintf(`%q`, a) },
+	"safeQuoteWrap":   func(a string) string { return fmt.Sprintf(`\"%s\"`, a) },
 	"replaceReserved": strmangle.ReplaceReservedWords,
 
 	// Casing
@@ -252,9 +267,9 @@ var templateStringMappers = map[string]func(string) string{
 
 var goVarnameReplacer = strings.NewReplacer("[", "_", "]", "_", ".", "_")
 
-// templateFunctions is a map of all the functions that get passed into the
+// templateFunctions is a map of some helper functions that get passed into the
 // templates. If you wish to pass a new function into your own template,
-// add a function pointer here.
+// you can add that with Config.CustomTemplateFuncs
 var templateFunctions = template.FuncMap{
 	// String ops
 	"quoteWrap": func(s string) string { return fmt.Sprintf(`"%s"`, s) },
@@ -280,14 +295,11 @@ var templateFunctions = template.FuncMap{
 	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
 
 	// Enum ops
-	"parseEnumName":       strmangle.ParseEnumName,
-	"parseEnumVals":       strmangle.ParseEnumVals,
-	"isEnumNormal":        strmangle.IsEnumNormal,
-	"stripWhitespace":     strmangle.StripWhitespace,
-	"shouldTitleCaseEnum": strmangle.ShouldTitleCaseEnum,
-	"onceNew":             newOnce,
-	"oncePut":             once.Put,
-	"onceHas":             once.Has,
+	"parseEnumName": strmangle.ParseEnumName,
+	"parseEnumVals": strmangle.ParseEnumVals,
+	"onceNew":       newOnce,
+	"oncePut":       once.Put,
+	"onceHas":       once.Has,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,
@@ -310,11 +322,12 @@ var templateFunctions = template.FuncMap{
 	},
 
 	// dbdrivers ops
-	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,
-	"filterColumnsByDefault": drivers.FilterColumnsByDefault,
-	"filterColumnsByEnum":    drivers.FilterColumnsByEnum,
-	"sqlColDefinitions":      drivers.SQLColDefinitions,
-	"columnNames":            drivers.ColumnNames,
-	"columnDBTypes":          drivers.ColumnDBTypes,
-	"getTable":               drivers.GetTable,
+	"filterColumnsByAuto":     drivers.FilterColumnsByAuto,
+	"filterColumnsByDefault":  drivers.FilterColumnsByDefault,
+	"filterColumnsByEnum":     drivers.FilterColumnsByEnum,
+	"sqlColDefinitions":       drivers.SQLColDefinitions,
+	"columnNames":             drivers.ColumnNames,
+	"columnDBTypes":           drivers.ColumnDBTypes,
+	"getTable":                drivers.GetTable,
+	"tablesHaveNullableEnums": drivers.TablesHaveNullableEnums,
 }

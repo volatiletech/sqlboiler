@@ -270,4 +270,7 @@ func TestColumnsFromList(t *testing.T) {
 	if got := ColumnsFromList([]string{"a.b", "b", "c.d", "c.a"}, "b"); len(got) != 0 {
 		t.Error("list was wrong:", got)
 	}
+	if got := ColumnsFromList([]string{"*.b", "b", "c.d"}, "c"); !reflect.DeepEqual(got, []string{"b", "d"}) {
+		t.Error("list was wrong:", got)
+	}
 }

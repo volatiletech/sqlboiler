@@ -77,6 +77,9 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 //   - If the ",bind" option is specified on a struct field and that field
 //     is a struct itself, it will be recursed into to look for fields for
 //     binding.
+//   - If one or more boil struct tags are duplicated and there are multiple
+//     matching columns for those tags the behaviour of Bind will be undefined
+//     for those fields with duplicated struct tags.
 //
 // Example usage:
 //

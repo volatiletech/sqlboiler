@@ -309,3 +309,101 @@ var (
 	applicatorSentinel    Applicator
 	applicatorSentinelVal = reflect.ValueOf(&applicatorSentinel).Elem()
 )
+
+// SetFromEmbeddedStruct sets `to` value from embedded struct
+// of the `from` struct or slice of structs.
+// Expects `to` and `from` to be a pair of pre-allocated **struct or *[]*struct.
+// Returns false if types do not match.
+func SetFromEmbeddedStruct(to interface{}, from interface{}) bool {
+	toPtrVal := reflect.ValueOf(to)
+	fromPtrVal := reflect.ValueOf(from)
+	if toPtrVal.Kind() != reflect.Ptr || fromPtrVal.Kind() != reflect.Ptr {
+		return false
+	}
+	toStructTyp, ok := singularStructType(to)
+	if !ok {
+		return false
+	}
+	fromStructTyp, ok := singularStructType(from)
+	if !ok {
+		return false
+	}
+	fieldNum, ok := embeddedStructFieldNum(fromStructTyp, toStructTyp)
+	if !ok {
+		return false
+	}
+	toVal := toPtrVal.Elem()
+	if toVal.Kind() == reflect.Interface {
+		toVal = reflect.ValueOf(toVal.Interface())
+	}
+	fromVal := fromPtrVal.Elem()
+	if fromVal.Kind() == reflect.Interface {
+		fromVal = reflect.ValueOf(fromVal.Interface())
+	}
+
+	if toVal.Kind() == reflect.Ptr && toVal.Elem().Kind() == reflect.Struct &&
+		fromVal.Kind() == reflect.Ptr && fromVal.Elem().Kind() == reflect.Struct {
+		toVal.Set(fromVal.Elem().Field(fieldNum).Addr())
+
+		return true
+	}
+
+	toKind := toPtrVal.Type().Elem().Kind()
+	fromKind := fromPtrVal.Type().Elem().Kind()
+
+	if toKind == reflect.Slice && fromKind == reflect.Slice {
+		toSlice := reflect.MakeSlice(toVal.Type(), fromVal.Len(), fromVal.Len())
+		for i := 0; i < fromVal.Len(); i++ {
+			toSlice.Index(i).Set(fromVal.Index(i).Elem().Field(fieldNum).Addr())
+		}
+		toVal.Set(toSlice)
+
+		return true
+	}
+
+	return false
+}
+
+// singularStructType returns singular struct type
+// from **struct or *[]*struct types.
+// Used for Load* methods during binding.
+func singularStructType(obj interface{}) (reflect.Type, bool) {
+	val := reflect.Indirect(reflect.ValueOf(obj))
+	if val.Kind() == reflect.Interface {
+		val = reflect.ValueOf(val.Interface())
+	}
+	typ := val.Type()
+	inSlice := false
+SWITCH:
+	switch typ.Kind() {
+	case reflect.Ptr:
+		typ = typ.Elem()
+
+		goto SWITCH
+	case reflect.Slice:
+		if inSlice {
+			// Slices inside other slices are not supported
+			return nil, false
+		}
+		inSlice = true
+		typ = typ.Elem()
+
+		goto SWITCH
+	case reflect.Struct:
+		return typ, true
+	default:
+		return nil, false
+	}
+}
+
+// embeddedStructFieldNum returns the index of embedded struct field of type `emb` inside `obj` struct.
+func embeddedStructFieldNum(obj reflect.Type, emb reflect.Type) (int, bool) {
+	for i := 0; i < obj.NumField(); i++ {
+		v := obj.Field(i)
+		if v.Type.Kind() == reflect.Struct &&
+			v.Anonymous && v.Type == emb {
+			return i, true
+		}
+	}
+	return 0, false
+}

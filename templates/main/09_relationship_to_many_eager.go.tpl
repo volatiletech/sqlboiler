@@ -17,9 +17,25 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	var object *{{$ltable.UpSingular}}
 
 	if singular {
-		object = {{$arg}}.(*{{$ltable.UpSingular}})
+		var ok bool
+		object, ok = {{$arg}}.(*{{$ltable.UpSingular}})
+		if !ok {
+			object = new({{$ltable.UpSingular}})
+			ok = queries.SetFromEmbeddedStruct(&object, &{{$arg}})
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, {{$arg}}))
+			}
+		}
 	} else {
-		slice = *{{$arg}}.(*[]*{{$ltable.UpSingular}})
+		s, ok := {{$arg}}.(*[]*{{$ltable.UpSingular}})
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, {{$arg}})
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, {{$arg}}))
+			}
+		}
 	}
 
 	args := make([]interface{}, 0, 1)

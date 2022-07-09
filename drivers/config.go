@@ -204,7 +204,7 @@ func ColumnsFromList(list []string, tablename string) []string {
 			continue
 		}
 
-		if splits[0] == tablename {
+		if splits[0] == tablename || splits[0] == "*" {
 			columns = append(columns, splits[1])
 		}
 	}

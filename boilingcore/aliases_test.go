@@ -16,6 +16,7 @@ func TestAliasesTables(t *testing.T) {
 			Columns: []drivers.Column{
 				{Name: "id"},
 				{Name: "name"},
+				{Name: "1number"},
 			},
 		},
 	}
@@ -27,8 +28,9 @@ func TestAliasesTables(t *testing.T) {
 			DownPlural:   "videos",
 			DownSingular: "video",
 			Columns: map[string]string{
-				"id":   "ID",
-				"name": "Name",
+				"id":      "ID",
+				"name":    "Name",
+				"1number": "C1number",
 			},
 			Relationships: make(map[string]RelationshipAlias),
 		}

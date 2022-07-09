@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -17,9 +16,7 @@ import (
 	"github.com/razor-1/sqlboiler/v4/importers"
 )
 
-//go:generate go-bindata -nometadata -pkg templatebin -o templatebin/bindata.go templates templates/singleton templates_test templates_test/singleton
-
-const sqlBoilerVersion = "4.6.0-razor-1"
+const sqlBoilerVersion = "4.11.0-razor-1"
 
 var (
 	flagConfigFile string
@@ -93,7 +90,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&flagConfigFile, "config", "c", "", "Filename of config file to override default lookup")
 	rootCmd.PersistentFlags().StringP("output", "o", "models", "The name of the folder to output to")
 	rootCmd.PersistentFlags().StringP("pkgname", "p", "models", "The name you wish to assign to your generated package")
-	rootCmd.PersistentFlags().StringSliceP("templates", "", nil, "A templates directory, overrides the bindata'd template folders in sqlboiler")
+	rootCmd.PersistentFlags().StringSliceP("templates", "", nil, "A templates directory, overrides the embedded template folders in sqlboiler")
 	rootCmd.PersistentFlags().StringSliceP("tag", "t", nil, "Struct tags to be included on your models in addition to json, yaml, toml")
 	rootCmd.PersistentFlags().StringSliceP("replace", "", nil, "Replace templates by directory: relpath/to_file.tpl:relpath/to_replacement.tpl")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug mode prints stack traces on error")
@@ -104,9 +101,12 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
 	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
+	rootCmd.PersistentFlags().BoolP("always-wrap-errors", "", false, "Wrap all returned errors with stacktraces, also sql.ErrNoRows")
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("add-soft-deletes", "", false, "Enable soft deletion by updating deleted_at timestamp")
+	rootCmd.PersistentFlags().BoolP("add-enum-types", "", false, "Enable generation of types for enums")
+	rootCmd.PersistentFlags().StringP("enum-null-prefix", "", "Null", "Name prefix of nullable enum types")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
@@ -147,24 +147,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 		return commandFailure("must provide a driver name")
 	}
 
-	driverName := args[0]
-	driverPath := args[0]
-
-	if strings.ContainsRune(driverName, os.PathSeparator) {
-		driverName = strings.Replace(filepath.Base(driverName), "sqlboiler-", "", 1)
-		driverName = strings.Replace(driverName, ".exe", "", 1)
-	} else {
-		driverPath = "sqlboiler-" + driverPath
-		if p, err := exec.LookPath(driverPath); err == nil {
-			driverPath = p
-		}
-	}
-
-	driverPath, err = filepath.Abs(driverPath)
+	driverName, driverPath, err := drivers.RegisterBinaryFromCmdArg(args[0])
 	if err != nil {
-		return errors.Wrap(err, "could not find absolute path to driver")
+		return errors.Wrap(err, "could not register driver")
 	}
-	drivers.RegisterBinary(driverName, driverPath)
 
 	cmdConfig = &boilingcore.Config{
 		DriverName:        driverName,
@@ -174,6 +160,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 		AddGlobal:         viper.GetBool("add-global-variants"),
 		AddPanic:          viper.GetBool("add-panic-variants"),
 		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
+		AddEnumTypes:      viper.GetBool("add-enum-types"),
+		EnumNullPrefix:    viper.GetString("enum-null-prefix"),
 		NoContext:         viper.GetBool("no-context"),
 		NoTests:           viper.GetBool("no-tests"),
 		NoHooks:           viper.GetBool("no-hooks"),
@@ -181,6 +169,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
 		NoDriverTemplates: viper.GetBool("no-driver-templates"),
 		NoBackReferencing: viper.GetBool("no-back-referencing"),
+		AlwaysWrapErrors:  viper.GetBool("always-wrap-errors"),
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		TagIgnore:         viper.GetStringSlice("tag-ignore"),
@@ -190,7 +179,20 @@ func preRun(cmd *cobra.Command, args []string) error {
 		Replacements:      viper.GetStringSlice("replace"),
 		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
 		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
-		Version:           sqlBoilerVersion,
+		AutoColumns: boilingcore.AutoColumns{
+			Created: viper.GetString("auto-columns.created"),
+			Updated: viper.GetString("auto-columns.updated"),
+			Deleted: viper.GetString("auto-columns.deleted"),
+		},
+		Inflections: boilingcore.Inflections{
+			Plural:        viper.GetStringMapString("inflections.plural"),
+			PluralExact:   viper.GetStringMapString("inflections.plural_exact"),
+			Singular:      viper.GetStringMapString("inflections.singular"),
+			SingularExact: viper.GetStringMapString("inflections.singular_exact"),
+			Irregular:     viper.GetStringMapString("inflections.irregular"),
+		},
+
+		Version: sqlBoilerVersion,
 	}
 
 	if cmdConfig.Debug {
@@ -199,8 +201,10 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	// Configure the driver
 	cmdConfig.DriverConfig = map[string]interface{}{
-		"whitelist": viper.GetStringSlice(driverName + ".whitelist"),
-		"blacklist": viper.GetStringSlice(driverName + ".blacklist"),
+		"whitelist":        viper.GetStringSlice(driverName + ".whitelist"),
+		"blacklist":        viper.GetStringSlice(driverName + ".blacklist"),
+		"add-enum-types":   cmdConfig.AddEnumTypes,
+		"enum-null-prefix": cmdConfig.EnumNullPrefix,
 	}
 
 	keys := allKeys(driverName)

@@ -178,9 +178,9 @@ func TestFilterForeignKeys(t *testing.T) {
 				{Name: "four_id"},
 			},
 			FKeys: []ForeignKey{
-				{Column: "two_id", ForeignTable: "two", ForeignColumn: "id"},
-				{Column: "three_id", ForeignTable: "three", ForeignColumn: "id"},
-				{Column: "four_id", ForeignTable: "four", ForeignColumn: "id"},
+				{Table: "one", Column: "two_id", ForeignTable: "two", ForeignColumn: "id"},
+				{Table: "one", Column: "three_id", ForeignTable: "three", ForeignColumn: "id"},
+				{Table: "one", Column: "four_id", ForeignTable: "four", ForeignColumn: "id"},
 			},
 		},
 		{
@@ -210,7 +210,12 @@ func TestFilterForeignKeys(t *testing.T) {
 	}{
 		{[]string{}, []string{}, 3},
 		{[]string{"one", "two", "three"}, []string{}, 2},
+		{[]string{"one.two_id", "two"}, []string{}, 1},
+		{[]string{"*.two_id", "two"}, []string{}, 1},
 		{[]string{}, []string{"three", "four"}, 1},
+		{[]string{}, []string{"three.id"}, 2},
+		{[]string{}, []string{"one.two_id"}, 2},
+		{[]string{}, []string{"*.two_id"}, 2},
 		{[]string{"one", "two"}, []string{"two"}, 0},
 	}
 
@@ -221,6 +226,34 @@ func TestFilterForeignKeys(t *testing.T) {
 			t.Errorf("%d) want: %d, got: %d\nTest: %#v", i, test.ExpectFkNum, fkNum, test)
 		}
 	}
+}
+
+func TestKnownColumn(t *testing.T) {
+	tests := []struct {
+		table     string
+		column    string
+		whitelist []string
+		blacklist []string
+		expected  bool
+	}{
+		{"one", "id", []string{"one"}, []string{}, true},
+		{"one", "id", []string{}, []string{"one"}, false},
+		{"one", "id", []string{"one.id"}, []string{}, true},
+		{"one", "id", []string{"one.id"}, []string{"one"}, false},
+		{"one", "id", []string{"two"}, []string{}, false},
+		{"one", "id", []string{"two"}, []string{"one"}, false},
+		{"one", "id", []string{"two.id"}, []string{}, false},
+		{"one", "id", []string{"*.id"}, []string{}, true},
+		{"one", "id", []string{"*.id"}, []string{"*.id"}, false},
+	}
+
+	for i, test := range tests {
+		known := knownColumn(test.table, test.column, test.whitelist, test.blacklist)
+		if known != test.expected {
+			t.Errorf("%d) want: %t, got: %t\nTest: %#v", i, test.expected, known, test)
+		}
+	}
+
 }
 
 func TestSetIsJoinTable(t *testing.T) {

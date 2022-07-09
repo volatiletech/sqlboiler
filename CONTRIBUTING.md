@@ -14,20 +14,20 @@ If you need quick communication we're usually on [Slack](https://sqlboiler.from-
 
 #### TLDR
 
-1. Open PR against **dev** branch with explanation
+1. Open PR against **master** branch with explanation
 1. Participate in Github Code Review
 
 #### Long version
 
 For code that requires little to no discussion, please just open a pull request with some
-explanation against the **dev** branch. All code goes through dev before going out in a release.
+explanation against the **master** branch. 
 
 ## Bigger Change
 
 #### TLDR
 
 1. Start proposal of idea in Github issue
-1. After design concensus, open PR with the work against the **dev** branch
+1. After design concensus, open PR with the work against the **master** branch
 1. Participate in Github Code Review
 
 #### Long version
@@ -37,26 +37,13 @@ before starting on a pull request, just so there's no time wasted in redoing/ref
 outright rejected because the PR is at odds with the design. The best way to accomplish this is to
 open an issue to discuss it. It can always start as a Slack conversation but should eventually end
 up as an issue to avoid penalizing the rest of the users for not being on Slack. Once we agree on
-the way to do something, then open the PR against the **dev** branch and we'll commence code review
-with the Github code review tools. Then it will be merged into dev, and later go out in a release.
+the way to do something, then open the PR against the **master** branch and we'll commence code review
+with the Github code review tools. Then it will be merged into master, and later go out in a release.
 
 ## Developer getting started
 
-1. Add a [Configuration files](https://github.com/razor-1/sqlboiler#configuration).
-1. You may need to install go-bindata first. Refer to this repo. https://github.com/kevinburke/go-bindata
-
-   ```
-   # Make sure the version is tag v3.22.0
-   go get -u github.com/kevinburke/go-bindata/...
-   ```
-
+1. Add a [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
 1. Write your changes
-1. If you changed template files, run the following command to re-generate the binddata.
-
-   ```
-   ./boil.sh go-generate all
-   ```
-
 1. Generate executable. Run again if you have changed anything in core code or driver code.
    ```
    ./boil.sh build all

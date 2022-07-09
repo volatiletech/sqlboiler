@@ -34,7 +34,7 @@ func scanPolygon(p *Polygon, src interface{}) error {
 		return err
 	}
 
-	if len(*p) <= 2 {
+	if len(*p) < 1 {
 		return errors.New("wrong polygon")
 	}
 

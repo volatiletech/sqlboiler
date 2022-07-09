@@ -75,6 +75,10 @@ func TestDriver(t *testing.T) {
 	}
 
 	for _, t := range info.Tables {
+		if t.IsView {
+			continue
+		}
+
 		t.PKey.Name = rgxKeyIDs.ReplaceAllString(t.PKey.Name, "")
 		for i := range t.FKeys {
 			t.FKeys[i].Name = rgxKeyIDs.ReplaceAllString(t.FKeys[i].Name, "")

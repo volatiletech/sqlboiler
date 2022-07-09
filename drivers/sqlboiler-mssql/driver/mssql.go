@@ -2,8 +2,10 @@ package driver
 
 import (
 	"database/sql"
+	"embed"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"net/url"
 	"strings"
 
@@ -15,11 +17,12 @@ import (
 	"github.com/volatiletech/strmangle"
 )
 
+//go:embed override
+var templates embed.FS
+
 func init() {
 	drivers.RegisterFromInit("mssql", &MSSQLDriver{})
 }
-
-//go:generate go-bindata -nometadata -pkg driver -prefix override override/...
 
 // Assemble is more useful for calling into the library so you don't
 // have to instantiate an empty type.
@@ -37,16 +40,24 @@ type MSSQLDriver struct {
 
 // Templates that should be added/overridden
 func (MSSQLDriver) Templates() (map[string]string, error) {
-	names := AssetNames()
 	tpls := make(map[string]string)
-	for _, n := range names {
-		b, err := Asset(n)
+	fs.WalkDir(templates, "override", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		tpls[n] = base64.StdEncoding.EncodeToString(b)
-	}
+		if d.IsDir() {
+			return nil
+		}
+
+		b, err := fs.ReadFile(templates, path)
+		if err != nil {
+			return err
+		}
+		tpls[strings.Replace(path, "override/", "", 1)] = base64.StdEncoding.EncodeToString(b)
+
+		return nil
+	})
 
 	return tpls, nil
 }
@@ -94,7 +105,6 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 			UseSchema:            true,
 			UseDefaultKeyword:    true,
 
-			UseAutoColumns:          true,
 			UseTopClause:            true,
 			UseOutputClause:         true,
 			UseCaseWhenExistsClause: true,
@@ -181,6 +191,69 @@ func (m *MSSQLDriver) TableNames(schema string, whitelist, blacklist []string) (
 	return names, nil
 }
 
+// ViewNames connects to the postgres database and
+// retrieves all view names from the information_schema where the
+// view schema is schema. It uses a whitelist and blacklist.
+func (m *MSSQLDriver) ViewNames(schema string, whitelist, blacklist []string) ([]string, error) {
+	var names []string
+
+	query := `select table_name from information_schema.views where table_schema = ?`
+	args := []interface{}{schema}
+	if len(whitelist) > 0 {
+		tables := drivers.TablesFromList(whitelist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, w := range tables {
+				args = append(args, w)
+			}
+		}
+	} else if len(blacklist) > 0 {
+		tables := drivers.TablesFromList(blacklist)
+		if len(tables) > 0 {
+			query += fmt.Sprintf(" and table_name not in (%s)", strings.Repeat(",?", len(tables))[1:])
+			for _, b := range tables {
+				args = append(args, b)
+			}
+		}
+	}
+
+	query += ` order by table_name;`
+
+	rows, err := m.conn.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+
+		names = append(names, name)
+	}
+
+	return names, nil
+}
+
+// ViewCapabilities return what actions are allowed for a view.
+func (m *MSSQLDriver) ViewCapabilities(schema, name string) (drivers.ViewCapabilities, error) {
+	// This depends on the specific query and is not possible to ensure
+	// from just the schema
+	capabilities := drivers.ViewCapabilities{
+		CanInsert: false,
+		CanUpsert: false,
+	}
+
+	return capabilities, nil
+}
+
+func (m *MSSQLDriver) ViewColumns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
+	return m.Columns(schema, tableName, whitelist, blacklist)
+}
+
 // Columns takes a table name and attempts to retrieve the table information
 // from the database information_schema.columns. It retrieves the column names
 // and column types and returns those as a []Column after TranslateColumnType()
@@ -217,7 +290,8 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
                              AND   constraint_name = tc.constraint_name) = 1) THEN 1
          ELSE 0
        END AS is_unique,
-	   COLUMNPROPERTY(object_id($1 + '.' + $2), c.column_name, 'IsIdentity') as is_identity
+	   COLUMNPROPERTY(object_id($1 + '.' + $2), c.column_name, 'IsIdentity') as is_identity,
+	   COLUMNPROPERTY(object_id($1 + '.' + $2), c.column_name, 'IsComputed') as is_computed
 	FROM information_schema.columns c
 	WHERE table_schema = $1 AND table_name = $2`
 
@@ -249,13 +323,13 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 
 	for rows.Next() {
 		var colName, colType, colFullType string
-		var nullable, unique, identity, auto bool
+		var nullable, unique, identity, computed bool
 		var defaultValue *string
-		if err := rows.Scan(&colName, &colFullType, &colType, &defaultValue, &nullable, &unique, &identity); err != nil {
+		if err := rows.Scan(&colName, &colFullType, &colType, &defaultValue, &nullable, &unique, &identity, &computed); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
 
-		auto = strings.EqualFold(colType, "timestamp") || strings.EqualFold(colType, "rowversion")
+		computed = computed || strings.EqualFold(colType, "timestamp") || strings.EqualFold(colType, "rowversion")
 
 		column := drivers.Column{
 			Name:          colName,
@@ -263,14 +337,18 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 			DBType:        colType,
 			Nullable:      nullable,
 			Unique:        unique,
-			AutoGenerated: auto,
+			AutoGenerated: computed || identity,
 		}
 
-		if defaultValue != nil && *defaultValue != "NULL" {
+		if defaultValue != nil {
 			column.Default = *defaultValue
-		} else if identity || auto {
-			column.Default = "auto"
 		}
+
+		// A generated column technically has a default value
+		if column.Default == "" && column.AutoGenerated {
+			column.Default = "AUTO_GENERATED"
+		}
+
 		columns = append(columns, column)
 	}
 
@@ -289,7 +367,7 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 
 	row := m.conn.QueryRow(query, tableName, schema)
 	if err = row.Scan(&pkey.Name); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

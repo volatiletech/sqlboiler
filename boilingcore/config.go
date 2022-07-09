@@ -9,8 +9,6 @@ import (
 	"github.com/razor-1/sqlboiler/v4/drivers"
 	"github.com/razor-1/sqlboiler/v4/importers"
 	"github.com/spf13/cast"
-	"github.com/razor-1/sqlboiler/v4/drivers"
-	"github.com/razor-1/sqlboiler/v4/importers"
 )
 
 // Config for the running of the commands

@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/razor-1/sqlboiler/v4/drivers"
 	"github.com/stretchr/testify/require"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
 	_ "modernc.org/sqlite"
 )
 

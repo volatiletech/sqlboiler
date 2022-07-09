@@ -9,8 +9,8 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/razor-1/sqlboiler/v4/drivers"
+	"github.com/razor-1/sqlboiler/v4/importers"
 	_ "modernc.org/sqlite"
 )
 

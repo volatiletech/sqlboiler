@@ -148,8 +148,8 @@ func tables(c Constructor, schema string, whitelist, blacklist []string, concurr
 	wg := sync.WaitGroup{}
 	errs := make(chan error, len(names))
 	for i, name := range names {
-		limiter.get()
 		wg.Add(1)
+		limiter.get()
 		go func(i int, name string) {
 			defer wg.Done()
 			defer limiter.put()

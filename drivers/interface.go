@@ -4,6 +4,7 @@ package drivers
 
 import (
 	"sort"
+	"sync"
 
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/importers"
@@ -17,6 +18,7 @@ const (
 	ConfigSchema         = "schema"
 	ConfigAddEnumTypes   = "add-enum-types"
 	ConfigEnumNullPrefix = "enum-null-prefix"
+	ConfigConcurrency    = "concurrency"
 
 	ConfigUser    = "user"
 	ConfigPass    = "pass"
@@ -24,6 +26,9 @@ const (
 	ConfigPort    = "port"
 	ConfigDBName  = "dbname"
 	ConfigSSLMode = "sslmode"
+
+	// DefaultConcurrency defines the default amount of threads to use when loading tables info
+	DefaultConcurrency = 10
 )
 
 // Interface abstracts either a side-effect imported driver or a binary
@@ -102,6 +107,32 @@ type TableColumnTypeTranslator interface {
 // Tables returns the metadata for all tables, minus the tables
 // specified in the blacklist.
 func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+	return TablesConcurrently(c, schema, whitelist, blacklist, 1)
+}
+
+// TablesConcurrently is a concurrent version of Tables. It returns the
+// metadata for all tables, minus the tables specified in the blacklist.
+func TablesConcurrently(c Constructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
+	var err error
+	var ret []Table
+
+	ret, err = tables(c, schema, whitelist, blacklist, concurrency)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to load tables")
+	}
+
+	if vc, ok := c.(ViewConstructor); ok {
+		v, err := views(vc, schema, whitelist, blacklist, concurrency)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load views")
+		}
+		ret = append(ret, v...)
+	}
+
+	return ret, nil
+}
+
+func tables(c Constructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
 	var err error
 
 	names, err := c.TableNames(schema, whitelist, blacklist)
@@ -111,68 +142,87 @@ func Tables(c Constructor, schema string, whitelist, blacklist []string) ([]Tabl
 
 	sort.Strings(names)
 
-	var tables []Table
-	for _, name := range names {
-		t := Table{
-			Name: name,
-		}
+	ret := make([]Table, len(names))
 
-		if t.Columns, err = c.Columns(schema, name, whitelist, blacklist); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
-		}
-
-		tr, ok := c.(TableColumnTypeTranslator)
-		if ok {
-			for i, col := range t.Columns {
-				t.Columns[i] = tr.TranslateTableColumnType(col, name)
+	limiter := newConcurrencyLimiter(concurrency)
+	wg := sync.WaitGroup{}
+	errs := make(chan error, len(names))
+	for i, name := range names {
+		wg.Add(1)
+		limiter.get()
+		go func(i int, name string) {
+			defer wg.Done()
+			defer limiter.put()
+			t, err := table(c, schema, name, whitelist, blacklist)
+			if err != nil {
+				errs <- err
+				return
 			}
-		} else {
-			for i, col := range t.Columns {
-				t.Columns[i] = c.TranslateColumnType(col)
-			}
-		}
+			ret[i] = t
+		}(i, name)
+	}
 
-		if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
-		}
+	wg.Wait()
 
-		if t.FKeys, err = c.ForeignKeyInfo(schema, name); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
-		}
-
-		filterPrimaryKey(&t, whitelist, blacklist)
-		filterForeignKeys(&t, whitelist, blacklist)
-
-		setIsJoinTable(&t)
-
-		tables = append(tables, t)
+	// return first error occurred if any
+	if len(errs) > 0 {
+		return nil, <-errs
 	}
 
 	// Relationships have a dependency on foreign key nullability.
-	for i := range tables {
-		tbl := &tables[i]
-		setForeignKeyConstraints(tbl, tables)
+	for i := range ret {
+		tbl := &ret[i]
+		setForeignKeyConstraints(tbl, ret)
 	}
-	for i := range tables {
-		tbl := &tables[i]
-		setRelationships(tbl, tables)
+	for i := range ret {
+		tbl := &ret[i]
+		setRelationships(tbl, ret)
 	}
 
-	if vc, ok := c.(ViewConstructor); ok {
-		viewTables, err := views(vc, schema, whitelist, blacklist)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to load views")
+	return ret, nil
+}
+
+// table returns columns info for a given table
+func table(c Constructor, schema string, name string, whitelist, blacklist []string) (Table, error) {
+	var err error
+	t := &Table{
+		Name: name,
+	}
+
+	if t.Columns, err = c.Columns(schema, name, whitelist, blacklist); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch table column info (%s)", name)
+	}
+
+	tr, ok := c.(TableColumnTypeTranslator)
+	if ok {
+		for i, col := range t.Columns {
+			t.Columns[i] = tr.TranslateTableColumnType(col, name)
 		}
-
-		tables = append(tables, viewTables...)
+	} else {
+		for i, col := range t.Columns {
+			t.Columns[i] = c.TranslateColumnType(col)
+		}
 	}
 
-	return tables, nil
+	if t.PKey, err = c.PrimaryKeyInfo(schema, name); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch table pkey info (%s)", name)
+	}
+
+	if t.FKeys, err = c.ForeignKeyInfo(schema, name); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch table fkey info (%s)", name)
+	}
+
+	filterPrimaryKey(t, whitelist, blacklist)
+	filterForeignKeys(t, whitelist, blacklist)
+
+	setIsJoinTable(t)
+
+	return *t, nil
 }
 
 // views returns the metadata for all views, minus the views
 // specified in the blacklist.
-func views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]Table, error) {
+func views(c ViewConstructor, schema string, whitelist, blacklist []string, concurrency int) ([]Table, error) {
 	var err error
 
 	names, err := c.ViewNames(schema, whitelist, blacklist)
@@ -182,36 +232,64 @@ func views(c ViewConstructor, schema string, whitelist, blacklist []string) ([]T
 
 	sort.Strings(names)
 
-	var views []Table
-	for _, name := range names {
-		t := Table{
-			IsView: true,
-			Name:   name,
-		}
+	ret := make([]Table, len(names))
 
-		if t.ViewCapabilities, err = c.ViewCapabilities(schema, name); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch view capabilities info (%s)", name)
-		}
-
-		if t.Columns, err = c.ViewColumns(schema, name, whitelist, blacklist); err != nil {
-			return nil, errors.Wrapf(err, "unable to fetch view column info (%s)", name)
-		}
-
-		tr, ok := c.(TableColumnTypeTranslator)
-		if ok {
-			for i, col := range t.Columns {
-				t.Columns[i] = tr.TranslateTableColumnType(col, name)
+	limiter := newConcurrencyLimiter(concurrency)
+	wg := sync.WaitGroup{}
+	errs := make(chan error, len(names))
+	for i, name := range names {
+		wg.Add(1)
+		limiter.get()
+		go func(i int, name string) {
+			defer wg.Done()
+			defer limiter.put()
+			t, err := view(c, schema, name, whitelist, blacklist)
+			if err != nil {
+				errs <- err
+				return
 			}
-		} else {
-			for i, col := range t.Columns {
-				t.Columns[i] = c.TranslateColumnType(col)
-			}
-		}
-
-		views = append(views, t)
+			ret[i] = t
+		}(i, name)
 	}
 
-	return views, nil
+	wg.Wait()
+
+	// return first error occurred if any
+	if len(errs) > 0 {
+		return nil, <-errs
+	}
+
+	return ret, nil
+}
+
+// view returns columns info for a given view
+func view(c ViewConstructor, schema string, name string, whitelist, blacklist []string) (Table, error) {
+	var err error
+	t := Table{
+		IsView: true,
+		Name:   name,
+	}
+
+	if t.ViewCapabilities, err = c.ViewCapabilities(schema, name); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch view capabilities info (%s)", name)
+	}
+
+	if t.Columns, err = c.ViewColumns(schema, name, whitelist, blacklist); err != nil {
+		return Table{}, errors.Wrapf(err, "unable to fetch view column info (%s)", name)
+	}
+
+	tr, ok := c.(TableColumnTypeTranslator)
+	if ok {
+		for i, col := range t.Columns {
+			t.Columns[i] = tr.TranslateTableColumnType(col, name)
+		}
+	} else {
+		for i, col := range t.Columns {
+			t.Columns[i] = c.TranslateColumnType(col)
+		}
+	}
+
+	return t, nil
 }
 
 func knownColumn(table string, column string, whitelist, blacklist []string) bool {
@@ -219,7 +297,6 @@ func knownColumn(table string, column string, whitelist, blacklist []string) boo
 		strmangle.SetInclude(table, whitelist) ||
 		strmangle.SetInclude(table+"."+column, whitelist) ||
 		strmangle.SetInclude("*."+column, whitelist)) &&
-
 		(len(blacklist) == 0 || (!strmangle.SetInclude(table, blacklist) &&
 			!strmangle.SetInclude(table+"."+column, blacklist) &&
 			!strmangle.SetInclude("*."+column, blacklist)))
@@ -293,4 +370,24 @@ func setForeignKeyConstraints(t *Table, tables []Table) {
 func setRelationships(t *Table, tables []Table) {
 	t.ToOneRelationships = toOneRelationships(*t, tables)
 	t.ToManyRelationships = toManyRelationships(*t, tables)
+}
+
+// concurrencyCounter is a helper structure that can limit amount of concurrently processed requests
+type concurrencyLimiter chan struct{}
+
+func newConcurrencyLimiter(capacity int) concurrencyLimiter {
+	ret := make(concurrencyLimiter, capacity)
+	for i := 0; i < capacity; i++ {
+		ret <- struct{}{}
+	}
+
+	return ret
+}
+
+func (c concurrencyLimiter) get() {
+	<-c
+}
+
+func (c concurrencyLimiter) put() {
+	c <- struct{}{}
 }

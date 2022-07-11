@@ -70,6 +70,7 @@ func (s SQLiteDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	dbname := config.MustString(drivers.ConfigDBName)
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	s.connStr = SQLiteBuildQueryString(dbname)
 	s.dbConn, err = sql.Open("sqlite", s.connStr)
@@ -95,7 +96,7 @@ func (s SQLiteDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		},
 	}
 
-	dbinfo.Tables, err = drivers.Tables(s, "", whitelist, blacklist)
+	dbinfo.Tables, err = drivers.TablesConcurrently(s, "", whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}

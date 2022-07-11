@@ -81,6 +81,7 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	schema := config.DefaultString(drivers.ConfigSchema, "dbo")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	m.connStr = MSSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mssql", m.connStr)
@@ -110,7 +111,7 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 			UseCaseWhenExistsClause: true,
 		},
 	}
-	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)
+	dbinfo.Tables, err = drivers.TablesConcurrently(m, schema, whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}

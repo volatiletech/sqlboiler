@@ -66,7 +66,7 @@ func (m *MockDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, er
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 
-	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)
+	dbinfo.Tables, err = drivers.TablesConcurrently(m, schema, whitelist, blacklist, 1)
 	if err != nil {
 		return nil, err
 	}

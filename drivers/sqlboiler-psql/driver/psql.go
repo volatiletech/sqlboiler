@@ -55,7 +55,7 @@ type columnIdentifier struct {
 }
 
 // Templates that should be added/overridden
-func (p PostgresDriver) Templates() (map[string]string, error) {
+func (p *PostgresDriver) Templates() (map[string]string, error) {
 	tpls := make(map[string]string)
 	fs.WalkDir(templates, "override", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -118,6 +118,10 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	p.version, err = p.getVersion()
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-psql failed to get database version")
+	}
+
+	if err = p.loadUniqueColumns(); err != nil {
+		return nil, errors.Wrap(err, "sqlboiler-psql failed to load unique columns")
 	}
 
 	dbinfo = &drivers.DBInfo{
@@ -384,9 +388,6 @@ func (p *PostgresDriver) ViewColumns(schema, tableName string, whitelist, blackl
 // and column types and returns those as a []Column after TranslateColumnType()
 // converts the SQL types to Go types, for example: "varchar" to "string"
 func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist []string) ([]drivers.Column, error) {
-	if err := p.loadUniqueColumns(); err != nil {
-		return nil, errors.Wrapf(err, "unable to load unique data")
-	}
 	var columns []drivers.Column
 	args := []interface{}{schema, tableName}
 

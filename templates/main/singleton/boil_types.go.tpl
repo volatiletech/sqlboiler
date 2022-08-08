@@ -146,9 +146,9 @@ It only titlecases the EnumValue portion if it's snake-cased.
 					}}
 						{{$enumType := ""}}
 						{{- if $isNamed -}}
-							{{- $enumType = (print $.EnumNullPrefix $enumName) }}
+							{{- $enumType = (print (titleCase $.EnumNullPrefix) $enumName) }}
 						{{- else -}}
-							{{- $enumType = printf "%s%s" (titleCase $table.Name) (print $.EnumNullPrefix (titleCase $col.Name)) -}}
+							{{- $enumType = printf "%s%s" (titleCase $table.Name) (print (titleCase $.EnumNullPrefix) (titleCase $col.Name)) -}}
 						{{- end -}}
 						// {{$enumType}} is a nullable {{$enumName}} enum type. It supports SQL and JSON serialization.
 						type {{$enumType}} struct {

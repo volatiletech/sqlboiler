@@ -64,14 +64,14 @@ func (w {{$name}}) LTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field,
 func (w {{$name}}) GT(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GT, x) }
 func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 		{{if or (isPrimitive .Type) (isNullPrimitive .Type) (isEnumDBType .DBType) -}}
-func (w {{$name}}) IN(slice []{{toPrimitive .Type}}) qm.QueryMod {
+func (w {{$name}}) IN(slice []{{convertNullToPrimitive .Type}}) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w {{$name}}) NIN(slice []{{toPrimitive .Type}}) qm.QueryMod {
+func (w {{$name}}) NIN(slice []{{convertNullToPrimitive .Type}}) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 	  values = append(values, value)

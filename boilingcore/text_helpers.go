@@ -168,12 +168,11 @@ func isNullPrimitive(typ string) bool {
 	return false
 }
 
-// toPrimitive takes a type name and returns the underlying primitive type name X if it is a `null.X`,
+// convertNullToPrimitive takes a type name and returns the underlying primitive type name X if it is a `null.X`,
 // otherwise it returns the input value unchanged
-func toPrimitive(typ string) string {
+func convertNullToPrimitive(typ string) string {
 	if isNullPrimitive(typ) {
 		return strings.ToLower(strings.Split(typ, ".")[1])
 	}
 	return typ
 }
-

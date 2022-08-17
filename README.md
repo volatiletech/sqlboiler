@@ -986,7 +986,6 @@ type Pilot struct {
 }
 
 type pilotR struct {
-  Licenses  LicenseSlice
   Languages LanguageSlice
   Jets      JetSlice
 }

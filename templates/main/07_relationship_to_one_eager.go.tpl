@@ -56,9 +56,25 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 	var object *{{$ltable.UpSingular}}
 
 	if singular {
-		object = {{$arg}}.(*{{$ltable.UpSingular}})
+		var ok bool
+		object, ok = {{$arg}}.(*{{$ltable.UpSingular}})
+		if !ok {
+			object = new({{$ltable.UpSingular}})
+			ok = queries.SetFromEmbeddedStruct(&object, &{{$arg}})
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, {{$arg}}))
+			}
+		}
 	} else {
-		slice = *{{$arg}}.(*[]*{{$ltable.UpSingular}})
+		s, ok := {{$arg}}.(*[]*{{$ltable.UpSingular}})
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, {{$arg}})
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, {{$arg}}))
+			}
+		}
 	}
 
 	args := make([]interface{}, 0, 1)
@@ -108,7 +124,7 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 	    qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`),
 	    qm.WhereIn(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{.ForeignColumn}} in ?`, args...),
 	    {{if and $.AddSoftDeletes $canSoftDelete -}}
-	    qmhelper.WhereIsNull(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.deleted_at`),
+	    qmhelper.WhereIsNull(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{or $.AutoColumns.Deleted "deleted_at"}}`),
 	    {{- end}}
     )
 	if mods != nil {

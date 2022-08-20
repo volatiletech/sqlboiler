@@ -6,6 +6,8 @@ drop table if exists sponsors;
 drop table if exists users;
 drop table if exists type_monsters;
 drop view if exists user_videos;
+drop view if exists type_monsters_v;
+drop materialized view if exists type_monsters_mv;
 
 drop type if exists workday;
 create type workday as enum('monday', 'tuesday', 'wednesday', 'thursday', 'friday');
@@ -255,3 +257,6 @@ create view user_videos as
 select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
 from users u
 inner join videos v on v.user_id = u.id;
+
+create view type_monsters_v as select * from type_monsters; 
+create materialized view type_monsters_mv as select * from type_monsters_v;

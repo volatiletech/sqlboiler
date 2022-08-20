@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	// Side effect import go-mssqldb
-	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/friendsofgo/errors"
 	"github.com/razor-1/sqlboiler/v4/drivers"
 	"github.com/razor-1/sqlboiler/v4/importers"
+	_ "github.com/microsoft/go-mssqldb"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -81,6 +81,7 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	schema := config.DefaultString(drivers.ConfigSchema, "dbo")
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	m.connStr = MSSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	m.conn, err = sql.Open("mssql", m.connStr)
@@ -110,7 +111,7 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 			UseCaseWhenExistsClause: true,
 		},
 	}
-	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)
+	dbinfo.Tables, err = drivers.TablesConcurrently(m, schema, whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}
@@ -569,7 +570,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/spf13/viper"`,
 				`"github.com/razor-1/sqlboiler/v4/drivers/sqlboiler-mssql/driver"`,
 				`"github.com/volatiletech/randomize"`,
-				`_ "github.com/denisenkom/go-mssqldb"`,
+				`_ "github.com/microsoft/go-mssqldb"`,
 			},
 		},
 	}
@@ -633,7 +634,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"github.com/razor-1/sqlboiler/v4/types"`},
 		},
 		"mssql.UniqueIdentifier": {
-			Standard: importers.List{`"github.com/denisenkom/go-mssqldb"`},
+			Standard: importers.List{`"github.com/microsoft/go-mssqldb"`},
 		},
 	}
 	return col, err

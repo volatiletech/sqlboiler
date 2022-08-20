@@ -64,7 +64,7 @@ func (s *sqliteTester) conn() (*sql.DB, error) {
 	}
 
 	var err error
-	s.dbConn, err = sql.Open("sqlite", fmt.Sprintf("file:%s?_loc=UTC", s.testDBName))
+	s.dbConn, err = sql.Open("sqlite", fmt.Sprintf("file:%s?cache=shared&_loc=UTC", s.testDBName))
         if err != nil {
         return nil, err
 	}

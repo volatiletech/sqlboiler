@@ -300,6 +300,7 @@ var templateFunctions = template.FuncMap{
 	"onceNew":       newOnce,
 	"oncePut":       once.Put,
 	"onceHas":       once.Has,
+	"isEnumDBType":  drivers.IsEnumDBType,
 
 	// String Map ops
 	"makeStringMap": strmangle.MakeStringMap,
@@ -311,25 +312,24 @@ var templateFunctions = template.FuncMap{
 	"whereClause": strmangle.WhereClause,
 
 	// Alias and text helping
-	"aliasCols":       func(ta TableAlias) func(string) string { return ta.Column },
-	"usesPrimitives":  usesPrimitives,
-	"isPrimitive":     isPrimitive,
-	"isNullPrimitive": isNullPrimitive,
-	"toPrimitive":     toPrimitive,
+	"aliasCols":              func(ta TableAlias) func(string) string { return ta.Column },
+	"usesPrimitives":         usesPrimitives,
+	"isPrimitive":            isPrimitive,
+	"isNullPrimitive":        isNullPrimitive,
+	"convertNullToPrimitive": convertNullToPrimitive,
 	"splitLines": func(a string) []string {
 		if a == "" {
 			return nil
 		}
-		return strings.Split(a, "\n")
+		return strings.Split(strings.TrimSpace(a), "\n")
 	},
 
 	// dbdrivers ops
-	"filterColumnsByAuto":     drivers.FilterColumnsByAuto,
-	"filterColumnsByDefault":  drivers.FilterColumnsByDefault,
-	"filterColumnsByEnum":     drivers.FilterColumnsByEnum,
-	"sqlColDefinitions":       drivers.SQLColDefinitions,
-	"columnNames":             drivers.ColumnNames,
-	"columnDBTypes":           drivers.ColumnDBTypes,
-	"getTable":                drivers.GetTable,
-	"tablesHaveNullableEnums": drivers.TablesHaveNullableEnums,
+	"filterColumnsByAuto":    drivers.FilterColumnsByAuto,
+	"filterColumnsByDefault": drivers.FilterColumnsByDefault,
+	"filterColumnsByEnum":    drivers.FilterColumnsByEnum,
+	"sqlColDefinitions":      drivers.SQLColDefinitions,
+	"columnNames":            drivers.ColumnNames,
+	"columnDBTypes":          drivers.ColumnDBTypes,
+	"getTable":               drivers.GetTable,
 }

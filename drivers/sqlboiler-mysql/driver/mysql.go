@@ -83,6 +83,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	schema := dbname
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
+	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	tinyIntAsIntIntf, ok := config["tinyint_as_int"]
 	if ok {
@@ -116,7 +117,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 		},
 	}
 
-	dbinfo.Tables, err = drivers.Tables(m, schema, whitelist, blacklist)
+	dbinfo.Tables, err = drivers.TablesConcurrently(m, schema, whitelist, blacklist, concurrency)
 	if err != nil {
 		return nil, err
 	}

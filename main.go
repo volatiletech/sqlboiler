@@ -16,7 +16,7 @@ import (
 	"github.com/razor-1/sqlboiler/v4/importers"
 )
 
-const sqlBoilerVersion = "4.11.0-razor-1"
+const sqlBoilerVersion = "4.12.0-razor-1"
 
 var (
 	flagConfigFile string

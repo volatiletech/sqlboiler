@@ -115,7 +115,7 @@ func (m testMockDriver) UseIndexPlaceholders() bool {
 func TestTables(t *testing.T) {
 	t.Parallel()
 
-	tables, err := Tables(testMockDriver{}, "public", nil, nil)
+	tables, err := TablesConcurrently(testMockDriver{}, "public", nil, nil, 1)
 	if err != nil {
 		t.Error(err)
 	}

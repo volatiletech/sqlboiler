@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ericlagergren/decimal"
+	"github.com/razor-1/decimal"
 )
 
 var (

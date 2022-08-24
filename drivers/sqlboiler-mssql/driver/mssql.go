@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	// Side effect import go-mssqldb
-	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/friendsofgo/errors"
+	_ "github.com/microsoft/go-mssqldb"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
 	"github.com/volatiletech/strmangle"
@@ -570,7 +570,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/spf13/viper"`,
 				`"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql/driver"`,
 				`"github.com/volatiletech/randomize"`,
-				`_ "github.com/denisenkom/go-mssqldb"`,
+				`_ "github.com/microsoft/go-mssqldb"`,
 			},
 		},
 	}
@@ -634,7 +634,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
 		},
 		"mssql.UniqueIdentifier": {
-			Standard: importers.List{`"github.com/denisenkom/go-mssqldb"`},
+			Standard: importers.List{`"github.com/microsoft/go-mssqldb"`},
 		},
 	}
 	return col, err

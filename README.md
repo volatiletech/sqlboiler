@@ -986,7 +986,6 @@ type Pilot struct {
 }
 
 type pilotR struct {
-  Licenses  LicenseSlice
   Languages LanguageSlice
   Jets      JetSlice
 }
@@ -1314,12 +1313,12 @@ type PilotAndJet struct {
 
 var paj PilotAndJet
 // Use a raw query
-err := queries.Raw(db, `
+err := queries.Raw(`
   select pilots.id as "pilots.id", pilots.name as "pilots.name",
   jets.id as "jets.id", jets.pilot_id as "jets.pilot_id",
   jets.age as "jets.age", jets.name as "jets.name", jets.color as "jets.color"
   from pilots inner join jets on jets.pilot_id=?`, 23,
-).Bind(&paj)
+).Bind(ctx, db, &paj)
 
 // Use query building
 err := models.NewQuery(

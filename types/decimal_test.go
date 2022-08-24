@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ericlagergren/decimal"
+	"github.com/razor-1/decimal"
 	"github.com/razor-1/sqlboiler/v4/queries/qmhelper"
 )
 

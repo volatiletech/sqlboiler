@@ -15,7 +15,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
-const sqlBoilerVersion = "4.12.0"
+const sqlBoilerVersion = "4.13.0"
 
 var (
 	flagConfigFile string
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	// Set up the cobra root command
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:   "sqlboiler [flags] <driver>",
 		Short: "SQL Boiler generates an ORM tailored to your database schema.",
 		Long: "SQL Boiler generates a Go ORM from template files, tailored to your database schema.\n" +

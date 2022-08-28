@@ -12,6 +12,7 @@ import (
 	// Side effect import go-mssqldb
 	"github.com/friendsofgo/errors"
 	_ "github.com/microsoft/go-mssqldb"
+	"github.com/volatiletech/sqlboiler/v5/drivers"
 	"github.com/volatiletech/sqlboiler/v5/importers"
 	"github.com/volatiletech/strmangle"
 )

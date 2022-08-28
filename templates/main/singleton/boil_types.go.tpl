@@ -120,19 +120,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 							{{- else -}}
 								{{- $enumValues = printf "%s%s" $enumValues ", " -}}
 							{{- end -}}
-
-<<<<<<< HEAD
-								{{- $enumValue := titleCase $val -}}
-								{{- $enumValues = printf "%s%s%s" $enumValues $enumName $enumValue -}}
-							{{- end}}
-							switch e {
-							case {{$enumValues}}:
-								return nil
-							default:
-								return errors.New("enum is not valid")
-							}
-=======
-							{{- $valStripped := stripWhitespace $val -}}
+							{{- $valStripped := trim $val -}}
 							{{- $enumValue := $valStripped -}}
 							{{- if shouldTitleCaseEnum $valStripped -}}
 								{{- $enumValue = titleCase $valStripped -}}
@@ -145,7 +133,6 @@ It only titlecases the EnumValue portion if it's snake-cased.
 							return nil
 						default:
 							return errors.New("enum is not valid")
->>>>>>> e00a6c3 (Always generate enum types. Remove --add-enum-types flag.)
 						}
 					}
 

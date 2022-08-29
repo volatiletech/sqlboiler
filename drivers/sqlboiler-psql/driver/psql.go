@@ -197,7 +197,6 @@ func (p *PostgresDriver) TableNames(schema string, whitelist, blacklist []string
 	query += ` order by table_name;`
 
 	rows, err := p.conn.Query(query, args...)
-
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +254,6 @@ func (p *PostgresDriver) ViewNames(schema string, whitelist, blacklist []string)
 	query += ` order by table_name;`
 
 	rows, err := p.conn.Query(query, args...)
-
 	if err != nil {
 		return nil, err
 	}
@@ -502,7 +500,18 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		) as column_full_type,
 
 		c.udt_name,
-		e.data_type as array_type,
+		(
+			SELECT
+				data_type
+			FROM
+				information_schema.element_types e
+			WHERE
+				c.table_catalog = e.object_catalog
+				AND c.table_schema = e.object_schema
+				AND c.table_name = e.object_name
+				AND 'TABLE' = e.object_type
+				AND c.dtd_identifier = e.collection_type_identifier
+		) AS array_type,
 		c.domain_name,
 		c.column_default,
 
@@ -525,10 +534,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 		from information_schema.columns as c
 		inner join pg_namespace as pgn on pgn.nspname = c.udt_schema
-		left join pg_type pgt on c.data_type = 'USER-DEFINED' and pgn.oid = pgt.typnamespace and c.udt_name = pgt.typname
-		left join information_schema.element_types e
-			on ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
-			= (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier)),
+		left join pg_type pgt on c.data_type = 'USER-DEFINED' and pgn.oid = pgt.typnamespace and c.udt_name = pgt.typname,
 		lateral (select
 			(
 				case when pgt.typtype = 'e'
@@ -594,7 +600,6 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 	query += ` order by c.ordinal_position;`
 
 	rows, err := p.conn.Query(query, args...)
-
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.13.0] - 2022-08-28
+
+### Added
+
+- Generate IN/NIN whereHelpers for nullable types (thanks @fdegiuli)
+
+### Fixed
+
+- Fixed concurrent map writes in psql driver (thanks @pavel-krush)
+- Force title case for enum null prefix (thanks @optiman)
+
 ## [v4.12.0] - 2022-07-26
 
 ### Added
@@ -14,7 +25,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Support for psql materialized view (thanks @severedsea)
 - Support loading model relationships when binding to a struct with embedded model (thanks @optiman)
 
-### Fixes
+### Fixed
 
 - Fix panic when missing primary key in table (thanks @zapo)
 - Fix some SQLite tests by enabling shared cache (thanks @gabe565)
@@ -33,7 +44,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - When title casing UPPER_SNAKE_CASE strings, underscores are not removed for readablity.
 
-### Fixes
+### Fixed
 
 - Fix panic when a column referrring a foreign key is ignored
   (thanks @zapo)
@@ -42,13 +53,13 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [v4.10.2] - 2022-04-15
 
-### Fixes
+### Fixed
 
 - Fix performance issue when scanning pgeo point (thanks @ivokanchev)
 
 ## [v4.10.1] - 2022-04-15
 
-### Fixes
+### Fixed
 
 - Properly assign new query object in models.Pural()
 
@@ -58,7 +69,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Add config options to allow user defined rules for inflections
 
-### Fixes
+### Fixed
 
 - Don't generate test suites for views
 - Properly assign new query object in models.Pural()
@@ -67,14 +78,14 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [v4.9.2] - 2022-04-11
 
-### Fixes
+### Fixed
 
 - Use correct column alias during soft delete
 - Use a default "table.*" for model queries
 
 ## [v4.9.1] - 2022-04-08
 
-### Fixes
+### Fixed
 
 - Fixes issue with column name quotinc in many-to-many eager load
 - Properly honor `--no-back-referencing` in relationship setops
@@ -88,7 +99,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Add `DefaultTemplates` to `boilingcore.Config` to change the base template files to use for generation
 - Add `CustomTemplateFuncs` to `boilingcore.Config` to supply additional functions that can be used in templates (thanks @ccakes)
 
-### Fixes
+### Fixed
 
 - Fixes issues with detecting enum values that contain uppercases
 - Properly wrap column names in quotes when loading many-to-many relationships (thanks @bryanmcgrane)
@@ -100,7 +111,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Add missing function `func (modelQuery) DeleteAllGP(...)` (thanks @parnic)
 
-### Fixes
+### Fixed
 
 - Fixed issue with generation of both nullable and non-nullable enum types (thanks @optiman)
 
@@ -111,7 +122,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Do not generate a template file if the content is empty
 - Add function `drivers.RegisterBinaryFromCmdArg()` to extract binary registration
 
-### Fixes
+### Fixed
 
 - Fix panic on zero value of `types.NullDecimal`
 - `driver.Value()` for zero `types.Decimal` is now "0".

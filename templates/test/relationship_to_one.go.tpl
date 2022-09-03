@@ -49,6 +49,14 @@ func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(
 		t.Errorf("want: %v, got %v", foreign.{{$fcolField}}, check.{{$fcolField}})
 	}
 
+	{{if not $.NoHooks -}}
+	ranAfterSelectHook := false
+	Add{{$ftable.UpSingular}}Hook(boil.AfterSelectHook, func({{if not $.NoContext}}ctx context.Context, {{end}}e boil.ContextExecutor, o *{{$ftable.UpSingular}}) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+	{{- end}}
+
 	slice := {{$ltable.UpSingular}}Slice{&local}
 	if err = local.L.Load{{$rel.Foreign}}({{if not $.NoContext}}ctx, {{end -}} tx, false, (*[]*{{$ltable.UpSingular}})(&slice), nil); err != nil {
 		t.Fatal(err)
@@ -64,6 +72,12 @@ func test{{$ltable.UpSingular}}ToOne{{$ftable.UpSingular}}Using{{$rel.Foreign}}(
 	if local.R.{{$rel.Foreign}} == nil {
 		t.Error("struct should have been eager loaded")
 	}
+
+	{{if not $.NoHooks -}}
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+	{{- end}}
 }
 
 {{end -}}{{/* range */}}

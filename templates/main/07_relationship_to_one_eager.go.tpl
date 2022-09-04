@@ -113,7 +113,7 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 	}
 
 	{{if not $.NoHooks -}}
-	if len({{$ltable.DownSingular}}AfterSelectHooks) != 0 {
+	if len({{$ftable.DownSingular}}AfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks({{if $.NoContext}}e{{else}}ctx, e{{end}}); err != nil {
 				return err

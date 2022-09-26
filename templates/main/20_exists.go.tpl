@@ -76,4 +76,9 @@ func {{$alias.UpSingular}}Exists({{if .NoContext}}exec boil.Executor{{else}}ctx 
 	return exists, nil
 }
 
+// Exists checks if the {{$alias.UpSingular}} row exists.
+func (o *{{$alias.UpSingular}}) Exists({{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}) (bool, error) {
+	return {{$alias.UpSingular}}Exists({{if .NoContext}}exec{{else}}ctx, exec{{end}}, o.{{$.Table.PKey.Columns | stringMap (aliasCols $alias) | join ", o."}})
+}
+
 {{- end -}}

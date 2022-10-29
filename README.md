@@ -644,7 +644,7 @@ down_singular = "teamName"
 
 ##### Inflections
 
-With inflections, you can control the rules sqlboiler uses to generates singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not wnat to create aliases for every instance.
+With inflections, you can control the rules sqlboiler uses to generates singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not want to create aliases for every instance.
 
 ```toml
 [inflections.plural]

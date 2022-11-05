@@ -1177,12 +1177,12 @@ Or("height=?", 183)
 
 Where("(name=? and age=?) or (age=?)", "John", 5, 6)
 // Expr allows manual grouping of statements
-Where(
+Expr(
   Expr(
     models.PilotWhere.Name.EQ("John"),
-    Or2(models.PilotWhere.Age.EQ(5)),
+    models.PilotWhere.Age.EQ(5),
   ),
-  Or2(models.PilotAge),
+  Or2(models.PilotWhere.Age.EQ(6)),
 )
 
 // WHERE IN clause building

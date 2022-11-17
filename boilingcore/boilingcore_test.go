@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -62,7 +61,7 @@ func testNew(t *testing.T, aliases Aliases) {
 	}
 
 	var err error
-	out, err := ioutil.TempDir("", "boil_templates")
+	out, err := os.MkdirTemp("", "boil_templates")
 	if err != nil {
 		t.Fatalf("unable to create tempdir: %s", err)
 	}

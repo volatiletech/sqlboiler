@@ -603,7 +603,6 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"database/sql"`,
 				`"fmt"`,
 				`"io"`,
-				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
 				`"regexp"`,

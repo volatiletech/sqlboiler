@@ -267,7 +267,6 @@ func NewDefaultImports() Collection {
 				`"bytes"`,
 				`"fmt"`,
 				`"io"`,
-				`"io/ioutil"`,
 				`"math/rand"`,
 				`"regexp"`,
 			},

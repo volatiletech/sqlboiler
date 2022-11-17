@@ -15,6 +15,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -33,7 +34,7 @@ var (
 )
 
 func TestDriver(t *testing.T) {
-	b, err := ioutil.ReadFile("testdatabase.sql")
+	b, err := os.ReadFile("testdatabase.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +106,7 @@ func TestDriver(t *testing.T) {
 				return
 			}
 
-			want, err := ioutil.ReadFile(tt.goldenJson)
+			want, err := os.ReadFile(tt.goldenJson)
 			if err != nil {
 				t.Fatal(err)
 			}

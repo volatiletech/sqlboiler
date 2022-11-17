@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"flag"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"regexp"
 	"testing"
@@ -98,7 +99,7 @@ func TestDriver(t *testing.T) {
 		return
 	}
 
-	want, err := ioutil.ReadFile("mssql.golden.json")
+	want, err := os.ReadFile("mssql.golden.json")
 	if err != nil {
 		t.Fatal(err)
 	}

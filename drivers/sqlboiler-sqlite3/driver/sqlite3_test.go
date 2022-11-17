@@ -24,7 +24,7 @@ var (
 
 func TestDriver(t *testing.T) {
 	rand.Seed(time.Now().Unix())
-	b, err := ioutil.ReadFile("testdatabase.sql")
+	b, err := os.ReadFile("testdatabase.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestDriver(t *testing.T) {
 				return
 			}
 
-			want, err := ioutil.ReadFile(tt.goldenJson)
+			want, err := os.ReadFile(tt.goldenJson)
 			if err != nil {
 				t.Fatal(err)
 			}

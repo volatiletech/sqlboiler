@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -139,7 +138,7 @@ func TestBuildQuery(t *testing.T) {
 		out, args := BuildQuery(test.q)
 
 		if *writeGoldenFiles {
-			err := ioutil.WriteFile(filename, []byte(out), 0664)
+			err := os.WriteFile(filename, []byte(out), 0664)
 			if err != nil {
 				t.Fatalf("Failed to write golden file %s: %s\n", filename, err)
 			}

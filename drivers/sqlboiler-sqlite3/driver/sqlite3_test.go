@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -72,7 +71,7 @@ func TestDriver(t *testing.T) {
 			}
 
 			if *flagOverwriteGolden {
-				if err = ioutil.WriteFile(tt.goldenJson, got, 0664); err != nil {
+				if err = os.WriteFile(tt.goldenJson, got, 0664); err != nil {
 					t.Fatal(err)
 				}
 				t.Log("wrote:", string(got))

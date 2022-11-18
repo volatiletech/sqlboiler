@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
@@ -34,7 +33,7 @@ var (
 )
 
 func TestAssemble(t *testing.T) {
-	b, err := ioutil.ReadFile("testdatabase.sql")
+	b, err := os.ReadFile("testdatabase.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,14 +99,14 @@ func TestAssemble(t *testing.T) {
 			}
 
 			if *flagOverwriteGolden {
-				if err = ioutil.WriteFile(tt.goldenJson, got, 0664); err != nil {
+				if err = os.WriteFile(tt.goldenJson, got, 0664); err != nil {
 					t.Fatal(err)
 				}
 				t.Log("wrote:", string(got))
 				return
 			}
 
-			want, err := ioutil.ReadFile(tt.goldenJson)
+			want, err := os.ReadFile(tt.goldenJson)
 			if err != nil {
 				t.Fatal(err)
 			}

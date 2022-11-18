@@ -120,7 +120,7 @@ func (m *mysqlTester) defaultsFile() string {
 }
 
 func (m *mysqlTester) makeOptionFile() error {
-	tmp, err := ioutil.TempFile("", "optionfile")
+	tmp, err := os.CreateTemp("", "optionfile")
 	if err != nil {
 		return errors.Wrap(err, "failed to create option file")
 	}

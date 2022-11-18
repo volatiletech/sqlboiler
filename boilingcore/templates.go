@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -175,7 +175,7 @@ type fileLoader string
 
 func (f fileLoader) Load() ([]byte, error) {
 	fname := string(f)
-	b, err := ioutil.ReadFile(fname)
+	b, err := os.ReadFile(fname)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to load template: %s", fname)
 	}

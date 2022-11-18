@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -42,7 +41,7 @@ var (
 	rgxRemoveNumberedPrefix = regexp.MustCompile(`^[0-9]+_`)
 	rgxSyntaxError          = regexp.MustCompile(`(\d+):\d+: `)
 
-	testHarnessWriteFile = ioutil.WriteFile
+	testHarnessWriteFile = os.WriteFile
 )
 
 type executeTemplateData struct {

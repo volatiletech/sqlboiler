@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"runtime"
 	"strings"
@@ -31,7 +31,7 @@ func TestBinaryDriver(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bin, err := ioutil.TempFile("", "test_binary_driver")
+	bin, err := os.CreateTemp("", "test_binary_driver")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestBinaryWarningDriver(t *testing.T) {
 		t.Skip("cannot run binary test on windows (needs bin/sh)")
 	}
 
-	bin, err := ioutil.TempFile("", "test_binary_driver")
+	bin, err := os.CreateTemp("", "test_binary_driver")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestBinaryBadDriver(t *testing.T) {
 		t.Skip("cannot run binary test on windows (needs bin/sh)")
 	}
 
-	bin, err := ioutil.TempFile("", "test_binary_driver")
+	bin, err := os.CreateTemp("", "test_binary_driver")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -972,7 +972,6 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"database/sql"`,
 				`"fmt"`,
 				`"io"`,
-				`"io/ioutil"`,
 				`"os"`,
 				`"os/exec"`,
 				`"regexp"`,

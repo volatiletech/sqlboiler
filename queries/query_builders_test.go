@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -138,7 +138,7 @@ func TestBuildQuery(t *testing.T) {
 		out, args := BuildQuery(test.q)
 
 		if *writeGoldenFiles {
-			err := ioutil.WriteFile(filename, []byte(out), 0664)
+			err := os.WriteFile(filename, []byte(out), 0664)
 			if err != nil {
 				t.Fatalf("Failed to write golden file %s: %s\n", filename, err)
 			}
@@ -146,7 +146,7 @@ func TestBuildQuery(t *testing.T) {
 			continue
 		}
 
-		byt, err := ioutil.ReadFile(filename)
+		byt, err := os.ReadFile(filename)
 		if err != nil {
 			t.Fatalf("Failed to read golden file %q: %v", filename, err)
 		}
@@ -516,11 +516,11 @@ func TestLimitClause(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		limit *int
+		limit           *int
 		expectPredicate func(sql string) bool
 	}{
 		{nil, func(sql string) bool {
-			return !strings.Contains(sql,"LIMIT")
+			return !strings.Contains(sql, "LIMIT")
 		}},
 		{newIntPtr(0), func(sql string) bool {
 			return strings.Contains(sql, "LIMIT 0")
@@ -532,7 +532,7 @@ func TestLimitClause(t *testing.T) {
 
 	for i, test := range tests {
 		q := &Query{
-			limit: test.limit,
+			limit:   test.limit,
 			dialect: &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true, UseTopClause: false},
 		}
 		sql, _ := BuildQuery(q)

@@ -3,7 +3,7 @@ package drivers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -14,7 +14,7 @@ func DriverMain(driver Interface) {
 
 	switch method {
 	case "assemble":
-		b, err := ioutil.ReadAll(os.Stdin)
+		b, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "failed to read from stdin")
 			os.Exit(1)

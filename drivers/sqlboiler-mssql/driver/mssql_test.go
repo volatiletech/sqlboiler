@@ -26,7 +26,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"regexp"
 	"testing"
@@ -91,14 +91,14 @@ func TestDriver(t *testing.T) {
 	}
 
 	if *flagOverwriteGolden {
-		if err = ioutil.WriteFile("mssql.golden.json", got, 0664); err != nil {
+		if err = os.WriteFile("mssql.golden.json", got, 0664); err != nil {
 			t.Fatal(err)
 		}
 		t.Log("wrote:", string(got))
 		return
 	}
 
-	want, err := ioutil.ReadFile("mssql.golden.json")
+	want, err := os.ReadFile("mssql.golden.json")
 	if err != nil {
 		t.Fatal(err)
 	}

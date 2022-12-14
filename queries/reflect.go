@@ -251,7 +251,7 @@ Rows:
 		case kindSliceStruct:
 			pointers = PtrsFromMapping(oneStruct, mapping)
 		case kindPtrSliceStruct:
-			newStruct = reflect.New(structType)
+			newStruct = makeStructPtr(structType)
 			pointers = PtrsFromMapping(reflect.Indirect(newStruct), mapping)
 		}
 		if err != nil {
@@ -277,6 +277,27 @@ Rows:
 	}
 
 	return nil
+}
+
+// makeStructPtr takes a struct type and returns a pointer to a new instance of it. This is used by bind to allocate new
+// slice elements when the bound-to variable is []*Struct
+func makeStructPtr(typ reflect.Type) reflect.Value {
+	// Allocate struct
+	val := reflect.New(typ)
+
+	// For all the fields
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		_, recurse := getBoilTag(field)
+
+		// If ",bind" was in the tag and the field is a pointer
+		if recurse && field.Type.Kind() == reflect.Ptr {
+			// Then allocate the field
+			val.Elem().Field(i).Set(reflect.New(field.Type.Elem()))
+		}
+	}
+
+	return val
 }
 
 // BindMapping creates a mapping that helps look up the pointer for the

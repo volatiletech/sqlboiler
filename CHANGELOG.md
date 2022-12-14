@@ -4,6 +4,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.14.0] - 2022-12-14
+
+### Added
+
+- Allow calling struct.Exists() without having to pass on PK fields (thanks @MJacred)
+
+### Changed
+
+- Stop using deprecated methods from io/ioutil (thanks @stefafafan)
+
+### Fixed
+
+- Fixed correct hooks when loading relationships to-one (thanks @parnic)
+
 ## [v4.13.0] - 2022-08-28
 
 ### Added

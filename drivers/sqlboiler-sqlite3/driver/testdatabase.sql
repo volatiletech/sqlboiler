@@ -171,6 +171,15 @@ create table autoinckeywordtest (
 	b INTEGER
 );
 
+-- An INTEGER primary key column is an alias for the table rowid only if it is
+-- the only primary key column for the table. i.e. composite primary keys do
+-- not exhibit the rowid alias behaviour.
+create table compositeprimarykeytest (
+	a INTEGER,
+	b INTEGER,
+	PRIMARY KEY (a, b)
+);
+
 create view user_videos as 
 select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
 from users u

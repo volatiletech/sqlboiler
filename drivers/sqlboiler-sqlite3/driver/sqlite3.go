@@ -349,7 +349,7 @@ func (s SQLiteDriver) Columns(schema, tableName string, whitelist, blacklist []s
 
 	nPkeys := 0
 	for _, column := range tinfo {
-		if column.Pk == 1 {
+		if column.Pk != 0 {
 			nPkeys++
 		}
 	}

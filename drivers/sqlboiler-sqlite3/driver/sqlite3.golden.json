@@ -89,6 +89,58 @@
 			}
 		},
 		{
+			"name": "compositeprimarykeytest",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "a",
+					"type": "null.Int64",
+					"db_type": "INTEGER",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "INTEGER"
+				},
+				{
+					"name": "b",
+					"type": "null.Int64",
+					"db_type": "INTEGER",
+					"default": "NULL",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "INTEGER"
+				}
+			],
+			"p_key": {
+				"name": "",
+				"columns": [
+					"a",
+					"b"
+				]
+			},
+			"f_keys": null,
+			"is_join_table": false,
+			"to_one_relationships": null,
+			"to_many_relationships": null,
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
+		},
+		{
 			"name": "has_generated_columns",
 			"schema_name": "",
 			"columns": [

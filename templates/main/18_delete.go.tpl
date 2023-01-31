@@ -172,7 +172,7 @@ func (o *{{$alias.UpSingular}}) DeleteWithSchema(schema string, {{if .NoContext}
 	}
 	{{else -}}
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), {{$alias.DownSingular}}PrimaryKeyMapping)
-	sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
+	sql := fmt.Sprintf("DELETE FROM %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", schemaTable)
 	{{- end}}
 
 	{{if .NoContext -}}
@@ -484,8 +484,8 @@ func (o {{$alias.UpSingular}}Slice) DeleteAllWithSchema(schema string, {{if .NoC
 			obj.{{$alias.Column $softDelCol}} = null.TimeFrom(currTime)
 		}
 		wl := []string{"{{$softDelCol}}"}
-		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE " +
-			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
+		sql = fmt.Sprintf("UPDATE %s SET %s WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), schemaTable, string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
 		args = append([]interface{}{currTime}, args...)
@@ -497,8 +497,8 @@ func (o {{$alias.UpSingular}}Slice) DeleteAllWithSchema(schema string, {{if .NoC
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM {{$schemaTable}} WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o))
+	sql := fmt.Sprintf("DELETE FROM %s WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)), schemaTable)
 	{{- end}}
 
 	{{if .NoContext -}}

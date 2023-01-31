@@ -8,6 +8,7 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fix composite key handling in sqlite3 driver (thanks @vortura)
 - Use correct executor for relationship test when `no-context` is true
 
 ## [v4.14.0] - 2022-12-14

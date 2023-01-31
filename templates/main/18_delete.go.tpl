@@ -156,7 +156,7 @@ func (o *{{$alias.UpSingular}}) DeleteWithSchema(schema string, {{if .NoContext}
 	)
 	if hardDelete {
 		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), {{$alias.DownSingular}}PrimaryKeyMapping)
-		sql = "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
+		sql = fmt.Sprintf("DELETE FROM %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}", schemaTable)
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
 		o.{{$alias.Column $softDelCol}} = null.TimeFrom(currTime)

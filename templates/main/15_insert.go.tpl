@@ -223,8 +223,6 @@ CacheNoHooks:
 	{{- end}}
 }
 
-{{- end -}}
-
 // Insert a single record using an executor.
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
 func (o *{{$alias.UpSingular}}) InsertWithSchema(schema string, {{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, columns boil.Columns) error {

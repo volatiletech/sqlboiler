@@ -2,6 +2,7 @@
 {{- else -}}
 {{- $alias := .Aliases.Table .Table.Name -}}
 {{- $schemaTable := .Table.Name | .SchemaTable -}}
+{{- $tableName := .Table.Name }}
 {{- $canSoftDelete := .Table.CanSoftDelete $.AutoColumns.Deleted -}}
 {{- $soft := and .AddSoftDeletes $canSoftDelete }}
 {{- $softDelCol := or $.AutoColumns.Deleted "deleted_at"}}
@@ -75,6 +76,93 @@ func (o *{{$alias.UpSingular}}) Delete({{if .NoContext}}exec boil.Executor{{else
 		wl := []string{"{{$softDelCol}}"}
 		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 2 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}",
 			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
+		)
+		valueMapping, err := queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, append(wl, {{$alias.DownSingular}}PrimaryKeyColumns...))
+		if err != nil {
+			return {{if not .NoRowsAffected}}0, {{end -}} err
+		}
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), valueMapping)
+	}
+	{{else -}}
+	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), {{$alias.DownSingular}}PrimaryKeyMapping)
+	sql := "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
+	{{- end}}
+
+	{{if .NoContext -}}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args...)
+	}
+	{{else -}}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, sql)
+		fmt.Fprintln(writer, args...)
+	}
+	{{end -}}
+
+	{{if .NoRowsAffected -}}
+		{{if .NoContext -}}
+	_, err := exec.Exec(sql, args...)
+		{{else -}}
+	_, err := exec.ExecContext(ctx, sql, args...)
+		{{end -}}
+	{{else -}}
+		{{if .NoContext -}}
+	result, err := exec.Exec(sql, args...)
+		{{else -}}
+	result, err := exec.ExecContext(ctx, sql, args...)
+		{{end -}}
+	{{end -}}
+	if err != nil {
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to delete from {{.Table.Name}}")
+	}
+
+	{{if not .NoRowsAffected -}}
+	rowsAff, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "{{.PkgName}}: failed to get rows affected by delete for {{.Table.Name}}")
+	}
+
+	{{end -}}
+
+	{{if not .NoHooks -}}
+	if err := o.doAfterDeleteHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+		return {{if not .NoRowsAffected}}0, {{end -}} err
+	}
+	{{- end}}
+
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
+}
+
+// Delete deletes a single {{$alias.UpSingular}} record with an executor.
+// Delete will match against the primary key column to find the record to delete.
+func (o *{{$alias.UpSingular}}) DeleteWithSchema(schema string, {{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	schemaTable := fmt.Sprintf("%s.{{$tableName}}", schema)
+	if o == nil {
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.New("{{.PkgName}}: no {{$alias.UpSingular}} provided for delete")
+	}
+
+	{{if not .NoHooks -}}
+	if err := o.doBeforeDeleteHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+		return {{if not .NoRowsAffected}}0, {{end -}} err
+	}
+	{{- end}}
+
+	{{if $soft -}}
+	var (
+		sql string
+		args []interface{}
+	)
+	if hardDelete {
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), {{$alias.DownSingular}}PrimaryKeyMapping)
+		sql = "DELETE FROM {{$schemaTable}} WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 1 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}"
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		o.{{$alias.Column $softDelCol}} = null.TimeFrom(currTime)
+		wl := []string{"{{$softDelCol}}"}
+		sql = fmt.Sprintf("UPDATE %s SET %s WHERE {{if .Dialect.UseIndexPlaceholders}}{{whereClause .LQ .RQ 2 .Table.PKey.Columns}}{{else}}{{whereClause .LQ .RQ 0 .Table.PKey.Columns}}{{end}}",
+			schemaTable, strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
 		)
 		valueMapping, err := queries.BindMapping({{$alias.DownSingular}}Type, {{$alias.DownSingular}}Mapping, append(wl, {{$alias.DownSingular}}PrimaryKeyColumns...))
 		if err != nil {
@@ -282,6 +370,112 @@ func (o {{$alias.UpSingular}}Slice) DeleteAll({{if .NoContext}}exec boil.Executo
     	}
 		sql = "DELETE FROM {{$schemaTable}} WHERE " +
 			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o))
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$alias.DownSingular}}PrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+			obj.{{$alias.Column $softDelCol}} = null.TimeFrom(currTime)
+		}
+		wl := []string{"{{$softDelCol}}"}
+		sql = fmt.Sprintf("UPDATE {{$schemaTable}} SET %s WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
+			strmangle.SetParamNames("{{.LQ}}", "{{.RQ}}", {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, wl),
+		)
+		args = append([]interface{}{currTime}, args...)
+	}
+	{{else -}}
+	var args []interface{}
+	for _, obj := range o {
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$alias.DownSingular}}PrimaryKeyMapping)
+		args = append(args, pkeyArgs...)
+	}
+
+	sql := "DELETE FROM {{$schemaTable}} WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o))
+	{{- end}}
+
+	{{if .NoContext -}}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, sql)
+		fmt.Fprintln(boil.DebugWriter, args)
+	}
+	{{else -}}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, sql)
+		fmt.Fprintln(writer, args)
+	}
+	{{end -}}
+
+	{{if .NoRowsAffected -}}
+		{{if .NoContext -}}
+	_, err := exec.Exec(sql, args...)
+		{{else -}}
+	_, err := exec.ExecContext(ctx, sql, args...)
+		{{end -}}
+	{{else -}}
+		{{if .NoContext -}}
+	result, err := exec.Exec(sql, args...)
+		{{else -}}
+	result, err := exec.ExecContext(ctx, sql, args...)
+		{{end -}}
+	{{end -}}
+	if err != nil {
+		return {{if not .NoRowsAffected}}0, {{end -}} errors.Wrap(err, "{{.PkgName}}: unable to delete all from {{$alias.DownSingular}} slice")
+	}
+
+	{{if not .NoRowsAffected -}}
+	rowsAff, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.Wrap(err, "{{.PkgName}}: failed to get rows affected by deleteall for {{.Table.Name}}")
+	}
+
+	{{end -}}
+
+	{{if not .NoHooks -}}
+	if len({{$alias.DownSingular}}AfterDeleteHooks) != 0 {
+		for _, obj := range o {
+			if err := obj.doAfterDeleteHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+				return {{if not .NoRowsAffected}}0, {{end -}} err
+			}
+		}
+	}
+	{{- end}}
+
+	return {{if not .NoRowsAffected}}rowsAff, {{end -}} nil
+}
+
+// DeleteAll deletes all rows in the slice, using an executor.
+func (o {{$alias.UpSingular}}Slice) DeleteAllWithSchema(schema string, {{if .NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}{{if $soft}}, hardDelete bool{{end}}) {{if .NoRowsAffected}}error{{else}}(int64, error){{end -}} {
+	schemaTable := fmt.Sprintf("%s.{{$tableName}}", schema)
+	if len(o) == 0 {
+		return {{if not .NoRowsAffected}}0, {{end -}} nil
+	}
+
+	{{if not .NoHooks -}}
+	if len({{$alias.DownSingular}}BeforeDeleteHooks) != 0 {
+		for _, obj := range o {
+			if err := obj.doBeforeDeleteHooks({{if not .NoContext}}ctx, {{end -}} exec); err != nil {
+				return {{if not .NoRowsAffected}}0, {{end -}} err
+			}
+		}
+	}
+	{{- end}}
+
+	{{if $soft -}}
+	var (
+		sql string
+		args []interface{}
+	)
+	if hardDelete {
+		for _, obj := range o {
+    		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), {{$alias.DownSingular}}PrimaryKeyMapping)
+    		args = append(args, pkeyArgs...)
+    	}
+		sql = fmt.Sprintf("DELETE FROM %s WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), {{if .Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, {{$alias.DownSingular}}PrimaryKeyColumns, len(o)),
+			schemaTable)
 	} else {
 		currTime := time.Now().In(boil.GetLocation())
 		for _, obj := range o {

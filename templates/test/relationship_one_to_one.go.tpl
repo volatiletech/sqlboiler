@@ -51,7 +51,7 @@ func test{{$ltable.UpSingular}}OneToOne{{$ftable.UpSingular}}Using{{$relAlias.Lo
 
 	{{if not $.NoHooks -}}
 	ranAfterSelectHook := false
-	Add{{$ftable.UpSingular}}Hook(boil.AfterSelectHook, func({{if not $.NoContext}}ctx context.Context, {{end}}e boil.ContextExecutor, o *{{$ftable.UpSingular}}) error {
+	Add{{$ftable.UpSingular}}Hook(boil.AfterSelectHook, func({{if not $.NoContext}}ctx context.Context, e boil.ContextExecutor{{else}}e boil.Executor{{end}}, o *{{$ftable.UpSingular}}) error {
 		ranAfterSelectHook = true
 		return nil
 	})

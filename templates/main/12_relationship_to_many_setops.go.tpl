@@ -178,6 +178,129 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}({{if $.NoContext}}exec b
 	return nil
 }
 
+// Add{{$relAlias.Local}}WithSchema adds the given related objects to the existing relationships
+// of the {{$table.Name | singular}}, optionally inserting them as new records.
+// Appends related to o.R.{{$relAlias.Local}}.
+{{- if not $.NoBackReferencing}}
+// Sets related.R.{{$relAlias.Foreign}} appropriately.
+{{- end}}
+func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}WithSchema(schema string, {{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related ...*{{$ftable.UpSingular}}) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			{{if not .ToJoinTable -}}
+				{{if $usesPrimitives -}}
+			rel.{{$fcol}} = o.{{$col}}
+				{{else -}}
+			queries.Assign(&rel.{{$fcol}}, o.{{$col}})
+				{{end -}}
+			{{end -}}
+
+			if err = rel.InsertWithSchema(schema, {{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		}{{if not .ToJoinTable}} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE {{$schemaForeignTable}} SET %s WHERE %s",
+				strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.ForeignColumn}}"{{"}"}}),
+				strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$ftable.DownSingular}}PrimaryKeyColumns),
+			)
+			values := []interface{}{o.{{$col}}, rel.{{$foreignPKeyCols | stringMap (aliasCols $ftable) | join ", rel."}}{{"}"}}
+
+			{{if $.NoContext -}}
+			if boil.DebugMode {
+				fmt.Fprintln(boil.DebugWriter, updateQuery)
+				fmt.Fprintln(boil.DebugWriter, values)
+			}
+			{{else -}}
+			if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			{{end -}}
+
+			{{if $.NoContext -}}
+			if _, err = exec.Exec(updateQuery, values...); err != nil {
+			{{else -}}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			{{end -}}
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			{{if $usesPrimitives -}}
+			rel.{{$fcol}} = o.{{$col}}
+			{{else -}}
+			queries.Assign(&rel.{{$fcol}}, o.{{$col}})
+			{{end -}}
+		}{{end -}}
+	}
+
+	{{if .ToJoinTable -}}
+	schemaJoinTable := fmt.Sprintf("%s.{{.JoinTable}}", schema)
+	for _, rel := range related {
+		query := fmt.Sprintf("insert into %s ({{.JoinLocalColumn | $.Quotes}}, {{.JoinForeignColumn | $.Quotes}}) values {{if $.Dialect.UseIndexPlaceholders}}($1, $2){{else}}(?, ?){{end}}", schemaJoinTable)
+		values := []interface{}{{"{"}}o.{{$col}}, rel.{{$fcol}}}
+
+		{{if $.NoContext -}}
+		if boil.DebugMode {
+			fmt.Fprintln(boil.DebugWriter, query)
+			fmt.Fprintln(boil.DebugWriter, values)
+		}
+		{{else -}}
+		if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, query)
+			fmt.Fprintln(writer, values)
+		}
+		{{end -}}
+
+		{{if $.NoContext -}}
+		_, err = exec.Exec(query, values...)
+		{{else -}}
+		_, err = exec.ExecContext(ctx, query, values...)
+		{{end -}}
+		if err != nil {
+			return errors.Wrap(err, "failed to insert into join table")
+		}
+	}
+	{{end -}}
+
+	if o.R == nil {
+		o.R = &{{$ltable.DownSingular}}R{
+			{{$relAlias.Local}}: related,
+		}
+	} else {
+		o.R.{{$relAlias.Local}} = append(o.R.{{$relAlias.Local}}, related...)
+	}
+
+	{{if not $.NoBackReferencing -}}
+	{{if .ToJoinTable -}}
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &{{$ftable.DownSingular}}R{
+				{{$relAlias.Foreign}}: {{$ltable.UpSingular}}Slice{{"{"}}o{{"}"}},
+			}
+		} else {
+			rel.R.{{$relAlias.Foreign}} = append(rel.R.{{$relAlias.Foreign}}, o)
+		}
+	}
+	{{else -}}
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &{{$ftable.DownSingular}}R{
+				{{$relAlias.Foreign}}: o,
+			}
+		} else {
+			rel.R.{{$relAlias.Foreign}} = o
+		}
+	}
+	{{end -}}
+	{{end -}}
+
+	return nil
+}
+
 			{{- if (or .ForeignColumnNullable .ToJoinTable)}}
 {{if $.AddGlobal -}}
 // Set{{$relAlias.Local}}G removes all previously related items of the

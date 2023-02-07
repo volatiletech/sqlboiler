@@ -479,7 +479,7 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}WithSchema(schema string,
 	}
 	{{- end}}
 
-	return o.Add{{$relAlias.Local}}WithSchema(schema string, {{if not $.NoContext}}ctx, {{end -}} exec, insert, related...)
+	return o.Add{{$relAlias.Local}}WithSchema(schema, {{if not $.NoContext}}ctx, {{end -}} exec, insert, related...)
 }
 
 {{if $.AddGlobal -}}

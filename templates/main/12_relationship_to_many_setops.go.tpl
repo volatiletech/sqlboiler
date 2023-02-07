@@ -417,6 +417,71 @@ func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}({{if $.NoContext}}exec b
 	return o.Add{{$relAlias.Local}}({{if not $.NoContext}}ctx, {{end -}} exec, insert, related...)
 }
 
+// Set{{$relAlias.Local}}WithSchema removes all previously related items of the
+// {{$table.Name | singular}} replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.{{$relAlias.Foreign}}'s {{$relAlias.Local}} accordingly.
+// Replaces o.R.{{$relAlias.Local}} with related.
+{{- if not $.NoBackReferencing}}
+// Sets related.R.{{$relAlias.Foreign}}'s {{$relAlias.Local}} accordingly.
+{{- end}}
+func (o *{{$ltable.UpSingular}}) Set{{$relAlias.Local}}WithSchema(schema string, {{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related ...*{{$ftable.UpSingular}}) error {
+	{{if .ToJoinTable -}}
+	schemaJoinTable := fmt.Sprintf("%s.{{.JoinTable}}", schema)
+	query := fmt.Sprintf("delete from %s where {{.JoinLocalColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}", schemaJoinTable)
+	values := []interface{}{{"{"}}o.{{$col}}}
+	{{else -}}
+	schemaForeignTable := fmt.Sprintf("%s.{{.ForeignTable}}", schema)
+	query := fmt.Sprintf("update %s set {{.ForeignColumn | $.Quotes}} = null where {{.ForeignColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}}", schemaForeignTable)
+	values := []interface{}{{"{"}}o.{{$col}}}
+	{{end -}}
+	{{if $.NoContext -}}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	{{else -}}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	{{end -}}
+
+	{{if $.NoContext -}}
+	_, err := exec.Exec(query, values...)
+	{{else -}}
+	_, err := exec.ExecContext(ctx, query, values...)
+	{{end -}}
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	{{if and .ToJoinTable (not $.NoBackReferencing) -}}
+	remove{{$relAlias.Local}}From{{$relAlias.Foreign}}Slice(o, related)
+	if o.R != nil {
+		o.R.{{$relAlias.Local}} = nil
+	}
+	{{else -}}
+	if o.R != nil {
+		{{if not $.NoBackReferencing -}}
+		for _, rel := range o.R.{{$relAlias.Local}} {
+			queries.SetScanner(&rel.{{$fcol}}, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.{{$relAlias.Foreign}} = nil
+		}
+		{{end -}}
+
+		o.R.{{$relAlias.Local}} = nil
+	}
+	{{- end}}
+
+	return o.Add{{$relAlias.Local}}WithSchema(schema string, {{if not $.NoContext}}ctx, {{end -}} exec, insert, related...)
+}
+
 {{if $.AddGlobal -}}
 // Remove{{$relAlias.Local}}G relationships from objects passed in.
 // Removes related items from R.{{$relAlias.Local}} (uses pointer comparison, removal does not keep order)

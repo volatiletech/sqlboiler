@@ -606,6 +606,88 @@ func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}({{if $.NoContext}}exe
 	return nil
 }
 
+// Remove{{$relAlias.Local}}WithSchema relationships from objects passed in.
+// Removes related items from R.{{$relAlias.Local}} (uses pointer comparison, removal does not keep order)
+{{- if not $.NoBackReferencing}}
+// Sets related.R.{{$relAlias.Foreign}}.
+{{- end}}
+func (o *{{$ltable.UpSingular}}) Remove{{$relAlias.Local}}WithSchema(schema string, {{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, related ...*{{$ftable.UpSingular}}) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	{{if .ToJoinTable -}}
+	schemaJoinTable := fmt.Sprintf("%s.{{.JoinTable}}", schema)
+	query := fmt.Sprintf(
+		"delete from %s where {{.JoinLocalColumn | $.Quotes}} = {{if $.Dialect.UseIndexPlaceholders}}$1{{else}}?{{end}} and {{.JoinForeignColumn | $.Quotes}} in (%s)",
+		schemaJoinTable, strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
+	)
+	values := []interface{}{{"{"}}o.{{$col}}}
+	for _, rel := range related {
+		values = append(values, rel.{{$fcol}})
+	}
+
+	{{if $.NoContext -}}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, query)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	{{else -}}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	{{end -}}
+
+	{{if $.NoContext -}}
+	_, err = exec.Exec(query, values...)
+	{{else -}}
+	_, err = exec.ExecContext(ctx, query, values...)
+	{{end -}}
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+	{{else -}}
+	for _, rel := range related {
+		queries.SetScanner(&rel.{{$fcol}}, nil)
+		{{if and (not .ToJoinTable) (not $.NoBackReferencing) -}}
+		if rel.R != nil {
+			rel.R.{{$relAlias.Foreign}} = nil
+		}
+		{{end -}}
+		if {{if not $.NoRowsAffected}}_, {{end -}} err = rel.Update({{if not $.NoContext}}ctx, {{end -}} exec, boil.Whitelist("{{.ForeignColumn}}")); err != nil {
+			return err
+		}
+	}
+	{{end -}}
+
+	{{if and .ToJoinTable (not $.NoBackReferencing) -}}
+	remove{{$relAlias.Local}}From{{$relAlias.Foreign}}Slice(o, related)
+	{{end -}}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.{{$relAlias.Local}} {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.{{$relAlias.Local}})
+			if ln > 1 && i < ln-1 {
+				o.R.{{$relAlias.Local}}[i] = o.R.{{$relAlias.Local}}[ln-1]
+			}
+			o.R.{{$relAlias.Local}} = o.R.{{$relAlias.Local}}[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
 {{if and .ToJoinTable (not $.NoBackReferencing) -}}
 func remove{{$relAlias.Local}}From{{$relAlias.Foreign}}Slice(o *{{$ltable.UpSingular}}, related []*{{$ftable.UpSingular}}) {
 	for _, rel := range related {

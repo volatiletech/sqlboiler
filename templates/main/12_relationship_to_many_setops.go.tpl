@@ -200,8 +200,9 @@ func (o *{{$ltable.UpSingular}}) Add{{$relAlias.Local}}WithSchema(schema string,
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		}{{if not .ToJoinTable}} else {
+			schemaForeignTable := fmt.Sprintf("%s.{{$rel.ForeignTable}}", schema)
 			updateQuery := fmt.Sprintf(
-				"UPDATE {{$schemaForeignTable}} SET %s WHERE %s",
+				"UPDATE %s SET %s WHERE %s", schemaForeignTable
 				strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.ForeignColumn}}"{{"}"}}),
 				strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$ftable.DownSingular}}PrimaryKeyColumns),
 			)

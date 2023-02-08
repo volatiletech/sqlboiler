@@ -132,6 +132,87 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}({{if $.NoContext}}exec boil
 	return nil
 }
 
+// Set{{$rel.Foreign}}WithSchema of the {{$ltable.DownSingular}} to the related item.
+// Sets o.R.{{$rel.Foreign}} to related.
+{{- if not $.NoBackReferencing}}
+// Adds o to related.R.{{$rel.Local}}.
+{{- end}}
+func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}WithSchema(schema string, {{if $.NoContext}}exec boil.Executor{{else}}ctx context.Context, exec boil.ContextExecutor{{end}}, insert bool, related *{{$ftable.UpSingular}}) error {
+	schemaTable := fmt.Sprintf("%s.{{$fkey.Table}}", schema)
+	var err error
+	if insert {
+		if err = related.InsertWithSchema(schema, {{if not $.NoContext}}ctx, {{end -}} exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE %s SET %s WHERE %s", schemaTable
+		strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.Column}}"{{"}"}}),
+		strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$ltable.DownSingular}}PrimaryKeyColumns),
+	)
+	values := []interface{}{related.{{$fcol}}, o.{{$.Table.PKey.Columns | stringMap (aliasCols $ltable) | join ", o."}}{{"}"}}
+
+	{{if $.NoContext -}}
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+	{{else -}}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	{{end -}}
+
+	{{if $.NoContext -}}
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+	{{- else -}}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+	{{- end}}
+
+	{{if $usesPrimitives -}}
+	o.{{$col}} = related.{{$fcol}}
+	{{else -}}
+	queries.Assign(&o.{{$col}}, related.{{$fcol}})
+	{{end -}}
+
+	if o.R == nil {
+		o.R = &{{$ltable.DownSingular}}R{
+			{{$rel.Foreign}}: related,
+		}
+	} else {
+		o.R.{{$rel.Foreign}} = related
+	}
+
+	{{if not $.NoBackReferencing -}}
+	{{if .Unique -}}
+	if related.R == nil {
+		related.R = &{{$ftable.DownSingular}}R{
+			{{$rel.Local}}: o,
+		}
+	} else {
+		related.R.{{$rel.Local}} = o
+	}
+	{{else -}}
+	if related.R == nil {
+		related.R = &{{$ftable.DownSingular}}R{
+			{{$rel.Local}}: {{$ltable.UpSingular}}Slice{{"{"}}o{{"}"}},
+		}
+	} else {
+		related.R.{{$rel.Local}} = append(related.R.{{$rel.Local}}, o)
+	}
+	{{- end}}
+	{{- end}}
+
+	return nil
+}
+
 		{{- if .Nullable}}
 {{if $.AddGlobal -}}
 // Remove{{$rel.Foreign}}G relationship.

@@ -147,7 +147,7 @@ func (o *{{$ltable.UpSingular}}) Set{{$rel.Foreign}}WithSchema(schema string, {{
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE %s SET %s WHERE %s", schemaTable
+		"UPDATE %s SET %s WHERE %s", schemaTable,
 		strmangle.SetParamNames("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}1{{else}}0{{end}}, []string{{"{"}}"{{.Column}}"{{"}"}}),
 		strmangle.WhereClause("{{$.LQ}}", "{{$.RQ}}", {{if $.Dialect.UseIndexPlaceholders}}2{{else}}0{{end}}, {{$ltable.DownSingular}}PrimaryKeyColumns),
 	)

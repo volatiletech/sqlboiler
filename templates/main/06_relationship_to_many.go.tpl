@@ -51,7 +51,7 @@ func (o *{{$ltable.UpSingular}}) {{$relAlias.Local}}WithSchema(schema string, mo
 	)
 		{{end}}
 
-	return {{$ftable.UpPlural}}(queryMods...)
+	return {{$ftable.UpPlural}}WithSchema(queryMods...)
 }
 
 {{end -}}{{- /* range relationships */ -}}

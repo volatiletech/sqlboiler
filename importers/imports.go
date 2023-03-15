@@ -212,6 +212,9 @@ func NewDefaultImports() Collection {
 
 	col.Singleton = Map{
 		"boil_queries": {
+			Standard: List{
+				`"regexp"`,
+			},
 			ThirdParty: List{
 				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
 				`"github.com/volatiletech/sqlboiler/v4/queries"`,

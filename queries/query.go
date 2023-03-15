@@ -408,7 +408,13 @@ func RemoveSoftDeleteWhere(q *Query) {
 	q.removeSoftDelete = true
 }
 
-var deletedAtRgx = regexp.MustCompile("deleted_at[\"'`]? is null")
+var removeSoftDeleteRgx = regexp.MustCompile("deleted_at[\"'`]? is null")
+
+// SetRemoveSoftDeleteRgx sets the removeSoftDeleteRgx variable to support
+// qm.Where method to work with a custom soft delete auto-column name.
+func SetRemoveSoftDeleteRgx(rgx *regexp.Regexp) {
+	removeSoftDeleteRgx = rgx
+}
 
 // removeSoftDeleteWhere attempts to remove the soft delete where clause
 // added automatically by sqlboiler.
@@ -419,7 +425,7 @@ func (q *Query) removeSoftDeleteWhere() {
 
 	for i := len(q.where) - 1; i >= 0; i-- {
 		w := q.where[i]
-		if w.kind != whereKindNormal || !deletedAtRgx.MatchString(w.clause) {
+		if w.kind != whereKindNormal || !removeSoftDeleteRgx.MatchString(w.clause) {
 			continue
 		}
 

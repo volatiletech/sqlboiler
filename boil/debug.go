@@ -58,9 +58,9 @@ func PrintQuery(writer io.Writer, query string, args ...interface{}) {
 	fmt.Fprintln(writer, substitutedQuery)
 }
 
-// substituteQueryArgs takes a SQL query string and an array of
-// // arguments. It returns a modified query string with placeholders replaced by their
-// // corresponding argument values.
+// substituteQueryArgs takes a query string and an array of arguments.
+// It returns a modified query string with placeholders replaced by their
+// corresponding argument values.
 func substituteQueryArgs(query string, args ...interface{}) string {
 	// find all occurrences of placeholders ($1, $2, etc.) in the query
 	re := regexp.MustCompile(`\$\d+`)

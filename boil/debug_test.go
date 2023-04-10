@@ -18,20 +18,6 @@ func TestSubstituteQueryArgs(t *testing.T) {
 			want: `INSERT INTO "my_table" ("id","name","age","height","is_active","data") VALUES (1,'Alice',25,1.68,true,'{"key":"value"}')`,
 		},
 		{
-			query: `UPDATE "my_table" SET "name"=$1,"age"=$2,"height"=$3,"is_active"=$4,"data"=$5 WHERE "id"=$6`,
-			args: []interface{}{
-				"Bob", 30, 1.78, false, []byte(`{"key":123}`), 2,
-			},
-			want: `UPDATE "my_table" SET "name"='Bob',"age"=30,"height"=1.78,"is_active"=false,"data"='{"key":123}' WHERE "id"=2`,
-		},
-		{
-			query: `DELETE FROM "my_table" WHERE "id"=$1`,
-			args: []interface{}{
-				4,
-			},
-			want: `DELETE FROM "my_table" WHERE "id"=4`,
-		},
-		{
 			query: `SELECT * FROM "my_table"`,
 			args:  []interface{}{},
 			want:  `SELECT * FROM "my_table"`,

@@ -1048,6 +1048,9 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 		"types.Decimal": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
 		},
+		"types.Byte": {
+			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+		},
 		"types.BytesArray": {
 			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
 		},

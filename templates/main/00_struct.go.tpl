@@ -66,7 +66,7 @@ func (w {{$name}}) GTE(x {{.Type}}) qm.QueryMod { return qmhelper.Where(w.field,
 		{{if or (eq .Type "string") (eq .Type "null.String") -}}
 func (w {{$name}}) LIKE(x {{.Type}}) qm.QueryMod { return qm.Where(w.field+" LIKE ?", x) }
 func (w {{$name}}) NLIKE(x {{.Type}}) qm.QueryMod { return qm.Where(w.field+" NOT LIKE ?", x) }
-			{{- template "where_ilike_override" . }}
+			{{- block "where_ilike_override" . }}{{- end}}
 		{{end -}}
 		{{if or (isPrimitive .Type) (isNullPrimitive .Type) (isEnumDBType .DBType) -}}
 func (w {{$name}}) IN(slice []{{convertNullToPrimitive .Type}}) qm.QueryMod {

@@ -103,6 +103,7 @@ Table of Contents
         * [Where is the homepage?](#where-is-the-homepage)
         * [Why are the auto-generated tests failing?](#why-are-the-auto-generated-tests-failing)
   * [Benchmarks](#benchmarks)
+  * [Third-Party Extensions](#third-party-extensions)
 
 ## About SQL Boiler
 
@@ -2070,3 +2071,9 @@ BenchmarkBoilRawBind/boil-8          200000    11519 ns/op    4638 B/op    55 al
 <img src="http://i.imgur.com/LWo10M9.png"/><img src="http://i.imgur.com/Td15owT.png"/><img src="http://i.imgur.com/45XXw4K.png"/>
 
 <img src="http://i.imgur.com/lpP8qds.png"/><img src="http://i.imgur.com/hLyH3jQ.png"/><img src="http://i.imgur.com/C2v10t3.png"/>
+
+## Third-Party Extensions
+
+Below are extensions for SQL Boiler developed by community, use them at your own risk.
+
+- [sqlboiler-extensions](https://github.com/tiendc/sqlboiler-extensions)

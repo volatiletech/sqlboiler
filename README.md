@@ -2076,4 +2076,6 @@ BenchmarkBoilRawBind/boil-8          200000    11519 ns/op    4638 B/op    55 al
 
 Below are extensions for SQL Boiler developed by community, use them at your own risk.
 
-- [sqlboiler-extensions](https://github.com/tiendc/sqlboiler-extensions)
+- [sqlboiler-extensions](https://github.com/tiendc/sqlboiler-extensions): Generates additional methods for models, particlarly for bulk operations.
+- [boilingseed](https://github.com/stephenafamo/boilingseed): Generates helpers to seed the database with data.
+- [boilingfactory](https://github.com/stephenafamo/boilingfactory): Generates helpers to create and insert test models on the fly.

@@ -356,7 +356,7 @@ func (s SQLiteDriver) Columns(schema, tableName string, whitelist, blacklist []s
 
 ColumnLoop:
 	for _, column := range tinfo {
-		if len(whitelist) != 0 {
+		if len(whiteColumns) != 0 {
 			found := false
 			for _, white := range whiteColumns {
 				if white == column.Name {
@@ -367,7 +367,7 @@ ColumnLoop:
 			if !found {
 				continue
 			}
-		} else if len(blacklist) != 0 {
+		} else if len(blackColumns) != 0 {
 			for _, black := range blackColumns {
 				if black == column.Name {
 					continue ColumnLoop

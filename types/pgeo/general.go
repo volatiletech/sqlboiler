@@ -19,7 +19,7 @@ func iToS(src interface{}) (string, error) {
 	case []byte:
 		val = string(src.([]byte))
 	default:
-		err = errors.New(fmt.Sprintf("incompatible type %v", reflect.ValueOf(src).Kind().String()))
+		err = fmt.Errorf("incompatible type %v", reflect.ValueOf(src).Kind().String())
 	}
 
 	return val, err

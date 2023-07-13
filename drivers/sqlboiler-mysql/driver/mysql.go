@@ -155,7 +155,7 @@ func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 func (m *MySQLDriver) TableNames(schema string, whitelist, blacklist []string) ([]string, error) {
 	var names []string
 
-	query := fmt.Sprintf(`select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`)
+	query := `select table_name from information_schema.tables where table_schema = ? and table_type = 'BASE TABLE'`
 	args := []interface{}{schema}
 	if len(whitelist) > 0 {
 		tables := drivers.TablesFromList(whitelist)

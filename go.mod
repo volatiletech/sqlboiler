@@ -6,7 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/davecgh/go-spew v1.1.1
-	github.com/ericlagergren/decimal v0.0.0-20211103172832-aca2edc11f73
+	github.com/ericlagergren/decimal v0.0.0-20190420051523-6335edbaa640
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect

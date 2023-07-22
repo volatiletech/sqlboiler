@@ -10,6 +10,7 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/volatiletech/sqlboiler/v4/boilingcore"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
@@ -190,6 +191,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 			SingularExact: viper.GetStringMapString("inflections.singular_exact"),
 			Irregular:     viper.GetStringMapString("inflections.irregular"),
 		},
+		ForeignKeys: boilingcore.ConvertForeignKeys(viper.Get("foreign_keys")),
 
 		Version: sqlBoilerVersion,
 	}
@@ -204,6 +206,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 		"blacklist":        viper.GetStringSlice(driverName + ".blacklist"),
 		"add-enum-types":   cmdConfig.AddEnumTypes,
 		"enum-null-prefix": cmdConfig.EnumNullPrefix,
+		"foreign-keys":     cmdConfig.ForeignKeys,
 	}
 
 	keys := allKeys(driverName)

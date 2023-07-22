@@ -48,10 +48,11 @@ type Config struct {
 	DefaultTemplates    fs.FS            `toml:"-" json:"-"`
 	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`
 
-	Aliases      Aliases       `toml:"aliases,omitempty" json:"aliases,omitempty"`
-	TypeReplaces []TypeReplace `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
-	AutoColumns  AutoColumns   `toml:"auto_columns,omitempty" json:"auto_columns,omitempty"`
-	Inflections  Inflections   `toml:"inflections,omitempty" json:"inflections,omitempty"`
+	Aliases      Aliases              `toml:"aliases,omitempty" json:"aliases,omitempty"`
+	TypeReplaces []TypeReplace        `toml:"type_replaces,omitempty" json:"type_replaces,omitempty"`
+	AutoColumns  AutoColumns          `toml:"auto_columns,omitempty" json:"auto_columns,omitempty"`
+	Inflections  Inflections          `toml:"inflections,omitempty" json:"inflections,omitempty"`
+	ForeignKeys  []drivers.ForeignKey `toml:"foreign_keys,omitempty" json:"foreign_keys,omitempty" `
 
 	Version string `toml:"version" json:"version"`
 }

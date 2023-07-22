@@ -15,8 +15,9 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/importers"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
+
+	"github.com/volatiletech/sqlboiler/v4/drivers"
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
@@ -45,7 +46,8 @@ type PostgresDriver struct {
 	addEnumTypes   bool
 	enumNullPrefix string
 
-	uniqueColumns map[columnIdentifier]struct{}
+	uniqueColumns     map[columnIdentifier]struct{}
+	configForeignKeys []drivers.ForeignKey
 }
 
 type columnIdentifier struct {
@@ -103,6 +105,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	p.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
 	p.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+	p.configForeignKeys = config.MustForeignKeys(drivers.ConfigForeignKeys)
 	p.conn, err = sql.Open("postgres", p.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-psql failed to connect to database")
@@ -703,6 +706,14 @@ func (p *PostgresDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Prim
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (p *PostgresDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
+	dbForeignKeys, err := p.foreignKeyInfoFromDB(schema, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "read foreign keys info from db")
+	}
+
+	return drivers.CombineConfigAndDBForeignKeys(p.configForeignKeys, tableName, dbForeignKeys), nil
+}
+func (p *PostgresDriver) foreignKeyInfoFromDB(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey
 
 	whereConditions := []string{"pgn.nspname = $2", "pgc.relname = $1", "pgcon.contype = 'f'"}

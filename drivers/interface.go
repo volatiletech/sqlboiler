@@ -7,8 +7,9 @@ import (
 	"sync"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/importers"
 	"github.com/volatiletech/strmangle"
+
+	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
 // These constants are used in the config map passed into the driver
@@ -19,6 +20,7 @@ const (
 	ConfigAddEnumTypes   = "add-enum-types"
 	ConfigEnumNullPrefix = "enum-null-prefix"
 	ConfigConcurrency    = "concurrency"
+	ConfigForeignKeys    = "foreign-keys"
 
 	ConfigUser    = "user"
 	ConfigPass    = "pass"

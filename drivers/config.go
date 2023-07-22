@@ -160,6 +160,41 @@ func (c Config) StringSlice(key string) ([]string, bool) {
 	return slice, true
 }
 
+func (c Config) MustForeignKeys(key string) []ForeignKey {
+	rawValue, ok := c[key]
+	if !ok {
+		return nil
+	}
+
+	switch v := rawValue.(type) {
+	case nil:
+		return nil
+	case []ForeignKey:
+		return v
+	case []interface{}: // in case binary, config is pass to driver in json format, so this key will be []interface{}
+		fks := make([]ForeignKey, 0, len(v))
+		for _, item := range v {
+			fk, ok := item.(map[string]interface{})
+			if !ok {
+				panic(errors.Errorf("found item of foreign keys, but it was not a map[string]interface{} (%T)", v))
+			}
+
+			configFK := Config(fk)
+
+			fks = append(fks, ForeignKey{
+				Name:          configFK.MustString("name"),
+				Table:         configFK.MustString("table"),
+				Column:        configFK.MustString("column"),
+				ForeignTable:  configFK.MustString("foreign_table"),
+				ForeignColumn: configFK.MustString("foreign_column"),
+			})
+		}
+		return fks
+	default:
+		panic(errors.Errorf("found key %s in config, but it was invalid (%T)", key, v))
+	}
+}
+
 // DefaultEnv grabs a value from the environment or a default.
 // This is shared by drivers to get config for testing.
 func DefaultEnv(key, def string) string {
@@ -210,4 +245,31 @@ func ColumnsFromList(list []string, tablename string) []string {
 	}
 
 	return columns
+}
+
+// CombineConfigAndDBForeignKeys takes foreign keys from both config and db, filter by tableName and
+// deduplicate by column name. If a foreign key is found in both config and db, the one in config will be used.
+func CombineConfigAndDBForeignKeys(configForeignKeys []ForeignKey, tableName string, dbForeignKeys []ForeignKey) []ForeignKey {
+	combinedForeignKeys := make([]ForeignKey, 0, len(configForeignKeys)+len(dbForeignKeys))
+	appearedColumns := make(map[string]bool)
+
+	for _, fk := range configForeignKeys {
+		// need check table name here cause configForeignKeys contains all foreign keys of all tables
+		if fk.Table != tableName {
+			continue
+		}
+
+		combinedForeignKeys = append(combinedForeignKeys, fk)
+		appearedColumns[fk.Column] = true
+	}
+
+	for _, fk := range dbForeignKeys {
+		// no need check table here, because dbForeignKeys are already filtered by table name
+		if appearedColumns[fk.Column] {
+			continue
+		}
+		combinedForeignKeys = append(combinedForeignKeys, fk)
+	}
+
+	return combinedForeignKeys
 }

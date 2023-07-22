@@ -12,9 +12,10 @@ import (
 	// Side effect import go-mssqldb
 	"github.com/friendsofgo/errors"
 	_ "github.com/microsoft/go-mssqldb"
+	"github.com/volatiletech/strmangle"
+
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/strmangle"
 )
 
 //go:embed override
@@ -36,6 +37,8 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 type MSSQLDriver struct {
 	connStr string
 	conn    *sql.DB
+
+	configForeignKeys []drivers.ForeignKey
 }
 
 // Templates that should be added/overridden
@@ -84,6 +87,7 @@ func (m *MSSQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	m.connStr = MSSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+	m.configForeignKeys = config.MustForeignKeys(drivers.ConfigForeignKeys)
 	m.conn, err = sql.Open("mssql", m.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-mssql failed to connect to database")
@@ -409,6 +413,14 @@ func (m *MSSQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (m *MSSQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
+	dbForeignKeys, err := m.foreignKeyInfoFromDB(schema, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "read foreign keys info from db")
+	}
+
+	return drivers.CombineConfigAndDBForeignKeys(m.configForeignKeys, tableName, dbForeignKeys), nil
+}
+func (m *MSSQLDriver) foreignKeyInfoFromDB(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey
 
 	query := `

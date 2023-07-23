@@ -11,9 +11,10 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
+	"github.com/volatiletech/strmangle"
+
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/strmangle"
 )
 
 //go:embed override
@@ -33,11 +34,12 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // MySQLDriver holds the database connection string and a handle
 // to the database connection.
 type MySQLDriver struct {
-	connStr        string
-	conn           *sql.DB
-	addEnumTypes   bool
-	enumNullPrefix string
-	tinyIntAsInt   bool
+	connStr           string
+	conn              *sql.DB
+	addEnumTypes      bool
+	enumNullPrefix    string
+	tinyIntAsInt      bool
+	configForeignKeys []drivers.ForeignKey
 }
 
 // Templates that should be added/overridden
@@ -95,6 +97,7 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	m.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
 	m.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+	m.configForeignKeys = config.MustForeignKeys(drivers.ConfigForeignKeys)
 	m.conn, err = sql.Open("mysql", m.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-mysql failed to connect to database")
@@ -405,6 +408,14 @@ func (m *MySQLDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (m *MySQLDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
+	dbForeignKeys, err := m.foreignKeyInfoFromDB(schema, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "read foreign keys info from db")
+	}
+
+	return drivers.CombineConfigAndDBForeignKeys(m.configForeignKeys, tableName, dbForeignKeys), nil
+}
+func (m *MySQLDriver) foreignKeyInfoFromDB(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey
 
 	query := `

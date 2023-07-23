@@ -9,9 +9,10 @@ import (
 	"io/fs"
 	"strings"
 
+	_ "modernc.org/sqlite"
+
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/importers"
-	_ "modernc.org/sqlite"
 )
 
 //go:embed override
@@ -30,8 +31,9 @@ func Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, err error) {
 // SQLiteDriver holds the database connection string and a handle
 // to the database connection.
 type SQLiteDriver struct {
-	connStr string
-	dbConn  *sql.DB
+	connStr           string
+	dbConn            *sql.DB
+	configForeignKeys []drivers.ForeignKey
 }
 
 // Templates that should be added/overridden
@@ -73,6 +75,7 @@ func (s SQLiteDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
 	s.connStr = SQLiteBuildQueryString(dbname)
+	s.configForeignKeys = config.MustForeignKeys(drivers.ConfigForeignKeys)
 	s.dbConn, err = sql.Open("sqlite", s.connStr)
 	if err != nil {
 		return nil, fmt.Errorf("sqlboiler-sqlite failed to connect to database: %w", err)
@@ -451,6 +454,14 @@ func (s SQLiteDriver) PrimaryKeyInfo(schema, tableName string) (*drivers.Primary
 
 // ForeignKeyInfo retrieves the foreign keys for a given table name.
 func (s SQLiteDriver) ForeignKeyInfo(schema, tableName string) ([]drivers.ForeignKey, error) {
+	dbForeignKeys, err := s.foreignKeyInfoFromDB(schema, tableName)
+	if err != nil {
+		return nil, fmt.Errorf("read foreign keys info from db: %w", err)
+	}
+
+	return drivers.CombineConfigAndDBForeignKeys(s.configForeignKeys, tableName, dbForeignKeys), nil
+}
+func (s SQLiteDriver) foreignKeyInfoFromDB(schema, tableName string) ([]drivers.ForeignKey, error) {
 	var fkeys []drivers.ForeignKey
 
 	query := fmt.Sprintf("PRAGMA foreign_key_list('%s')", tableName)

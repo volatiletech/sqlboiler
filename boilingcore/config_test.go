@@ -254,3 +254,66 @@ func TestConvertTypeReplace(t *testing.T) {
 		t.Error("tables in types.match wrong:", got)
 	}
 }
+
+func TestConvertForeignKeys(t *testing.T) {
+	t.Parallel()
+
+	var intf interface{} = map[string]interface{}{
+		"fk_1": map[string]interface{}{
+			"table":          "table_name",
+			"column":         "column_name",
+			"foreign_table":  "foreign_table_name",
+			"foreign_column": "foreign_column_name",
+		},
+	}
+
+	fks := ConvertForeignKeys(intf)
+	if len(fks) != 1 {
+		t.Error("should have one entry")
+	}
+
+	fk := fks[0]
+	expectedFK := drivers.ForeignKey{
+		Name:          "fk_1",
+		Table:         "table_name",
+		Column:        "column_name",
+		ForeignTable:  "foreign_table_name",
+		ForeignColumn: "foreign_column_name",
+	}
+
+	if fk != expectedFK {
+		t.Error("value was wrong:", fk)
+	}
+}
+
+func TestConvertForeignKeysAltSyntax(t *testing.T) {
+	t.Parallel()
+
+	var intf interface{} = []interface{}{
+		map[string]interface{}{
+			"name":           "fk_1",
+			"table":          "table_name",
+			"column":         "column_name",
+			"foreign_table":  "foreign_table_name",
+			"foreign_column": "foreign_column_name",
+		},
+	}
+
+	fks := ConvertForeignKeys(intf)
+	if len(fks) != 1 {
+		t.Error("should have one entry")
+	}
+
+	fk := fks[0]
+	expectedFK := drivers.ForeignKey{
+		Name:          "fk_1",
+		Table:         "table_name",
+		Column:        "column_name",
+		ForeignTable:  "foreign_table_name",
+		ForeignColumn: "foreign_column_name",
+	}
+
+	if fk != expectedFK {
+		t.Error("value was wrong:", fk)
+	}
+}

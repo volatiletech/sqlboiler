@@ -534,7 +534,7 @@ func (SQLiteDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.String"
 		}
 	} else {
-		switch c.DBType {
+		switch strings.Split(c.DBType, "(")[0] {
 		case "INT", "INTEGER", "BIGINT":
 			c.Type = "int64"
 		case "TINYINT", "INT8":

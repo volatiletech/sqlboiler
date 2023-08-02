@@ -963,7 +963,7 @@
 				},
 				{
 					"name": "float_five",
-					"type": "string",
+					"type": "float32",
 					"db_type": "FLOAT(2,1)",
 					"default": "",
 					"comment": "",
@@ -993,7 +993,7 @@
 				},
 				{
 					"name": "float_seven",
-					"type": "string",
+					"type": "float32",
 					"db_type": "FLOAT(2,1)",
 					"default": "1.1",
 					"comment": "",
@@ -1398,7 +1398,7 @@
 				},
 				{
 					"name": "tinyint1_nnull",
-					"type": "string",
+					"type": "int8",
 					"db_type": "TINYINT(1)",
 					"default": "",
 					"comment": "",
@@ -1428,7 +1428,7 @@
 				},
 				{
 					"name": "tinyint2_nnull",
-					"type": "string",
+					"type": "int8",
 					"db_type": "TINYINT(2)",
 					"default": "",
 					"comment": "",

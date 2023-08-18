@@ -698,4 +698,12 @@ func TestWriteComment(t *testing.T) {
 	if got := buf.String(); got != "-- first\n-- second\n" {
 		t.Errorf(`bad two lines comment, got: %s`, got)
 	}
+
+	// two lines comment with \r
+	buf.Reset()
+	query.comment = "first\rsecond"
+	writeComment(&query, &buf)
+	if got := buf.String(); got != "-- first\n-- second\n" {
+		t.Errorf(`bad two lines comment, got: %s`, got)
+	}
 }

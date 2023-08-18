@@ -591,12 +591,14 @@ func parseFromClause(toks []string) (alias, name string, ok bool) {
 	return alias, name, ok
 }
 
+var commnetSplit = regexp.MustCompile(`[\n\r]+`)
+
 func writeComment(q *Query, buf *bytes.Buffer) {
 	if len(q.comment) == 0 {
 		return
 	}
 
-	lines := strings.Split(q.comment, "\n")
+	lines := commnetSplit.Split(q.comment, -1)
 	for _, line := range lines {
 		buf.WriteString("-- ")
 		buf.WriteString(line)

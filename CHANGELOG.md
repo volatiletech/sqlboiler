@@ -21,6 +21,10 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 - Fix UPSERT query to respect conflict_target in postgres driver (thanks @agis)
 - Fix column type conversion in SQLite3 driver, specifically, columns with types such as `FLOAT(2, 1)` or `TYNYINT(1)` (thanks @Jumpaku)
 
+### Security
+
+- When writing comments, also split comments by `\r` since several dialects also recognise this as a new line character
+
 ## [v4.14.2] - 2023-03-21
 
 ### Fixed

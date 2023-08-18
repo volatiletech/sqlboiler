@@ -643,6 +643,30 @@ down_singular = "teamName"
   foreign = "Videos"
 ```
 
+##### Foreign Keys
+
+You can add foreign keys not defined in the database to your models using the following configuration:
+
+```toml
+[foreign_keys.jet_pilots_fkey]
+table = "jets"
+column = "pilot_id"
+foreign_table = "pilots"
+foreign_column = "id"
+
+[foreign_keys.pilot_language_pilots_fkey]
+table = "pilot_languages"
+column = "pilot_id"
+foreign_table = "pilots"
+foreign_column = "id"
+
+[foreign_keys.pilot_language_languages_fkey]
+table = "pilot_languages"
+column = "language_id"
+foreign_table = "languages"
+foreign_column = "id"
+```
+
 ##### Inflections
 
 With inflections, you can control the rules sqlboiler uses to generates singular/plural variants. This is useful if a certain word or suffix is used multiple times and you do not want to create aliases for every instance.
@@ -785,6 +809,7 @@ templates/
 ```
 
 The output files of which would be:
+
 ```
 output_dir/
 ├── boil_queries.go

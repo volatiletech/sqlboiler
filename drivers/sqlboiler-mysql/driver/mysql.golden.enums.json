@@ -2,6 +2,138 @@
 	"schema": "",
 	"tables": [
 		{
+			"name": "node",
+			"schema_name": "",
+			"columns": [
+				{
+					"name": "id",
+					"type": "int",
+					"db_type": "int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": true,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "int"
+				},
+				{
+					"name": "parent_id",
+					"type": "null.Int",
+					"db_type": "int",
+					"default": "",
+					"comment": "",
+					"nullable": true,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "int"
+				},
+				{
+					"name": "root_id",
+					"type": "int",
+					"db_type": "int",
+					"default": "",
+					"comment": "",
+					"nullable": false,
+					"unique": false,
+					"validated": false,
+					"auto_generated": false,
+					"arr_type": null,
+					"udt_name": "",
+					"domain_name": null,
+					"full_db_type": "int"
+				}
+			],
+			"p_key": {
+				"name": "PRIMARY",
+				"columns": [
+					"id"
+				]
+			},
+			"f_keys": [
+				{
+					"table": "node",
+					"name": "FK_node_parent",
+					"column": "parent_id",
+					"nullable": true,
+					"unique": false,
+					"foreign_table": "node",
+					"foreign_column": "id",
+					"foreign_column_nullable": false,
+					"foreign_column_unique": true
+				},
+				{
+					"table": "node",
+					"name": "FK_node_root",
+					"column": "root_id",
+					"nullable": false,
+					"unique": false,
+					"foreign_table": "node",
+					"foreign_column": "id",
+					"foreign_column_nullable": false,
+					"foreign_column_unique": true
+				}
+			],
+			"is_join_table": false,
+			"to_one_relationships": null,
+			"to_many_relationships": [
+				{
+					"name": "FK_node_parent",
+					"table": "node",
+					"column": "id",
+					"nullable": false,
+					"unique": true,
+					"foreign_table": "node",
+					"foreign_column": "parent_id",
+					"foreign_column_nullable": true,
+					"foreign_column_unique": false,
+					"to_join_table": false,
+					"join_table": "",
+					"join_local_fkey_name": "",
+					"join_local_column": "",
+					"join_local_column_nullable": false,
+					"join_local_column_unique": false,
+					"join_foreign_fkey_name": "",
+					"join_foreign_column": "",
+					"join_foreign_column_nullable": false,
+					"join_foreign_column_unique": false
+				},
+				{
+					"name": "FK_node_root",
+					"table": "node",
+					"column": "id",
+					"nullable": false,
+					"unique": true,
+					"foreign_table": "node",
+					"foreign_column": "root_id",
+					"foreign_column_nullable": false,
+					"foreign_column_unique": false,
+					"to_join_table": false,
+					"join_table": "",
+					"join_local_fkey_name": "",
+					"join_local_column": "",
+					"join_local_column_nullable": false,
+					"join_local_column_unique": false,
+					"join_foreign_fkey_name": "",
+					"join_foreign_column": "",
+					"join_foreign_column_nullable": false,
+					"join_foreign_column_unique": false
+				}
+			],
+			"is_view": false,
+			"view_capabilities": {
+				"can_insert": false,
+				"can_upsert": false
+			}
+		},
+		{
 			"name": "sponsors",
 			"schema_name": "",
 			"columns": [

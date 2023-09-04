@@ -1,4 +1,5 @@
 -- Don't forget to maintain order here, foreign keys!
+drop table if exists node;
 drop table if exists video_tags;
 drop table if exists tags;
 drop table if exists videos;
@@ -172,13 +173,26 @@ create table type_monsters (
 	text_nnull    text not null,
 
 
-    virtual_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) VIRTUAL NOT NULL,
-    virtual_null text GENERATED ALWAYS AS (UPPER(text_null)) VIRTUAL,
-    generated_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) STORED NOT NULL,
-    generated_null text GENERATED ALWAYS AS (UPPER(text_null)) STORED
+	virtual_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) VIRTUAL NOT NULL,
+	virtual_null text GENERATED ALWAYS AS (UPPER(text_null)) VIRTUAL,
+	generated_nnull text GENERATED ALWAYS AS (UPPER(text_nnull)) STORED NOT NULL,
+	generated_null text GENERATED ALWAYS AS (UPPER(text_null)) STORED
 );
 
 create view user_videos as 
 select u.id user_id, v.id video_id, v.sponsor_id sponsor_id
 from users u
 inner join videos v on v.user_id = u.id;
+
+create table node (
+	id int primary key,
+	parent_id int,
+	root_id int not null,
+	
+	constraint CK_parent_root check((parent_id is not null and root_id != id) OR (parent_id is null and root_id = id)),
+	constraint UN_node_parent_root unique(id, root_id),
+	constraint FK_node_parent foreign key (parent_id) references node(id),
+	constraint FK_node_root foreign key(root_id) references node(id),
+	constraint FK_node_parent_root foreign key (parent_id, root_id) references node(id, root_id)
+);
+

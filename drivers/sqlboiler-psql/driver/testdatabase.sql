@@ -1,4 +1,5 @@
 -- Don't forget to maintain order here, foreign keys!
+drop table if exists node;
 drop table if exists video_tags;
 drop table if exists tags;
 drop table if exists videos;
@@ -260,3 +261,15 @@ inner join videos v on v.user_id = u.id;
 
 create view type_monsters_v as select * from type_monsters; 
 create materialized view type_monsters_mv as select * from type_monsters_v;
+
+create table node (
+	id int primary key,
+	parent_id int,
+	root_id int not null,
+	
+	constraint CK_parent_root check((parent_id is not null and root_id != id) OR (parent_id is null and root_id = id)),
+	constraint UN_node_parent_root unique(id, root_id),
+	constraint FK_node_parent foreign key (parent_id) references node(id),
+	constraint FK_node_root foreign key(root_id) references node(id),
+	constraint FK_node_parent_root foreign key (parent_id, root_id) references node(id, root_id)
+);

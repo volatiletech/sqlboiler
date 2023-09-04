@@ -186,9 +186,21 @@ from users u
 inner join videos v on v.user_id = u.id;
 
 CREATE TABLE has_generated_columns (
-   a INTEGER PRIMARY KEY,
-   b INT,
-   c TEXT,
-   d INT GENERATED ALWAYS AS (a*abs(b)) VIRTUAL,
-   e TEXT GENERATED ALWAYS AS (substr(c,b,b+1)) STORED
+	a INTEGER PRIMARY KEY,
+	b INT,
+	c TEXT,
+	d INT GENERATED ALWAYS AS (a*abs(b)) VIRTUAL,
+	e TEXT GENERATED ALWAYS AS (substr(c,b,b+1)) STORED
+);
+
+CREATE TABLE node (
+	id INT PRIMARY KEY,
+	parent_id INT,
+	root_id INT NOT NULL,
+
+	constraint CK_parent_root check((parent_id is not null and root_id != id) OR (parent_id is null and root_id = id)),
+	constraint UN_node_parent_root unique(id, root_id),
+	constraint FK_node_parent foreign key (parent_id) references node(id),
+	constraint FK_node_root foreign key(root_id) references node(id),
+	constraint FK_node_parent_root foreign key (parent_id, root_id) references node(id, root_id)
 );

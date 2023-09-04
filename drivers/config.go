@@ -252,10 +252,20 @@ func ColumnsFromList(list []string, tablename string) []string {
 func CombineConfigAndDBForeignKeys(configForeignKeys []ForeignKey, tableName string, dbForeignKeys []ForeignKey) []ForeignKey {
 	combinedForeignKeys := make([]ForeignKey, 0, len(configForeignKeys)+len(dbForeignKeys))
 	appearedColumns := make(map[string]bool)
+	fkNameCount := make(map[string]int)
+
+	// Detect Composite Foreign Keys in the database by counting how many times they appear.
+	// boiler doesn't support Composite FKs and should ignore those
+	for _, fk := range dbForeignKeys {
+		fkNameCount[fk.Name] += 1
+	}
 
 	for _, fk := range configForeignKeys {
 		// need check table name here cause configForeignKeys contains all foreign keys of all tables
 		if fk.Table != tableName {
+			continue
+		}
+		if appearedColumns[fk.Column] {
 			continue
 		}
 
@@ -268,7 +278,11 @@ func CombineConfigAndDBForeignKeys(configForeignKeys []ForeignKey, tableName str
 		if appearedColumns[fk.Column] {
 			continue
 		}
+		if fkNameCount[fk.Name] != 1 {
+			continue
+		}
 		combinedForeignKeys = append(combinedForeignKeys, fk)
+		appearedColumns[fk.Column] = true
 	}
 
 	return combinedForeignKeys

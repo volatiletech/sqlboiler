@@ -138,6 +138,18 @@ It only titlecases the EnumValue portion if it's snake-cased.
 						func (e {{$enumName}}) String() string {
 							return string(e)
 						}
+
+						func (e {{$enumName}}) Ordinal() int {
+							switch e {
+							{{range $idx, $val := $vals -}}
+								{{- $enumValue := titleCase $val -}}
+								case {{$enumName}}{{$enumValue}}:
+									return {{$idx}}
+							{{end}}
+							default:
+								panic(errors.New("enum is not valid"))
+							}
+						}
 					{{- end -}}
 
 					{{ if and

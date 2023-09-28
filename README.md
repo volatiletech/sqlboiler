@@ -138,6 +138,7 @@ Table of Contents
 
 - Multi-column foreign key support
 - Materialized view support
+  - Only postgresql is supported
 
 ### Supported Databases
 

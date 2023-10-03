@@ -731,7 +731,7 @@ func (p *PostgresDriver) foreignKeyInfoFromDB(schema, tableName string) ([]drive
 	from pg_namespace pgn
 		inner join pg_class pgc on pgn.oid = pgc.relnamespace and pgc.relkind = 'r'
 		inner join pg_constraint pgcon on pgn.oid = pgcon.connamespace and pgc.oid = pgcon.conrelid
-		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid
+		inner join pg_class dstlookupname on pgcon.confrelid = dstlookupname.oid and pgn.oid = dstlookupname.relnamespace
 		inner join pg_attribute pgasrc on pgc.oid = pgasrc.attrelid and pgasrc.attnum = ANY(pgcon.conkey)
 		inner join pg_attribute pgadst on pgcon.confrelid = pgadst.attrelid and pgadst.attnum = ANY(pgcon.confkey)
 	where %s

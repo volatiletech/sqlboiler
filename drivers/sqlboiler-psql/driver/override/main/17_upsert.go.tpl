@@ -103,7 +103,11 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 		}
 
 		conflict := conflictColumns
-		if len(conflict) == 0 {
+		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
+			if len({{$alias.DownSingular}}PrimaryKeyColumns) == 0 {
+				return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build conflict column list")
+			}
+
 			conflict = make([]string, len({{$alias.DownSingular}}PrimaryKeyColumns))
 			copy(conflict, {{$alias.DownSingular}}PrimaryKeyColumns)
 		}

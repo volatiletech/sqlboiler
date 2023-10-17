@@ -21,13 +21,16 @@ func buildUpsertQueryPostgres(dia drivers.Dialect, tableName string, updateOnCon
 		columns,
 	)
 
-	buf.WriteByte('(')
-	buf.WriteString(strings.Join(conflict, ", "))
+	if len(conflict) != 0 {
+		buf.WriteByte('(')
+		buf.WriteString(strings.Join(conflict, ", "))
+		buf.WriteString(") ")
+	}
 
 	if !updateOnConflict || len(update) == 0 {
-		buf.WriteString(") DO NOTHING")
+		buf.WriteString("DO NOTHING")
 	} else {
-		buf.WriteString(") DO UPDATE SET ")
+		buf.WriteString("DO UPDATE SET ")
 
 		for i, v := range update {
 		    if len(v) == 0 {

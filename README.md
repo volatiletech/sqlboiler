@@ -1792,6 +1792,18 @@ p1.Name = "Hogan"
 // INSERT INTO pilots ("id", "name") VALUES ($1, $2)
 // ON CONFLICT ("id") DO UPDATE SET "name" = EXCLUDED."name"
 err := p1.Upsert(ctx, db, true, []string{"id"}, boil.Whitelist("name"), boil.Whitelist("id", "name"))
+
+// Custom conflict_target expression:
+// INSERT INTO pilots ("id", "name") VALUES (9, 'Antwerp Design')
+// ON CONFLICT ON CONSTRAINT pilots_pkey DO NOTHING;
+conflictTarget := models.UpsertConflictTarget
+err := p1.Upsert(ctx, db, false, nil, boil.Whitelist("id", "name"), boil.None(), conflictTarget("ON CONSTRAINT pilots_pkey"))
+
+// Custom UPDATE SET expression:
+// INSERT INTO pilots ("id", "name") VALUES (9, 'Antwerp Design')
+// ON CONFLICT ("id") DO UPDATE SET (id, name) = (sub-SELECT)
+updateSet := models.UpsertUpdateSet
+err := p1.Upsert(ctx, db, true, []string{"id"}, boil.Whitelist("id", "name"), boil.None(), updateSet("(id, name) = (sub-SELECT)"))
 ```
 
 * **Postgres**

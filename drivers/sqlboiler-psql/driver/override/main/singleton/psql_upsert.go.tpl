@@ -1,13 +1,13 @@
 type UpsertOptions struct {
-	conflictObject string
+	conflictTarget string
 	updateSet string
 }
 
 type UpsertOptionFunc func(o *UpsertOptions)
 
-func UpsertConflictObject(conflictObject string) UpsertOptionFunc {
+func UpsertConflictTarget(conflictTarget string) UpsertOptionFunc {
 	return func(o *UpsertOptions) {
-		o.conflictObject = conflictObject
+		o.conflictTarget = conflictTarget
 	}
 }
 
@@ -45,8 +45,8 @@ func buildUpsertQueryPostgres(dia drivers.Dialect, tableName string, updateOnCon
 		columns,
 	)
 
-	if upsertOpts.conflictObject != "" {
-		buf.WriteString(upsertOpts.conflictObject)
+	if upsertOpts.conflictTarget != "" {
+		buf.WriteString(upsertOpts.conflictTarget)
 	} else if len(conflict) != 0 {
 		buf.WriteByte('(')
 		buf.WriteString(strings.Join(conflict, ", "))

@@ -46,6 +46,9 @@ func (j *JSON) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON returns j as the JSON encoding of j.
 func (j JSON) MarshalJSON() ([]byte, error) {
+	if j == nil {
+		return []byte("null"), nil
+	}
 	return j, nil
 }
 

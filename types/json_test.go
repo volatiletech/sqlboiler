@@ -76,6 +76,20 @@ func TestJSONUnmarshalJSON(t *testing.T) {
 	}
 }
 
+func TestJSONMarshalJSON_Null(t *testing.T) {
+	t.Parallel()
+
+	var j JSON
+	res, err := j.MarshalJSON()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !bytes.Equal(res, []byte(`null`)) {
+		t.Errorf("Expected %q, got %v", `null`, res)
+	}
+}
+
 func TestJSONMarshalJSON(t *testing.T) {
 	t.Parallel()
 

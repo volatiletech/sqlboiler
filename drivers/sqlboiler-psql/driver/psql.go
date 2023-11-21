@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/volatiletech/sqlboiler/v4/importers"
 
@@ -46,7 +47,7 @@ type PostgresDriver struct {
 	addEnumTypes   bool
 	enumNullPrefix string
 
-	uniqueColumns     map[columnIdentifier]struct{}
+	uniqueColumns     *sync.Map
 	configForeignKeys []drivers.ForeignKey
 }
 
@@ -328,7 +329,7 @@ func (p *PostgresDriver) loadUniqueColumns() error {
 	if p.uniqueColumns != nil {
 		return nil
 	}
-	p.uniqueColumns = map[columnIdentifier]struct{}{}
+	p.uniqueColumns = &sync.Map{}
 	query := `with
 method_a as (
     select
@@ -375,7 +376,7 @@ select * from results;
 		if err := rows.Scan(&c.Schema, &c.Table, &c.Column); err != nil {
 			return errors.Wrapf(err, "unable to scan unique entry row")
 		}
-		p.uniqueColumns[c] = struct{}{}
+		p.uniqueColumns.Store(c, struct{}{})
 	}
 	return nil
 }
@@ -615,8 +616,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 		if err := rows.Scan(&colName, &colType, &colFullType, &udtName, &arrayType, &domainName, &defaultValue, &comment, &nullable, &generated, &identity); err != nil {
 			return nil, errors.Wrapf(err, "unable to scan for table %s", tableName)
 		}
-
-		_, unique := p.uniqueColumns[columnIdentifier{schema, tableName, colName}]
+		_, unique := p.uniqueColumns.Load(columnIdentifier{schema, tableName, colName})
 		column := drivers.Column{
 			Name:          colName,
 			DBType:        colType,

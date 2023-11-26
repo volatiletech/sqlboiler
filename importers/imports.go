@@ -156,7 +156,6 @@ func MapFromInterface(intf interface{}) (Map, error) {
 		m[name] = s
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -278,6 +277,11 @@ func NewDefaultImports() Collection {
 			},
 		},
 		"boil_suites_test": {
+			Standard: List{
+				`"testing"`,
+			},
+		},
+		"boil_relationship_test": {
 			Standard: List{
 				`"testing"`,
 			},

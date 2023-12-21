@@ -342,7 +342,7 @@ var templateFunctions = template.FuncMap{
 	"getTable":               drivers.GetTable,
 }
 
-func generateTagWithCase(tagName, tagValue string, c TagCase, nullable bool) string {
+func generateTagWithCase(tagName, tagValue, alias string, c TagCase, nullable bool) string {
 	buf := strmangle.GetBuffer()
 	defer strmangle.PutBuffer(buf)
 
@@ -356,6 +356,8 @@ func generateTagWithCase(tagName, tagValue string, c TagCase, nullable bool) str
 		buf.WriteString(strmangle.TitleCase(tagValue))
 	case TagCaseCamel:
 		buf.WriteString(strmangle.CamelCase(tagValue))
+	case TagCaseAlias:
+		buf.WriteString(alias)
 	default:
 		buf.WriteString(tagValue)
 	}

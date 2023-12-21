@@ -20,6 +20,7 @@ const (
 	TagCaseCamel TagCase = "camel"
 	TagCaseSnake TagCase = "snake"
 	TagCaseTitle TagCase = "title"
+	TagCaseAlias TagCase = "alias"
 )
 
 // Config for the running of the commands

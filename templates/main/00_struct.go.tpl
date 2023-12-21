@@ -16,20 +16,25 @@ type {{$alias.UpSingular}} struct {
 	{{- /* render column alias and column type */ -}}
 	{{ $colAlias }} {{ $column.Type -}}
 
-	{{- /* handle struct tags */ -}}
+	{{- /*
+	  handle struct tags
+	  StructTagCasing will be replaced with $.StructTagCases
+	  however we need to keep this backward compatible
+	  $.StructTagCasing will only be used when it's set to "alias"
+    */ -}}
 	`
 	{{- if eq $.StructTagCasing "alias" -}}
 	    {{- generateTags $.Tags $colAlias -}}
-	    {{- generateTagWithCase "json" $colAlias "default" $column.Nullable -}}
-	    {{- generateTagWithCase "yaml" $colAlias "default" $column.Nullable -}}
-	    {{- generateTagWithCase "toml" $colAlias "default" $column.Nullable -}}
-	    {{- generateTagWithCase "boil" $colAlias "default" $column.Nullable -}}
+	    {{- generateTagWithCase "json" $column.Name $colAlias "alias" $column.Nullable -}}
+	    {{- generateTagWithCase "yaml" $column.Name $colAlias "alias" $column.Nullable -}}
+	    {{- generateTagWithCase "toml" $column.Name $colAlias "alias" $column.Nullable -}}
+	    {{- generateTagWithCase "boil" $column.Name $colAlias "alias" $column.Nullable -}}
 	{{- else -}}
 	    {{- generateTags $.Tags $column.Name }}
-	    {{- generateTagWithCase "json" $column.Name $.StructTagCases.Json $column.Nullable -}}
-	    {{- generateTagWithCase "yaml" $column.Name $.StructTagCases.Yaml $column.Nullable -}}
-	    {{- generateTagWithCase "toml" $column.Name $.StructTagCases.Toml $column.Nullable -}}
-	    {{- generateTagWithCase "boil" $column.Name $.StructTagCases.Boil $column.Nullable -}}
+	    {{- generateTagWithCase "json" $column.Name $colAlias $.StructTagCases.Json $column.Nullable -}}
+	    {{- generateTagWithCase "yaml" $column.Name $colAlias $.StructTagCases.Yaml $column.Nullable -}}
+	    {{- generateTagWithCase "toml" $column.Name $colAlias $.StructTagCases.Toml $column.Nullable -}}
+	    {{- generateTagWithCase "boil" $column.Name $colAlias $.StructTagCases.Boil $column.Nullable -}}
 	{{- end -}}
 	`
 	{{ end -}}

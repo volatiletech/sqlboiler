@@ -14,6 +14,14 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/importers"
 )
 
+type TagCase string
+
+const (
+	TagCaseCamel TagCase = "camel"
+	TagCaseSnake TagCase = "snake"
+	TagCaseTitle TagCase = "title"
+)
+
 // Config for the running of the commands
 type Config struct {
 	DriverName   string         `toml:"driver_name,omitempty" json:"driver_name,omitempty"`
@@ -39,9 +47,16 @@ type Config struct {
 	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
 	AlwaysWrapErrors  bool     `toml:"always_wrap_errors,omitempty" json:"always_wrap_errors,omitempty"`
 	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
-	StructTagCasing   string   `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
-	RelationTag       string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
-	TagIgnore         []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
+
+	StructTagCases StructTagCases `toml:"struct_tag_cases,omitempty" json:"struct_tag_cases,omitempty"`
+
+	// StructTagCasing is a legacy config field, which will be migrated to StructTagCases in the future.
+	// When struct-tag-casing is defined, it will be converted to StructTagCases
+	// Deprecated: use StructTagCases instead.
+	StructTagCasing string `toml:"struct_tag_casing,omitempty" json:"struct_tag_casing,omitempty"`
+
+	RelationTag string   `toml:"relation_tag,omitempty" json:"relation_tag,omitempty"`
+	TagIgnore   []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
 
@@ -61,6 +76,13 @@ type AutoColumns struct {
 	Created string `toml:"created,omitempty" json:"created,omitempty"`
 	Updated string `toml:"updated,omitempty" json:"updated,omitempty"`
 	Deleted string `toml:"deleted,omitempty" json:"deleted,omitempty"`
+}
+
+type StructTagCases struct {
+	Json TagCase `toml:"json,omitempty" json:"json,omitempty"`
+	Yaml TagCase `toml:"yaml,omitempty" json:"yaml,omitempty"`
+	Toml TagCase `toml:"toml,omitempty" json:"toml,omitempty"`
+	Boil TagCase `toml:"boil,omitempty" json:"boil,omitempty"`
 }
 
 // TypeReplace replaces a column type with something else

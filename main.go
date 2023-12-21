@@ -172,13 +172,20 @@ func preRun(cmd *cobra.Command, args []string) error {
 		AlwaysWrapErrors:  viper.GetBool("always-wrap-errors"),
 		Wipe:              viper.GetBool("wipe"),
 		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
-		TagIgnore:         viper.GetStringSlice("tag-ignore"),
-		RelationTag:       viper.GetString("relation-tag"),
-		TemplateDirs:      viper.GetStringSlice("templates"),
-		Tags:              viper.GetStringSlice("tag"),
-		Replacements:      viper.GetStringSlice("replace"),
-		Aliases:           boilingcore.ConvertAliases(viper.Get("aliases")),
-		TypeReplaces:      boilingcore.ConvertTypeReplace(viper.Get("types")),
+		StructTagCases: boilingcore.StructTagCases{
+			// make this compatible with the legacy struct-tag-casing config
+			Json: withDefaultCase(viper.GetString("struct-tag-cases.json"), viper.GetString("struct-tag-casing")),
+			Yaml: withDefaultCase(viper.GetString("struct-tag-cases.yaml"), viper.GetString("struct-tag-casing")),
+			Toml: withDefaultCase(viper.GetString("struct-tag-cases.toml"), viper.GetString("struct-tag-casing")),
+			Boil: withDefaultCase(viper.GetString("struct-tag-cases.boil"), viper.GetString("struct-tag-casing")),
+		},
+		TagIgnore:    viper.GetStringSlice("tag-ignore"),
+		RelationTag:  viper.GetString("relation-tag"),
+		TemplateDirs: viper.GetStringSlice("templates"),
+		Tags:         viper.GetStringSlice("tag"),
+		Replacements: viper.GetStringSlice("replace"),
+		Aliases:      boilingcore.ConvertAliases(viper.Get("aliases")),
+		TypeReplaces: boilingcore.ConvertTypeReplace(viper.Get("types")),
 		AutoColumns: boilingcore.AutoColumns{
 			Created: viper.GetString("auto-columns.created"),
 			Updated: viper.GetString("auto-columns.updated"),
@@ -292,4 +299,18 @@ func allKeys(prefix string) []string {
 		keySlice = append(keySlice, k)
 	}
 	return keySlice
+}
+
+func withDefaultCase(configCase string, defaultCases ...string) boilingcore.TagCase {
+	if len(configCase) > 0 {
+		return boilingcore.TagCase(strings.ToLower(configCase))
+	}
+
+	for _, c := range defaultCases {
+		if len(c) > 0 {
+			return boilingcore.TagCase(strings.ToLower(c))
+		}
+	}
+
+	return boilingcore.TagCaseSnake
 }

@@ -149,6 +149,7 @@ func (s *State) Run() error {
 		NoBackReferencing: s.Config.NoBackReferencing,
 		AlwaysWrapErrors:  s.Config.AlwaysWrapErrors,
 		StructTagCasing:   s.Config.StructTagCasing,
+		StructTagCases:    s.Config.StructTagCases,
 		TagIgnore:         make(map[string]struct{}),
 		Tags:              s.Config.Tags,
 		RelationTag:       s.Config.RelationTag,

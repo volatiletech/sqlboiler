@@ -25,16 +25,16 @@ type {{$alias.UpSingular}} struct {
 	`
 	{{- if eq $.StructTagCasing "alias" -}}
 	    {{- generateTags $.Tags $colAlias -}}
+	    {{- generateTagWithCase "boil" $column.Name $colAlias "alias" false -}}
 	    {{- generateTagWithCase "json" $column.Name $colAlias "alias" $column.Nullable -}}
-	    {{- generateTagWithCase "yaml" $column.Name $colAlias "alias" $column.Nullable -}}
-	    {{- generateTagWithCase "toml" $column.Name $colAlias "alias" $column.Nullable -}}
-	    {{- generateTagWithCase "boil" $column.Name $colAlias "alias" $column.Nullable -}}
+	    {{- generateTagWithCase "toml" $column.Name $colAlias "alias" false -}}
+	    {{- trim (generateTagWithCase "yaml" $column.Name $colAlias "alias" $column.Nullable) -}}
 	{{- else -}}
 	    {{- generateTags $.Tags $column.Name }}
+	    {{- generateTagWithCase "boil" $column.Name $colAlias $.StructTagCases.Boil false -}}
 	    {{- generateTagWithCase "json" $column.Name $colAlias $.StructTagCases.Json $column.Nullable -}}
-	    {{- generateTagWithCase "yaml" $column.Name $colAlias $.StructTagCases.Yaml $column.Nullable -}}
-	    {{- generateTagWithCase "toml" $column.Name $colAlias $.StructTagCases.Toml $column.Nullable -}}
-	    {{- generateTagWithCase "boil" $column.Name $colAlias $.StructTagCases.Boil $column.Nullable -}}
+	    {{- generateTagWithCase "toml" $column.Name $colAlias $.StructTagCases.Toml false -}}
+	    {{- trim (generateTagWithCase "yaml" $column.Name $colAlias $.StructTagCases.Yaml $column.Nullable) -}}
 	{{- end -}}
 	`
 	{{ end -}}

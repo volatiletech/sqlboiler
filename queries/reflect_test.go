@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/drivers"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -193,7 +193,7 @@ func testMakeMapping(byt ...byte) uint64 {
 func TestMakeStructMapping(t *testing.T) {
 	t.Parallel()
 
-	var testStruct = struct {
+	testStruct := struct {
 		LastName    string `boil:"different"`
 		AwesomeName string `boil:"awesome_name"`
 		Face        string `boil:"-"`
@@ -249,8 +249,7 @@ func TestPtrFromMapping(t *testing.T) {
 		Int:  5,
 		IntP: new(int),
 		NestedPtrsP: &NestedPtrs{
-			Int:  6,
-			IntP: new(int),
+			Int: 6,
 		},
 	}
 
@@ -399,10 +398,9 @@ func TestGetBoilTag(t *testing.T) {
 func TestBindChecks(t *testing.T) {
 	t.Parallel()
 
-	type useless struct {
-	}
+	type useless struct{}
 
-	var tests = []struct {
+	tests := []struct {
 		BKind bindKind
 		Fail  bool
 		Obj   interface{}
@@ -623,7 +621,7 @@ func TestAssignBytes(t *testing.T) {
 	t.Parallel()
 
 	var dst []byte
-	var src = []byte("hello")
+	src := []byte("hello")
 
 	Assign(&dst, src)
 	if !bytes.Equal(dst, src) {

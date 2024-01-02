@@ -246,7 +246,7 @@ func writeFile(outFolder string, fileName string, input *bytes.Buffer, format bo
 	}
 
 	path := filepath.Join(outFolder, fileName)
-	if err := testHarnessWriteFile(path, byt, 0664); err != nil {
+	if err := testHarnessWriteFile(path, byt, 0o664); err != nil {
 		return errors.Wrapf(err, "failed to write output file %s", path)
 	}
 

@@ -83,27 +83,27 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 //
 // Example usage:
 //
-//   type JoinStruct struct {
-//     // User1 can have it's struct fields bound to since it specifies
-//     // ,bind in the struct tag, it will look specifically for
-//     // fields that are prefixed with "user." returning from the query.
-//     // For example "user.id" column name will bind to User1.ID
-//     User1      *models.User `boil:"user,bind"`
-//     // User2 will follow the same rules as noted above except it will use
-//     // "friend." as the prefix it's looking for.
-//     User2      *models.User `boil:"friend,bind"`
-//     // RandomData will not be recursed into to look for fields to
-//     // bind and will not be bound to because of the - for the name.
-//     RandomData myStruct     `boil:"-"`
-//     // Date will not be recursed into to look for fields to bind because
-//     // it does not specify ,bind in the struct tag. But it can be bound to
-//     // as it does not specify a - for the name.
-//     Date       time.Time
-//   }
+//	type JoinStruct struct {
+//	  // User1 can have it's struct fields bound to since it specifies
+//	  // ,bind in the struct tag, it will look specifically for
+//	  // fields that are prefixed with "user." returning from the query.
+//	  // For example "user.id" column name will bind to User1.ID
+//	  User1      *models.User `boil:"user,bind"`
+//	  // User2 will follow the same rules as noted above except it will use
+//	  // "friend." as the prefix it's looking for.
+//	  User2      *models.User `boil:"friend,bind"`
+//	  // RandomData will not be recursed into to look for fields to
+//	  // bind and will not be bound to because of the - for the name.
+//	  RandomData myStruct     `boil:"-"`
+//	  // Date will not be recursed into to look for fields to bind because
+//	  // it does not specify ,bind in the struct tag. But it can be bound to
+//	  // as it does not specify a - for the name.
+//	  Date       time.Time
+//	}
 //
-//   models.Users(
-//     qm.InnerJoin("users as friend on users.friend_id = friend.id")
-//   ).Bind(&joinStruct)
+//	models.Users(
+//	  qm.InnerJoin("users as friend on users.friend_id = friend.id")
+//	).Bind(&joinStruct)
 //
 // For custom objects that want to use eager loading, please see the
 // loadRelationships function.
@@ -368,6 +368,9 @@ func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.V
 
 		val = val.Field(int(v))
 		if val.Kind() == reflect.Ptr {
+			if val.IsNil() {
+				val = reflect.New(val.Type().Elem())
+			}
 			val = reflect.Indirect(val)
 		}
 	}
@@ -606,8 +609,7 @@ func parseNumeric(s string, t reflect.Type) interface{} {
 		reflect.Uint32,
 		reflect.Uint64:
 		res, err = strconv.ParseUint(s, 0, t.Bits())
-	case reflect.Float32,
-		reflect.Float64:
+	case reflect.Float32, reflect.Float64:
 		res, err = strconv.ParseFloat(s, t.Bits())
 	}
 	if err != nil {
@@ -803,7 +805,7 @@ var specialWordReplacer = strings.NewReplacer(
 
 // unTitleCase attempts to undo a title-cased string.
 //
-// DO NOT USE THIS METHOD IF YOU CAN AVOID IT
+// # DO NOT USE THIS METHOD IF YOU CAN AVOID IT
 //
 // Normally this would be easy but we have to deal with uppercased words
 // of varying lengths. We almost never use this function so it

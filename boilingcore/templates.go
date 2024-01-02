@@ -14,8 +14,9 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/strmangle"
+
+	"github.com/volatiletech/sqlboiler/v4/drivers"
 )
 
 // templateData for sqlboiler templates
@@ -58,7 +59,11 @@ type templateData struct {
 	RelationTag string
 
 	// Generate struct tags as camelCase or snake_case
+	// Deprecated: use StructTagCases instead.
 	StructTagCasing string
+
+	// Generate struct tags as camelCase or snake_case
+	StructTagCases StructTagCases
 
 	// Contains field names that should have tags values set to '-'
 	TagIgnore map[string]struct{}
@@ -133,7 +138,9 @@ func (t templateList) Templates() []string {
 	return ret
 }
 
-func loadTemplates(lazyTemplates []lazyTemplate, testTemplates bool, customFuncs template.FuncMap) (*templateList, error) {
+func loadTemplates(
+	lazyTemplates []lazyTemplate, testTemplates bool, customFuncs template.FuncMap,
+) (*templateList, error) {
 	tpl := template.New("")
 
 	for _, t := range lazyTemplates {
@@ -286,13 +293,14 @@ var templateFunctions = template.FuncMap{
 	"ignore":    strmangle.Ignore,
 
 	// String Slice ops
-	"join":               func(sep string, slice []string) string { return strings.Join(slice, sep) },
-	"joinSlices":         strmangle.JoinSlices,
-	"stringMap":          strmangle.StringMap,
-	"prefixStringSlice":  strmangle.PrefixStringSlice,
-	"containsAny":        strmangle.ContainsAny,
-	"generateTags":       strmangle.GenerateTags,
-	"generateIgnoreTags": strmangle.GenerateIgnoreTags,
+	"join":                func(sep string, slice []string) string { return strings.Join(slice, sep) },
+	"joinSlices":          strmangle.JoinSlices,
+	"stringMap":           strmangle.StringMap,
+	"prefixStringSlice":   strmangle.PrefixStringSlice,
+	"containsAny":         strmangle.ContainsAny,
+	"generateTags":        strmangle.GenerateTags,
+	"generateTagWithCase": generateTagWithCase,
+	"generateIgnoreTags":  strmangle.GenerateIgnoreTags,
 
 	// Enum ops
 	"parseEnumName": strmangle.ParseEnumName,
@@ -332,4 +340,33 @@ var templateFunctions = template.FuncMap{
 	"columnNames":            drivers.ColumnNames,
 	"columnDBTypes":          drivers.ColumnDBTypes,
 	"getTable":               drivers.GetTable,
+}
+
+func generateTagWithCase(tagName, tagValue, alias string, c TagCase, nullable bool) string {
+	buf := strmangle.GetBuffer()
+	defer strmangle.PutBuffer(buf)
+
+	buf.WriteString(tagName)
+	buf.WriteString(`:"`)
+	switch c {
+	case TagCaseSnake:
+		// we use snake case by default, so we can simply render the value to the buffer
+		buf.WriteString(tagValue)
+	case TagCaseTitle:
+		buf.WriteString(strmangle.TitleCase(tagValue))
+	case TagCaseCamel:
+		buf.WriteString(strmangle.CamelCase(tagValue))
+	case TagCaseAlias:
+		buf.WriteString(alias)
+	default:
+		buf.WriteString(tagValue)
+	}
+
+	if nullable {
+		buf.WriteString(",omitempty")
+	}
+
+	buf.WriteString(`" `)
+
+	return buf.String()
 }

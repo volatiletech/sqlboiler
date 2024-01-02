@@ -644,6 +644,28 @@ down_singular = "teamName"
   foreign = "Videos"
 ```
 
+
+##### Custom Struct Tag Case
+
+Sometimes you might want to customize the case style for different purpose, for example, use camel case for json format and use snake case for yaml,
+You may create a section named `[struct-tag-cases]` to define these custom case for each different format:
+
+```toml
+[struct-tag-cases]
+toml = "snake"
+yaml = "camel"
+json = "camel"
+boil = "alias"
+```
+
+By default, the snake case will be used, so you can just setup only few formats:
+
+```toml
+[struct-tag-cases]
+json = "camel"
+```
+
+
 ##### Foreign Keys
 
 You can add foreign keys not defined in the database to your models using the following configuration:

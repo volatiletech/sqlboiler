@@ -37,30 +37,19 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		}
 	}
 
-	args := make([]interface{}, 0, 1)
+	args := make(map[interface{}]struct{})
 	if singular {
 		if object.R == nil {
 			object.R = &{{$ltable.DownSingular}}R{}
 		}
-		args = append(args, object.{{$col}})
+		args[object.{{$col}}] = struct{}{}
 	} else {
-		Outer:
 		for _, obj := range slice {
 			if obj.R == nil {
 				obj.R = &{{$ltable.DownSingular}}R{}
 			}
 
-			for _, a := range args {
-				{{if $usesPrimitives -}}
-				if a == obj.{{$col}} {
-				{{else -}}
-				if queries.Equal(a, obj.{{$col}}) {
-				{{end -}}
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.{{$col}})
+			args[obj.{{$col}}] = struct{}{}
 		}
 	}
 
@@ -68,9 +57,16 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 		return nil
 	}
 
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
 	query := NewQuery(
 	    qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`),
-        qm.WhereIn(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{.ForeignColumn}} in ?`, args...),
+        qm.WhereIn(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{.ForeignColumn}} in ?`, argsSlice...),
 	    {{if and $.AddSoftDeletes $canSoftDelete -}}
 	    qmhelper.WhereIsNull(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}.{{or $.AutoColumns.Deleted "deleted_at"}}`),
 	    {{- end}}

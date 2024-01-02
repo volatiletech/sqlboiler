@@ -58,11 +58,11 @@ func ({{$ltable.DownSingular}}L) Load{{$relAlias.Local}}({{if $.NoContext}}e boi
 	}
 
 	argsSlice := make([]interface{}, len(args))
-    i := 0
-    for arg := range args {
-        argsSlice[i] = arg
-        i++
-    }
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
 
 	query := NewQuery(
 	    qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`),

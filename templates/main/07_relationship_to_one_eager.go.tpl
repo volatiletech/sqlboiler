@@ -70,11 +70,11 @@ func ({{$ltable.DownSingular}}L) Load{{$rel.Foreign}}({{if $.NoContext}}e boil.E
 	}
 
 	argsSlice := make([]interface{}, len(args))
-    i := 0
-    for arg := range args {
-        argsSlice[i] = arg
-        i++
-    }
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
 
 	query := NewQuery(
 	    qm.From(`{{if $.Dialect.UseSchema}}{{$.Schema}}.{{end}}{{.ForeignTable}}`),

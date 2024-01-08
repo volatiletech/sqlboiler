@@ -28,7 +28,7 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/strmangle v0.0.5
+	github.com/volatiletech/strmangle v0.0.6
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
 	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
 	golang.org/x/tools v0.1.12 // indirect

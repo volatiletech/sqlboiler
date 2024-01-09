@@ -82,7 +82,7 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 	var err error
 
 	if !cached {
-		insert, ret := insertColumns.InsertColumnSet(
+		insert, _ := insertColumns.InsertColumnSet(
 			{{$alias.DownSingular}}AllColumns,
 			{{$alias.DownSingular}}ColumnsWithDefault,
 			{{$alias.DownSingular}}ColumnsWithoutDefault,
@@ -96,6 +96,8 @@ func (o *{{$alias.UpSingular}}) Upsert({{if .NoContext}}exec boil.Executor{{else
 		if updateOnConflict && len(update) == 0 {
 			return errors.New("{{.PkgName}}: unable to upsert {{.Table.Name}}, could not build update column list")
 		}
+
+		ret := strmangle.SetComplement({{$alias.DownSingular}}AllColumns, strmangle.SetIntersect(insert, update))
 
 		conflict := conflictColumns
 		if len(conflict) == 0 {

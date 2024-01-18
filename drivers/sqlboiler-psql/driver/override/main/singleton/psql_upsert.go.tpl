@@ -33,8 +33,8 @@ func buildUpsertQueryPostgres(dia drivers.Dialect, tableName string, updateOnCon
 
 	columns := "DEFAULT VALUES"
 	if len(whitelist) != 0 {
-		columns = fmt.Sprintf("(\"%s\") VALUES (%s)",
-			strings.Join(whitelist, "\",\""),
+		columns = fmt.Sprintf("(%s) VALUES (%s)",
+			strings.Join(whitelist, ", "),
 			strmangle.Placeholders(dia.UseIndexPlaceholders, len(whitelist), 1, 1))
 	}
 

@@ -22,7 +22,7 @@ var (
 )
 
 func TestDriver(t *testing.T) {
-	rand.Seed(time.Now().Unix())
+	rand.New(rand.NewSource(time.Now().Unix()))
 	b, err := os.ReadFile("testdatabase.sql")
 	if err != nil {
 		t.Fatal(err)

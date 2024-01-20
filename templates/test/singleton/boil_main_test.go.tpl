@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	flag.Parse()
 

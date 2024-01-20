@@ -4,6 +4,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.16.1] - 2024-01-20
+
+### Fixed
+
+- Fix an issue caused in the last release where column names were double quoted (thanks @eirikbell)
+
 ## [4.16.0] - 2024-01-16
 
 ### Added

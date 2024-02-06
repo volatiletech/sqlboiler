@@ -414,6 +414,7 @@ add-enum-types = true
   user    = "dbusername"
   pass    = "dbpassword"
   sslmode = "false"
+  tinyint_as_int = true
 
 [mssql]
   dbname  = "dbname"

@@ -3,7 +3,6 @@ package queries
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"regexp"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -118,8 +117,7 @@ func RawG(query string, args ...interface{}) *Query {
 func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
 	qs, args := BuildQuery(q)
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, qs)
-		fmt.Fprintln(boil.DebugWriter, args)
+		boil.PrintQuery(boil.DebugWriter, qs, args...)
 	}
 	return exec.Exec(qs, args...)
 }
@@ -128,8 +126,7 @@ func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
 func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
 	qs, args := BuildQuery(q)
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, qs)
-		fmt.Fprintln(boil.DebugWriter, args)
+		boil.PrintQuery(boil.DebugWriter, qs, args...)
 	}
 	return exec.QueryRow(qs, args...)
 }
@@ -138,8 +135,7 @@ func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
 func (q *Query) Query(exec boil.Executor) (*sql.Rows, error) {
 	qs, args := BuildQuery(q)
 	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, qs)
-		fmt.Fprintln(boil.DebugWriter, args)
+		boil.PrintQuery(boil.DebugWriter, qs, args...)
 	}
 	return exec.Query(qs, args...)
 }
@@ -149,8 +145,7 @@ func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql
 	qs, args := BuildQuery(q)
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, qs)
-		fmt.Fprintln(writer, args)
+		boil.PrintQuery(writer, qs, args...)
 	}
 	return exec.ExecContext(ctx, qs, args...)
 }
@@ -160,8 +155,7 @@ func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) 
 	qs, args := BuildQuery(q)
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, qs)
-		fmt.Fprintln(writer, args)
+		boil.PrintQuery(writer, qs, args...)
 	}
 	return exec.QueryRowContext(ctx, qs, args...)
 }
@@ -171,8 +165,7 @@ func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*s
 	qs, args := BuildQuery(q)
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, qs)
-		fmt.Fprintln(writer, args)
+		boil.PrintQuery(writer, qs, args...)
 	}
 	return exec.QueryContext(ctx, qs, args...)
 }

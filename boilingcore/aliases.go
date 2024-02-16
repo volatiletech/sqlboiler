@@ -2,6 +2,7 @@ package boilingcore
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 
@@ -76,14 +77,20 @@ func FillAliases(a *Aliases, tables []drivers.Table) {
 		}
 
 		for _, c := range t.Columns {
+			// If a string is all in uppercase, TitleCase will return the string
+			// as is. This is not what we want, so we lowercase the column name
+			columnName := strings.ToLower(c.Name)
+
 			if _, ok := table.Columns[c.Name]; !ok {
-				table.Columns[c.Name] = strmangle.TitleCase(c.Name)
+				columnName = strmangle.TitleCase(columnName)
 			}
 
-			r, _ := utf8.DecodeRuneInString(table.Columns[c.Name])
+			r, _ := utf8.DecodeRuneInString(columnName)
 			if unicode.IsNumber(r) {
-				table.Columns[c.Name] = "C" + table.Columns[c.Name]
+				columnName = "C" + columnName
 			}
+
+			table.Columns[c.Name] = columnName
 		}
 
 		a.Tables[t.Name] = table

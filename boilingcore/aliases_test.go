@@ -17,6 +17,7 @@ func TestAliasesTables(t *testing.T) {
 				{Name: "id"},
 				{Name: "name"},
 				{Name: "1number"},
+				{Name: "USER_ID"},
 			},
 		},
 	}
@@ -31,6 +32,7 @@ func TestAliasesTables(t *testing.T) {
 				"id":      "ID",
 				"name":    "Name",
 				"1number": "C1number",
+				"USER_ID": "UserID",
 			},
 			Relationships: make(map[string]RelationshipAlias),
 		}

@@ -31,7 +31,8 @@ const (
 	loadMethodPrefix       = "Load"
 	relationshipStructName = "R"
 	loaderStructName       = "L"
-	sentinel               = uint64(255)
+	sentinel               = uint64(4095)
+	depthShift             = 12
 )
 
 // BindP executes the query and inserts the
@@ -354,8 +355,9 @@ func ptrFromMapping(val reflect.Value, mapping uint64, addressOf bool) reflect.V
 		var ignored interface{}
 		return reflect.ValueOf(&ignored)
 	}
-	for i := 0; i < 8; i++ {
-		v := (mapping >> uint(i*8)) & sentinel
+	// I am not confident that this replacing the magic number 8 with `depthShift` is the correct solution.
+	for i := 0; i < depthShift; i++ {
+		v := (mapping >> uint(i*depthShift)) & sentinel
 
 		if v == sentinel {
 			if addressOf && val.Kind() != reflect.Ptr {
@@ -407,11 +409,11 @@ func makeStructMappingHelper(typ reflect.Type, prefix string, current uint64, de
 		}
 
 		if recurse {
-			makeStructMappingHelper(f.Type, tag, current|uint64(i)<<depth, depth+8, fieldMaps)
+			makeStructMappingHelper(f.Type, tag, current|uint64(i)<<depth, depth+depthShift, fieldMaps)
 			continue
 		}
 
-		fieldMaps[tag] = current | (sentinel << (depth + 8)) | (uint64(i) << depth)
+		fieldMaps[tag] = current | (sentinel << (depth + depthShift)) | (uint64(i) << depth)
 	}
 }
 

@@ -525,7 +525,7 @@ func (SQLiteDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "types.NullDecimal"
 		case "BOOLEAN":
 			c.Type = "null.Bool"
-		case "DATE", "DATETIME":
+		case "DATE", "DATETIME", "TIMESTAMP":
 			c.Type = "null.Time"
 		case "JSON":
 			c.Type = "null.JSON"
@@ -558,7 +558,7 @@ func (SQLiteDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "types.Decimal"
 		case "BOOLEAN":
 			c.Type = "bool"
-		case "DATE", "DATETIME":
+		case "DATE", "DATETIME", "TIMESTAMP":
 			c.Type = "time.Time"
 		case "JSON":
 			c.Type = "types.JSON"

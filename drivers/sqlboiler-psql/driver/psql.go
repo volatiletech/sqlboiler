@@ -567,7 +567,7 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 
 	query := fmt.Sprintf(`SELECT 
 		column_name,
-		column_type,
+		COALESCE(column_type, column_full_type) as column_type,
 		column_full_type,
 		udt_name,
 		array_type,

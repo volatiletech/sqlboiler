@@ -80,7 +80,11 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	dbname := config.MustString(drivers.ConfigDBName)
 	host := config.MustString(drivers.ConfigHost)
 	port := config.DefaultInt(drivers.ConfigPort, 3306)
-	sslmode := config.DefaultString(drivers.ConfigSSLMode, "true")
+	unixSocket := config.DefaultString(drivers.ConfigUnixSocket, "")
+	// mysql ssl mode
+	// see https://dev.mysql.com/doc/refman/5.7/en/connection-options.html#option_general_ssl-mode
+	// could be one of PREFERRED, REQUIRED, VERIFY_CA, VERIFY_IDENTITY
+	sslMode := config.DefaultString(drivers.ConfigSSLMode, "true")
 
 	schema := dbname
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
@@ -96,7 +100,13 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 
 	m.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
 	m.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
-	m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslmode)
+
+	if unixSocket != "" {
+		m.connStr = MySQLBuildQueryStringUnixSocket(user, pass, dbname, unixSocket, sslMode)
+	} else {
+		m.connStr = MySQLBuildQueryString(user, pass, dbname, host, port, sslMode)
+	}
+
 	m.configForeignKeys = config.MustForeignKeys(drivers.ConfigForeignKeys)
 	m.conn, err = sql.Open("mysql", m.connStr)
 	if err != nil {
@@ -128,8 +138,26 @@ func (m *MySQLDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo, e
 	return dbinfo, err
 }
 
+func MySQLBuildQueryStringUnixSocket(user, pass, dbname, unixSocket string, sslMode string) string {
+	config := mysql.NewConfig()
+
+	config.User = user
+	if len(pass) != 0 {
+		config.Passwd = pass
+	}
+	config.DBName = dbname
+	config.Net = "unix"
+	config.Addr = unixSocket
+	config.TLSConfig = sslMode
+
+	// MySQL is a bad, and by default reads date/datetime into a []byte
+	// instead of a time.Time. Tell it to stop being a bad.
+	config.ParseTime = true
+	return config.FormatDSN()
+}
+
 // MySQLBuildQueryString builds a query string for MySQL.
-func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode string) string {
+func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslMode string) string {
 	config := mysql.NewConfig()
 
 	config.User = user
@@ -143,7 +171,7 @@ func MySQLBuildQueryString(user, pass, dbname, host string, port int, sslmode st
 		port = 3306
 	}
 	config.Addr += ":" + strconv.Itoa(port)
-	config.TLSConfig = sslmode
+	config.TLSConfig = sslMode
 
 	// MySQL is a bad, and by default reads date/datetime into a []byte
 	// instead of a time.Time. Tell it to stop being a bad.

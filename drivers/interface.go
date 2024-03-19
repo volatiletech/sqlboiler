@@ -22,10 +22,13 @@ const (
 	ConfigConcurrency    = "concurrency"
 	ConfigForeignKeys    = "foreign-keys"
 
-	ConfigUser    = "user"
-	ConfigPass    = "pass"
-	ConfigHost    = "host"
-	ConfigPort    = "port"
+	ConfigUser = "user"
+	ConfigPass = "pass"
+	ConfigHost = "host"
+	ConfigPort = "port"
+
+	ConfigUnixSocket = "unix-socket"
+
 	ConfigDBName  = "dbname"
 	ConfigSSLMode = "sslmode"
 

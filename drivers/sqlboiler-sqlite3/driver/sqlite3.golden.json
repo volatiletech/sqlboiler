@@ -1305,7 +1305,7 @@
 				},
 				{
 					"name": "time_zero",
-					"type": "null.String",
+					"type": "null.Time",
 					"db_type": "TIMESTAMP",
 					"default": "NULL",
 					"comment": "",
@@ -1335,7 +1335,7 @@
 				},
 				{
 					"name": "time_two",
-					"type": "null.String",
+					"type": "null.Time",
 					"db_type": "TIMESTAMP",
 					"default": "null",
 					"comment": "",
@@ -1350,7 +1350,7 @@
 				},
 				{
 					"name": "time_three",
-					"type": "null.String",
+					"type": "null.Time",
 					"db_type": "TIMESTAMP",
 					"default": "NULL",
 					"comment": "",
@@ -1365,7 +1365,7 @@
 				},
 				{
 					"name": "time_five",
-					"type": "null.String",
+					"type": "null.Time",
 					"db_type": "TIMESTAMP",
 					"default": "current_timestamp",
 					"comment": "",
@@ -1380,7 +1380,7 @@
 				},
 				{
 					"name": "time_nine",
-					"type": "string",
+					"type": "time.Time",
 					"db_type": "TIMESTAMP",
 					"default": "current_timestamp",
 					"comment": "",
@@ -1875,7 +1875,7 @@
 				},
 				{
 					"name": "timestamp_null",
-					"type": "null.String",
+					"type": "null.Time",
 					"db_type": "TIMESTAMP",
 					"default": "NULL",
 					"comment": "",
@@ -1890,7 +1890,7 @@
 				},
 				{
 					"name": "timestamp_nnull",
-					"type": "string",
+					"type": "time.Time",
 					"db_type": "TIMESTAMP",
 					"default": "current_timestamp",
 					"comment": "",

@@ -45,6 +45,9 @@ type {{$alias.UpSingular}} struct {
 	R *{{$alias.DownSingular}}R `{{generateTags $.Tags $.RelationTag}}boil:"{{$.RelationTag}}" json:"{{$.RelationTag}}" toml:"{{$.RelationTag}}" yaml:"{{$.RelationTag}}"`
 	L {{$alias.DownSingular}}L `{{generateIgnoreTags $.Tags}}boil:"-" json:"-" toml:"-" yaml:"-"`
 	{{end -}}
+
+	// customTableName is for custom table name insertion
+	customTableName string
 }
 
 var {{$alias.UpSingular}}Columns = struct {

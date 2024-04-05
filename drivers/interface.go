@@ -6,9 +6,9 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/IOTechSystems/sqlboiler/v4/importers"
+	"github.com/IOTechSystems/strmangle"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/strmangle"
 )
 
 // These constants are used in the config map passed into the driver

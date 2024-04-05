@@ -12,11 +12,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/IOTechSystems/sqlboiler/v4/importers"
 
+	"github.com/IOTechSystems/sqlboiler/v4/drivers"
+	"github.com/IOTechSystems/strmangle"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/strmangle"
 
 	// Side-effect import sql driver
 	_ "github.com/lib/pq"
@@ -955,7 +955,7 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/volatiletech/strmangle"`,
+				`"github.com/IOTechSystems/strmangle"`,
 				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
 			},
 		},

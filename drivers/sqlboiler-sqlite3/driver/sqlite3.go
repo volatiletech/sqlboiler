@@ -9,8 +9,8 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/IOTechSystems/sqlboiler/v4/drivers"
+	"github.com/IOTechSystems/sqlboiler/v4/importers"
 	_ "modernc.org/sqlite"
 )
 
@@ -575,7 +575,7 @@ func (SQLiteDriver) Imports() (col importers.Collection, err error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/volatiletech/strmangle"`,
+				`"github.com/IOTechSystems/strmangle"`,
 				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
 			},
 		},

@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/IOTechSystems/sqlboiler/v4/drivers"
+	"github.com/IOTechSystems/sqlboiler/v4/importers"
+	"github.com/IOTechSystems/strmangle"
 	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/strmangle"
 )
 
 //go:embed override
@@ -585,7 +585,7 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/volatiletech/strmangle"`,
+				`"github.com/IOTechSystems/strmangle"`,
 				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
 			},
 		},

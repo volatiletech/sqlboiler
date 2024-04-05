@@ -9,12 +9,12 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/IOTechSystems/sqlboiler/v4/drivers"
+	"github.com/IOTechSystems/sqlboiler/v4/importers"
 	// Side effect import go-mssqldb
+	"github.com/IOTechSystems/strmangle"
 	"github.com/friendsofgo/errors"
 	_ "github.com/microsoft/go-mssqldb"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
-	"github.com/volatiletech/strmangle"
 )
 
 //go:embed override
@@ -543,7 +543,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/volatiletech/strmangle"`,
+				`"github.com/IOTechSystems/strmangle"`,
 				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
 			},
 		},

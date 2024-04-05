@@ -12,10 +12,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/IOTechSystems/sqlboiler/v4/drivers"
+	"github.com/IOTechSystems/strmangle"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/strmangle"
 )
 
 // templateData for sqlboiler templates

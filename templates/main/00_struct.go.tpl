@@ -71,6 +71,8 @@ var {{$alias.UpSingular}}TableColumns = struct {
 	{{end -}}
 }
 
+const {{$alias.UpSingular}}TableName = "{{.Table.Name}}"
+
 {{/* Generated where helpers for all types in the database */}}
 // Generated where
 {{- range .Table.Columns -}}

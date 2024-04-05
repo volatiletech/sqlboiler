@@ -12,8 +12,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/IOTechSystems/strmangle"
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/strmangle"
 
 	"github.com/IOTechSystems/sqlboiler/v4/drivers"
 	"github.com/IOTechSystems/sqlboiler/v4/importers"

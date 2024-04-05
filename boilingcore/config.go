@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/IOTechSystems/sqlboiler/v4/drivers"
+	"github.com/IOTechSystems/sqlboiler/v4/importers"
 )
 
 // Config for the running of the commands
@@ -91,27 +91,27 @@ func (c *Config) OutputDirDepth() int {
 //
 // It also supports two different syntaxes, because of viper:
 //
-//   [aliases.tables.table_name]
-//   fields... = "values"
-//     [aliases.tables.columns]
-//     colname = "alias"
-//     [aliases.tables.relationships.fkey_name]
-//     local   = "x"
-//     foreign = "y"
+//	[aliases.tables.table_name]
+//	fields... = "values"
+//	  [aliases.tables.columns]
+//	  colname = "alias"
+//	  [aliases.tables.relationships.fkey_name]
+//	  local   = "x"
+//	  foreign = "y"
 //
 // Or alternatively (when toml key names or viper's
 // lowercasing of key names gets in the way):
 //
-//   [[aliases.tables]]
-//   name = "table_name"
-//   fields... = "values"
-//     [[aliases.tables.columns]]
-//     name  = "colname"
-//     alias = "alias"
-//     [[aliases.tables.relationships]]
-//     name    = "fkey_name"
-//     local   = "x"
-//     foreign = "y"
+//	[[aliases.tables]]
+//	name = "table_name"
+//	fields... = "values"
+//	  [[aliases.tables.columns]]
+//	  name  = "colname"
+//	  alias = "alias"
+//	  [[aliases.tables.relationships]]
+//	  name    = "fkey_name"
+//	  local   = "x"
+//	  foreign = "y"
 func ConvertAliases(i interface{}) (a Aliases) {
 	if i == nil {
 		return a

@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1
+	github.com/IOTechSystems/strmangle v0.0.0-20240405100538-18f6bfc990cc
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ericlagergren/decimal v0.0.0-20211103172832-aca2edc11f73
@@ -28,7 +29,7 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
-	github.com/IOTechSystems/strmangle EB-4012-branch
+	github.com/volatiletech/strmangle v0.0.1
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
 	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
 	golang.org/x/tools v0.1.12 // indirect

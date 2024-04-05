@@ -544,7 +544,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			},
 			ThirdParty: importers.List{
 				`"github.com/IOTechSystems/strmangle"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
+				`"github.com/IOTechSystems/sqlboiler/v4/drivers"`,
 			},
 		},
 	}
@@ -568,7 +568,7 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql/driver"`,
+				`"github.com/IOTechSystems/sqlboiler/v4/drivers/sqlboiler-mssql/driver"`,
 				`"github.com/volatiletech/randomize"`,
 				`_ "github.com/microsoft/go-mssqldb"`,
 			},
@@ -628,10 +628,10 @@ func (MSSQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"time"`},
 		},
 		"types.Decimal": {
-			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			Standard: importers.List{`"github.com/IOTechSystems/strmangle/v4/types"`},
 		},
 		"types.NullDecimal": {
-			Standard: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			Standard: importers.List{`"github.com/IOTechSystems/strmangle/v4/types"`},
 		},
 		"mssql.UniqueIdentifier": {
 			Standard: importers.List{`"github.com/microsoft/go-mssqldb"`},

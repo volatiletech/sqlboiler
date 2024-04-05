@@ -586,7 +586,7 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 			},
 			ThirdParty: importers.List{
 				`"github.com/IOTechSystems/strmangle"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
+				`"github.com/IOTechSystems/sqlboiler/v4/drivers"`,
 			},
 		},
 	}
@@ -612,7 +612,7 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql/driver"`,
+				`"github.com/IOTechSystems/sqlboiler/v4/drivers/sqlboiler-mysql/driver"`,
 				`"github.com/volatiletech/randomize"`,
 				`_ "github.com/go-sql-driver/mysql"`,
 			},
@@ -676,13 +676,13 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 			Standard: importers.List{`"time"`},
 		},
 		"types.JSON": {
-			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			ThirdParty: importers.List{`"github.com/IOTechSystems/strmangle/v4/types"`},
 		},
 		"types.Decimal": {
-			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			ThirdParty: importers.List{`"github.com/IOTechSystems/strmangle/v4/types"`},
 		},
 		"types.NullDecimal": {
-			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			ThirdParty: importers.List{`"github.com/IOTechSystems/strmangle/v4/types"`},
 		},
 	}
 	return col, err

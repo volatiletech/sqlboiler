@@ -166,6 +166,38 @@ func TestDecimal_JSON(t *testing.T) {
 	}
 }
 
+func TestDecimal_Text(t *testing.T) {
+	t.Parallel()
+
+	d := new(Decimal)
+
+	err := d.UnmarshalText([]byte(`54.45`))
+	if err != nil {
+		t.Error(err)
+	}
+
+	want, _ := new(decimal.Big).SetString("54.45")
+	if d.Cmp(want) != 0 {
+		t.Error("D was wrong:", d)
+	}
+}
+
+func TestDecimal_TextNil(t *testing.T) {
+	t.Parallel()
+
+	var n Decimal
+	b, _ := n.MarshalText()
+	if string(b) != `null` {
+		t.Errorf("want: null, got: %s", b)
+	}
+
+	n2 := new(Decimal)
+	b, _ = n2.MarshalText()
+	if string(b) != `null` {
+		t.Errorf("want: null, got: %s", b)
+	}
+}
+
 func TestNullDecimal_JSON(t *testing.T) {
 	t.Parallel()
 
@@ -185,6 +217,23 @@ func TestNullDecimal_JSON(t *testing.T) {
 	}
 }
 
+func TestNullDecimal_Text(t *testing.T) {
+	t.Parallel()
+
+	n := new(NullDecimal)
+
+	err := n.UnmarshalText([]byte(`54.45`))
+	if err != nil {
+		t.Error(err)
+	}
+
+	want, _ := new(decimal.Big).SetString("54.45")
+	if n.Cmp(want) != 0 {
+		fmt.Println(want, n)
+		t.Error("N was wrong:", n)
+	}
+}
+
 func TestNullDecimal_JSONNil(t *testing.T) {
 	t.Parallel()
 
@@ -196,6 +245,22 @@ func TestNullDecimal_JSONNil(t *testing.T) {
 
 	n2 := new(NullDecimal)
 	b, _ = json.Marshal(n2)
+	if string(b) != `null` {
+		t.Errorf("want: null, got: %s", b)
+	}
+}
+
+func TestNullDecimal_TextNil(t *testing.T) {
+	t.Parallel()
+
+	var n NullDecimal
+	b, _ := n.MarshalText()
+	if string(b) != `null` {
+		t.Errorf("want: null, got: %s", b)
+	}
+
+	n2 := new(NullDecimal)
+	b, _ = n2.MarshalText()
 	if string(b) != `null` {
 		t.Errorf("want: null, got: %s", b)
 	}

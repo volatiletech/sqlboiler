@@ -81,6 +81,24 @@ func (d *Decimal) UnmarshalJSON(data []byte) error {
 	return d.Big.UnmarshalJSON(data)
 }
 
+// MarshalText marshals a decimal value
+func (d Decimal) MarshalText() ([]byte, error) {
+	if d.Big == nil {
+		return nullBytes, nil
+	}
+
+	return d.Big.MarshalText()
+}
+
+// UnmarshalText allows marshalling text into a null pointer
+func (d *Decimal) UnmarshalText(data []byte) error {
+	if d.Big == nil {
+		d.Big = new(decimal.Big)
+	}
+
+	return d.Big.UnmarshalText(data)
+}
+
 // Randomize implements sqlboiler's randomize interface
 func (d *Decimal) Randomize(nextInt func() int64, fieldType string, shouldBeNull bool) {
 	d.Big = randomDecimal(nextInt, fieldType, false)
@@ -116,6 +134,31 @@ func (n *NullDecimal) UnmarshalJSON(data []byte) error {
 	}
 
 	return n.Big.UnmarshalJSON(data)
+}
+
+// MarshalText marshals a decimal value
+func (n NullDecimal) MarshalText() ([]byte, error) {
+	if n.Big == nil {
+		return nullBytes, nil
+	}
+
+	return n.Big.MarshalText()
+}
+
+// UnmarshalText allows marshalling text into a null pointer
+func (n *NullDecimal) UnmarshalText(data []byte) error {
+	if bytes.Equal(data, nullBytes) {
+		if n != nil {
+			n.Big = nil
+		}
+		return nil
+	}
+
+	if n.Big == nil {
+		n.Big = decimal.WithContext(DecimalContext)
+	}
+
+	return n.Big.UnmarshalText(data)
 }
 
 // String impl

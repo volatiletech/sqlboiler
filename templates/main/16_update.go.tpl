@@ -71,7 +71,7 @@ func (o *{{$alias.UpSingular}}) Update({{if .NoContext}}exec boil.Executor{{else
 		{{end}}
 		{{if not .NoAutoTimestamps}}
 		if !columns.IsWhitelist() {
-			wl = strmangle.SetComplement(wl, []string{"created_at"})
+			wl = strmangle.SetComplement(wl, []string{"{{or $.AutoColumns.Created "created_at"}}"})
 		}
 		{{end -}}
 		if len(wl) == 0 {

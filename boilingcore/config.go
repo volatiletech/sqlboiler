@@ -70,6 +70,9 @@ type Config struct {
 	Inflections  Inflections          `toml:"inflections,omitempty" json:"inflections,omitempty"`
 	ForeignKeys  []drivers.ForeignKey `toml:"foreign_keys,omitempty" json:"foreign_keys,omitempty" `
 
+	VerifyModVersion       bool `toml:"verify_mod_version,omitempty" json:"verify_mod_version,omitempty"`
+	StrictVerifyModVersion bool `toml:"strict_verify_mod_version,omitempty" json:"strict_verify_mod_version"`
+
 	Version string `toml:"version" json:"version"`
 }
 

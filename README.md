@@ -62,6 +62,7 @@ Table of Contents
         * [Configuration](#configuration)
         * [Initial Generation](#initial-generation)
         * [Regeneration](#regeneration)
+        * [Controlling Version](#controlling-version)
         * [Controlling Generation](#controlling-generation)
           * [Aliases](#aliases)
           * [Types](#types)
@@ -372,23 +373,25 @@ blacklist = ["migrations", "addresses.name", "*.secret_col"]
 You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
 
-| Name                | Defaults  |
-| ------------------- | --------- |
-| pkgname             | "models"  |
-| output              | "models"  |
-| tag                 | []        |
-| debug               | false     |
-| add-global-variants | false     |
-| add-panic-variants  | false     |
-| add-enum-types      | false     |
-| enum-null-prefix    | "Null"    |
-| no-context          | false     |
-| no-hooks            | false     |
-| no-tests            | false     |
-| no-auto-timestamps  | false     |
-| no-rows-affected    | false     |
-| no-driver-templates | false     |
-| tag-ignore          | []        |
+| Name                      | Defaults |
+|---------------------------|----------|
+| pkgname                   | "models" |
+| output                    | "models" |
+| tag                       | []       |
+| debug                     | false    |
+| add-global-variants       | false    |
+| add-panic-variants        | false    |
+| add-enum-types            | false    |
+| enum-null-prefix          | "Null"   |
+| no-context                | false    |
+| no-hooks                  | false    |
+| no-tests                  | false    |
+| no-auto-timestamps        | false    |
+| no-rows-affected          | false    |
+| no-driver-templates       | false    |
+| tag-ignore                | []       |
+| verify-mod-version        | false    |
+| strict-verify-mod-version | false    |
 
 ##### Full Example
 
@@ -464,6 +467,8 @@ Flags:
       --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
       --templates strings          A templates directory, overrides the embedded template folders in sqlboiler
       --version                    Print the version
+      --verify-mod-version         Verify that version of sqlboiler executable is same as the version of the project
+      --strict-verify-mod-version  If --verify-mod-version flag enabled, and check fails, sqlboiler fails too
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
 ```
 
@@ -511,6 +516,16 @@ The bottom line is that this tool should always produce the same result from
 the same source. And the intention is to always regenerate from a pure state.
 The only reason the `--wipe` flag isn't defaulted to on is because we don't
 like programs that `rm -rf` things on the filesystem without being asked to.
+
+#### Controlling Version
+
+When sqlboiler is used on a regular basis, sometimes problems arise on the 
+developers' side that the version they are using does not match the version 
+specified in the project. 
+
+To solve this problem, you can use the `--verify-mod-version` and 
+`--strict-verify-mod-version` flags (or aliased version in toml), which 
+will warn and prohibit (when using strict) code generation when using sqlboiler.
 
 #### Controlling Generation
 

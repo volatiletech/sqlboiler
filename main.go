@@ -112,8 +112,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("struct-tag-casing", "", "snake", "Decides the casing for go structure tag names. camel, title or snake (default snake)")
 	rootCmd.PersistentFlags().StringP("relation-tag", "r", "-", "Relationship struct tag name")
 	rootCmd.PersistentFlags().StringSliceP("tag-ignore", "", nil, "List of column names that should have tags values set to '-' (ignored during parsing)")
-	rootCmd.PersistentFlags().BoolP("verify-mod-version", "", false, "Verify that version of SQLBoiler executable is same as the version of the project")
-	rootCmd.PersistentFlags().BoolP("strict-verify-mod-version", "", false, "If verify-mod-version flag enabled, and check fails, SQLBoiler fails too")
+	rootCmd.PersistentFlags().BoolP("strict-verify-mod-version", "", false, "Prevent code generation, if project version of sqlboiler not match with executable")
 
 	// hide flags not recommended for use
 	rootCmd.PersistentFlags().MarkHidden("replace")
@@ -201,7 +200,6 @@ func preRun(cmd *cobra.Command, args []string) error {
 			Irregular:     viper.GetStringMapString("inflections.irregular"),
 		},
 		ForeignKeys:            boilingcore.ConvertForeignKeys(viper.Get("foreign_keys")),
-		VerifyModVersion:       viper.GetBool("verify-mod-version"),
 		StrictVerifyModVersion: viper.GetBool("strict-verify-mod-version"),
 
 		Version: sqlBoilerVersion,

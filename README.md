@@ -523,9 +523,9 @@ When sqlboiler is used on a regular basis, sometimes problems arise on the
 developers' side that the version they are using does not match the version 
 specified in the project. 
 
-To solve this problem, you can use the `--verify-mod-version` and 
-`--strict-verify-mod-version` flags (or aliased version in toml), which 
-will warn and prohibit (when using strict) code generation when using sqlboiler.
+Sqlboiler will warn, if version in project and executable mismatch.
+Sqlboiler can also fail to prevent code generation, when
+`--strict-verify-mod-version` flag (or aliased version in toml) is enabled.
 
 #### Controlling Generation
 

@@ -80,14 +80,12 @@ func New(config *Config) (*State, error) {
 		)
 	}
 
-	if s.Config.VerifyModVersion {
-		if err := s.verifyModVersion(); err != nil {
-			if s.Config.StrictVerifyModVersion {
-				fmt.Printf("Error: %s\n", err.Error())
-				os.Exit(1)
-			} else {
-				fmt.Printf("Warn: %s\n", err.Error())
-			}
+	if err := s.verifyModVersion(); err != nil {
+		if s.Config.StrictVerifyModVersion {
+			fmt.Printf("Error: %s\n", err.Error())
+			os.Exit(1)
+		} else {
+			fmt.Printf("Warn: %s\n", err.Error())
 		}
 	}
 

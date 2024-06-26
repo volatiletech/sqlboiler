@@ -390,7 +390,6 @@ not to pass them through the command line or environment variables:
 | no-rows-affected          | false    |
 | no-driver-templates       | false    |
 | tag-ignore                | []       |
-| verify-mod-version        | false    |
 | strict-verify-mod-version | false    |
 
 ##### Full Example
@@ -467,8 +466,7 @@ Flags:
       --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
       --templates strings          A templates directory, overrides the embedded template folders in sqlboiler
       --version                    Print the version
-      --verify-mod-version         Verify that version of sqlboiler executable is same as the version of the project
-      --strict-verify-mod-version  If --verify-mod-version flag enabled, and check fails, sqlboiler fails too
+      --strict-verify-mod-version  Prevent code generation, if project version of sqlboiler not match with executable
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity
 ```
 

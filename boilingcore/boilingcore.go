@@ -80,6 +80,15 @@ func New(config *Config) (*State, error) {
 		)
 	}
 
+	if err := s.verifyModVersion(); err != nil {
+		if s.Config.StrictVerifyModVersion {
+			fmt.Printf("Error: %s\n", err.Error())
+			os.Exit(1)
+		} else {
+			fmt.Printf("Warn: %s\n", err.Error())
+		}
+	}
+
 	s.Driver = drivers.GetDriver(config.DriverName)
 	s.initInflections()
 
@@ -693,4 +702,52 @@ func normalizeSlashes(path string) string {
 func denormalizeSlashes(path string) string {
 	path = strings.ReplaceAll(path, `\`, `/`)
 	return path
+}
+
+func (s *State) verifyModVersion() error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("could not get working directory: %v", err)
+	}
+	var path string
+	for dir != "/" && dir != "." {
+		resolvedPath := filepath.Join(dir, "go.mod")
+
+		_, err := os.Stat(resolvedPath)
+		if os.IsNotExist(err) {
+			dir = filepath.Dir(dir)
+		} else {
+			path = resolvedPath
+			break
+		}
+	}
+	if path == "" {
+		return fmt.Errorf(fmt.Sprintf("could not find go.mod in any parent directory"))
+	}
+
+	gomodbytes, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf(fmt.Sprintf("could not read go.mod: %v", err))
+	}
+
+	re, err := regexp.Compile(`github\.com\/volatiletech\/sqlboiler\/v4 v(\d*\.\d*\.\d*)`)
+	if err != nil {
+		return fmt.Errorf(fmt.Sprintf("failed to parse regexp: %v", err))
+	}
+
+	match := re.FindSubmatch(gomodbytes)
+	if len(match) == 0 {
+		return fmt.Errorf(fmt.Sprintf("could not find sqlboiler version in go.mod"))
+	}
+	if string(match[1]) != s.Config.Version {
+		return fmt.Errorf(
+			"\tsqlboiler version in go.mod (%s) does not match executable version (%s)."+
+				"\n\tYou can update it with:"+
+				"\n\tgo get github.com/volatiletech/sqlboiler/v4",
+			string(match[0]),
+			s.Config.Version,
+		)
+	}
+
+	return nil
 }

@@ -119,9 +119,9 @@ func TestBuildQuery(t *testing.T) {
 		{&Query{from: []string{"cats as c", "dogs as d"}, joins: []join{{JoinOuterFull, "dogs d on d.cat_id = cats.id", nil}}}, nil},
 		{&Query{
 			from: []string{"t"},
-			withs: []argClause{
-				{"cte_0 AS (SELECT * FROM other_t0)", nil},
-				{"cte_1 AS (SELECT * FROM other_t1 WHERE thing=? AND stuff=?)", []interface{}{3, 7}},
+			withs: []with{
+				{"cte_0", "SELECT * FROM other_t0", nil},
+				{"cte_1", "SELECT * FROM other_t1 WHERE thing=? AND stuff=?", []interface{}{3, 7}},
 			},
 		}, []interface{}{3, 7},
 		},
@@ -158,6 +158,31 @@ func TestBuildQuery(t *testing.T) {
 		if !reflect.DeepEqual(args, test.args) {
 			t.Errorf("[%02d] Test failed:\nWant:\n%s\nGot:\n%s", i, spew.Sdump(test.args), spew.Sdump(args))
 		}
+	}
+}
+
+func TestBuildSubquery(t *testing.T) {
+	t.Parallel()
+
+	q1 := &Query{}
+	SetSelect(q1, []string{"foo", "bar"})
+	SetFrom(q1, "tbl")
+	q1.dialect = &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true}
+
+	q2 := &Query{}
+	SetSelect(q2, []string{"foo", "bar"})
+	SetFrom(q2, "tbl")
+	q2.dialect = &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true}
+
+	query, _ := BuildQuery(q1)
+	subquery, _ := BuildSubquery(q2)
+
+	if !strings.HasSuffix(query, ";") {
+		t.Error("BuildQuery() result is missing trailing ';'\n", query)
+	}
+
+	if strings.HasSuffix(subquery, ";") {
+		t.Error("BuildSubquery() result has trailing ';'\n", subquery)
 	}
 }
 

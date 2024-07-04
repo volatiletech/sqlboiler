@@ -604,17 +604,17 @@ func TestAppendWith(t *testing.T) {
 	t.Parallel()
 
 	q := &Query{}
-	AppendWith(q, "cte_0 AS (SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2)", 5, 10)
-	AppendWith(q, "cte_1 AS (SELECT * FROM table_1 WHERE thing=$1 AND stuff=$2)", 5, 10)
+	AppendWith(q, "cte_0", "SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2", 5, 10)
+	AppendWith(q, "cte_1", "SELECT * FROM table_1 WHERE thing=$1 AND stuff=$2", 5, 10)
 
 	if len(q.withs) != 2 {
 		t.Errorf("Expected len 2, got %d", len(q.withs))
 	}
 
-	if q.withs[0].clause != "cte_0 AS (SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2)" {
+	if q.withs[0].alias != "cte_0" || q.withs[0].clause != "SELECT * FROM table_0 WHERE thing=$1 AND stuff=$2" {
 		t.Errorf("Got invalid with on string: %#v", q.withs)
 	}
-	if q.withs[1].clause != "cte_1 AS (SELECT * FROM table_1 WHERE thing=$1 AND stuff=$2)" {
+	if q.withs[1].alias != "cte_1" || q.withs[1].clause != "SELECT * FROM table_1 WHERE thing=$1 AND stuff=$2" {
 		t.Errorf("Got invalid with on string: %#v", q.withs)
 	}
 
@@ -629,8 +629,9 @@ func TestAppendWith(t *testing.T) {
 		t.Errorf("Invalid args values, got %#v", q.withs[0].args)
 	}
 
-	q.withs = []argClause{{
-		clause: "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)",
+	q.withs = []with{{
+		alias:  "other_cte",
+		clause: "SELECT * FROM other_table WHERE thing=$1 AND stuff=$2",
 		args:   []interface{}{3, 7},
 	}}
 
@@ -638,7 +639,7 @@ func TestAppendWith(t *testing.T) {
 		t.Errorf("Expected len 1, got %d", len(q.withs))
 	}
 
-	if q.withs[0].clause != "other_cte AS (SELECT * FROM other_table WHERE thing=$1 AND stuff=$2)" {
+	if q.withs[0].alias != "other_cte" || q.withs[0].clause != "SELECT * FROM other_table WHERE thing=$1 AND stuff=$2" {
 		t.Errorf("Got invalid with on string: %#v", q.withs)
 	}
 }

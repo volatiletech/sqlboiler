@@ -32,7 +32,7 @@ type Query struct {
 
 	delete     bool
 	update     map[string]interface{}
-	withs      []argClause
+	withs      []with
 	selectCols []string
 	count      bool
 	from       []string
@@ -84,6 +84,12 @@ type in struct {
 }
 
 type argClause struct {
+	clause string
+	args   []interface{}
+}
+
+type with struct {
+	alias  string
 	clause string
 	args   []interface{}
 }
@@ -398,8 +404,8 @@ func AppendOrderBy(q *Query, clause string, args ...interface{}) {
 }
 
 // AppendWith on the query.
-func AppendWith(q *Query, clause string, args ...interface{}) {
-	q.withs = append(q.withs, argClause{clause: clause, args: args})
+func AppendWith(q *Query, alias, clause string, args ...interface{}) {
+	q.withs = append(q.withs, with{alias: alias, clause: clause, args: args})
 }
 
 // RemoveSoftDeleteWhere prevents the automatic soft delete where clause

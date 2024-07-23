@@ -28,26 +28,27 @@ type Config struct {
 	DriverName   string         `toml:"driver_name,omitempty" json:"driver_name,omitempty"`
 	DriverConfig drivers.Config `toml:"driver_config,omitempty" json:"driver_config,omitempty"`
 
-	PkgName           string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
-	OutFolder         string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
-	TemplateDirs      []string `toml:"template_dirs,omitempty" json:"template_dirs,omitempty"`
-	Tags              []string `toml:"tags,omitempty" json:"tags,omitempty"`
-	Replacements      []string `toml:"replacements,omitempty" json:"replacements,omitempty"`
-	Debug             bool     `toml:"debug,omitempty" json:"debug,omitempty"`
-	AddGlobal         bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
-	AddPanic          bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
-	AddSoftDeletes    bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
-	AddEnumTypes      bool     `toml:"add_enum_types,omitempty" json:"add_enum_types,omitempty"`
-	EnumNullPrefix    string   `toml:"enum_null_prefix,omitempty" json:"enum_null_prefix,omitempty"`
-	NoContext         bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
-	NoTests           bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
-	NoHooks           bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
-	NoAutoTimestamps  bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
-	NoRowsAffected    bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
-	NoDriverTemplates bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
-	NoBackReferencing bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
-	AlwaysWrapErrors  bool     `toml:"always_wrap_errors,omitempty" json:"always_wrap_errors,omitempty"`
-	Wipe              bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
+	PkgName               string   `toml:"pkg_name,omitempty" json:"pkg_name,omitempty"`
+	OutFolder             string   `toml:"out_folder,omitempty" json:"out_folder,omitempty"`
+	TemplateDirs          []string `toml:"template_dirs,omitempty" json:"template_dirs,omitempty"`
+	Tags                  []string `toml:"tags,omitempty" json:"tags,omitempty"`
+	Replacements          []string `toml:"replacements,omitempty" json:"replacements,omitempty"`
+	Debug                 bool     `toml:"debug,omitempty" json:"debug,omitempty"`
+	AddGlobal             bool     `toml:"add_global,omitempty" json:"add_global,omitempty"`
+	AddPanic              bool     `toml:"add_panic,omitempty" json:"add_panic,omitempty"`
+	AddSoftDeletes        bool     `toml:"add_soft_deletes,omitempty" json:"add_soft_deletes,omitempty"`
+	AddEnumTypes          bool     `toml:"add_enum_types,omitempty" json:"add_enum_types,omitempty"`
+	SkipReplacedEnumTypes bool     `toml:"skip_replaced_enum_types,omitempty" json:"skip_replaced_enum_types,omitempty"`
+	EnumNullPrefix        string   `toml:"enum_null_prefix,omitempty" json:"enum_null_prefix,omitempty"`
+	NoContext             bool     `toml:"no_context,omitempty" json:"no_context,omitempty"`
+	NoTests               bool     `toml:"no_tests,omitempty" json:"no_tests,omitempty"`
+	NoHooks               bool     `toml:"no_hooks,omitempty" json:"no_hooks,omitempty"`
+	NoAutoTimestamps      bool     `toml:"no_auto_timestamps,omitempty" json:"no_auto_timestamps,omitempty"`
+	NoRowsAffected        bool     `toml:"no_rows_affected,omitempty" json:"no_rows_affected,omitempty"`
+	NoDriverTemplates     bool     `toml:"no_driver_templates,omitempty" json:"no_driver_templates,omitempty"`
+	NoBackReferencing     bool     `toml:"no_back_reference,omitempty" json:"no_back_reference,omitempty"`
+	AlwaysWrapErrors      bool     `toml:"always_wrap_errors,omitempty" json:"always_wrap_errors,omitempty"`
+	Wipe                  bool     `toml:"wipe,omitempty" json:"wipe,omitempty"`
 
 	StructTagCases StructTagCases `toml:"struct_tag_cases,omitempty" json:"struct_tag_cases,omitempty"`
 
@@ -60,6 +61,8 @@ type Config struct {
 	TagIgnore   []string `toml:"tag_ignore,omitempty" json:"tag_ignore,omitempty"`
 
 	Imports importers.Collection `toml:"imports,omitempty" json:"imports,omitempty"`
+
+	DiscardedEnumTypes []string
 
 	DefaultTemplates    fs.FS            `toml:"-" json:"-"`
 	CustomTemplateFuncs template.FuncMap `toml:"-" json:"-"`

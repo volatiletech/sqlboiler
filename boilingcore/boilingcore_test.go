@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/volatiletech/strmangle"
 
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 	"github.com/volatiletech/sqlboiler/v4/drivers/mocks"
@@ -226,6 +227,7 @@ func TestProcessTypeReplacements(t *testing.T) {
 	s := new(State)
 	s.Config = &Config{}
 	s.Config.Imports.BasedOnType = make(map[string]importers.Set)
+	s.Config.SkipReplacedEnumTypes = true
 	domainStr := "a_domain"
 	s.Tables = []drivers.Table{
 		{
@@ -347,5 +349,12 @@ func TestProcessTypeReplacements(t *testing.T) {
 	}
 	if i := s.Config.Imports.BasedOnType["excellent.NamedType"].ThirdParty[0]; i != `"rock.com/excellent-name"` {
 		t.Error("imports were not adjusted")
+	}
+
+	expectedDisallows := []string{
+		"int", "null.String", // Must NOT contain replaced "excellent.Type".
+	}
+	if disallowList := s.Config.DiscardedEnumTypes; len(strmangle.SetComplement(disallowList, expectedDisallows)) != 0 {
+		t.Error("expected disallows:", disallowList)
 	}
 }

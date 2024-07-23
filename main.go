@@ -106,6 +106,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
 	rootCmd.PersistentFlags().BoolP("add-soft-deletes", "", false, "Enable soft deletion by updating deleted_at timestamp")
 	rootCmd.PersistentFlags().BoolP("add-enum-types", "", false, "Enable generation of types for enums")
+	rootCmd.PersistentFlags().BoolP("skip-replaced-enum-types", "", true, "Prevents the generation of unused enum types")
 	rootCmd.PersistentFlags().StringP("enum-null-prefix", "", "Null", "Name prefix of nullable enum types")
 	rootCmd.PersistentFlags().BoolP("version", "", false, "Print the version")
 	rootCmd.PersistentFlags().BoolP("wipe", "", false, "Delete the output folder (rm -rf) before generation to ensure sanity")
@@ -154,25 +155,26 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdConfig = &boilingcore.Config{
-		DriverName:        driverName,
-		OutFolder:         viper.GetString("output"),
-		PkgName:           viper.GetString("pkgname"),
-		Debug:             viper.GetBool("debug"),
-		AddGlobal:         viper.GetBool("add-global-variants"),
-		AddPanic:          viper.GetBool("add-panic-variants"),
-		AddSoftDeletes:    viper.GetBool("add-soft-deletes"),
-		AddEnumTypes:      viper.GetBool("add-enum-types"),
-		EnumNullPrefix:    viper.GetString("enum-null-prefix"),
-		NoContext:         viper.GetBool("no-context"),
-		NoTests:           viper.GetBool("no-tests"),
-		NoHooks:           viper.GetBool("no-hooks"),
-		NoRowsAffected:    viper.GetBool("no-rows-affected"),
-		NoAutoTimestamps:  viper.GetBool("no-auto-timestamps"),
-		NoDriverTemplates: viper.GetBool("no-driver-templates"),
-		NoBackReferencing: viper.GetBool("no-back-referencing"),
-		AlwaysWrapErrors:  viper.GetBool("always-wrap-errors"),
-		Wipe:              viper.GetBool("wipe"),
-		StructTagCasing:   strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
+		DriverName:            driverName,
+		OutFolder:             viper.GetString("output"),
+		PkgName:               viper.GetString("pkgname"),
+		Debug:                 viper.GetBool("debug"),
+		AddGlobal:             viper.GetBool("add-global-variants"),
+		AddPanic:              viper.GetBool("add-panic-variants"),
+		AddSoftDeletes:        viper.GetBool("add-soft-deletes"),
+		SkipReplacedEnumTypes: viper.GetBool("skip-replaced-enum-types"),
+		AddEnumTypes:          viper.GetBool("add-enum-types"),
+		EnumNullPrefix:        viper.GetString("enum-null-prefix"),
+		NoContext:             viper.GetBool("no-context"),
+		NoTests:               viper.GetBool("no-tests"),
+		NoHooks:               viper.GetBool("no-hooks"),
+		NoRowsAffected:        viper.GetBool("no-rows-affected"),
+		NoAutoTimestamps:      viper.GetBool("no-auto-timestamps"),
+		NoDriverTemplates:     viper.GetBool("no-driver-templates"),
+		NoBackReferencing:     viper.GetBool("no-back-referencing"),
+		AlwaysWrapErrors:      viper.GetBool("always-wrap-errors"),
+		Wipe:                  viper.GetBool("wipe"),
+		StructTagCasing:       strings.ToLower(viper.GetString("struct-tag-casing")), // camel | snake | title
 		StructTagCases: boilingcore.StructTagCases{
 			// make this compatible with the legacy struct-tag-casing config
 			Json: withDefaultCase(viper.GetString("struct-tag-cases.json"), viper.GetString("struct-tag-casing")),
@@ -227,6 +229,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	}
 
 	cmdConfig.Imports = configureImports()
+	cmdConfig.DiscardedEnumTypes = make([]string, 0, 1)
 
 	cmdState, err = boilingcore.New(cmdConfig)
 	return err

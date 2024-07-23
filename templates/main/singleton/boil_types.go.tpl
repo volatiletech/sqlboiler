@@ -62,6 +62,7 @@ It only titlecases the EnumValue portion if it's snake-cased.
 */}}
 {{$once := onceNew}}
 {{$onceNull := onceNew}}
+{{$ignoredEnumTypes := .DiscardedEnumTypes -}}
 {{- range $table := .Tables -}}
 	{{- range $col := $table.Columns | filterColumnsByEnum -}}
 		{{- $name := parseEnumName $col.DBType -}}
@@ -81,6 +82,9 @@ It only titlecases the EnumValue portion if it's snake-cased.
 				{{- else -}}
 					{{ $enumName = printf "%s%s" (titleCase $table.Name) (titleCase $col.Name)}}
 				{{- end -}}
+				{{if containsAny $ignoredEnumTypes $enumName -}}
+					{{continue}}
+				{{end -}}
 				{{/* First iteration for enum type $name (nullable or not) */}}
 				{{- $enumFirstIter := and
 					(not ($once.Has $name))

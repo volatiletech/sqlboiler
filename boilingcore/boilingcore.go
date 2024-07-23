@@ -141,36 +141,39 @@ func New(config *Config) (*State, error) {
 // state given.
 func (s *State) Run() error {
 	data := &templateData{
-		Tables:            s.Tables,
-		Aliases:           s.Config.Aliases,
-		DriverName:        s.Config.DriverName,
-		PkgName:           s.Config.PkgName,
-		AddGlobal:         s.Config.AddGlobal,
-		AddPanic:          s.Config.AddPanic,
-		AddSoftDeletes:    s.Config.AddSoftDeletes,
-		AddEnumTypes:      s.Config.AddEnumTypes,
-		EnumNullPrefix:    s.Config.EnumNullPrefix,
-		NoContext:         s.Config.NoContext,
-		NoHooks:           s.Config.NoHooks,
-		NoAutoTimestamps:  s.Config.NoAutoTimestamps,
-		NoRowsAffected:    s.Config.NoRowsAffected,
-		NoDriverTemplates: s.Config.NoDriverTemplates,
-		NoBackReferencing: s.Config.NoBackReferencing,
-		AlwaysWrapErrors:  s.Config.AlwaysWrapErrors,
-		StructTagCasing:   s.Config.StructTagCasing,
-		StructTagCases:    s.Config.StructTagCases,
-		TagIgnore:         make(map[string]struct{}),
-		Tags:              s.Config.Tags,
-		RelationTag:       s.Config.RelationTag,
-		Dialect:           s.Dialect,
-		Schema:            s.Schema,
-		LQ:                strmangle.QuoteCharacter(s.Dialect.LQ),
-		RQ:                strmangle.QuoteCharacter(s.Dialect.RQ),
-		OutputDirDepth:    s.Config.OutputDirDepth(),
+		Tables:                s.Tables,
+		Aliases:               s.Config.Aliases,
+		DriverName:            s.Config.DriverName,
+		PkgName:               s.Config.PkgName,
+		AddGlobal:             s.Config.AddGlobal,
+		AddPanic:              s.Config.AddPanic,
+		AddSoftDeletes:        s.Config.AddSoftDeletes,
+		AddEnumTypes:          s.Config.AddEnumTypes,
+		SkipReplacedEnumTypes: s.Config.SkipReplacedEnumTypes,
+		EnumNullPrefix:        s.Config.EnumNullPrefix,
+		NoContext:             s.Config.NoContext,
+		NoHooks:               s.Config.NoHooks,
+		NoAutoTimestamps:      s.Config.NoAutoTimestamps,
+		NoRowsAffected:        s.Config.NoRowsAffected,
+		NoDriverTemplates:     s.Config.NoDriverTemplates,
+		NoBackReferencing:     s.Config.NoBackReferencing,
+		AlwaysWrapErrors:      s.Config.AlwaysWrapErrors,
+		StructTagCasing:       s.Config.StructTagCasing,
+		StructTagCases:        s.Config.StructTagCases,
+		TagIgnore:             make(map[string]struct{}),
+		Tags:                  s.Config.Tags,
+		RelationTag:           s.Config.RelationTag,
+		Dialect:               s.Dialect,
+		Schema:                s.Schema,
+		LQ:                    strmangle.QuoteCharacter(s.Dialect.LQ),
+		RQ:                    strmangle.QuoteCharacter(s.Dialect.RQ),
+		OutputDirDepth:        s.Config.OutputDirDepth(),
 
 		DBTypes:     make(once),
 		StringFuncs: templateStringMappers,
 		AutoColumns: s.Config.AutoColumns,
+
+		DiscardedEnumTypes: s.Config.DiscardedEnumTypes,
 	}
 
 	for _, v := range s.Config.TagIgnore {
@@ -460,6 +463,17 @@ func (s *State) mergeEnumImports() {
 // processTypeReplacements checks the config for type replacements
 // and performs them.
 func (s *State) processTypeReplacements() error {
+	var mandatoryEnumTypes []string
+	if s.Config.SkipReplacedEnumTypes {
+		mandatoryEnumTypes = make([]string, 0, 1)
+		// Replace types can be replaced themselves, so we must not disallow them in this case.
+		for _, r := range s.Config.TypeReplaces {
+			if !strmangle.ContainsAny(mandatoryEnumTypes, r.Replace.Type) {
+				mandatoryEnumTypes = append(mandatoryEnumTypes, r.Replace.Type)
+			}
+		}
+	}
+
 	for _, r := range s.Config.TypeReplaces {
 
 		for i := range s.Tables {
@@ -472,6 +486,11 @@ func (s *State) processTypeReplacements() error {
 			for j := range t.Columns {
 				c := t.Columns[j]
 				if matchColumn(c, r.Match) {
+					if s.Config.SkipReplacedEnumTypes &&
+						!strmangle.ContainsAny(s.Config.DiscardedEnumTypes, c.Type) &&
+						!strmangle.ContainsAny(mandatoryEnumTypes, c.Type) {
+						s.Config.DiscardedEnumTypes = append(s.Config.DiscardedEnumTypes, c.Type)
+					}
 					t.Columns[j] = columnMerge(c, r.Replace)
 
 					if len(r.Imports.Standard) != 0 || len(r.Imports.ThirdParty) != 0 {

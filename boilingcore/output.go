@@ -306,6 +306,8 @@ func getLongExt(filename string) string {
 }
 
 func getOutputFilename(tableName string, isTest, isGo bool) string {
+	tableName = strings.ReplaceAll(strings.ReplaceAll(tableName, `/`, `_`), `\`, `_`)
+
 	if strings.HasPrefix(tableName, "_") {
 		tableName = "und" + tableName
 	}

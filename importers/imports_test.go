@@ -129,7 +129,7 @@ func TestImportsSort(t *testing.T) {
 		`"errors"`,
 	}
 	a2 := List{
-		`_ "github.com/lib/pq"`,
+		`_ "github.com/jackc/pgx/v5/stdlib"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/mux"`,
 		`"github.com/gorilla/websocket"`,
@@ -140,7 +140,7 @@ func TestImportsSort(t *testing.T) {
 		`"github.com/gorilla/mux"`,
 		`_ "github.com/gorilla/n"`,
 		`"github.com/gorilla/websocket"`,
-		`_ "github.com/lib/pq"`,
+		`_ "github.com/jackc/pgx/v5/stdlib"`,
 	}
 
 	sort.Sort(a1)

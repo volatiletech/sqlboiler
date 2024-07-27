@@ -34,7 +34,7 @@ import (
 	"time"
 
 	"github.com/ericlagergren/decimal"
-	"github.com/lib/pq/oid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/volatiletech/randomize"
 )
 
@@ -52,20 +52,20 @@ func errorf(s string, args ...interface{}) {
 	panic(fmt.Errorf("pq: %s", fmt.Sprintf(s, args...)))
 }
 
-func encode(parameterStatus *parameterStatus, x interface{}, pgtypOid oid.Oid) []byte {
+func encode(parameterStatus *parameterStatus, x interface{}, pgtypOid uint32) []byte {
 	switch v := x.(type) {
 	case int64:
 		return strconv.AppendInt(nil, v, 10)
 	case float64:
 		return strconv.AppendFloat(nil, v, 'f', -1, 64)
 	case []byte:
-		if pgtypOid == oid.T_bytea {
+		if pgtypOid == pgtype.ByteaOID {
 			return encodeBytea(parameterStatus.serverVersion, v)
 		}
 
 		return v
 	case string:
-		if pgtypOid == oid.T_bytea {
+		if pgtypOid == pgtype.ByteaOID {
 			return encodeBytea(parameterStatus.serverVersion, []byte(v))
 		}
 

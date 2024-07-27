@@ -21,7 +21,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/drivers"
 
 	// Side-effect import sql driver
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 //go:embed override
@@ -107,7 +107,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	p.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
 	p.connStr = PSQLBuildQueryString(user, pass, dbname, host, port, sslmode)
 	p.configForeignKeys = config.MustForeignKeys(drivers.ConfigForeignKeys)
-	p.conn, err = sql.Open("postgres", p.connStr)
+	p.conn, err = sql.Open("pgx", p.connStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "sqlboiler-psql failed to connect to database")
 	}
@@ -994,7 +994,7 @@ func (p PostgresDriver) Imports() (importers.Collection, error) {
 				`"github.com/spf13/viper"`,
 				`"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql/driver"`,
 				`"github.com/volatiletech/randomize"`,
-				`_ "github.com/lib/pq"`,
+				`_ "github.com/jackc/pgx/v5/stdlib"`,
 			},
 		},
 	}

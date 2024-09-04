@@ -101,6 +101,7 @@ func main() {
 	rootCmd.PersistentFlags().BoolP("no-auto-timestamps", "", false, "Disable automatic timestamps for created_at/updated_at")
 	rootCmd.PersistentFlags().BoolP("no-driver-templates", "", false, "Disable parsing of templates defined by the database driver")
 	rootCmd.PersistentFlags().BoolP("no-back-referencing", "", false, "Disable back referencing in the loaded relationship structs")
+	rootCmd.PersistentFlags().BoolP("no-schema", "", false, "Disable generating a schema in the output")
 	rootCmd.PersistentFlags().BoolP("always-wrap-errors", "", false, "Wrap all returned errors with stacktraces, also sql.ErrNoRows")
 	rootCmd.PersistentFlags().BoolP("add-global-variants", "", false, "Enable generation for global variants")
 	rootCmd.PersistentFlags().BoolP("add-panic-variants", "", false, "Enable generation for panic variants")
@@ -213,11 +214,12 @@ func preRun(cmd *cobra.Command, args []string) error {
 
 	// Configure the driver
 	cmdConfig.DriverConfig = map[string]interface{}{
-		"whitelist":        viper.GetStringSlice(driverName + ".whitelist"),
-		"blacklist":        viper.GetStringSlice(driverName + ".blacklist"),
-		"add-enum-types":   cmdConfig.AddEnumTypes,
-		"enum-null-prefix": cmdConfig.EnumNullPrefix,
-		"foreign-keys":     cmdConfig.ForeignKeys,
+		"whitelist":                  viper.GetStringSlice(driverName + ".whitelist"),
+		"blacklist":                  viper.GetStringSlice(driverName + ".blacklist"),
+		drivers.ConfigNoOutputSchema: viper.GetBool("no-schema"),
+		"add-enum-types":             cmdConfig.AddEnumTypes,
+		"enum-null-prefix":           cmdConfig.EnumNullPrefix,
+		"foreign-keys":               cmdConfig.ForeignKeys,
 	}
 
 	keys := allKeys(driverName)

@@ -97,11 +97,20 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 	port := config.DefaultInt(drivers.ConfigPort, 5432)
 	sslmode := config.DefaultString(drivers.ConfigSSLMode, "require")
 	schema := config.DefaultString(drivers.ConfigSchema, "public")
+	noOutputSchema := config.DefaultBool(drivers.ConfigNoOutputSchema, false)
 	whitelist, _ := config.StringSlice(drivers.ConfigWhitelist)
 	blacklist, _ := config.StringSlice(drivers.ConfigBlacklist)
 	concurrency := config.DefaultInt(drivers.ConfigConcurrency, drivers.DefaultConcurrency)
 
-	useSchema := schema != "public"
+	switch {
+	case noOutputSchema:
+		break
+	case schema == "public":
+		noOutputSchema = true
+	default:
+		// just to be explicit, even though it's the default in the getter
+		noOutputSchema = false
+	}
 
 	p.addEnumTypes, _ = config[drivers.ConfigAddEnumTypes].(bool)
 	p.enumNullPrefix = strmangle.TitleCase(config.DefaultString(drivers.ConfigEnumNullPrefix, "Null"))
@@ -135,7 +144,7 @@ func (p *PostgresDriver) Assemble(config drivers.Config) (dbinfo *drivers.DBInfo
 			RQ: '"',
 
 			UseIndexPlaceholders: true,
-			UseSchema:            useSchema,
+			UseSchema:            !noOutputSchema,
 			UseDefaultKeyword:    true,
 		},
 	}

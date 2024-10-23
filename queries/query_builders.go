@@ -53,6 +53,14 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	writeComment(q, buf)
 	writeCTEs(q, buf, &args)
 
+	hasHaving := len(q.having) != 0
+	hasGroupBy := len(q.groupBy) != 0
+	hasSimpleCount := q.count && !hasHaving && !hasGroupBy
+	hasComplexCount := q.count && (hasHaving || hasGroupBy)
+	if hasComplexCount {
+		buf.WriteString("SELECT COUNT(*) FROM (")
+	}
+
 	buf.WriteString("SELECT ")
 
 	if q.dialect.UseTopClause {
@@ -61,7 +69,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 		}
 	}
 
-	if q.count {
+	if hasSimpleCount {
 		buf.WriteString("COUNT(")
 	}
 
@@ -70,20 +78,20 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	hasDistinct := q.distinct != ""
 	if hasDistinct {
 		buf.WriteString("DISTINCT ")
-		if q.count {
+		if hasSimpleCount {
 			buf.WriteString("(")
 		}
 		buf.WriteString(q.distinct)
-		if q.count {
+		if hasSimpleCount {
 			buf.WriteString(")")
 		}
-	} else if hasJoins && hasSelectCols && !q.count {
+	} else if hasJoins && hasSelectCols && !hasSimpleCount {
 		selectColsWithAs := writeAsStatements(q)
 		// Don't identQuoteSlice - writeAsStatements does this
 		buf.WriteString(strings.Join(selectColsWithAs, ", "))
 	} else if hasSelectCols {
 		buf.WriteString(strings.Join(strmangle.IdentQuoteSlice(q.dialect.LQ, q.dialect.RQ, q.selectCols), ", "))
-	} else if hasJoins && !q.count {
+	} else if hasJoins && !hasSimpleCount {
 		selectColsWithStars := writeStars(q)
 		buf.WriteString(strings.Join(selectColsWithStars, ", "))
 	} else {
@@ -91,7 +99,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	}
 
 	// close SQL COUNT function
-	if q.count {
+	if hasSimpleCount {
 		buf.WriteByte(')')
 	}
 
@@ -133,6 +141,9 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 
 	writeModifiers(q, buf, &args)
 
+	if hasComplexCount {
+		buf.WriteByte(')')
+	}
 	buf.WriteByte(';')
 	return buf, args
 }

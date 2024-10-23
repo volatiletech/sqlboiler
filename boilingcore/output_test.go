@@ -122,6 +122,12 @@ func TestGetOutputFilename(t *testing.T) {
 			IsGo:      true,
 			Expected:  "hello",
 		},
+		"contains_forward_slash": {
+			TableName: "slash/test",
+			IsTest:    false,
+			IsGo:      true,
+			Expected:  "slash_test_model",
+		},
 		"begins with underscore": {
 			TableName: "_hello",
 			IsTest:    false,

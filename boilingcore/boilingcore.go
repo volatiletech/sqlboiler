@@ -74,9 +74,9 @@ func New(config *Config) (*State, error) {
 		}
 	}()
 
-	if len(config.Version) > 0 {
+	if len(s.Config.Version) > 0 {
 		noEditDisclaimer = []byte(
-			fmt.Sprintf(noEditDisclaimerFmt, " "+config.Version+" "),
+			fmt.Sprintf(noEditDisclaimerFmt, " "+s.Config.Version+" "),
 		)
 	}
 
@@ -89,10 +89,10 @@ func New(config *Config) (*State, error) {
 		}
 	}
 
-	s.Driver = drivers.GetDriver(config.DriverName)
+	s.Driver = drivers.GetDriver(s.Config.DriverName)
 	s.initInflections()
 
-	err := s.initDBInfo(config.DriverConfig)
+	err := s.initDBInfo()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize tables")
 	}
@@ -124,12 +124,12 @@ func New(config *Config) (*State, error) {
 		return nil, errors.Wrap(err, "unable to initialize the output folders")
 	}
 
-	err = s.initTags(config.Tags)
+	err = s.initTags()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize struct tags")
 	}
 
-	err = s.initAliases(&config.Aliases)
+	err = s.initAliases()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize aliases")
 	}
@@ -417,8 +417,8 @@ func findTemplates(root, base string) (map[string]templateLoader, error) {
 }
 
 // initDBInfo retrieves information about the database
-func (s *State) initDBInfo(config map[string]interface{}) error {
-	dbInfo, err := s.Driver.Assemble(config)
+func (s *State) initDBInfo() error {
+	dbInfo, err := s.Driver.Assemble(s.Config.DriverConfig)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch table data")
 	}
@@ -671,7 +671,7 @@ func (s *State) initInflections() {
 
 // initTags removes duplicate tags and validates the format
 // of all user tags are simple strings without quotes: [a-zA-Z_\.]+
-func (s *State) initTags(tags []string) error {
+func (s *State) initTags() error {
 	s.Config.Tags = strmangle.RemoveDuplicates(s.Config.Tags)
 	for _, v := range s.Config.Tags {
 		if !rgxValidTag.MatchString(v) {
@@ -682,8 +682,8 @@ func (s *State) initTags(tags []string) error {
 	return nil
 }
 
-func (s *State) initAliases(a *Aliases) error {
-	FillAliases(a, s.Tables)
+func (s *State) initAliases() error {
+	FillAliases(&s.Config.Aliases, s.Tables)
 	return nil
 }
 

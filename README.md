@@ -30,81 +30,80 @@ Coming over to the Go `database/sql` package after using ActiveRecord feels extr
 Being Go veterans we knew the state of ORMs was shaky, and after a quick review we found what our fears confirmed. Most packages out
 there are code-first, reflect-based and have a very weak story around relationships between models. So with that we set out with these goals:
 
-* Work with existing databases: Don't be the tool to define the schema, that's better left to other tools.
-* ActiveRecord-like productivity: Eliminate all sql boilerplate, have relationships as a first-class concept.
-* Go-like feel: Work with normal structs, call functions, no hyper-magical struct tags, small interfaces.
-* Go-like performance: [Benchmark](#benchmarks) and optimize the hot-paths, perform like hand-rolled `sql.DB` code.
+- Work with existing databases: Don't be the tool to define the schema, that's better left to other tools.
+- ActiveRecord-like productivity: Eliminate all sql boilerplate, have relationships as a first-class concept.
+- Go-like feel: Work with normal structs, call functions, no hyper-magical struct tags, small interfaces.
+- Go-like performance: [Benchmark](#benchmarks) and optimize the hot-paths, perform like hand-rolled `sql.DB` code.
 
 We believe with SQLBoiler and our database-first code-generation approach we've been able to successfully meet all of these goals. On top
 of that SQLBoiler also confers the following benefits:
 
-* The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for interface{}.
-* Our types closely correlate to your database column types. This is expanded by our extended null package which supports nearly all Go data types.
-* A system that is easy to debug. Your ORM is tailored to your schema, the code paths should be easy to trace since it's not all buried in reflect.
-* Auto-completion provides work-flow efficiency gains.
+- The models package is type safe. This means no chance of random panics due to passing in the wrong type. No need for interface{}.
+- Our types closely correlate to your database column types. This is expanded by our extended null package which supports nearly all Go data types.
+- A system that is easy to debug. Your ORM is tailored to your schema, the code paths should be easy to trace since it's not all buried in reflect.
+- Auto-completion provides work-flow efficiency gains.
 
-Table of Contents
-=================
+# Table of Contents
 
-  * [SQLBoiler](#sqlboiler)
-    * [Why another ORM](#why-another-orm)
-    * [About SQL Boiler](#about-sql-boiler)
-      * [Features](#features)
-      * [Missing Features](#missing-features)
-      * [Supported Databases](#supported-databases)
-      * [A Small Taste](#a-small-taste)
-    * [Requirements &amp; Pro Tips](#requirements--pro-tips)
-      * [Requirements](#requirements)
-      * [Pro Tips](#pro-tips)
-    * [Getting started](#getting-started)
-        * [Videos](#videos)
-        * [Download](#download)
-        * [Configuration](#configuration)
-        * [Initial Generation](#initial-generation)
-        * [Regeneration](#regeneration)
-        * [Controlling Version](#controlling-version)
-        * [Controlling Generation](#controlling-generation)
-          * [Aliases](#aliases)
-          * [Types](#types)
-          * [Imports](#imports)
-          * [Templates](#templates)
-        * [Extending Generated Models](#extending-generated-models)
-    * [Diagnosing Problems](#diagnosing-problems)
-    * [Features &amp; Examples](#features--examples)
-      * [Automatic CreatedAt/UpdatedAt](#automatic-createdatupdatedat)
-        * [Skipping Automatic Timestamps](#skipping-automatic-timestamps)
-        * [Overriding Automatic Timestamps](#overriding-automatic-timestamps)
-      * [Query Building](#query-building)
-      * [Query Mod System](#query-mod-system)
-      * [Function Variations](#function-variations)
-      * [Finishers](#finishers)
-      * [Raw Query](#raw-query)
-      * [Binding](#binding)
-      * [Relationships](#relationships)
-      * [Hooks](#hooks)
-        * [Skipping Hooks](#skipping-hooks)
-      * [Transactions](#transactions)
-      * [Debug Logging](#debug-logging)
-      * [Select](#select)
-      * [Find](#find)
-      * [Insert](#insert)
-      * [Update](#update)
-      * [Delete](#delete)
-      * [Upsert](#upsert)
-      * [Reload](#reload)
-      * [Exists](#exists)
-      * [Enums](#enums)
-      * [Constants](#constants)
-    * [FAQ](#faq)
-        * [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
-        * [Missing imports for generated package](#missing-imports-for-generated-package)
-        * [How should I handle multiple schemas](#how-should-i-handle-multiple-schemas)
-        * [How do I use the types.BytesArray for Postgres bytea arrays?](#how-do-i-use-typesbytesarray-for-postgres-bytea-arrays)
-        * [Why aren't my time.Time or null.Time fields working in MySQL?](#why-arent-my-timetime-or-nulltime-fields-working-in-mysql)
-        * [Where is the homepage?](#where-is-the-homepage)
-        * [Why are the auto-generated tests failing?](#why-are-the-auto-generated-tests-failing)
-  * [Benchmarks](#benchmarks)
-  * [Third-Party Extensions](#third-party-extensions)
+- [SQLBoiler](#sqlboiler)
+  - [Why another ORM](#why-another-orm)
+  - [About SQL Boiler](#about-sql-boiler)
+    - [Features](#features)
+    - [Missing Features](#missing-features)
+    - [Supported Databases](#supported-databases)
+    - [A Small Taste](#a-small-taste)
+  - [Requirements &amp; Pro Tips](#requirements--pro-tips)
+    - [Requirements](#requirements)
+    - [Pro Tips](#pro-tips)
+  - [Getting started](#getting-started)
+    - [Videos](#videos)
+    - [Download](#download)
+    - [Configuration](#configuration)
+    - [Initial Generation](#initial-generation)
+    - [Regeneration](#regeneration)
+    - [Controlling Version](#controlling-version)
+    - [Controlling Generation](#controlling-generation)
+      - [Aliases](#aliases)
+      - [Types](#types)
+      - [Imports](#imports)
+      - [Templates](#templates)
+    - [Extending Generated Models](#extending-generated-models)
+  - [Diagnosing Problems](#diagnosing-problems)
+  - [Features &amp; Examples](#features--examples)
+    - [Automatic CreatedAt/UpdatedAt](#automatic-createdatupdatedat)
+      - [Skipping Automatic Timestamps](#skipping-automatic-timestamps)
+      - [Overriding Automatic Timestamps](#overriding-automatic-timestamps)
+    - [Query Building](#query-building)
+    - [Query Mod System](#query-mod-system)
+    - [Function Variations](#function-variations)
+    - [Finishers](#finishers)
+    - [Raw Query](#raw-query)
+    - [Binding](#binding)
+    - [Relationships](#relationships)
+    - [Hooks](#hooks)
+      - [Skipping Hooks](#skipping-hooks)
+    - [Transactions](#transactions)
+    - [Debug Logging](#debug-logging)
+    - [Select](#select)
+    - [Find](#find)
+    - [Insert](#insert)
+    - [Update](#update)
+    - [Delete](#delete)
+    - [Upsert](#upsert)
+    - [Reload](#reload)
+    - [Exists](#exists)
+    - [Enums](#enums)
+    - [Constants](#constants)
+  - [FAQ](#faq)
+    - [Won't compiling models for a huge database be very slow?](#wont-compiling-models-for-a-huge-database-be-very-slow)
+    - [Missing imports for generated package](#missing-imports-for-generated-package)
+    - [How should I handle multiple schemas](#how-should-i-handle-multiple-schemas)
+    - [How do I use the types.BytesArray for Postgres bytea arrays?](#how-do-i-use-typesbytesarray-for-postgres-bytea-arrays)
+    - [Why aren't my time.Time or null.Time fields working in MySQL?](#why-arent-my-timetime-or-nulltime-fields-working-in-mysql)
+    - [Where is the homepage?](#where-is-the-homepage)
+    - [Why are the auto-generated tests failing?](#why-are-the-auto-generated-tests-failing)
+- [Benchmarks](#benchmarks)
+- [Third-Party Extensions](#third-party-extensions)
 
 ## About SQL Boiler
 
@@ -143,13 +142,13 @@ Table of Contents
 
 ### Supported Databases
 
-| Database          | Driver Location |
-| ----------------- | --------------- |
-| PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)
-| MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)
-| MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)
-| SQLite3           | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3](drivers/sqlboiler-sqlite3)
-| CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb
+| Database          | Driver Location                                                                                     |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)       |
+| MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)     |
+| MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)     |
+| SQLite3           | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3](drivers/sqlboiler-sqlite3) |
+| CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb                                                        |
 
 **Note:** SQLBoiler supports out of band driver support so you can make your own
 
@@ -226,33 +225,33 @@ fmt.Println(len(users.R.FavoriteMovies))
 
 ### Requirements
 
-* Go 1.13, older Go versions are not supported.
-* Join tables should use a *composite primary key*.
-  * For join tables to be used transparently for relationships your join table must have
-  a *composite primary key* that encompasses both foreign table foreign keys and
-  no other columns in the table. For example, on a join table named
-  `user_videos` you should have: `primary key(user_id, video_id)`, with both
-  `user_id` and `video_id` being foreign key columns to the users and videos
-  tables respectively and there are no other columns on this table.
-* MySQL 5.6.30 minimum; ssl-mode option is not supported for earlier versions.
-* For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate
+- Go 1.13, older Go versions are not supported.
+- Join tables should use a _composite primary key_.
+  - For join tables to be used transparently for relationships your join table must have
+    a _composite primary key_ that encompasses both foreign table foreign keys and
+    no other columns in the table. For example, on a join table named
+    `user_videos` you should have: `primary key(user_id, video_id)`, with both
+    `user_id` and `video_id` being foreign key columns to the users and videos
+    tables respectively and there are no other columns on this table.
+- MySQL 5.6.30 minimum; ssl-mode option is not supported for earlier versions.
+- For MySQL if using the `github.com/go-sql-driver/mysql` driver, please activate
   [time.Time parsing](https://github.com/go-sql-driver/mysql#timetime-support) when making your
   MySQL database connection. SQLBoiler uses `time.Time` and `null.Time` to represent time in
   it's models and without this enabled any models with `DATE`/`DATETIME` columns will not work.
 
 ### Pro Tips
 
-* SQLBoiler generates type safe identifiers for table names, table column names,
+- SQLBoiler generates type safe identifiers for table names, table column names,
   a table's relationship names and type-safe where clauses. You should use these
   instead of strings due to the ability to catch more errors at compile time
   when your database schema changes. See [Constants](#constants) for details.
-* It's highly recommended to use transactions where sqlboiler will be doing
+- It's highly recommended to use transactions where sqlboiler will be doing
   multiple database calls (relationship setops with insertions for example) for
   both performance and data integrity.
-* Foreign key column names should end with `_id`.
-  * Foreign key column names in the format `x_id` will generate clearer method names.
-  It is advisable to use this naming convention whenever it makes sense for your database schema.
-* If you never plan on using the hooks functionality you can disable generation of this
+- Foreign key column names should end with `_id`.
+  - Foreign key column names in the format `x_id` will generate clearer method names.
+    It is advisable to use this naming convention whenever it makes sense for your database schema.
+- If you never plan on using the hooks functionality you can disable generation of this
   feature using the `--no-hooks` flag. This will save you some binary size.
 
 ## Getting started
@@ -262,7 +261,7 @@ fmt.Println(len(users.R.FavoriteMovies))
 If you like learning via a video medium, sqlboiler has a number of screencasts
 available.
 
-*NOTE:* These videos predate modules (v4), the installation/import paths will be
+_NOTE:_ These videos predate modules (v4), the installation/import paths will be
 different though everything else should remain similar.
 
 [SQLBoiler: Getting Started](https://www.youtube.com/watch?v=y5utRS9axfg)
@@ -345,17 +344,18 @@ PSQL_DBNAME="your_database_name"
 
 The values that exist for the drivers:
 
-| Name | Required | Postgres Default | MySQL Default | MSSQL Default |
-| ---- | -------- | ---------------- | ------------- | ------------- |
-| schema    | no        | "public"  | none   | "dbo"  |
-| dbname    | yes       | none      | none   | none   |
-| host      | yes       | none      | none   | none   |
-| port      | no        | 5432      | 3306   | 1433   |
-| user      | yes       | none      | none   | none   |
-| pass      | no        | none      | none   | none   |
-| sslmode   | no        | "require" | "true" | "true" |
-| whitelist | no        | []        | []     | []     |
-| blacklist | no        | []        | []     | []     |
+| Name        | Required | Postgres Default | MySQL Default | MSSQL Default |
+| ----------- | -------- | ---------------- | ------------- | ------------- |
+| schema      | no       | "public"         | none          | "dbo"         |
+| dbname      | yes      | none             | none          | none          |
+| host        | yes      | none             | none          | none          |
+| port        | no       | 5432             | 3306          | 1433          |
+| user        | yes      | none             | none          | none          |
+| pass        | no       | none             | none          | none          |
+| sslmode     | no       | "require"        | "true"        | "true"        |
+| unix-socket | no       | N/A              | ""            | N/A           |
+| whitelist   | no       | []               | []            | []            |
+| blacklist   | no       | []               | []            | []            |
 
 Example of whitelist/blacklist:
 
@@ -374,7 +374,7 @@ You can also pass in these top level configuration values if you would prefer
 not to pass them through the command line or environment variables:
 
 | Name                      | Defaults |
-|---------------------------|----------|
+| ------------------------- | -------- |
 | pkgname                   | "models" |
 | output                    | "models" |
 | tag                       | []       |
@@ -487,7 +487,7 @@ sqlboiler psql
 go test ./models
 ```
 
-*Note: No `mysqldump` or `pg_dump` equivalent for Microsoft SQL Server, so generated tests must be supplemented by `tables_schema.sql` with `CREATE TABLE ...` queries*
+_Note: No `mysqldump` or `pg_dump` equivalent for Microsoft SQL Server, so generated tests must be supplemented by `tables_schema.sql` with `CREATE TABLE ...` queries_
 
 You can use `go generate` for SQLBoiler if you want to to make it easy to
 run the command for your application:
@@ -517,9 +517,9 @@ like programs that `rm -rf` things on the filesystem without being asked to.
 
 #### Controlling Version
 
-When sqlboiler is used on a regular basis, sometimes problems arise on the 
-developers' side that the version they are using does not match the version 
-specified in the project. 
+When sqlboiler is used on a regular basis, sometimes problems arise on the
+developers' side that the version they are using does not match the version
+specified in the project.
 
 Sqlboiler will warn, if version in project and executable mismatch.
 Sqlboiler can also fail to prevent code generation, when
@@ -543,8 +543,8 @@ unchangeable, or sqlboiler's inference doesn't understand the names you do have
 (even though they are good and correct) you can use aliases to change the name
 of your tables, columns and relationships in the generated Go code.
 
-*Note: It is not required to provide all parts of all names. Anything left out
-will be inferred as it was in the past.*
+_Note: It is not required to provide all parts of all names. Anything left out
+will be inferred as it was in the past._
 
 ```toml
 # Although team_names works fine without configuration, we use it here for illustrative purposes
@@ -658,7 +658,6 @@ down_singular = "teamName"
   foreign = "Videos"
 ```
 
-
 ##### Custom Struct Tag Case
 
 Sometimes you might want to customize the case style for different purpose, for example, use camel case for json format and use snake case for yaml,
@@ -678,7 +677,6 @@ By default, the snake case will be used, so you can just setup only few formats:
 [struct-tag-cases]
 json = "camel"
 ```
-
 
 ##### Foreign Keys
 
@@ -1120,18 +1118,18 @@ before being sent to the database (if they were going to be sent).
 
 #### Overriding Automatic Timestamps
 
-* **Insert**
-  * Timestamps for both `updated_at` and `created_at` that are zero values will be set automatically.
-  * To set the timestamp to null, set `Valid` to false and `Time` to a non-zero value.
-  This is somewhat of a work around until we can devise a better solution in a later version.
-* **Update**
-  * The `updated_at` column will always be set to `time.Now()`. If you need to override
-  this value you will need to fall back to another method in the meantime: `queries.Raw()`,
-  overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
-* **Upsert**
-  * `created_at` will be set automatically if it is a zero value, otherwise your supplied value
-  will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
-  * The `updated_at` column will always be set to `time.Now()`.
+- **Insert**
+  - Timestamps for both `updated_at` and `created_at` that are zero values will be set automatically.
+  - To set the timestamp to null, set `Valid` to false and `Time` to a non-zero value.
+    This is somewhat of a work around until we can devise a better solution in a later version.
+- **Update**
+  - The `updated_at` column will always be set to `time.Now()`. If you need to override
+    this value you will need to fall back to another method in the meantime: `queries.Raw()`,
+    overriding `updated_at` in all of your objects using a hook, or create your own wrapper.
+- **Upsert**
+  - `created_at` will be set automatically if it is a zero value, otherwise your supplied value
+    will be used. To set `created_at` to `null`, set `Valid` to false and `Time` to a non-zero value.
+  - The `updated_at` column will always be set to `time.Now()`.
 
 ### Automatic DeletedAt (Soft Delete)
 
@@ -1147,14 +1145,14 @@ SQLBoiler uses the `deleted_at` variant to provide this functionality. If your
 table has a nullable timestamp field named `deleted_at` it will be a candidate
 for soft-deletion.
 
-*NOTE*: As of writing soft-delete is opt-in via `--add-soft-deletes` and is
+_NOTE_: As of writing soft-delete is opt-in via `--add-soft-deletes` and is
 liable to change in future versions.
 
-*NOTE*: There is a query mod to bypass soft delete for a specific query by using
+_NOTE_: There is a query mod to bypass soft delete for a specific query by using
 `qm.WithDeleted`, note that there is no way to do this for Exists/Find helpers
 yet.
 
-*NOTE*: The `Delete` helpers will _not_ set `updated_at` currently. The current
+_NOTE_: The `Delete` helpers will _not_ set `updated_at` currently. The current
 philosophy is that deleting the object is simply metadata and since it returns
 in no queries (other than raw ones) the updated_at will no longer be relevant.
 This could change in future versions if people disagree with this but it is
@@ -1506,10 +1504,12 @@ users, _ := models.Users(
 We provide the following methods for managing relationships on objects:
 
 **To One**
+
 - `SetX()`: Set the foreign key to point to something else: jet.SetPilot(...)
 - `RemoveX()`: Null out the foreign key, effectively removing the relationship between these two objects: jet.RemovePilot(...)
 
 **To Many**
+
 - `AddX()`: Add more relationships to the existing set of related Xs: pilot.AddLanguages(...)
 - `SetX()`: Remove all existing relationships, and replace them with the provided set: pilot.SetLanguages(...)
 - `RemoveX()`: Remove all provided relationships: pilot.RemoveLanguages(...)
@@ -1700,12 +1700,12 @@ values set in the database, so the Go zero value is what's important here (this
 can be especially troubling for default true bool fields). Use a whitelist or
 greylist in cases where you want to insert a Go zero value.
 
-| Column List | Behavior |
-| ----------- | -------- |
-| Infer       | Infer the column list using "smart" rules
-| Whitelist   | Insert only the columns specified in this list
-| Blacklist   | Infer the column list, but ensure these columns are not inserted
-| Greylist    | Infer the column list, but ensure these columns are inserted
+| Column List | Behavior                                                         |
+| ----------- | ---------------------------------------------------------------- |
+| Infer       | Infer the column list using "smart" rules                        |
+| Whitelist   | Insert only the columns specified in this list                   |
+| Blacklist   | Infer the column list, but ensure these columns are not inserted |
+| Greylist    | Infer the column list, but ensure these columns are inserted     |
 
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
@@ -1740,6 +1740,7 @@ err := p4.Insert(ctx, db, boil.Whitelist("id", "name")) // Insert the fourth pil
 ```
 
 ### Update
+
 `Update` can be performed on a single object, a slice of objects or as a [Finisher](#finishers)
 for a collection of rows.
 
@@ -1752,12 +1753,12 @@ documentation reveals the differences. Note that all inference is based on
 the Go types zero value and not the database default value, read the `Insert`
 documentation above for more details.
 
-| Column List | Behavior |
-| ----------- | -------- |
-| Infer       | Infer the column list using "smart" rules
-| Whitelist   | Update only the columns specified in this list
-| Blacklist   | Infer the column list for updating, but ensure these columns are not updated
-| Greylist    | Infer the column list, but ensure these columns are updated
+| Column List | Behavior                                                                     |
+| ----------- | ---------------------------------------------------------------------------- |
+| Infer       | Infer the column list using "smart" rules                                    |
+| Whitelist   | Update only the columns specified in this list                               |
+| Blacklist   | Infer the column list for updating, but ensure these columns are not updated |
+| Greylist    | Infer the column list, but ensure these columns are updated                  |
 
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
@@ -1804,7 +1805,6 @@ that optionally performs an update when a conflict is found against existing row
 The `updateColumns` and `insertColumns` operates in the same fashion that it does for [Update](#update)
 and [Insert](#insert).
 
-
 If an insert is performed, your object will be updated with any missing default values from the database,
 such as auto-incrementing column values.
 
@@ -1842,13 +1842,13 @@ updateSet := models.UpsertUpdateSet
 err := p1.Upsert(ctx, db, true, []string{"id"}, boil.Whitelist("id", "name"), boil.None(), updateSet("(id, name) = (sub-SELECT)"))
 ```
 
-* **Postgres**
-  * The `updateOnConflict` argument allows you to specify whether you would like Postgres
-  to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL and MSSQL, this param will not be generated.
-  * The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres.
-  For MySQL and MSSQL, this param will not be generated.
-* **MySQL and MSSQL**
-  * Passing `boil.None()` for `updateColumns` allows to perform a `DO NOTHING` on conflict similar to Postgres.
+- **Postgres**
+  - The `updateOnConflict` argument allows you to specify whether you would like Postgres
+    to perform a `DO NOTHING` on conflict, opposed to a `DO UPDATE`. For MySQL and MSSQL, this param will not be generated.
+  - The `conflictColumns` argument allows you to specify the `ON CONFLICT` columns for Postgres.
+    For MySQL and MSSQL, this param will not be generated.
+- **MySQL and MSSQL**
+  - Passing `boil.None()` for `updateColumns` allows to perform a `DO NOTHING` on conflict similar to Postgres.
 
 Note: Passing a different set of column values to the update component is not currently supported.
 
@@ -1856,6 +1856,7 @@ Note: Upsert is now not guaranteed to be provided by SQLBoiler and it's now up t
 individually to support it since it's a bit outside of the reach of the sql standard.
 
 ### Reload
+
 In the event that your objects get out of sync with the database for whatever reason,
 you can use `Reload` and `ReloadAll` to reload the objects using the primary key values
 attached to the objects.
@@ -1932,10 +1933,11 @@ column, relationship names harvested from the database at generation time. Type
 safe where query mods are also generated.
 
 There are type safe identifiers at:
-* models.TableNames.TableName
-* models.ModelColumns.ColumnName
-* models.ModelWhere.ColumnName.Operator
-* models.ModelRels.ForeignTableName
+
+- models.TableNames.TableName
+- models.ModelColumns.ColumnName
+- models.ModelWhere.ColumnName.Operator
+- models.ModelRels.ForeignTableName
 
 For table names they're generated under `models.TableNames`:
 
@@ -1954,6 +1956,7 @@ fmt.Println(models.TableNames.Messages)
 ```
 
 For column names they're generated under `models.{Model}Columns`:
+
 ```go
 // Generated code from models package
 var MessageColumns = struct {
@@ -1969,6 +1972,7 @@ fmt.Println(models.MessageColumns.ID)
 ```
 
 For where clauses they're generated under `models.{Model}Where.{Column}.{Operator}`:
+
 ```go
 var MessageWhere = struct {
   ID       whereHelperint
@@ -1983,6 +1987,7 @@ models.Messages(models.MessageWhere.PurchaseID.EQ("hello"))
 ```
 
 For eager loading relationships ther're generated under `models.{Model}Rels`:
+
 ```go
 // Generated code from models package
 var MessageRels = struct {
@@ -2040,7 +2045,7 @@ Please note that multi-dimensional Postgres ARRAY types are not supported at thi
 
 #### Why aren't my time.Time or null.Time fields working in MySQL?
 
-You *must* use a DSN flag in MySQL connections, see: [Requirements](#requirements)
+You _must_ use a DSN flag in MySQL connections, see: [Requirements](#requirements)
 
 #### Where is the homepage?
 
@@ -2077,6 +2082,7 @@ go test -bench . -benchmem
 ### Results (lower is better)
 
 Test machine:
+
 ```text
 OS:  Ubuntu 16.04
 CPU: Intel(R) Core(TM) i7-4771 CPU @ 3.50GHz

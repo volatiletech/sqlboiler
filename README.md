@@ -6,6 +6,32 @@
 ![ActionsCI](https://github.com/volatiletech/sqlboiler/workflows/test/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/volatiletech/sqlboiler)](http://goreportcard.com/report/volatiletech/sqlboiler)
 
+# Maintenance Mode
+
+This package is currently in maintenance mode, which means:
+
+1. It generally does not accept new features.
+2. It does accept bug fixes and version compatability changes provided by the community.
+3. Maintainers usually do not resolve reported issues.
+4. Community members are encouraged to help each other with reported issues.
+
+## Alternatives
+
+If looking for an actively maintained alternative, consider the following:
+
+### 1. Bob - <https://github.com/stephenafamo/bob>
+
+Bob is very similar to SQLBoiler. It was directly inspired by SQLBoiler and was created by a maintainer of SQLBoiler.
+
+A comparison can be found here: <https://bob.stephenafamo.com/vs/sqlboiler/>.
+
+### 2. sqlc - <https://github.com/sqlc-dev/sqlc>
+
+`sqlc` is a command line tool that generates type-safe code from SQL.  
+It is not an ORM but for many use cases it can be a good alternative to SQLBoiler.
+
+# About SQLBoiler
+
 SQLBoiler is a tool to generate a Go ORM tailored to your database schema.
 
 It is a "database-first" ORM as opposed to "code-first" (like gorm/gorp).

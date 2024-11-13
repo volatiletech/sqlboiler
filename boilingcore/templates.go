@@ -39,6 +39,7 @@ type templateData struct {
 	RQ string
 
 	// Control various generation features
+	// NoOutputSchema, which is also used for generation, is defined in the drivers configuration
 	AddGlobal             bool
 	AddPanic              bool
 	AddSoftDeletes        bool

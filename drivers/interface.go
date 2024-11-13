@@ -17,6 +17,7 @@ const (
 	ConfigBlacklist      = "blacklist"
 	ConfigWhitelist      = "whitelist"
 	ConfigSchema         = "schema"
+	ConfigNoOutputSchema = "no-output-schema" // Determine if templates/output include a schema, even if we used one to gather info
 	ConfigAddEnumTypes   = "add-enum-types"
 	ConfigEnumNullPrefix = "enum-null-prefix"
 	ConfigConcurrency    = "concurrency"

@@ -93,6 +93,21 @@ func (c Config) DefaultString(key, def string) string {
 	return str
 }
 
+// DefaultBool retrieves a non-empty bool or the default value provided.
+func (c Config) DefaultBool(key string, def bool) bool {
+	b, ok := c[key]
+	if !ok {
+		return def
+	}
+
+	bul, ok := b.(bool)
+	if !ok {
+		return def
+	}
+
+	return bul
+}
+
 // Int retrieves an int, the bool says if it exists, is of the appropriate type,
 // and is non-zero. Coerces float64 to int because JSON and Javascript kinda suck.
 func (c Config) Int(key string) (int, bool) {

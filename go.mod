@@ -15,6 +15,7 @@ require (
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.10.6
 	github.com/microsoft/go-mssqldb v0.17.0
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -28,7 +29,7 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/strmangle v0.0.7-0.20240503230658-86517898275a
+	github.com/volatiletech/strmangle v0.0.6
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
 	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
 	golang.org/x/tools v0.1.12 // indirect

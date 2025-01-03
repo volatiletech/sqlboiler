@@ -4,7 +4,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [4.17.2] - 2025-01-03
+## [4.18.0] - 2025-01-03
+
+### Added
+
+- Added `--no-schema` option scaffolding. (thanks @morganhein)
 
 ### Fixed
 

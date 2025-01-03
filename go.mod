@@ -46,6 +46,8 @@ require (
 )
 
 retract (
+	v4.17.1 // Generates faulty code for DeleteAll if the table has multiple foreign keys
+	v4.17.0 // Generates faulty code for DeleteAll if the table has multiple foreign keys
 	v4.10.0 // Generated models are invalid due to a wrong assignment
 	v4.9.0 // Generated code shows v4.8.6, messed up commit tagging and untidy go.mod
 )

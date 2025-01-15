@@ -1580,7 +1580,7 @@
 				},
 				{
 					"name": "uuid_zero",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -1595,7 +1595,7 @@
 				},
 				{
 					"name": "uuid_one",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -1610,7 +1610,7 @@
 				},
 				{
 					"name": "uuid_two",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -1625,7 +1625,7 @@
 				},
 				{
 					"name": "uuid_three",
-					"type": "string",
+					"type": "[]byte",
 					"db_type": "uuid",
 					"default": "",
 					"comment": "",
@@ -1640,7 +1640,7 @@
 				},
 				{
 					"name": "uuid_four",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "'6ba7b810-9dad-11d1-80b4-00c04fd430c8'::uuid",
 					"comment": "",
@@ -1655,7 +1655,7 @@
 				},
 				{
 					"name": "uuid_five",
-					"type": "string",
+					"type": "[]byte",
 					"db_type": "uuid",
 					"default": "'6ba7b810-9dad-11d1-80b4-00c04fd430c8'::uuid",
 					"comment": "",
@@ -1702,7 +1702,7 @@
 					"name": "timestamp_notz",
 					"type": "null.Time",
 					"db_type": "timestamp without time zone",
-					"default": "timezone('utc'::text, now())",
+					"default": "(now() AT TIME ZONE 'utc'::text)",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -1717,7 +1717,7 @@
 					"name": "timestamp_tz",
 					"type": "null.Time",
 					"db_type": "timestamp with time zone",
-					"default": "timezone('utc'::text, now())",
+					"default": "(now() AT TIME ZONE 'utc'::text)",
 					"comment": "",
 					"nullable": true,
 					"unique": false,
@@ -4260,7 +4260,7 @@
 				},
 				{
 					"name": "uuid_zero",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -4275,7 +4275,7 @@
 				},
 				{
 					"name": "uuid_one",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -4290,7 +4290,7 @@
 				},
 				{
 					"name": "uuid_two",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -4305,7 +4305,7 @@
 				},
 				{
 					"name": "uuid_three",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -4320,7 +4320,7 @@
 				},
 				{
 					"name": "uuid_four",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -4335,7 +4335,7 @@
 				},
 				{
 					"name": "uuid_five",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -6661,7 +6661,7 @@
 				},
 				{
 					"name": "uuid_zero",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -6676,7 +6676,7 @@
 				},
 				{
 					"name": "uuid_one",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -6691,7 +6691,7 @@
 				},
 				{
 					"name": "uuid_two",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -6706,7 +6706,7 @@
 				},
 				{
 					"name": "uuid_three",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -6721,7 +6721,7 @@
 				},
 				{
 					"name": "uuid_four",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",
@@ -6736,7 +6736,7 @@
 				},
 				{
 					"name": "uuid_five",
-					"type": "null.String",
+					"type": "null.Bytes",
 					"db_type": "uuid",
 					"default": "NULL",
 					"comment": "",

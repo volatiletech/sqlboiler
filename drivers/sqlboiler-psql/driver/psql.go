@@ -794,11 +794,11 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "null.Float64"
 		case "real":
 			c.Type = "null.Float32"
-		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
 			c.Type = "null.String"
 		case `"char"`:
 			c.Type = "null.Byte"
-		case "bytea":
+		case "bytea", "uuid":
 			c.Type = "null.Bytes"
 		case "json", "jsonb":
 			c.Type = "null.JSON"
@@ -859,13 +859,13 @@ func (p *PostgresDriver) TranslateColumnType(c drivers.Column) drivers.Column {
 			c.Type = "float64"
 		case "real":
 			c.Type = "float32"
-		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
 			c.Type = "string"
 		case `"char"`:
 			c.Type = "types.Byte"
 		case "json", "jsonb":
 			c.Type = "types.JSON"
-		case "bytea":
+		case "bytea", "uuid":
 			c.Type = "[]byte"
 		case "boolean":
 			c.Type = "bool"
@@ -926,9 +926,9 @@ func getArrayType(c drivers.Column) (string, string) {
 		switch *c.ArrType {
 		case "bigint", "bigserial", "integer", "serial", "smallint", "smallserial", "oid":
 			return "types.Int64Array", *c.ArrType
-		case "bytea":
+		case "bytea", "uuid":
 			return "types.BytesArray", *c.ArrType
-		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "uuid", "xml":
+		case "bit", "interval", "uuint", "bit varying", "character", "money", "character varying", "cidr", "inet", "macaddr", "text", "xml":
 			return "types.StringArray", *c.ArrType
 		case "boolean":
 			return "types.BoolArray", *c.ArrType
@@ -943,9 +943,9 @@ func getArrayType(c drivers.Column) (string, string) {
 		switch c.UDTName {
 		case "_int4", "_int8":
 			return "types.Int64Array", c.UDTName
-		case "_bytea":
+		case "_bytea", "_uuid":
 			return "types.BytesArray", c.UDTName
-		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_uuid", "_xml":
+		case "_bit", "_interval", "_varbit", "_char", "_money", "_varchar", "_cidr", "_inet", "_macaddr", "_citext", "_text", "_xml":
 			return "types.StringArray", c.UDTName
 		case "_bool":
 			return "types.BoolArray", c.UDTName

@@ -10,8 +10,8 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/spf13/cast"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/twitter-payments/sqlboiler/v4/drivers"
+	"github.com/twitter-payments/sqlboiler/v4/importers"
 )
 
 type TagCase string

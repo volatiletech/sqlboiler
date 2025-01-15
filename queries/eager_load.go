@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/twitter-payments/sqlboiler/v4/boil"
 	"github.com/volatiletech/strmangle"
 )
 
@@ -70,7 +70,7 @@ func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, mods ma
 // loadRelationships dynamically calls the template generated eager load
 // functions of the form:
 //
-//   func (t *TableR) LoadRelationshipName(exec Executor, singular bool, obj interface{})
+//	func (t *TableR) LoadRelationshipName(exec Executor, singular bool, obj interface{})
 //
 // The arguments to this function are:
 //   - t is not considered here, and is always passed nil. The function exists on a loaded
@@ -82,11 +82,12 @@ func eagerLoad(ctx context.Context, exec boil.Executor, toLoad []string, mods ma
 //
 // We start with a normal select before eager loading anything: select * from a;
 // Then we start eager loading things, it can be represented by a DAG
-//          a1, a2           select id, a_id from b where id in (a1, a2)
-//         / |    \
-//        b1 b2    b3        select id, b_id from c where id in (b2, b3, b4)
-//       /   | \     \
-//      c1  c2 c3    c4
+//
+//	    a1, a2           select id, a_id from b where id in (a1, a2)
+//	   / |    \
+//	  b1 b2    b3        select id, b_id from c where id in (b2, b3, b4)
+//	 /   | \     \
+//	c1  c2 c3    c4
 //
 // That's to say that we descend the graph of relationships, and at each level
 // we gather all the things up we want to load into, load them, and then move
@@ -236,9 +237,9 @@ func (l loadRelationshipState) loadRelationshipsRecurse(depth int, obj reflect.V
 //
 // For example when loadingFrom is [parent1, parent2]
 //
-//   parent1 -> child1
-//          \-> child2
-//   parent2 -> child3
+//	parent1 -> child1
+//	       \-> child2
+//	parent2 -> child3
 //
 // This should return [child1, child2, child3]
 func collectLoaded(key string, loadingFrom reflect.Value) (reflect.Value, bindKind, error) {

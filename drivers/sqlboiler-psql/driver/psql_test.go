@@ -25,7 +25,7 @@ import (
 var (
 	flagOverwriteGolden = flag.Bool("overwrite-golden", false, "Overwrite the golden file with the current execution results")
 
-	envHostname = drivers.DefaultEnv("DRIVER_HOSTNAME", "127.0.0.1")
+	envHostname = drivers.DefaultEnv("DRIVER_HOSTNAME", "localhost")
 	envPort     = drivers.DefaultEnv("DRIVER_PORT", "5432")
 	envUsername = drivers.DefaultEnv("DRIVER_USER", "sqlboiler_driver_user")
 	envPassword = drivers.DefaultEnv("DRIVER_PASS", "sqlboiler")

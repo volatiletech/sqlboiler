@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/twitter-payments/sqlboiler/v4/importers"
 	"github.com/volatiletech/strmangle"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/drivers/mocks"
+	"github.com/twitter-payments/sqlboiler/v4/drivers"
+	"github.com/twitter-payments/sqlboiler/v4/drivers/mocks"
 )
 
 var state *State
@@ -117,7 +117,7 @@ func testNew(t *testing.T, aliases Aliases) {
 		fmt.Println()
 	}
 
-	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/volatiletech/sqlboiler/v4=%s", filepath.Dir(string(goModFilePath))))
+	cmd = exec.Command("go", "mod", "edit", fmt.Sprintf("-replace=github.com/twitter-payments/sqlboiler/v4=%s", filepath.Dir(string(goModFilePath))))
 	cmd.Dir = state.Config.OutFolder
 	cmd.Stderr = buf
 

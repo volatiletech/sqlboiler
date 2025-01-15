@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/volatiletech/sqlboiler/v4/boilingcore"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/twitter-payments/sqlboiler/v4/boilingcore"
+	"github.com/twitter-payments/sqlboiler/v4/drivers"
+	"github.com/twitter-payments/sqlboiler/v4/importers"
 )
 
 const sqlBoilerVersion = "4.18.0"

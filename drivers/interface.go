@@ -9,7 +9,7 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/strmangle"
 
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/twitter-payments/sqlboiler/v4/importers"
 )
 
 // These constants are used in the config map passed into the driver

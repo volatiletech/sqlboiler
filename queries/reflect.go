@@ -14,7 +14,7 @@ import (
 	"unicode"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/twitter-payments/sqlboiler/v4/boil"
 	"github.com/volatiletech/strmangle"
 )
 

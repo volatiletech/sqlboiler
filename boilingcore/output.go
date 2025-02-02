@@ -272,13 +272,13 @@ func executeTemplate(buf *bytes.Buffer, t *template.Template, name string, data 
 func formatBuffer(buf *bytes.Buffer) ([]byte, error) {
 	// format and process imports to remove unused ones
 	src, err := imports.Process("", buf.Bytes(), nil /* options */)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to format and adjust imports")
-	}
-
-	output, err := format.Source(src)
 	if err == nil {
-		return output, nil
+		var output []byte
+		// format the output
+		output, err = format.Source(src)
+		if err == nil {
+			return output, nil
+		}
 	}
 
 	matches := rgxSyntaxError.FindStringSubmatch(err.Error())

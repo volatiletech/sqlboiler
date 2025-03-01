@@ -124,6 +124,12 @@ func (q *Query) Exec(exec boil.Executor) (sql.Result, error) {
 	return exec.Exec(qs, args...)
 }
 
+// QueryRowG executes the query for the One finisher and returns a row.
+// It uses the global executer.
+func (q *Query) QueryRowG() *sql.Row {
+	return q.QueryRow(boil.GetDB())
+}
+
 // QueryRow executes the query for the One finisher and returns a row
 func (q *Query) QueryRow(exec boil.Executor) *sql.Row {
 	qs, args := BuildQuery(q)
@@ -155,6 +161,12 @@ func (q *Query) ExecContext(ctx context.Context, exec boil.ContextExecutor) (sql
 	return exec.ExecContext(ctx, qs, args...)
 }
 
+// QueryRowContextG executes the query for the One finisher and returns a row.
+// It uses the global executer.
+func (q *Query) QueryRowContextG(ctx context.Context) *sql.Row {
+	return q.QueryRowContext(ctx, boil.GetContextDB())
+}
+
 // QueryRowContext executes the query for the One finisher and returns a row
 func (q *Query) QueryRowContext(ctx context.Context, exec boil.ContextExecutor) *sql.Row {
 	qs, args := BuildQuery(q)
@@ -177,6 +189,12 @@ func (q *Query) QueryContext(ctx context.Context, exec boil.ContextExecutor) (*s
 	return exec.QueryContext(ctx, qs, args...)
 }
 
+// ExecG executes a query that does not need a row returned.
+// It uses the global executer.
+func (q *Query) ExecG() (sql.Result, error) {
+	return q.Exec(boil.GetDB())
+}
+
 // ExecP executes a query that does not need a row returned
 // It will panic on error
 func (q *Query) ExecP(exec boil.Executor) sql.Result {
@@ -188,6 +206,18 @@ func (q *Query) ExecP(exec boil.Executor) sql.Result {
 	return res
 }
 
+// ExecGP executes a query that does not need a row returned.
+// It uses the global executer and panics on error.
+func (q *Query) ExecGP() sql.Result {
+	return q.ExecP(boil.GetDB())
+}
+
+// QueryG executes the query for the All finisher and returns multiple rows.
+// It uses the global executer.
+func (q *Query) QueryG() (*sql.Rows, error) {
+	return q.Query(boil.GetDB())
+}
+
 // QueryP executes the query for the All finisher and returns multiple rows
 // It will panic on error
 func (q *Query) QueryP(exec boil.Executor) *sql.Rows {
@@ -197,6 +227,58 @@ func (q *Query) QueryP(exec boil.Executor) *sql.Rows {
 	}
 
 	return rows
+}
+
+// QueryGP executes the query for the All finisher and returns multiple rows.
+// It uses the global executer and panics on error.
+func (q *Query) QueryGP() *sql.Rows {
+	return q.QueryP(boil.GetDB())
+}
+
+// ExecContextG executes a query that does not need a row returned with a given context.
+// It uses the global executer.
+func (q *Query) ExecContextG(ctx context.Context) (sql.Result, error) {
+	return q.ExecContext(ctx, boil.GetContextDB())
+}
+
+// ExecContextP executes a query with a given context that does not need a row returned.
+// It panics on error.
+func (q *Query) ExecContextP(ctx context.Context, exec boil.ContextExecutor) sql.Result {
+	result, err := q.ExecContext(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return result
+}
+
+// ExecContextGP executes a query with a given context that does not need a row returned.
+// It uses the global executer and panics on error.
+func (q *Query) ExecContextGP(ctx context.Context) sql.Result {
+	return q.ExecContextP(ctx, boil.GetContextDB())
+}
+
+// QueryContextG executes the query for the All finisher with a given context and returns multiple rows.
+// It uses the global executer.
+func (q *Query) QueryContextG(ctx context.Context) (*sql.Rows, error) {
+	return q.QueryContext(ctx, boil.GetContextDB())
+}
+
+// QueryContextP executes the query for the All finisher with a given context and returns multiple rows.
+// It panics on error.
+func (q *Query) QueryContextP(ctx context.Context, exec boil.ContextExecutor) *sql.Rows {
+	rows, err := q.QueryContext(ctx, exec)
+	if err != nil {
+		panic(boil.WrapErr(err))
+	}
+
+	return rows
+}
+
+// QueryContextGP executes the query for the All finisher with a given context and returns multiple rows.
+// It uses the global executer and panics on error.
+func (q *Query) QueryContextGP(ctx context.Context) *sql.Rows {
+	return q.QueryContextP(ctx, boil.GetContextDB())
 }
 
 // SetDialect on the query.

@@ -52,6 +52,13 @@ func (q *Query) BindG(ctx context.Context, obj interface{}) error {
 	return q.Bind(ctx, boil.GetDB(), obj)
 }
 
+// BindGP executes the query and inserts the result into the passed in object pointer.
+// It uses the global executer and panics on error.
+// Also see documentation for Bind() and Query.Bind()
+func (q *Query) BindGP(ctx context.Context, obj interface{}) {
+	q.BindP(ctx, boil.GetDB(), obj)
+}
+
 // Bind inserts the rows into the passed in object pointer, because the caller
 // owns the rows it is imperative to note that the caller MUST both close the
 // rows and check for errors on the rows.

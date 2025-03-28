@@ -455,3 +455,8 @@ CREATE TABLE "User" (
 
     PRIMARY KEY ("id")
 );
+
+-- Create view that joins jets and pilots
+-- https://github.com/volatiletech/sqlboiler/issues/1279
+CREATE OR REPLACE VIEW jets_pilots AS SELECT jets.id AS jet_id, jets.name as name, pilots.name AS pilot_name FROM jets AS jets LEFT JOIN pilots AS pilots ON pilots.id=jets.pilot_id;
+

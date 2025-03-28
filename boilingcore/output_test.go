@@ -70,6 +70,44 @@ func TestFormatBuffer(t *testing.T) {
 	}
 }
 
+func TestFormatBufferWithUnusedImports(t *testing.T) {
+	t.Parallel()
+
+	src := `
+	package main
+	
+	import (
+		"fmt"
+		"os"
+		"strings"
+	)
+	
+	func main() {
+		fmt.Println("Hello, World!")
+	}
+	`
+
+	buf := &bytes.Buffer{}
+	fmt.Fprint(buf, src)
+
+	got, err := formatBuffer(buf)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// expect strings import to be removed
+	var importsToBeRemoved = []string{"os", "strings"}
+	for _, imp := range importsToBeRemoved {
+		if strings.Contains(string(got), imp) {
+			t.Errorf("import %s should be removed", imp)
+		}
+	}
+
+	if !strings.Contains(string(got), "fmt") {
+		t.Error("fmt import should be present")
+	}
+}
+
 func TestOutputFilenameParts(t *testing.T) {
 	t.Parallel()
 

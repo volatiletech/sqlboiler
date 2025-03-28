@@ -14,6 +14,7 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/importers"
+	"golang.org/x/tools/imports"
 )
 
 // Copied from the go source
@@ -269,9 +270,15 @@ func executeTemplate(buf *bytes.Buffer, t *template.Template, name string, data 
 }
 
 func formatBuffer(buf *bytes.Buffer) ([]byte, error) {
-	output, err := format.Source(buf.Bytes())
+	// format and process imports to remove unused ones
+	src, err := imports.Process("", buf.Bytes(), nil /* options */)
 	if err == nil {
-		return output, nil
+		var output []byte
+		// format the output
+		output, err = format.Source(src)
+		if err == nil {
+			return output, nil
+		}
 	}
 
 	matches := rgxSyntaxError.FindStringSubmatch(err.Error())

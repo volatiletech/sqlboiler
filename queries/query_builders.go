@@ -142,7 +142,7 @@ func buildSelectQuery(q *Query) (*bytes.Buffer, []interface{}) {
 	writeModifiers(q, buf, &args)
 
 	if hasComplexCount {
-		buf.WriteByte(')')
+		buf.WriteString(") AS q")
 	}
 	buf.WriteByte(';')
 	return buf, args

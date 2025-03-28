@@ -415,6 +415,7 @@ not to pass them through the command line or environment variables:
 | no-auto-timestamps        | false    |
 | no-rows-affected          | false    |
 | no-driver-templates       | false    |
+| no-relation-getters       | false    |
 | tag-ignore                | []       |
 | strict-verify-mod-version | false    |
 
@@ -485,6 +486,7 @@ Flags:
       --no-hooks                   Disable hooks feature for your models
       --no-rows-affected           Disable rows affected in the generated API
       --no-tests                   Disable generated go test files
+      --no-relation-getters        Disable generating getters for relationship tables
   -o, --output string              The name of the folder to output to (default "models")
   -p, --pkgname string             The name you wish to assign to your generated package (default "models")
       --struct-tag-casing string   Decides the casing for go structure tag names. camel, title, alias or snake (default "snake")

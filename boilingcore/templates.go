@@ -52,6 +52,7 @@ type templateData struct {
 	NoRowsAffected        bool
 	NoDriverTemplates     bool
 	NoBackReferencing     bool
+	NoRelationGetters     bool
 	AlwaysWrapErrors      bool
 
 	// Tags control which tags are added to the struct

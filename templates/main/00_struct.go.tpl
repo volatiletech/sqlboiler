@@ -197,11 +197,25 @@ func (*{{$alias.DownSingular}}R) NewStruct() *{{$alias.DownSingular}}R {
 {{range .Table.FKeys -}}
 {{- $ftable := $.Aliases.Table .ForeignTable -}}
 {{- $relAlias := $alias.Relationship .Name -}}
+
+{{- if not $.NoRelationGetters}}
+
+func (o *{{$alias.UpSingular}}) Get{{$relAlias.Foreign}}() *{{$ftable.UpSingular}} {
+	if (o == nil) {
+		return nil
+	}
+
+	return o.R.Get{{$relAlias.Foreign}}()
+}
+
+{{end -}}
+
 func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Foreign}}() *{{$ftable.UpSingular}} {
 	if (r == nil) {
-    return nil
+		return nil
 	}
-  return r.{{$relAlias.Foreign}}
+
+	return r.{{$relAlias.Foreign}}
 }
 
 {{end -}}
@@ -209,11 +223,25 @@ func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Foreign}}() *{{$ftable.UpSingu
 {{- range .Table.ToOneRelationships -}}
 {{- $ftable := $.Aliases.Table .ForeignTable -}}
 {{- $relAlias := $ftable.Relationship .Name -}}
+
+{{- if not $.NoRelationGetters}}
+
+func (o *{{$alias.UpSingular}}) Get{{$relAlias.Local}}() *{{$ftable.UpSingular}} {
+	if (o == nil) {
+		return nil
+	}
+
+	return o.R.Get{{$relAlias.Local}}()
+}
+
+{{end -}}
+
 func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Local}}() *{{$ftable.UpSingular}} {
 	if (r == nil) {
-    return nil
+		return nil
 	}
-  return r.{{$relAlias.Local}}
+
+	return r.{{$relAlias.Local}}
 }
 
 {{end -}}
@@ -221,11 +249,25 @@ func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Local}}() *{{$ftable.UpSingula
 {{- range .Table.ToManyRelationships -}}
 {{- $ftable := $.Aliases.Table .ForeignTable -}}
 {{- $relAlias := $.Aliases.ManyRelationship .ForeignTable .Name .JoinTable .JoinLocalFKeyName -}}
+
+{{- if not $.NoRelationGetters}}
+
+func (o *{{$alias.UpSingular}}) Get{{$relAlias.Local}}() {{printf "%sSlice" $ftable.UpSingular}} {
+	if (o == nil) {
+		return nil
+	}
+
+	return o.R.Get{{$relAlias.Local}}()
+}
+
+{{end -}}
+
 func (r *{{$alias.DownSingular}}R) Get{{$relAlias.Local}}() {{printf "%sSlice" $ftable.UpSingular}} {
 	if (r == nil) {
-    return nil
+		return nil
 	}
-  return r.{{$relAlias.Local}}
+
+	return r.{{$relAlias.Local}}
 }
 
 {{end -}}

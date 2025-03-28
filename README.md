@@ -491,6 +491,7 @@ Flags:
   -t, --tag strings                Struct tags to be included on your models in addition to json, yaml, toml
       --tag-ignore strings         List of column names that should have tags values set to '-' (ignored during parsing)
       --templates strings          A templates directory, overrides the embedded template folders in sqlboiler
+      --replace strings  An array of templates file and the actual template file to be replaces 
       --version                    Print the version
       --strict-verify-mod-version  Prevent code generation, if project version of sqlboiler not match with executable
       --wipe                       Delete the output folder (rm -rf) before generation to ensure sanity

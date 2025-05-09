@@ -4,6 +4,33 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.19.0] - 2025-05-09
+
+### Added
+
+- Add relation getters on base model structs. (thanks @parnic)
+- Added `--no-relation-getters` option to prevent generation relation getters on the main structs. (thanks @parnic)
+- Add Query, Exec, and Bind helpers to the global executor. (thanks @parnic)
+  - BindGP
+  - QueryRowG
+  - QueryRowContextG
+  - ExecG
+  - ExecGP
+  - QueryG
+  - QueryGP
+  - ExecContextG
+  - ExecContextP
+  - ExecContextGP
+  - QueryContextG
+  - QueryContextP
+  - QueryContextGP
+
+### Fixed
+
+- Fix count from subquery on postgresql. (thanks @renom)
+- Cleanup unused imports after code generation. (thanks @eklatzer)
+- Fix InsertWhitelist test in composite primary key table. (thanks @benevolent0505)
+
 ## [4.18.0] - 2025-01-03
 
 ### Added

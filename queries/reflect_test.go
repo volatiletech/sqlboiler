@@ -14,6 +14,7 @@ import (
 
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/volatiletech/sqlboiler/v4/types"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -173,6 +174,57 @@ func TestBindPtrSlice(t *testing.T) {
 		t.Error("wrong ID:", id)
 	}
 	if name := testResults[1].Name; name != "cat" {
+		t.Error("wrong name:", name)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestBindJsonSlice(t *testing.T) {
+	t.Parallel()
+
+	type siteInfoItem struct {
+		ID     int        `boil:"id" json:"id" toml:"id" yaml:"id"`
+		Fields types.JSON `boil:"test" json:"test" toml:"test" yaml:"test"`
+	}
+
+	query := &Query{
+		from:    []string{"fun"},
+		dialect: &drivers.Dialect{LQ: '"', RQ: '"', UseIndexPlaceholders: true},
+	}
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ret := sqlmock.NewRows([]string{"id", "test"})
+	ret.AddRow(driver.Value(int64(35)), driver.Value(`{"foo": "bar"}`))
+	ret.AddRow(driver.Value(int64(12)), driver.Value("{}"))
+	mock.ExpectQuery(`SELECT \* FROM "fun";`).WillReturnRows(ret)
+
+	var testResults []siteInfoItem
+	err = query.Bind(nil, db, &testResults)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(testResults) != 2 {
+		t.Fatal("wrong number of results:", len(testResults))
+	}
+	if id := testResults[0].ID; id != 35 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults[0].Fields; name.String() != `{"foo": "bar"}` {
+		t.Error("wrong name:", name)
+	}
+
+	if id := testResults[1].ID; id != 12 {
+		t.Error("wrong ID:", id)
+	}
+	if name := testResults[1].Fields; name.String() != "{}" {
 		t.Error("wrong name:", name)
 	}
 

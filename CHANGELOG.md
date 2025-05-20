@@ -4,6 +4,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [4.19.1] - 2025-05-20
+
+### Fixed
+
+- Fix performance issue in `v4.19.0` by reverting the cleanup of unused imports.
+- Updated minimum required Go version to 1.23.
+- Updated dependencies to fix CVEs.
+
 ## [4.19.0] - 2025-05-09
 
 ### Added

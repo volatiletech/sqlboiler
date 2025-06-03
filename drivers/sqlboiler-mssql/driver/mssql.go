@@ -308,7 +308,9 @@ func (m *MSSQLDriver) Columns(schema, tableName string, whitelist, blacklist []s
 				args = append(args, w)
 			}
 		}
-	} else if len(blacklist) > 0 {
+	}
+	
+	if len(blacklist) > 0 {
 		cols := drivers.ColumnsFromList(blacklist, tableName)
 		if len(cols) > 0 {
 			query += fmt.Sprintf(" and c.column_name not in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))

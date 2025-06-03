@@ -600,7 +600,9 @@ func (p *PostgresDriver) Columns(schema, tableName string, whitelist, blacklist 
 				args = append(args, w)
 			}
 		}
-	} else if len(blacklist) > 0 {
+	}
+	
+	if len(blacklist) > 0 {
 		cols := drivers.ColumnsFromList(blacklist, tableName)
 		if len(cols) > 0 {
 			query += fmt.Sprintf(" where c.column_name not in (%s)", strmangle.Placeholders(true, len(cols), 3, 1))

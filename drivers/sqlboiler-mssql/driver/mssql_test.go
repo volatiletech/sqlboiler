@@ -106,4 +106,36 @@ func TestDriver(t *testing.T) {
 	if bytes.Compare(want, got) != 0 {
 		t.Errorf("want:\n%s\ngot:\n%s\n", want, got)
 	}
+
+	t.Run("whitelist table, blacklist column", func(t *testing.T) {
+		p := &MSSQLDriver{}
+		config := drivers.Config{
+			"user":    envUsername,
+			"pass":    envPassword,
+			"dbname":  envDatabase,
+			"host":    envHostname,
+			"port":    envPort,
+			"sslmode": "disable",
+			"schema":  "dbo",
+			"whitelist": []string{"magic"},
+			"blacklist": []string{"magic.string_three"},
+		}
+		info, err := p.Assemble(config)
+		if err != nil {
+			t.Fatal(err)
+		}
+		found := false
+		for _, tbl := range info.Tables {
+			if tbl.Name == "magic" {
+				for _, col := range tbl.Columns {
+					if col.Name == "string_three" {
+						found = true
+					}
+				}
+			}
+		}
+		if found {
+			t.Errorf("blacklisted column 'string_three' should not be present in table 'magic'")
+		}
+	})
 }

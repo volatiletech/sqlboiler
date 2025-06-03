@@ -113,4 +113,32 @@ func TestDriver(t *testing.T) {
 			require.JSONEq(t, string(want), string(got))
 		})
 	}
+
+	t.Run("whitelist table, blacklist column", func(t *testing.T) {
+		p := &MySQLDriver{}
+		config := drivers.Config{
+			"user":    envUsername,
+			"pass":    envPassword,
+			"dbname":  envDatabase,
+			"host":    envHostname,
+			"port":    envPort,
+			"sslmode": "false",
+			"schema":  envDatabase,
+			"whitelist": []string{"magic"},
+			"blacklist": []string{"magic.string_three"},
+		}
+		info, err := p.Assemble(config)
+		require.NoError(t, err)
+		found := false
+		for _, tbl := range info.Tables {
+			if tbl.Name == "magic" {
+				for _, col := range tbl.Columns {
+					if col.Name == "string_three" {
+						found = true
+					}
+				}
+			}
+		}
+		require.False(t, found, "blacklisted column 'string_three' should not be present in table 'magic'")
+	})
 }

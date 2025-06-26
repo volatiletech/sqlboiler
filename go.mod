@@ -5,6 +5,9 @@ go 1.23.0
 require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/Masterminds/sprig/v3 v3.2.2
+	github.com/aarondl/null/v8 v8.1.3
+	github.com/aarondl/randomize v0.0.2
+	github.com/aarondl/strmangle v0.0.9
 	github.com/davecgh/go-spew v1.1.1
 	github.com/ericlagergren/decimal v0.0.0-20190420051523-6335edbaa640
 	github.com/friendsofgo/errors v0.9.2
@@ -16,15 +19,13 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
-	github.com/aarondl/null/v8 v8.1.2
-	github.com/aarondl/randomize v0.0.1
-	github.com/aarondl/strmangle v0.0.6
 	modernc.org/sqlite v1.18.1
 )
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
+	github.com/aarondl/inflect v0.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
@@ -49,7 +50,6 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
-	github.com/aarondl/inflect v0.0.1 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect

@@ -750,7 +750,7 @@ func (s *State) verifyModVersion() error {
 		return fmt.Errorf(fmt.Sprintf("could not read go.mod: %v", err))
 	}
 
-	re, err := regexp.Compile(`github\.com\/volatiletech\/sqlboiler\/v4 v(\d*\.\d*\.\d*)`)
+	re, err := regexp.Compile(`github\.com\/aarondl\/sqlboiler\/v4 v(\d*\.\d*\.\d*)`)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("failed to parse regexp: %v", err))
 	}

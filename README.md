@@ -4,7 +4,7 @@
 [![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/mod/github.com/aarondl/sqlboiler/v4)
 [![Slack](https://img.shields.io/badge/slack-%23general-lightgrey.svg)](https://sqlboiler.from-the.cloud)
 ![ActionsCI](https://github.com/aarondl/sqlboiler/workflows/test/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/volatiletech/sqlboiler)](http://goreportcard.com/report/volatiletech/sqlboiler)
+[![Go Report Card](https://goreportcard.com/badge/aarondl/sqlboiler)](http://goreportcard.com/report/aarondl/sqlboiler)
 
 # Maintenance Mode
 

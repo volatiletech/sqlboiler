@@ -7,9 +7,9 @@ import (
 	"sync"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/aarondl/sqlboiler/v4/importers"
 )
 
 // These constants are used in the config map passed into the driver

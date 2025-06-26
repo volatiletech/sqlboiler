@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/volatiletech/randomize"
+	"github.com/aarondl/randomize"
 )
 
 // JSON is an alias for json.RawMessage, which is

@@ -1,4 +1,4 @@
-module github.com/volatiletech/sqlboiler/v4
+module github.com/aarondl/sqlboiler/v4
 
 go 1.23.0
 
@@ -16,9 +16,9 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
-	github.com/volatiletech/null/v8 v8.1.2
-	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/strmangle v0.0.6
+	github.com/aarondl/null/v8 v8.1.2
+	github.com/aarondl/randomize v0.0.1
+	github.com/aarondl/strmangle v0.0.6
 	modernc.org/sqlite v1.18.1
 )
 
@@ -49,7 +49,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
-	github.com/volatiletech/inflect v0.0.1 // indirect
+	github.com/aarondl/inflect v0.0.1 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect

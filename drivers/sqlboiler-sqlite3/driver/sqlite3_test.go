@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/volatiletech/sqlboiler/v4/drivers"
+	"github.com/aarondl/sqlboiler/v4/drivers"
 	_ "modernc.org/sqlite"
 )
 

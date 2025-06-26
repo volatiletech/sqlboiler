@@ -1,7 +1,7 @@
 package boil
 
 import (
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 )
 
 // Columns kinds

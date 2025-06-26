@@ -3,7 +3,7 @@ package drivers
 import (
 	"testing"
 
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 )
 
 type testMockDriver struct{}

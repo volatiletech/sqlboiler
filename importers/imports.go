@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 )
 
 // Collection of imports for various templating purposes
@@ -201,11 +201,11 @@ func NewDefaultImports() Collection {
 		},
 		ThirdParty: List{
 			`"github.com/friendsofgo/errors"`,
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries/qm"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries/qmhelper"`,
-			`"github.com/volatiletech/strmangle"`,
+			`"github.com/aarondl/sqlboiler/v4/boil"`,
+			`"github.com/aarondl/sqlboiler/v4/queries"`,
+			`"github.com/aarondl/sqlboiler/v4/queries/qm"`,
+			`"github.com/aarondl/sqlboiler/v4/queries/qmhelper"`,
+			`"github.com/aarondl/strmangle"`,
 		},
 	}
 
@@ -215,9 +215,9 @@ func NewDefaultImports() Collection {
 				`"regexp"`,
 			},
 			ThirdParty: List{
-				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
-				`"github.com/volatiletech/sqlboiler/v4/queries"`,
-				`"github.com/volatiletech/sqlboiler/v4/queries/qm"`,
+				`"github.com/aarondl/sqlboiler/v4/drivers"`,
+				`"github.com/aarondl/sqlboiler/v4/queries"`,
+				`"github.com/aarondl/sqlboiler/v4/queries/qm"`,
 			},
 		},
 		"boil_types": {
@@ -226,8 +226,8 @@ func NewDefaultImports() Collection {
 			},
 			ThirdParty: List{
 				`"github.com/friendsofgo/errors"`,
-				`"github.com/volatiletech/sqlboiler/v4/boil"`,
-				`"github.com/volatiletech/strmangle"`,
+				`"github.com/aarondl/sqlboiler/v4/boil"`,
+				`"github.com/aarondl/strmangle"`,
 			},
 		},
 	}
@@ -239,10 +239,10 @@ func NewDefaultImports() Collection {
 			`"testing"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/sqlboiler/v4/boil"`,
-			`"github.com/volatiletech/sqlboiler/v4/queries"`,
-			`"github.com/volatiletech/randomize"`,
-			`"github.com/volatiletech/strmangle"`,
+			`"github.com/aarondl/sqlboiler/v4/boil"`,
+			`"github.com/aarondl/sqlboiler/v4/queries"`,
+			`"github.com/aarondl/randomize"`,
+			`"github.com/aarondl/strmangle"`,
 		},
 	}
 
@@ -261,7 +261,7 @@ func NewDefaultImports() Collection {
 			},
 			ThirdParty: List{
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/v4/boil"`,
+				`"github.com/aarondl/sqlboiler/v4/boil"`,
 			},
 		},
 		"boil_queries_test": {
@@ -273,7 +273,7 @@ func NewDefaultImports() Collection {
 				`"regexp"`,
 			},
 			ThirdParty: List{
-				`"github.com/volatiletech/sqlboiler/v4/boil"`,
+				`"github.com/aarondl/sqlboiler/v4/boil"`,
 			},
 		},
 		"boil_suites_test": {
@@ -303,8 +303,8 @@ func NullableEnumImports() Collection {
 				`"encoding/json"`,
 			},
 			ThirdParty: List{
-				`"github.com/volatiletech/null/v8"`,
-				`"github.com/volatiletech/null/v8/convert"`,
+				`"github.com/aarondl/null/v8"`,
+				`"github.com/aarondl/null/v8/convert"`,
 			},
 		},
 	}

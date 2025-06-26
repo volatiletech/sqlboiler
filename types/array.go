@@ -35,7 +35,7 @@ import (
 
 	"github.com/ericlagergren/decimal"
 	"github.com/lib/pq/oid"
-	"github.com/volatiletech/randomize"
+	"github.com/aarondl/randomize"
 )
 
 type parameterStatus struct {

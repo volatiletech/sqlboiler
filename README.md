@@ -1,9 +1,9 @@
 ![sqlboiler logo](https://i.imgur.com/lMXUTPE.png)
 
-[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/volatiletech/sqlboiler/blob/master/LICENSE)
-[![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/mod/github.com/volatiletech/sqlboiler/v4)
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/aarondl/sqlboiler/blob/master/LICENSE)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/mod/github.com/aarondl/sqlboiler/v4)
 [![Slack](https://img.shields.io/badge/slack-%23general-lightgrey.svg)](https://sqlboiler.from-the.cloud)
-![ActionsCI](https://github.com/volatiletech/sqlboiler/workflows/test/badge.svg)
+![ActionsCI](https://github.com/aarondl/sqlboiler/workflows/test/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/volatiletech/sqlboiler)](http://goreportcard.com/report/volatiletech/sqlboiler)
 
 # Maintenance Mode
@@ -170,10 +170,10 @@ of that SQLBoiler also confers the following benefits:
 
 | Database          | Driver Location                                                                                     |
 | ----------------- | --------------------------------------------------------------------------------------------------- |
-| PostgreSQL        | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)       |
-| MySQL             | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)     |
-| MSSQLServer 2012+ | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)     |
-| SQLite3           | [https://github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-sqlite3](drivers/sqlboiler-sqlite3) |
+| PostgreSQL        | [https://github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-psql](drivers/sqlboiler-psql)       |
+| MySQL             | [https://github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql](drivers/sqlboiler-mysql)     |
+| MSSQLServer 2012+ | [https://github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mssql](drivers/sqlboiler-mssql)     |
+| SQLite3           | [https://github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-sqlite3](drivers/sqlboiler-sqlite3) |
 | CockroachDB       | https://github.com/glerchundi/sqlboiler-crdb                                                        |
 
 **Note:** SQLBoiler supports out of band driver support so you can make your own
@@ -187,7 +187,7 @@ For a comprehensive list of available operations and examples please see [Featur
 ```go
 import (
   // Import this so we don't have to use qm.Limit etc.
-  . "github.com/volatiletech/sqlboiler/v4/queries/qm"
+  . "github.com/aarondl/sqlboiler/v4/queries/qm"
 )
 
 // Open handle to database like normal
@@ -309,16 +309,16 @@ Ensure you don't forget any /v suffixes or you'll end up on an old version.
 
 ```shell
 # Go 1.16 and above:
-go install github.com/volatiletech/sqlboiler/v4@latest
-go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
+go install github.com/aarondl/sqlboiler/v4@latest
+go install github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-psql@latest
 
 # Go 1.15 and below:
 # Install sqlboiler v4 and the postgresql driver (mysql, mssql, sqlite3 also available)
 # NOTE: DO NOT run this inside another Go module (like your project) as it will
 # pollute your go.mod with a bunch of stuff you don't want and your binary
 # will not get installed.
-GO111MODULE=on go get -u -t github.com/volatiletech/sqlboiler/v4
-GO111MODULE=on go get github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql
+GO111MODULE=on go get -u -t github.com/aarondl/sqlboiler/v4
+GO111MODULE=on go get github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-psql
 ```
 
 To install `sqlboiler` as a dependency in your project use the commands below
@@ -327,9 +327,9 @@ into your `go.mod` file at the correct version.
 
 ```shell
 # Do not forget the trailing /v4 and /v8 in the following commands
-go get github.com/volatiletech/sqlboiler/v4
+go get github.com/aarondl/sqlboiler/v4
 # Assuming you're going to use the null package for its additional null types
-go get github.com/volatiletech/null/v8
+go get github.com/aarondl/null/v8
 ```
 
 #### Configuration
@@ -462,7 +462,7 @@ generate models for, we can invoke the sqlboiler command line utility.
 
 ```text
 SQL Boiler generates a Go ORM from template files, tailored to your database schema.
-Complete documentation is available at http://github.com/volatiletech/sqlboiler
+Complete documentation is available at http://github.com/aarondl/sqlboiler
 
 Usage:
   sqlboiler [flags] <driver>
@@ -1244,7 +1244,7 @@ safe, but be careful!
 
 ```go
 // Dot import so we can access query mods directly instead of prefixing with "qm."
-import . "github.com/volatiletech/sqlboiler/v4/queries/qm"
+import . "github.com/aarondl/sqlboiler/v4/queries/qm"
 
 // Use a raw query against a generated struct (Pilot in this example)
 // If this query mod exists in your call, it will override the others.
@@ -1384,7 +1384,7 @@ in combination with your own custom, non-generated model.
 
 ### Binding
 
-For a comprehensive ruleset for `Bind()` you can refer to our [pkg.go.dev](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/queries#Bind).
+For a comprehensive ruleset for `Bind()` you can refer to our [pkg.go.dev](https://pkg.go.dev/github.com/aarondl/sqlboiler/v4/queries#Bind).
 
 The `Bind()` [Finisher](#finisher) allows the results of a query built with
 the [Raw SQL](#raw-query) method or the [Query Builder](#query-building) methods to be bound
@@ -1664,7 +1664,7 @@ tx.Rollback()
 
 It's also worth noting that there's a way to take advantage of `boil.SetDB()`
 by using the
-[boil.BeginTx()](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil#BeginTx)
+[boil.BeginTx()](https://pkg.go.dev/github.com/aarondl/sqlboiler/v4/boil#BeginTx)
 function. This opens a transaction using the globally stored database.
 
 ### Debug Logging
@@ -1739,7 +1739,7 @@ greylist in cases where you want to insert a Go zero value.
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
-[boil.Columns.InsertColumnSet](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil/#Columns.InsertColumnSet)
+[boil.Columns.InsertColumnSet](https://pkg.go.dev/github.com/aarondl/sqlboiler/v4/boil/#Columns.InsertColumnSet)
 for more details.
 
 ```go
@@ -1792,7 +1792,7 @@ documentation above for more details.
 **NOTE:** CreatedAt/UpdatedAt are not included in `Whitelist` automatically.
 
 See the documentation for
-[boil.Columns.UpdateColumnSet](https://pkg.go.dev/github.com/volatiletech/sqlboiler/v4/boil/#Columns.UpdateColumnSet)
+[boil.Columns.UpdateColumnSet](https://pkg.go.dev/github.com/aarondl/sqlboiler/v4/boil/#Columns.UpdateColumnSet)
 for more details.
 
 ```go
@@ -2078,8 +2078,8 @@ You _must_ use a DSN flag in MySQL connections, see: [Requirements](#requirement
 
 #### Where is the homepage?
 
-The homepage for the [SQLBoiler](https://github.com/volatiletech/sqlboiler) [Golang ORM](https://github.com/volatiletech/sqlboiler)
-generator is located at: https://github.com/volatiletech/sqlboiler
+The homepage for the [SQLBoiler](https://github.com/aarondl/sqlboiler) [Golang ORM](https://github.com/aarondl/sqlboiler)
+generator is located at: https://github.com/aarondl/sqlboiler
 
 #### Why are the auto-generated tests failing?
 
@@ -2102,7 +2102,7 @@ errors relating to foreign key constraints.
 
 ## Benchmarks
 
-If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/volatiletech/boilbench) repo.
+If you'd like to run the benchmarks yourself check out our [boilbench](https://github.com/aarondl/boilbench) repo.
 
 ```bash
 go test -bench . -benchmem

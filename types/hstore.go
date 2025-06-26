@@ -24,8 +24,8 @@ import (
 	"database/sql/driver"
 	"strings"
 
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/randomize"
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/randomize"
 )
 
 // HStore is a wrapper for transferring HStore values back and forth easily.

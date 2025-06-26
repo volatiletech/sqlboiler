@@ -5,8 +5,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/sqlboiler/v4/drivers"
+	"github.com/aarondl/strmangle"
 )
 
 // Aliases defines aliases for the generation run

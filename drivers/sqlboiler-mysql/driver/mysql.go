@@ -11,10 +11,10 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 
-	"github.com/volatiletech/sqlboiler/v4/drivers"
-	"github.com/volatiletech/sqlboiler/v4/importers"
+	"github.com/aarondl/sqlboiler/v4/drivers"
+	"github.com/aarondl/sqlboiler/v4/importers"
 )
 
 //go:embed override
@@ -626,8 +626,8 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"strings"`,
 			},
 			ThirdParty: importers.List{
-				`"github.com/volatiletech/strmangle"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers"`,
+				`"github.com/aarondl/strmangle"`,
+				`"github.com/aarondl/sqlboiler/v4/drivers"`,
 			},
 		},
 	}
@@ -653,8 +653,8 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 				`"github.com/kat-co/vala"`,
 				`"github.com/friendsofgo/errors"`,
 				`"github.com/spf13/viper"`,
-				`"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql/driver"`,
-				`"github.com/volatiletech/randomize"`,
+				`"github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql/driver"`,
+				`"github.com/aarondl/randomize"`,
 				`_ "github.com/go-sql-driver/mysql"`,
 			},
 		},
@@ -662,68 +662,68 @@ func (MySQLDriver) Imports() (col importers.Collection, err error) {
 
 	col.BasedOnType = importers.Map{
 		"null.Float32": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Float64": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Int": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Int8": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Int16": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Int32": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Int64": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Uint": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Uint8": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Uint16": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Uint32": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Uint64": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.String": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Bool": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Time": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.Bytes": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 		"null.JSON": {
-			ThirdParty: importers.List{`"github.com/volatiletech/null/v8"`},
+			ThirdParty: importers.List{`"github.com/aarondl/null/v8"`},
 		},
 
 		"time.Time": {
 			Standard: importers.List{`"time"`},
 		},
 		"types.JSON": {
-			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			ThirdParty: importers.List{`"github.com/aarondl/sqlboiler/v4/types"`},
 		},
 		"types.Decimal": {
-			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			ThirdParty: importers.List{`"github.com/aarondl/sqlboiler/v4/types"`},
 		},
 		"types.NullDecimal": {
-			ThirdParty: importers.List{`"github.com/volatiletech/sqlboiler/v4/types"`},
+			ThirdParty: importers.List{`"github.com/aarondl/sqlboiler/v4/types"`},
 		},
 	}
 	return col, err

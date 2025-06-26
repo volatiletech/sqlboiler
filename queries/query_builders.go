@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 )
 
 var (

@@ -20,7 +20,7 @@ jobs:
 
     environment:
       GOPATH: /go
-      ROOTPATH: /go/src/github.com/volatiletech/sqlboiler
+      ROOTPATH: /go/src/github.com/aarondl/sqlboiler
 
     steps:
       - run:
@@ -29,7 +29,7 @@ jobs:
 
       - checkout:
           name: 'Checkout'
-          path: /go/src/github.com/volatiletech/sqlboiler
+          path: /go/src/github.com/aarondl/sqlboiler
 
       # Workaround to allow the use of the circleci local cli.
       - run:

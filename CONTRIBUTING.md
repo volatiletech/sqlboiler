@@ -42,7 +42,7 @@ with the Github code review tools. Then it will be merged into master, and later
 
 ## Developer getting started
 
-1. Add a [Configuration files](https://github.com/volatiletech/sqlboiler#configuration).
+1. Add a [Configuration files](https://github.com/aarondl/sqlboiler#configuration).
 1. Write your changes
 1. Generate executable. Run again if you have changed anything in core code or driver code.
    ```
@@ -60,7 +60,7 @@ with the Github code review tools. Then it will be merged into master, and later
 1. You may need to install following package before able to run the tests.
 
    ```
-   go get -u github.com/volatiletech/null
+   go get -u github.com/aarondl/null
    ```
 
 1. Test the output

@@ -3,7 +3,7 @@ package drivers
 import (
 	"regexp"
 
-	"github.com/volatiletech/strmangle"
+	"github.com/aarondl/strmangle"
 )
 
 var rgxEnum = regexp.MustCompile(`^enum(\.\w+)?\([^)]+\)$`)
